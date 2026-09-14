@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<!--
+	No collected data types: no accounts, no analytics, no crash reporting,
+	no third-party SDKs (DECISIONS 0002). Favourites and the alert baseline
+	are written only to this device's Application Support directory and are
+	never transmitted anywhere.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<!--
+	No required-reason API is called directly by this app's code as of this
+	commit: no UserDefaults, no file-timestamp reads (creationDate /
+	modificationDate / stat family), no system-boot-time or disk-space APIs,
+	no active-keyboard APIs. Re-check with an Xcode Archive privacy report
+	(docs/APP-STORE.md) before any future change that adds one of these, and
+	add the matching entry with an Apple-approved reason code then.
+	-->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>

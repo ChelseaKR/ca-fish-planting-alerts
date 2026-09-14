@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<meta name="description" content="{{ description }}">
+<link rel="canonical" href="{{ canonical_url }}">
+<link rel="stylesheet" href="{{ root }}assets/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:site_name" content="CA Trout Planting Alerts">
+<meta name="twitter:card" content="summary">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap">
+    <p class="site-name"><a href="{{ root }}">CA Trout Planting Alerts</a></p>
+    <nav aria-label="Primary">
+      <a href="{{ root }}">This week</a>
+      <a href="{{ root }}about/">About &amp; privacy</a>
+    </nav>
+  </div>
+</header>
+<main id="main" class="wrap">
+{% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>{{ attribution_text }}</p>
+    <p><a href="{{ attribution_url }}">{{ attribution_url }}</a> &middot; <a href="{{ root }}about/">about, attribution &amp; privacy</a></p>
+  </div>
+</footer>
+</body>
+</html>

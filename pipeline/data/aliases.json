@@ -1,0 +1,3470 @@
+{
+  "schema": "cfpa-aliases-v1",
+  "waters": [
+    {
+      "cdfw_stock_id": 125,
+      "canonical_name": "Annie Lake",
+      "slug": "annie-lake",
+      "aliases": [
+        "Annie Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 158,
+      "canonical_name": "Fee Reservoir",
+      "slug": "fee-reservoir",
+      "aliases": [
+        "Fee Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 162,
+      "canonical_name": "Juanita Lake",
+      "slug": "juanita-lake",
+      "aliases": [
+        "Juanita Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 175,
+      "canonical_name": "Dry Lake",
+      "slug": "dry-lake",
+      "aliases": [
+        "Dry Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 193,
+      "canonical_name": "Greenhorn Reservoir",
+      "slug": "greenhorn-reservoir",
+      "aliases": [
+        "Greenhorn Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 202,
+      "canonical_name": "Bass Lake",
+      "slug": "bass-lake",
+      "aliases": [
+        "Bass Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 207,
+      "canonical_name": "Trout Lake",
+      "slug": "trout-lake",
+      "aliases": [
+        "Trout Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 219,
+      "canonical_name": "Orr Lake",
+      "slug": "orr-lake",
+      "aliases": [
+        "Orr Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 298,
+      "canonical_name": "Lake Shastina",
+      "slug": "lake-shastina",
+      "aliases": [
+        "Lake Shastina"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 397,
+      "canonical_name": "Pine Creek Reservoir",
+      "slug": "pine-creek-reservoir",
+      "aliases": [
+        "Pine Creek Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 458,
+      "canonical_name": "Kangaroo Lake",
+      "slug": "kangaroo-lake",
+      "aliases": [
+        "Kangaroo Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 472,
+      "canonical_name": "Freshwater Lagoon",
+      "slug": "freshwater-lagoon",
+      "aliases": [
+        "Freshwater Lagoon"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 485,
+      "canonical_name": "Fish Lake",
+      "slug": "fish-lake",
+      "aliases": [
+        "Fish Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 494,
+      "canonical_name": "Siskiyou Lake",
+      "slug": "siskiyou-lake",
+      "aliases": [
+        "Siskiyou Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 526,
+      "canonical_name": "Bayley Reservoir",
+      "slug": "bayley-reservoir",
+      "aliases": [
+        "Bayley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 580,
+      "canonical_name": "West Valley Reservoir",
+      "slug": "west-valley-reservoir",
+      "aliases": [
+        "West Valley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 643,
+      "canonical_name": "Smith Flat Reservoir",
+      "slug": "smith-flat-reservoir",
+      "aliases": [
+        "Smith Flat Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 669,
+      "canonical_name": "Trinity Lake (Clair Engle Lake)",
+      "slug": "trinity-lake-clair-engle-lake",
+      "aliases": [
+        "Trinity Lake (Clair Engle Lake)"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 679,
+      "canonical_name": "Carrville Pond",
+      "slug": "carrville-pond",
+      "aliases": [
+        "Carrville Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 689,
+      "canonical_name": "Iron Canyon Reservoir",
+      "slug": "iron-canyon-reservoir",
+      "aliases": [
+        "Iron Canyon Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 755,
+      "canonical_name": "Dodge Reservoir",
+      "slug": "dodge-reservoir",
+      "aliases": [
+        "Dodge Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 783,
+      "canonical_name": "Baum Lake",
+      "slug": "baum-lake",
+      "aliases": [
+        "Baum Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 784,
+      "canonical_name": "Shasta Lake",
+      "slug": "shasta-lake",
+      "aliases": [
+        "Shasta Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 848,
+      "canonical_name": "Buckhorn Reservoir",
+      "slug": "buckhorn-reservoir",
+      "aliases": [
+        "Buckhorn Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 859,
+      "canonical_name": "Lewiston Lake",
+      "slug": "lewiston-lake",
+      "aliases": [
+        "Lewiston Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 934,
+      "canonical_name": "Whiskeytown Lake",
+      "slug": "whiskeytown-lake",
+      "aliases": [
+        "Whiskeytown Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 977,
+      "canonical_name": "Ewing Gulch Reservoir",
+      "slug": "ewing-gulch-reservoir",
+      "aliases": [
+        "Ewing Gulch Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 997,
+      "canonical_name": "McCumber Reservoir",
+      "slug": "mccumber-reservoir",
+      "aliases": [
+        "McCumber Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1038,
+      "canonical_name": "Nora Lake",
+      "slug": "nora-lake",
+      "aliases": [
+        "Nora Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1062,
+      "canonical_name": "Ruth Reservoir",
+      "slug": "ruth-reservoir",
+      "aliases": [
+        "Ruth Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1116,
+      "canonical_name": "Lake Almanor",
+      "slug": "lake-almanor",
+      "aliases": [
+        "Lake Almanor"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1134,
+      "canonical_name": "Mountain Meadows Reservoir",
+      "slug": "mountain-meadows-reservoir",
+      "aliases": [
+        "Mountain Meadows Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1382,
+      "canonical_name": "Paradise Reservoir",
+      "slug": "paradise-reservoir",
+      "aliases": [
+        "Paradise Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1506,
+      "canonical_name": "Graeagle Mill Pond",
+      "slug": "graeagle-mill-pond",
+      "aliases": [
+        "Graeagle Mill Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1522,
+      "canonical_name": "Plaskett Meadows Pond",
+      "slug": "plaskett-meadows-pond",
+      "aliases": [
+        "Plaskett Meadows Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1787,
+      "canonical_name": "Pillsbury Reservoir",
+      "slug": "pillsbury-reservoir",
+      "aliases": [
+        "Pillsbury Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1904,
+      "canonical_name": "Collins Lake",
+      "slug": "collins-lake",
+      "aliases": [
+        "Collins Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1922,
+      "canonical_name": "Letts Lake",
+      "slug": "letts-lake",
+      "aliases": [
+        "Letts Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1926,
+      "canonical_name": "Harry L Englebright Lake",
+      "slug": "harry-l-englebright-lake",
+      "aliases": [
+        "Harry L Englebright Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 1946,
+      "canonical_name": "Scotts Flat Reservoir",
+      "slug": "scotts-flat-reservoir",
+      "aliases": [
+        "Scotts Flat Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2023,
+      "canonical_name": "Blue Lake Upper",
+      "slug": "blue-lake-upper",
+      "aliases": [
+        "Blue Lake Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2055,
+      "canonical_name": "Indian Valley Reservoir",
+      "slug": "indian-valley-reservoir",
+      "aliases": [
+        "Indian Valley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2063,
+      "canonical_name": "Rollins Reservoir",
+      "slug": "rollins-reservoir",
+      "aliases": [
+        "Rollins Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2227,
+      "canonical_name": "Halsey Forebay",
+      "slug": "halsey-forebay",
+      "aliases": [
+        "Halsey Forebay"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2242,
+      "canonical_name": "Auburn Regional Park Pond",
+      "slug": "auburn-regional-park-pond",
+      "aliases": [
+        "Auburn Regional Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2315,
+      "canonical_name": "Folsom Lake",
+      "slug": "folsom-lake",
+      "aliases": [
+        "Folsom Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2373,
+      "canonical_name": "Finnon Reservoir",
+      "slug": "finnon-reservoir",
+      "aliases": [
+        "Finnon Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2409,
+      "canonical_name": "El Dorado Forebay",
+      "slug": "el-dorado-forebay",
+      "aliases": [
+        "El Dorado Forebay"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2439,
+      "canonical_name": "Indian Creek Reservoir",
+      "slug": "indian-creek-reservoir",
+      "aliases": [
+        "Indian Creek Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2507,
+      "canonical_name": "Hagan Community Park Pond",
+      "slug": "hagan-community-park-pond",
+      "aliases": [
+        "Hagan Community Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2753,
+      "canonical_name": "Mather Lake",
+      "slug": "mather-lake",
+      "aliases": [
+        "Mather Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 2848,
+      "canonical_name": "Ralphine Lake",
+      "slug": "ralphine-lake",
+      "aliases": [
+        "Ralphine Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 3021,
+      "canonical_name": "Lake Tabeaud",
+      "slug": "lake-tabeaud",
+      "aliases": [
+        "Lake Tabeaud"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 3023,
+      "canonical_name": "Lagoon Valley",
+      "slug": "lagoon-valley",
+      "aliases": [
+        "Lagoon Valley"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 3028,
+      "canonical_name": "Rancho Seco Lake",
+      "slug": "rancho-seco-lake",
+      "aliases": [
+        "Rancho Seco Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 3070,
+      "canonical_name": "Bridgeport Reservoir",
+      "slug": "bridgeport-reservoir",
+      "aliases": [
+        "Bridgeport Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 3458,
+      "canonical_name": "Lake Chabot",
+      "slug": "lake-chabot",
+      "aliases": [
+        "Lake Chabot"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 3508,
+      "canonical_name": "Lake Herman",
+      "slug": "lake-herman",
+      "aliases": [
+        "Lake Herman"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 3910,
+      "canonical_name": "Tulloch Lake",
+      "slug": "tulloch-lake",
+      "aliases": [
+        "Tulloch Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 3994,
+      "canonical_name": "Don Pedro Reservoir",
+      "slug": "don-pedro-reservoir",
+      "aliases": [
+        "Don Pedro Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4014,
+      "canonical_name": "Woodward Reservoir",
+      "slug": "woodward-reservoir",
+      "aliases": [
+        "Woodward Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4018,
+      "canonical_name": "Temescal Lake",
+      "slug": "temescal-lake",
+      "aliases": [
+        "Temescal Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4169,
+      "canonical_name": "Merced Lake North",
+      "slug": "merced-lake-north",
+      "aliases": [
+        "Merced Lake North"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4245,
+      "canonical_name": "McClure Reservoir",
+      "slug": "mcclure-reservoir",
+      "aliases": [
+        "McClure Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4250,
+      "canonical_name": "Modesto Reservoir",
+      "slug": "modesto-reservoir",
+      "aliases": [
+        "Modesto Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4320,
+      "canonical_name": "Lake Del Valle",
+      "slug": "lake-del-valle",
+      "aliases": [
+        "Lake Del Valle"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4368,
+      "canonical_name": "Horseshoe Lake",
+      "slug": "horseshoe-lake",
+      "aliases": [
+        "Horseshoe Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4413,
+      "canonical_name": "Lakeshore Park Pond",
+      "slug": "lakeshore-park-pond",
+      "aliases": [
+        "Lakeshore Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4426,
+      "canonical_name": "McSwain Reservoir",
+      "slug": "mcswain-reservoir",
+      "aliases": [
+        "McSwain Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4507,
+      "canonical_name": "Pleasant Valley Reservoir",
+      "slug": "pleasant-valley-reservoir",
+      "aliases": [
+        "Pleasant Valley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4530,
+      "canonical_name": "Yosemite Lake",
+      "slug": "yosemite-lake",
+      "aliases": [
+        "Yosemite Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4630,
+      "canonical_name": "Eastman Lake",
+      "slug": "eastman-lake",
+      "aliases": [
+        "Eastman Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 4899,
+      "canonical_name": "Hensley Lake",
+      "slug": "hensley-lake",
+      "aliases": [
+        "Hensley Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 5629,
+      "canonical_name": "Avocado Lake",
+      "slug": "avocado-lake",
+      "aliases": [
+        "Avocado Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 5928,
+      "canonical_name": "El Estero Lake",
+      "slug": "el-estero-lake",
+      "aliases": [
+        "El Estero Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 5970,
+      "canonical_name": "Diaz Lake",
+      "slug": "diaz-lake",
+      "aliases": [
+        "Diaz Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6120,
+      "canonical_name": "Kaweah Reservoir",
+      "slug": "kaweah-reservoir",
+      "aliases": [
+        "Kaweah Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6285,
+      "canonical_name": "Success Reservoir",
+      "slug": "success-reservoir",
+      "aliases": [
+        "Success Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6342,
+      "canonical_name": "Lake San Antonio",
+      "slug": "lake-san-antonio",
+      "aliases": [
+        "Lake San Antonio"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6526,
+      "canonical_name": "Atascadero Lake",
+      "slug": "atascadero-lake",
+      "aliases": [
+        "Atascadero Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6540,
+      "canonical_name": "Ming Lake",
+      "slug": "ming-lake",
+      "aliases": [
+        "Ming Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6595,
+      "canonical_name": "Santa Margarita Lake",
+      "slug": "santa-margarita-lake",
+      "aliases": [
+        "Santa Margarita Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6664,
+      "canonical_name": "Lopez Lake",
+      "slug": "lopez-lake",
+      "aliases": [
+        "Lopez Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6898,
+      "canonical_name": "Apollo Community Regional Park Lake",
+      "slug": "apollo-community-regional-park-lake",
+      "aliases": [
+        "Apollo Community Regional Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 6967,
+      "canonical_name": "Mojave Narrows Regional Park Lake",
+      "slug": "mojave-narrows-regional-park-lake",
+      "aliases": [
+        "Mojave Narrows Regional Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7053,
+      "canonical_name": "Jackson Lake",
+      "slug": "jackson-lake",
+      "aliases": [
+        "Jackson Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7054,
+      "canonical_name": "Casitas Lake",
+      "slug": "casitas-lake",
+      "aliases": [
+        "Casitas Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7101,
+      "canonical_name": "Big Bear Lake",
+      "slug": "big-bear-lake",
+      "aliases": [
+        "Big Bear Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7115,
+      "canonical_name": "Hansen Dam Lake",
+      "slug": "hansen-dam-lake",
+      "aliases": [
+        "Hansen Dam Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7116,
+      "canonical_name": "Gregory Lake",
+      "slug": "gregory-lake",
+      "aliases": [
+        "Gregory Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7121,
+      "canonical_name": "Green Valley Lake",
+      "slug": "green-valley-lake",
+      "aliases": [
+        "Green Valley Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7155,
+      "canonical_name": "Glen Helen Park Lake",
+      "slug": "glen-helen-park-lake",
+      "aliases": [
+        "Glen Helen Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7180,
+      "canonical_name": "Jenks Lake",
+      "slug": "jenks-lake",
+      "aliases": [
+        "Jenks Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7306,
+      "canonical_name": "Puddingstone Lake",
+      "slug": "puddingstone-lake",
+      "aliases": [
+        "Puddingstone Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7338,
+      "canonical_name": "Cucamonga Guasti Park Lake",
+      "slug": "cucamonga-guasti-park-lake",
+      "aliases": [
+        "Cucamonga Guasti Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7342,
+      "canonical_name": "Echo Park Lake",
+      "slug": "echo-park-lake",
+      "aliases": [
+        "Echo Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7348,
+      "canonical_name": "Ford Park Ponds",
+      "slug": "ford-park-ponds",
+      "aliases": [
+        "Ford Park Ponds"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7351,
+      "canonical_name": "MacArthur Park Lake",
+      "slug": "macarthur-park-lake",
+      "aliases": [
+        "MacArthur Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7367,
+      "canonical_name": "Legg Lakes",
+      "slug": "legg-lakes",
+      "aliases": [
+        "Legg Lakes"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7379,
+      "canonical_name": "Rancho Jurupa Park Pond",
+      "slug": "rancho-jurupa-park-pond",
+      "aliases": [
+        "Rancho Jurupa Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7406,
+      "canonical_name": "Laguna Lake",
+      "slug": "laguna-lake",
+      "aliases": [
+        "Laguna Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7410,
+      "canonical_name": "La Mirada Lake",
+      "slug": "la-mirada-lake",
+      "aliases": [
+        "La Mirada Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7422,
+      "canonical_name": "Alondra Park Lake",
+      "slug": "alondra-park-lake",
+      "aliases": [
+        "Alondra Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7449,
+      "canonical_name": "Eisenhower Park Lake",
+      "slug": "eisenhower-park-lake",
+      "aliases": [
+        "Eisenhower Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7453,
+      "canonical_name": "Lake Fulmor",
+      "slug": "lake-fulmor",
+      "aliases": [
+        "Lake Fulmor"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7466,
+      "canonical_name": "El Dorado Park Lakes",
+      "slug": "el-dorado-park-lakes",
+      "aliases": [
+        "El Dorado Park Lakes"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7498,
+      "canonical_name": "Little Lake",
+      "slug": "little-lake",
+      "aliases": [
+        "Little Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7515,
+      "canonical_name": "Lake Hemet",
+      "slug": "lake-hemet",
+      "aliases": [
+        "Lake Hemet"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7520,
+      "canonical_name": "Huntington Park Lake",
+      "slug": "huntington-park-lake",
+      "aliases": [
+        "Huntington Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7532,
+      "canonical_name": "Cahuilla Park Lake",
+      "slug": "cahuilla-park-lake",
+      "aliases": [
+        "Cahuilla Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7564,
+      "canonical_name": "Skinner Lake",
+      "slug": "skinner-lake",
+      "aliases": [
+        "Skinner Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7714,
+      "canonical_name": "Lake Wohlford",
+      "slug": "lake-wohlford",
+      "aliases": [
+        "Lake Wohlford"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7796,
+      "canonical_name": "Cuyamaca Lake",
+      "slug": "cuyamaca-lake",
+      "aliases": [
+        "Cuyamaca Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7855,
+      "canonical_name": "Lake Jennings",
+      "slug": "lake-jennings",
+      "aliases": [
+        "Lake Jennings"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7887,
+      "canonical_name": "Lake Murray",
+      "slug": "lake-murray",
+      "aliases": [
+        "Lake Murray"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7908,
+      "canonical_name": "Chollas Park Lake",
+      "slug": "chollas-park-lake",
+      "aliases": [
+        "Chollas Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 7994,
+      "canonical_name": "Cave Lake",
+      "slug": "cave-lake",
+      "aliases": [
+        "Cave Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 8004,
+      "canonical_name": "Lily Lake",
+      "slug": "lily-lake",
+      "aliases": [
+        "Lily Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 8630,
+      "canonical_name": "Briles Reservoir",
+      "slug": "briles-reservoir",
+      "aliases": [
+        "Briles Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 8789,
+      "canonical_name": "Reservoir \"C\"",
+      "slug": "reservoir-c",
+      "aliases": [
+        "Reservoir \"C\""
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 8879,
+      "canonical_name": "Medicine Lake",
+      "slug": "medicine-lake",
+      "aliases": [
+        "Medicine Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 8944,
+      "canonical_name": "Bullseye Lake",
+      "slug": "bullseye-lake",
+      "aliases": [
+        "Bullseye Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 8956,
+      "canonical_name": "Stough Reservoir",
+      "slug": "stough-reservoir",
+      "aliases": [
+        "Stough Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 8993,
+      "canonical_name": "Duncan Reservoir",
+      "slug": "duncan-reservoir",
+      "aliases": [
+        "Duncan Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 9470,
+      "canonical_name": "Rainbow Pond",
+      "slug": "rainbow-pond",
+      "aliases": [
+        "Rainbow Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 9642,
+      "canonical_name": "Blue Lake",
+      "slug": "blue-lake",
+      "aliases": [
+        "Blue Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 10374,
+      "canonical_name": "North Battle Creek Reservoir",
+      "slug": "north-battle-creek-reservoir",
+      "aliases": [
+        "North Battle Creek Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 10726,
+      "canonical_name": "Caribou Lake",
+      "slug": "caribou-lake",
+      "aliases": [
+        "Caribou Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 10784,
+      "canonical_name": "Silver Lake",
+      "slug": "silver-lake",
+      "aliases": [
+        "Silver Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 10951,
+      "canonical_name": "Shotoverin Lake",
+      "slug": "shotoverin-lake",
+      "aliases": [
+        "Shotoverin Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 10977,
+      "canonical_name": "McCoy Flat Reservoir",
+      "slug": "mccoy-flat-reservoir",
+      "aliases": [
+        "McCoy Flat Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 11687,
+      "canonical_name": "Antelope Reservoir",
+      "slug": "antelope-reservoir",
+      "aliases": [
+        "Antelope Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 11748,
+      "canonical_name": "Round Valley Reservoir",
+      "slug": "round-valley-reservoir",
+      "aliases": [
+        "Round Valley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 11829,
+      "canonical_name": "Crystal Lake",
+      "slug": "crystal-lake",
+      "aliases": [
+        "Crystal Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12041,
+      "canonical_name": "Three Lakes, Middle",
+      "slug": "three-lakes-middle",
+      "aliases": [
+        "Three Lakes, Middle"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12043,
+      "canonical_name": "Three Lakes, Upper",
+      "slug": "three-lakes-upper",
+      "aliases": [
+        "Three Lakes, Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12063,
+      "canonical_name": "Frenchman Reservoir",
+      "slug": "frenchman-reservoir",
+      "aliases": [
+        "Frenchman Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12078,
+      "canonical_name": "Lake Davis",
+      "slug": "lake-davis",
+      "aliases": [
+        "Lake Davis"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12092,
+      "canonical_name": "Bucks Lake",
+      "slug": "bucks-lake",
+      "aliases": [
+        "Bucks Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12183,
+      "canonical_name": "Little Grass Valley Reservoir",
+      "slug": "little-grass-valley-reservoir",
+      "aliases": [
+        "Little Grass Valley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12260,
+      "canonical_name": "Gold Lake",
+      "slug": "gold-lake",
+      "aliases": [
+        "Gold Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12309,
+      "canonical_name": "Salmon Lake, Upper",
+      "slug": "salmon-lake-upper",
+      "aliases": [
+        "Salmon Lake, Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12343,
+      "canonical_name": "Packer Lake",
+      "slug": "packer-lake",
+      "aliases": [
+        "Packer Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12347,
+      "canonical_name": "Sly Creek Reservoir",
+      "slug": "sly-creek-reservoir",
+      "aliases": [
+        "Sly Creek Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12358,
+      "canonical_name": "Sardine Lake Lower",
+      "slug": "sardine-lake-lower",
+      "aliases": [
+        "Sardine Lake Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12364,
+      "canonical_name": "Volcano Lake",
+      "slug": "volcano-lake",
+      "aliases": [
+        "Volcano Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12435,
+      "canonical_name": "Jackson Meadows Reservoir",
+      "slug": "jackson-meadows-reservoir",
+      "aliases": [
+        "Jackson Meadows Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12470,
+      "canonical_name": "Weaver Lake",
+      "slug": "weaver-lake",
+      "aliases": [
+        "Weaver Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 12920,
+      "canonical_name": "Prosser Reservoir",
+      "slug": "prosser-reservoir",
+      "aliases": [
+        "Prosser Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 13199,
+      "canonical_name": "Fuller Lake",
+      "slug": "fuller-lake",
+      "aliases": [
+        "Fuller Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 13306,
+      "canonical_name": "Donner Lake",
+      "slug": "donner-lake",
+      "aliases": [
+        "Donner Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 13355,
+      "canonical_name": "Coldstream Pond, Donner Lake Park",
+      "slug": "coldstream-pond-donner-lake-park",
+      "aliases": [
+        "Coldstream Pond, Donner Lake Park"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 13421,
+      "canonical_name": "Lake Valley Reservoir",
+      "slug": "lake-valley-reservoir",
+      "aliases": [
+        "Lake Valley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 13989,
+      "canonical_name": "Walton Pond",
+      "slug": "walton-pond",
+      "aliases": [
+        "Walton Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14214,
+      "canonical_name": "Angora Lake Lower",
+      "slug": "angora-lake-lower",
+      "aliases": [
+        "Angora Lake Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14295,
+      "canonical_name": "Wrights Lake",
+      "slug": "wrights-lake",
+      "aliases": [
+        "Wrights Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14296,
+      "canonical_name": "Dark Lake",
+      "slug": "dark-lake",
+      "aliases": [
+        "Dark Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14535,
+      "canonical_name": "Caples Lake",
+      "slug": "caples-lake",
+      "aliases": [
+        "Caples Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14537,
+      "canonical_name": "Kirkwood Lake",
+      "slug": "kirkwood-lake",
+      "aliases": [
+        "Kirkwood Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14544,
+      "canonical_name": "Red Lake",
+      "slug": "red-lake",
+      "aliases": [
+        "Red Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14582,
+      "canonical_name": "Silver Lake",
+      "slug": "silver-lake-2",
+      "aliases": [
+        "Silver Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14670,
+      "canonical_name": "Blue Lake Upper",
+      "slug": "blue-lake-upper-2",
+      "aliases": [
+        "Blue Lake Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 14726,
+      "canonical_name": "Blue Lake Lower",
+      "slug": "blue-lake-lower",
+      "aliases": [
+        "Blue Lake Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 15004,
+      "canonical_name": "Bear River Reservoir Lower",
+      "slug": "bear-river-reservoir-lower",
+      "aliases": [
+        "Bear River Reservoir Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 15155,
+      "canonical_name": "Mosquito Lake, Lower",
+      "slug": "mosquito-lake-lower",
+      "aliases": [
+        "Mosquito Lake, Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 15158,
+      "canonical_name": "Mosquito Lake, Upper",
+      "slug": "mosquito-lake-upper",
+      "aliases": [
+        "Mosquito Lake, Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 15216,
+      "canonical_name": "Lake Alpine",
+      "slug": "lake-alpine",
+      "aliases": [
+        "Lake Alpine"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 15633,
+      "canonical_name": "White Pines Lake",
+      "slug": "white-pines-lake",
+      "aliases": [
+        "White Pines Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 15944,
+      "canonical_name": "Pinecrest Lake",
+      "slug": "pinecrest-lake",
+      "aliases": [
+        "Pinecrest Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 16313,
+      "canonical_name": "Twin Lake Lower, Bridgeport",
+      "slug": "twin-lake-lower-bridgeport",
+      "aliases": [
+        "Twin Lake Lower, Bridgeport"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 16523,
+      "canonical_name": "Twin Lake Upper, Bridgeport",
+      "slug": "twin-lake-upper-bridgeport",
+      "aliases": [
+        "Twin Lake Upper, Bridgeport"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 16955,
+      "canonical_name": "Lyons Reservoir",
+      "slug": "lyons-reservoir",
+      "aliases": [
+        "Lyons Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17133,
+      "canonical_name": "Trumbull Lake",
+      "slug": "trumbull-lake",
+      "aliases": [
+        "Trumbull Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17148,
+      "canonical_name": "Virginia Lake Lower",
+      "slug": "virginia-lake-lower",
+      "aliases": [
+        "Virginia Lake Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17150,
+      "canonical_name": "Virginia Lake Upper",
+      "slug": "virginia-lake-upper",
+      "aliases": [
+        "Virginia Lake Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17168,
+      "canonical_name": "Lundy Lake",
+      "slug": "lundy-lake",
+      "aliases": [
+        "Lundy Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17177,
+      "canonical_name": "Cherry Valley Reservoir",
+      "slug": "cherry-valley-reservoir",
+      "aliases": [
+        "Cherry Valley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17271,
+      "canonical_name": "Saddlebag Lake",
+      "slug": "saddlebag-lake",
+      "aliases": [
+        "Saddlebag Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17316,
+      "canonical_name": "Ellery Lake",
+      "slug": "ellery-lake",
+      "aliases": [
+        "Ellery Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17336,
+      "canonical_name": "Tioga Lake",
+      "slug": "tioga-lake",
+      "aliases": [
+        "Tioga Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17387,
+      "canonical_name": "Grant Lake",
+      "slug": "grant-lake",
+      "aliases": [
+        "Grant Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17431,
+      "canonical_name": "June Lake",
+      "slug": "june-lake",
+      "aliases": [
+        "June Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17432,
+      "canonical_name": "Silver Lake",
+      "slug": "silver-lake-3",
+      "aliases": [
+        "Silver Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17467,
+      "canonical_name": "Gull Lake",
+      "slug": "gull-lake",
+      "aliases": [
+        "Gull Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 17884,
+      "canonical_name": "Crowley Lake",
+      "slug": "crowley-lake",
+      "aliases": [
+        "Crowley Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 18044,
+      "canonical_name": "Twin Lakes, Mammoth",
+      "slug": "twin-lakes-mammoth",
+      "aliases": [
+        "Twin Lakes, Mammoth"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 18076,
+      "canonical_name": "Mamie Lake",
+      "slug": "mamie-lake",
+      "aliases": [
+        "Mamie Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 18091,
+      "canonical_name": "Mary Lake",
+      "slug": "mary-lake",
+      "aliases": [
+        "Mary Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 18110,
+      "canonical_name": "George Lake",
+      "slug": "george-lake",
+      "aliases": [
+        "George Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 18122,
+      "canonical_name": "Convict Lake",
+      "slug": "convict-lake",
+      "aliases": [
+        "Convict Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 18767,
+      "canonical_name": "Rock Creek Lake",
+      "slug": "rock-creek-lake",
+      "aliases": [
+        "Rock Creek Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 18937,
+      "canonical_name": "Edison Lake",
+      "slug": "edison-lake",
+      "aliases": [
+        "Edison Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 18988,
+      "canonical_name": "Mammoth Pool Lake",
+      "slug": "mammoth-pool-lake",
+      "aliases": [
+        "Mammoth Pool Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 19260,
+      "canonical_name": "Bass Lake",
+      "slug": "bass-lake-2",
+      "aliases": [
+        "Bass Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 19303,
+      "canonical_name": "Portal Forebay",
+      "slug": "portal-forebay",
+      "aliases": [
+        "Portal Forebay"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 19474,
+      "canonical_name": "Ward Lake",
+      "slug": "ward-lake",
+      "aliases": [
+        "Ward Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 19697,
+      "canonical_name": "Florence Lake",
+      "slug": "florence-lake",
+      "aliases": [
+        "Florence Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 19904,
+      "canonical_name": "Huntington Lake",
+      "slug": "huntington-lake",
+      "aliases": [
+        "Huntington Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 19936,
+      "canonical_name": "Bishop Creek, Intake II",
+      "slug": "bishop-creek-intake-ii",
+      "aliases": [
+        "Bishop Creek, Intake II"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 19955,
+      "canonical_name": "Manzanita Lake",
+      "slug": "manzanita-lake",
+      "aliases": [
+        "Manzanita Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 20117,
+      "canonical_name": "North Lake",
+      "slug": "north-lake",
+      "aliases": [
+        "North Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 20257,
+      "canonical_name": "Lake Sabrina",
+      "slug": "lake-sabrina",
+      "aliases": [
+        "Lake Sabrina"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 20572,
+      "canonical_name": "South Lake",
+      "slug": "south-lake",
+      "aliases": [
+        "South Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 20744,
+      "canonical_name": "Corrine Lake",
+      "slug": "corrine-lake",
+      "aliases": [
+        "Corrine Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 20780,
+      "canonical_name": "Shaver Lake",
+      "slug": "shaver-lake",
+      "aliases": [
+        "Shaver Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 20919,
+      "canonical_name": "Courtright Reservoir",
+      "slug": "courtright-reservoir",
+      "aliases": [
+        "Courtright Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 21249,
+      "canonical_name": "Wishon Reservoir",
+      "slug": "wishon-reservoir",
+      "aliases": [
+        "Wishon Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 21340,
+      "canonical_name": "Black Rock Reservoir",
+      "slug": "black-rock-reservoir",
+      "aliases": [
+        "Black Rock Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 21343,
+      "canonical_name": "Pine Flat Reservoir",
+      "slug": "pine-flat-reservoir",
+      "aliases": [
+        "Pine Flat Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 21425,
+      "canonical_name": "Hume Lake",
+      "slug": "hume-lake",
+      "aliases": [
+        "Hume Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 21531,
+      "canonical_name": "Hedrick Pond (Redwood Lake)",
+      "slug": "hedrick-pond-redwood-lake",
+      "aliases": [
+        "Hedrick Pond (Redwood Lake)"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 21584,
+      "canonical_name": "Lake Isabella",
+      "slug": "lake-isabella",
+      "aliases": [
+        "Lake Isabella"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 21619,
+      "canonical_name": "Balch Park Lake Upper",
+      "slug": "balch-park-lake-upper",
+      "aliases": [
+        "Balch Park Lake Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 21620,
+      "canonical_name": "Balch Park Lake Lower",
+      "slug": "balch-park-lake-lower",
+      "aliases": [
+        "Balch Park Lake Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 26531,
+      "canonical_name": "Reservoir \"F\"",
+      "slug": "reservoir-f",
+      "aliases": [
+        "Reservoir \"F\""
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 26875,
+      "canonical_name": "Sugar Pine Reservoir",
+      "slug": "sugar-pine-reservoir",
+      "aliases": [
+        "Sugar Pine Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 26882,
+      "canonical_name": "New Melones Reservoir",
+      "slug": "new-melones-reservoir",
+      "aliases": [
+        "New Melones Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27364,
+      "canonical_name": "Eagle Lake",
+      "slug": "eagle-lake",
+      "aliases": [
+        "Eagle Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27400,
+      "canonical_name": "Jenkinson Lake",
+      "slug": "jenkinson-lake",
+      "aliases": [
+        "Jenkinson Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27404,
+      "canonical_name": "Lyons Lake",
+      "slug": "lyons-lake",
+      "aliases": [
+        "Lyons Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27414,
+      "canonical_name": "Oak Grove Park Lake",
+      "slug": "oak-grove-park-lake",
+      "aliases": [
+        "Oak Grove Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27415,
+      "canonical_name": "Sandy Wool Lake",
+      "slug": "sandy-wool-lake",
+      "aliases": [
+        "Sandy Wool Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27416,
+      "canonical_name": "Sawmill Pond",
+      "slug": "sawmill-pond",
+      "aliases": [
+        "Sawmill Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27417,
+      "canonical_name": "Shadow Cliff Lake",
+      "slug": "shadow-cliff-lake",
+      "aliases": [
+        "Shadow Cliff Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27425,
+      "canonical_name": "Anderson River Park Pond",
+      "slug": "anderson-river-park-pond",
+      "aliases": [
+        "Anderson River Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27430,
+      "canonical_name": "Belvedere Lake",
+      "slug": "belvedere-lake",
+      "aliases": [
+        "Belvedere Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27431,
+      "canonical_name": "Cerritos Lake",
+      "slug": "cerritos-lake",
+      "aliases": [
+        "Cerritos Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27434,
+      "canonical_name": "Downey Wilderness Park Lake",
+      "slug": "downey-wilderness-park-lake",
+      "aliases": [
+        "Downey Wilderness Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27435,
+      "canonical_name": "Hollenbeck Park Lake",
+      "slug": "hollenbeck-park-lake",
+      "aliases": [
+        "Hollenbeck Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27436,
+      "canonical_name": "Kenneth Hahn Lake",
+      "slug": "kenneth-hahn-lake",
+      "aliases": [
+        "Kenneth Hahn Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27437,
+      "canonical_name": "Lincoln Park Lake",
+      "slug": "lincoln-park-lake",
+      "aliases": [
+        "Lincoln Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27440,
+      "canonical_name": "Rancho Simi Park Lake",
+      "slug": "rancho-simi-park-lake",
+      "aliases": [
+        "Rancho Simi Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27441,
+      "canonical_name": "Santa Fe Reservoir",
+      "slug": "santa-fe-reservoir",
+      "aliases": [
+        "Santa Fe Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27442,
+      "canonical_name": "Brite Valley Reservoir",
+      "slug": "brite-valley-reservoir",
+      "aliases": [
+        "Brite Valley Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27443,
+      "canonical_name": "Carr Park Lake",
+      "slug": "carr-park-lake",
+      "aliases": [
+        "Carr Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27444,
+      "canonical_name": "Centennial Lake",
+      "slug": "centennial-lake",
+      "aliases": [
+        "Centennial Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27445,
+      "canonical_name": "Doane Pond",
+      "slug": "doane-pond",
+      "aliases": [
+        "Doane Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27446,
+      "canonical_name": "Greer Park Lake",
+      "slug": "greer-park-lake",
+      "aliases": [
+        "Greer Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27449,
+      "canonical_name": "Prado Park Lake",
+      "slug": "prado-park-lake",
+      "aliases": [
+        "Prado Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27450,
+      "canonical_name": "Ralph Clark Regional Park Lake",
+      "slug": "ralph-clark-regional-park-lake",
+      "aliases": [
+        "Ralph Clark Regional Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27451,
+      "canonical_name": "Yucaipa Lake",
+      "slug": "yucaipa-lake",
+      "aliases": [
+        "Yucaipa Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27454,
+      "canonical_name": "Round Corral Reservoir",
+      "slug": "round-corral-reservoir",
+      "aliases": [
+        "Round Corral Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27460,
+      "canonical_name": "Lake Emily",
+      "slug": "lake-emily",
+      "aliases": [
+        "Lake Emily"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 27466,
+      "canonical_name": "River Walk Lake",
+      "slug": "river-walk-lake",
+      "aliases": [
+        "River Walk Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28286,
+      "canonical_name": "Fresno City Woodward Park Lake",
+      "slug": "fresno-city-woodward-park-lake",
+      "aliases": [
+        "Fresno City Woodward Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28287,
+      "canonical_name": "Granite Park Pond",
+      "slug": "granite-park-pond",
+      "aliases": [
+        "Granite Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28289,
+      "canonical_name": "Hidden Valley Pond",
+      "slug": "hidden-valley-pond",
+      "aliases": [
+        "Hidden Valley Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28292,
+      "canonical_name": "Reseda Park Lake",
+      "slug": "reseda-park-lake",
+      "aliases": [
+        "Reseda Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28294,
+      "canonical_name": "Southside Park Pond",
+      "slug": "southside-park-pond",
+      "aliases": [
+        "Southside Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28298,
+      "canonical_name": "Lumsden Pond",
+      "slug": "lumsden-pond",
+      "aliases": [
+        "Lumsden Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28303,
+      "canonical_name": "Murry Park Pond",
+      "slug": "murry-park-pond",
+      "aliases": [
+        "Murry Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28305,
+      "canonical_name": "John Anson Ford Park Lake",
+      "slug": "john-anson-ford-park-lake",
+      "aliases": [
+        "John Anson Ford Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28309,
+      "canonical_name": "Elk Grove Park Pond",
+      "slug": "elk-grove-park-pond",
+      "aliases": [
+        "Elk Grove Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28310,
+      "canonical_name": "Barney Schwartz Park Lake",
+      "slug": "barney-schwartz-park-lake",
+      "aliases": [
+        "Barney Schwartz Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28311,
+      "canonical_name": "Del Lago Park Lake",
+      "slug": "del-lago-park-lake",
+      "aliases": [
+        "Del Lago Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28355,
+      "canonical_name": "Howe Community Park Lake",
+      "slug": "howe-community-park-lake",
+      "aliases": [
+        "Howe Community Park Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28526,
+      "canonical_name": "Broodfish Waters",
+      "slug": "broodfish-waters",
+      "aliases": [
+        "Broodfish Waters"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28570,
+      "canonical_name": "Sycamore Island Pond",
+      "slug": "sycamore-island-pond",
+      "aliases": [
+        "Sycamore Island Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28573,
+      "canonical_name": "Moura Pond",
+      "slug": "moura-pond",
+      "aliases": [
+        "Moura Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28585,
+      "canonical_name": "Kapusta Pond",
+      "slug": "kapusta-pond",
+      "aliases": [
+        "Kapusta Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28597,
+      "canonical_name": "Mooney Grove Park Pond",
+      "slug": "mooney-grove-park-pond",
+      "aliases": [
+        "Mooney Grove Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28599,
+      "canonical_name": "Bogart Park Pond",
+      "slug": "bogart-park-pond",
+      "aliases": [
+        "Bogart Park Pond"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 28608,
+      "canonical_name": "Foothill Regional Park Pond B",
+      "slug": "foothill-regional-park-pond-b",
+      "aliases": [
+        "Foothill Regional Park Pond B"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500017,
+      "canonical_name": "American River Silver Fork",
+      "slug": "american-river-silver-fork",
+      "aliases": [
+        "American River Silver Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500021,
+      "canonical_name": "Angels Creek",
+      "slug": "angels-creek",
+      "aliases": [
+        "Angels Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500029,
+      "canonical_name": "Antelope Creek",
+      "slug": "antelope-creek",
+      "aliases": [
+        "Antelope Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500055,
+      "canonical_name": "Baker Creek",
+      "slug": "baker-creek",
+      "aliases": [
+        "Baker Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500070,
+      "canonical_name": "Battle Creek South Fork",
+      "slug": "battle-creek-south-fork",
+      "aliases": [
+        "Battle Creek South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500088,
+      "canonical_name": "Bearskin Creek",
+      "slug": "bearskin-creek",
+      "aliases": [
+        "Bearskin Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500091,
+      "canonical_name": "Beaver Creek",
+      "slug": "beaver-creek",
+      "aliases": [
+        "Beaver Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500104,
+      "canonical_name": "Big Creek, Madera",
+      "slug": "big-creek-madera",
+      "aliases": [
+        "Big Creek, Madera"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500109,
+      "canonical_name": "Big Meadows Creek",
+      "slug": "big-meadows-creek",
+      "aliases": [
+        "Big Meadows Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500110,
+      "canonical_name": "Big Pine Creek",
+      "slug": "big-pine-creek",
+      "aliases": [
+        "Big Pine Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500125,
+      "canonical_name": "Bishop Creek Lower",
+      "slug": "bishop-creek-lower",
+      "aliases": [
+        "Bishop Creek Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500126,
+      "canonical_name": "Bishop Creek, Middle Fork",
+      "slug": "bishop-creek-middle-fork",
+      "aliases": [
+        "Bishop Creek, Middle Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500128,
+      "canonical_name": "Bishop Creek, South Fork",
+      "slug": "bishop-creek-south-fork",
+      "aliases": [
+        "Bishop Creek, South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500199,
+      "canonical_name": "Burney Creek Lower",
+      "slug": "burney-creek-lower",
+      "aliases": [
+        "Burney Creek Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500200,
+      "canonical_name": "Burney Creek Middle",
+      "slug": "burney-creek-middle",
+      "aliases": [
+        "Burney Creek Middle"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500201,
+      "canonical_name": "Burney Creek Upper",
+      "slug": "burney-creek-upper",
+      "aliases": [
+        "Burney Creek Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500206,
+      "canonical_name": "Butte Creek",
+      "slug": "butte-creek",
+      "aliases": [
+        "Butte Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500247,
+      "canonical_name": "Carson River East Fork",
+      "slug": "carson-river-east-fork",
+      "aliases": [
+        "Carson River East Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500248,
+      "canonical_name": "Carson River West Fork",
+      "slug": "carson-river-west-fork",
+      "aliases": [
+        "Carson River West Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500276,
+      "canonical_name": "Chiquito Creek West Fork",
+      "slug": "chiquito-creek-west-fork",
+      "aliases": [
+        "Chiquito Creek West Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500277,
+      "canonical_name": "Chiquito Creek, Lower",
+      "slug": "chiquito-creek-lower",
+      "aliases": [
+        "Chiquito Creek, Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500285,
+      "canonical_name": "Clear Creek",
+      "slug": "clear-creek",
+      "aliases": [
+        "Clear Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500293,
+      "canonical_name": "Coffee Creek",
+      "slug": "coffee-creek",
+      "aliases": [
+        "Coffee Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500294,
+      "canonical_name": "Cold Creek",
+      "slug": "cold-creek",
+      "aliases": [
+        "Cold Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500306,
+      "canonical_name": "Convict Creek",
+      "slug": "convict-creek",
+      "aliases": [
+        "Convict Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500361,
+      "canonical_name": "Deadman Creek",
+      "slug": "deadman-creek",
+      "aliases": [
+        "Deadman Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500366,
+      "canonical_name": "Deer Creek",
+      "slug": "deer-creek",
+      "aliases": [
+        "Deer Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500368,
+      "canonical_name": "Deer Creek",
+      "slug": "deer-creek-2",
+      "aliases": [
+        "Deer Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500392,
+      "canonical_name": "Dinkey Creek",
+      "slug": "dinkey-creek",
+      "aliases": [
+        "Dinkey Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500415,
+      "canonical_name": "Dry Meadow Creek",
+      "slug": "dry-meadow-creek",
+      "aliases": [
+        "Dry Meadow Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500430,
+      "canonical_name": "East Walker River",
+      "slug": "east-walker-river",
+      "aliases": [
+        "East Walker River"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500491,
+      "canonical_name": "Feather River Middle Fork, Graeagle",
+      "slug": "feather-river-middle-fork-graeagle",
+      "aliases": [
+        "Feather River Middle Fork, Graeagle"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500492,
+      "canonical_name": "Feather River North Fork, Almanor",
+      "slug": "feather-river-north-fork-almanor",
+      "aliases": [
+        "Feather River North Fork, Almanor"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500503,
+      "canonical_name": "Fish Creek",
+      "slug": "fish-creek",
+      "aliases": [
+        "Fish Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500522,
+      "canonical_name": "Freeman Creek",
+      "slug": "freeman-creek",
+      "aliases": [
+        "Freeman Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500546,
+      "canonical_name": "Georges Creek",
+      "slug": "georges-creek",
+      "aliases": [
+        "Georges Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500555,
+      "canonical_name": "Glass Creek",
+      "slug": "glass-creek",
+      "aliases": [
+        "Glass Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500561,
+      "canonical_name": "Goodale Creek",
+      "slug": "goodale-creek",
+      "aliases": [
+        "Goodale Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500563,
+      "canonical_name": "Goodrich Creek Lower",
+      "slug": "goodrich-creek-lower",
+      "aliases": [
+        "Goodrich Creek Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500569,
+      "canonical_name": "Granite Creek (West Fork)",
+      "slug": "granite-creek-west-fork",
+      "aliases": [
+        "Granite Creek (West Fork)"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500623,
+      "canonical_name": "Hat Creek Middle",
+      "slug": "hat-creek-middle",
+      "aliases": [
+        "Hat Creek Middle"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500624,
+      "canonical_name": "Hat Creek Upper",
+      "slug": "hat-creek-upper",
+      "aliases": [
+        "Hat Creek Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500626,
+      "canonical_name": "Hatchet Creek",
+      "slug": "hatchet-creek",
+      "aliases": [
+        "Hatchet Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500644,
+      "canonical_name": "Herring Creek",
+      "slug": "herring-creek",
+      "aliases": [
+        "Herring Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500709,
+      "canonical_name": "Independence Creek",
+      "slug": "independence-creek",
+      "aliases": [
+        "Independence Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500757,
+      "canonical_name": "Kern River South Fork",
+      "slug": "kern-river-south-fork",
+      "aliases": [
+        "Kern River South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500759,
+      "canonical_name": "Kern River, Section 1",
+      "slug": "kern-river-section-1",
+      "aliases": [
+        "Kern River, Section 1"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500760,
+      "canonical_name": "Kern River, Section 2",
+      "slug": "kern-river-section-2",
+      "aliases": [
+        "Kern River, Section 2"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500761,
+      "canonical_name": "Kern River, Section 4",
+      "slug": "kern-river-section-4",
+      "aliases": [
+        "Kern River, Section 4"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500762,
+      "canonical_name": "Kern River, Section 5",
+      "slug": "kern-river-section-5",
+      "aliases": [
+        "Kern River, Section 5"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500763,
+      "canonical_name": "Kern River, Section 6",
+      "slug": "kern-river-section-6",
+      "aliases": [
+        "Kern River, Section 6"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500770,
+      "canonical_name": "Kings River, Below Pine Flat Dam",
+      "slug": "kings-river-below-pine-flat-dam",
+      "aliases": [
+        "Kings River, Below Pine Flat Dam"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500822,
+      "canonical_name": "Lee Vining Creek",
+      "slug": "lee-vining-creek",
+      "aliases": [
+        "Lee Vining Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500823,
+      "canonical_name": "Lee Vining Creek South Fork",
+      "slug": "lee-vining-creek-south-fork",
+      "aliases": [
+        "Lee Vining Creek South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500827,
+      "canonical_name": "Lewis Creek",
+      "slug": "lewis-creek",
+      "aliases": [
+        "Lewis Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500850,
+      "canonical_name": "Little Walker River",
+      "slug": "little-walker-river",
+      "aliases": [
+        "Little Walker River"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500860,
+      "canonical_name": "Lone Pine Creek",
+      "slug": "lone-pine-creek",
+      "aliases": [
+        "Lone Pine Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500891,
+      "canonical_name": "Lyons Canal (Columbia Ditch)",
+      "slug": "lyons-canal-columbia-ditch",
+      "aliases": [
+        "Lyons Canal (Columbia Ditch)"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500902,
+      "canonical_name": "Mammoth Creek",
+      "slug": "mammoth-creek",
+      "aliases": [
+        "Mammoth Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500910,
+      "canonical_name": "Markleeville Creek",
+      "slug": "markleeville-creek",
+      "aliases": [
+        "Markleeville Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500930,
+      "canonical_name": "McGee Creek",
+      "slug": "mcgee-creek",
+      "aliases": [
+        "McGee Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500942,
+      "canonical_name": "Merced River, Section I",
+      "slug": "merced-river-section-i",
+      "aliases": [
+        "Merced River, Section I"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500943,
+      "canonical_name": "Merced River, Section ll",
+      "slug": "merced-river-section-ll",
+      "aliases": [
+        "Merced River, Section ll"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500979,
+      "canonical_name": "Mono Creek",
+      "slug": "mono-creek",
+      "aliases": [
+        "Mono Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 500984,
+      "canonical_name": "Montgomery Creek",
+      "slug": "montgomery-creek",
+      "aliases": [
+        "Montgomery Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501015,
+      "canonical_name": "Nelder Creek",
+      "slug": "nelder-creek",
+      "aliases": [
+        "Nelder Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501051,
+      "canonical_name": "Owens River, below Tinnemaha",
+      "slug": "owens-river-below-tinnemaha",
+      "aliases": [
+        "Owens River, below Tinnemaha"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501053,
+      "canonical_name": "Owens River, Section 2",
+      "slug": "owens-river-section-2",
+      "aliases": [
+        "Owens River, Section 2"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501054,
+      "canonical_name": "Owens River, Section 3",
+      "slug": "owens-river-section-3",
+      "aliases": [
+        "Owens River, Section 3"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501096,
+      "canonical_name": "Pit River South Fork",
+      "slug": "pit-river-south-fork",
+      "aliases": [
+        "Pit River South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501111,
+      "canonical_name": "Powerhouse Stream",
+      "slug": "powerhouse-stream",
+      "aliases": [
+        "Powerhouse Stream"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501146,
+      "canonical_name": "Reyes Creek",
+      "slug": "reyes-creek",
+      "aliases": [
+        "Reyes Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501150,
+      "canonical_name": "Robinson Creek",
+      "slug": "robinson-creek",
+      "aliases": [
+        "Robinson Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501151,
+      "canonical_name": "Rock Creek",
+      "slug": "rock-creek",
+      "aliases": [
+        "Rock Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501154,
+      "canonical_name": "Rock Creek, Section 1",
+      "slug": "rock-creek-section-1",
+      "aliases": [
+        "Rock Creek, Section 1"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501155,
+      "canonical_name": "Rock Creek, Section 2",
+      "slug": "rock-creek-section-2",
+      "aliases": [
+        "Rock Creek, Section 2"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501185,
+      "canonical_name": "Rush Creek",
+      "slug": "rush-creek",
+      "aliases": [
+        "Rush Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501199,
+      "canonical_name": "Sacramento River",
+      "slug": "sacramento-river",
+      "aliases": [
+        "Sacramento River"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501200,
+      "canonical_name": "Sacramento River",
+      "slug": "sacramento-river-2",
+      "aliases": [
+        "Sacramento River"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501205,
+      "canonical_name": "Saddlebag Creek (Lee Vining Creek)",
+      "slug": "saddlebag-creek-lee-vining-creek",
+      "aliases": [
+        "Saddlebag Creek (Lee Vining Creek)"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501229,
+      "canonical_name": "San Joaquin River, South Fork",
+      "slug": "san-joaquin-river-south-fork",
+      "aliases": [
+        "San Joaquin River, South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501243,
+      "canonical_name": "Santa Ana River",
+      "slug": "santa-ana-river",
+      "aliases": [
+        "Santa Ana River"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501244,
+      "canonical_name": "Santa Ana River South Fork",
+      "slug": "santa-ana-river-south-fork",
+      "aliases": [
+        "Santa Ana River South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501293,
+      "canonical_name": "Sherwin Creek",
+      "slug": "sherwin-creek",
+      "aliases": [
+        "Sherwin Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501302,
+      "canonical_name": "Silver Creek",
+      "slug": "silver-creek",
+      "aliases": [
+        "Silver Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501333,
+      "canonical_name": "Spanish Creek",
+      "slug": "spanish-creek",
+      "aliases": [
+        "Spanish Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501359,
+      "canonical_name": "Stanislaus River Clarks Fork",
+      "slug": "stanislaus-river-clarks-fork",
+      "aliases": [
+        "Stanislaus River Clarks Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501360,
+      "canonical_name": "Stanislaus River Middle Fork",
+      "slug": "stanislaus-river-middle-fork",
+      "aliases": [
+        "Stanislaus River Middle Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501361,
+      "canonical_name": "Stanislaus River North Fork",
+      "slug": "stanislaus-river-north-fork",
+      "aliases": [
+        "Stanislaus River North Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501362,
+      "canonical_name": "Stanislaus River South Fork",
+      "slug": "stanislaus-river-south-fork",
+      "aliases": [
+        "Stanislaus River South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501379,
+      "canonical_name": "Stony Creek",
+      "slug": "stony-creek",
+      "aliases": [
+        "Stony Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501402,
+      "canonical_name": "Susan River Lower",
+      "slug": "susan-river-lower",
+      "aliases": [
+        "Susan River Lower"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501404,
+      "canonical_name": "Susan River Upper",
+      "slug": "susan-river-upper",
+      "aliases": [
+        "Susan River Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501414,
+      "canonical_name": "Taboose Creek",
+      "slug": "taboose-creek",
+      "aliases": [
+        "Taboose Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501416,
+      "canonical_name": "Tamarack Creek",
+      "slug": "tamarack-creek",
+      "aliases": [
+        "Tamarack Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501431,
+      "canonical_name": "Tenmile Creek, Upper",
+      "slug": "tenmile-creek-upper",
+      "aliases": [
+        "Tenmile Creek, Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501442,
+      "canonical_name": "Tinnemaha Creek",
+      "slug": "tinnemaha-creek",
+      "aliases": [
+        "Tinnemaha Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501467,
+      "canonical_name": "Trinity River Stuart Fork",
+      "slug": "trinity-river-stuart-fork",
+      "aliases": [
+        "Trinity River Stuart Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501468,
+      "canonical_name": "Trinity River, above Clair Engle Lake",
+      "slug": "trinity-river-above-clair-engle-lake",
+      "aliases": [
+        "Trinity River, above Clair Engle Lake"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501474,
+      "canonical_name": "Tule River Middle Fork",
+      "slug": "tule-river-middle-fork",
+      "aliases": [
+        "Tule River Middle Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501475,
+      "canonical_name": "Tule River North Fork, Middle Fork #1",
+      "slug": "tule-river-north-fork-middle-fork-1",
+      "aliases": [
+        "Tule River North Fork, Middle Fork #1"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501476,
+      "canonical_name": "Tule River South Fork, Middle Fork #2",
+      "slug": "tule-river-south-fork-middle-fork-2",
+      "aliases": [
+        "Tule River South Fork, Middle Fork #2"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501477,
+      "canonical_name": "Tule River South Fork, Middle Fork #3",
+      "slug": "tule-river-south-fork-middle-fork-3",
+      "aliases": [
+        "Tule River South Fork, Middle Fork #3"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501481,
+      "canonical_name": "Tuolumne River Middle Fork",
+      "slug": "tuolumne-river-middle-fork",
+      "aliases": [
+        "Tuolumne River Middle Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501483,
+      "canonical_name": "Tuolumne River South Fork",
+      "slug": "tuolumne-river-south-fork",
+      "aliases": [
+        "Tuolumne River South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501487,
+      "canonical_name": "Tuttle Creek",
+      "slug": "tuttle-creek",
+      "aliases": [
+        "Tuttle Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501535,
+      "canonical_name": "Wagon Creek",
+      "slug": "wagon-creek",
+      "aliases": [
+        "Wagon Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501558,
+      "canonical_name": "West Walker River, Section 2",
+      "slug": "west-walker-river-section-2",
+      "aliases": [
+        "West Walker River, Section 2"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501559,
+      "canonical_name": "West Walker River, Section 3",
+      "slug": "west-walker-river-section-3",
+      "aliases": [
+        "West Walker River, Section 3"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501572,
+      "canonical_name": "Willow Creek North Fork",
+      "slug": "willow-creek-north-fork",
+      "aliases": [
+        "Willow Creek North Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501573,
+      "canonical_name": "Willow Creek, South Fork",
+      "slug": "willow-creek-south-fork",
+      "aliases": [
+        "Willow Creek, South Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501597,
+      "canonical_name": "Yuba River North Fork",
+      "slug": "yuba-river-north-fork",
+      "aliases": [
+        "Yuba River North Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501705,
+      "canonical_name": "Russian River, Upper East Branch",
+      "slug": "russian-river-upper-east-branch",
+      "aliases": [
+        "Russian River, Upper East Branch"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501743,
+      "canonical_name": "Trinity River East Fork",
+      "slug": "trinity-river-east-fork",
+      "aliases": [
+        "Trinity River East Fork"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501820,
+      "canonical_name": "Nacimiento River, Upper",
+      "slug": "nacimiento-river-upper",
+      "aliases": [
+        "Nacimiento River, Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501831,
+      "canonical_name": "Big Grizzly Creek",
+      "slug": "big-grizzly-creek",
+      "aliases": [
+        "Big Grizzly Creek"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501874,
+      "canonical_name": "McCloud River, Fowlers, Lower Falls",
+      "slug": "mccloud-river-fowlers-lower-falls",
+      "aliases": [
+        "McCloud River, Fowlers, Lower Falls"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501935,
+      "canonical_name": "Ash Creek Upper",
+      "slug": "ash-creek-upper",
+      "aliases": [
+        "Ash Creek Upper"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 501955,
+      "canonical_name": "American River, South Fork, Camp Sacramento",
+      "slug": "american-river-south-fork-camp-sacramento",
+      "aliases": [
+        "American River, South Fork, Camp Sacramento"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 502014,
+      "canonical_name": "Kern River, Section 3",
+      "slug": "kern-river-section-3",
+      "aliases": [
+        "Kern River, Section 3"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 503124,
+      "canonical_name": "American River, South Fork, Chili Bar",
+      "slug": "american-river-south-fork-chili-bar",
+      "aliases": [
+        "American River, South Fork, Chili Bar"
+      ],
+      "reviewed": false
+    },
+    {
+      "cdfw_stock_id": 703125,
+      "canonical_name": "Yuba-Sutter Fairground temporary pond",
+      "slug": "yuba-sutter-fairground-temporary-pond",
+      "aliases": [
+        "Yuba-Sutter Fairground temporary pond"
+      ],
+      "reviewed": false
+    }
+  ]
+}

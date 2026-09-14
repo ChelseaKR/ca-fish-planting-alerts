@@ -1,0 +1,177 @@
+"""Orchestrate one pipeline run: fetch -> parse -> match -> history -> snapshot
+-> validate -> site -> coverage report.
+
+A failed run (fetch failure, stale page, parse drift, history-integrity
+violation, schema validation failure) writes nothing new and exits non-zero.
+There is no code path that publishes a partial or assumed result.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import json
+import sys
+from pathlib import Path
+
+from . import VERSION, aliases as aliases_mod, fetch as fetch_mod, history as history_mod
+from . import parse as parse_mod, site as site_mod, snapshot as snapshot_mod
+
+PIPELINE_DIR = Path(__file__).resolve().parents[2]
+REPO_ROOT = PIPELINE_DIR.parent
+DEFAULT_HISTORY_PATH = PIPELINE_DIR / "data" / "history.json"
+DEFAULT_ALIASES_PATH = PIPELINE_DIR / "data" / "aliases.json"
+DEFAULT_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v1.json"
+DEFAULT_SITE_OUT = REPO_ROOT / "site"
+DEFAULT_BASE_URL = "https://chelseakr.github.io/ca-fish-planting-alerts"
+
+
+class PipelineError(RuntimeError):
+    pass
+
+
+def run(
+    *,
+    fixture_path: str | None,
+    history_path: Path,
+    aliases_path: Path,
+    schema_path: Path,
+    site_out: Path,
+    base_url: str,
+    write_site: bool = True,
+    fixture_fetched_at: dt.datetime | None = None,
+    run_today: dt.date | None = None,
+) -> dict:
+    """Execute one full run. Returns the built snapshot dict. Raises on any
+    of: fetch failure, stale page, parse error, history-integrity violation,
+    schema violation -- and writes nothing to history/aliases/site/snapshot
+    on any of those.
+
+    The freshness check runs here, uniformly, for *both* the live and
+    ``--fixture`` paths (the live path also self-checks inside
+    ``fetch_schedule`` as a second, independent line of defence -- but this
+    call is what a ``--fixture`` dry run relies on; without it a stale saved
+    page would build a snapshot just like a fresh one).
+    """
+    if fixture_path:
+        page = fetch_mod.load_fixture(fixture_path, fetched_at=fixture_fetched_at)
+    else:
+        page = fetch_mod.fetch_schedule(version=VERSION)
+    fetch_mod.assert_fresh(page.stated_today, run_today or dt.datetime.now(dt.timezone.utc).date())
+
+    rows = parse_mod.parse_schedule_table(page.html)
+    water_options = parse_mod.parse_select_options(page.html, "Params_StockingWaterID")
+    county_options = parse_mod.parse_select_options(page.html, "Params_Counties")
+    region_county_options = parse_mod.parse_select_options(page.html, "RegionCountyMappings")
+
+    alias_table = aliases_mod.AliasTable.load(aliases_path)
+    observed_names = [(r.cdfw_stock_id, r.water_name) for r in rows]
+    match_report = aliases_mod.apply_all(alias_table, observed_names)
+    match_report.print_report()
+
+    existing_history = history_mod.HistoryStore.load(history_path)
+
+    parsed_rows_by_key: dict[history_mod.RecordKey, tuple] = {}
+    observed_keys: set[history_mod.RecordKey] = set()
+    for r in rows:
+        key = (r.cdfw_stock_id, r.week_start.isoformat(), r.species)
+        parsed_rows_by_key[key] = (r.cdfw_stock_id, r.week_start, r.week_end, r.species)
+        observed_keys.add(key)
+
+    merged_records = history_mod.merge_observations(
+        existing_history.records,
+        observed_keys,
+        parsed_rows_by_key,
+        page_window_start=page.stated_period_start,
+        page_window_end=page.stated_period_end,
+        fetched_at=page.fetched_at,
+    )
+    new_history = history_mod.HistoryStore(records=merged_records)
+    new_history.save(history_path)  # raises HistoryIntegrityError; nothing written on failure
+    alias_table.save(aliases_path)
+
+    generated_at = dt.datetime.now(dt.timezone.utc)
+    snap = snapshot_mod.build_snapshot(
+        page=page,
+        rows=rows,
+        history=new_history,
+        aliases=alias_table,
+        generated_at=generated_at,
+        names_matched=match_report.names_matched,
+        names_seen=match_report.names_seen,
+        counties_options=county_options,
+        region_county_options=region_county_options,
+        waters_known=len(water_options),
+    )
+    snapshot_mod.validate_snapshot(snap, schema_path)
+
+    if write_site:
+        site_out.mkdir(parents=True, exist_ok=True)
+        snap_dir = site_out / "snapshot"
+        snap_dir.mkdir(parents=True, exist_ok=True)
+        (snap_dir / "v1.json").write_text(
+            json.dumps(snap, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+        site_mod.build_site(snap, site_out, base_url=base_url)
+
+    coverage = snapshot_mod.Coverage(**snap["coverage"])
+    coverage.print_report()
+    return snap
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="cfpa", description=__doc__)
+    parser.add_argument(
+        "--fixture",
+        help="path to a saved schedule HTML page, instead of a live fetch (offline/dry-run/CI)",
+    )
+    parser.add_argument(
+        "--fixture-fetched-at",
+        type=lambda s: dt.datetime.fromisoformat(s.replace("Z", "+00:00")),
+        default=None,
+        help="the real UTC timestamp --fixture was originally fetched at (ISO 8601), "
+        "for accurate provenance when seeding history from an already-fetched page; "
+        "defaults to now",
+    )
+    parser.add_argument("--history", type=Path, default=DEFAULT_HISTORY_PATH)
+    parser.add_argument("--aliases", type=Path, default=DEFAULT_ALIASES_PATH)
+    parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA_PATH)
+    parser.add_argument("--site-out", type=Path, default=DEFAULT_SITE_OUT)
+    parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
+    parser.add_argument("--no-site", action="store_true", help="skip site generation (schema/history only)")
+    parser.add_argument(
+        "--run-today",
+        type=dt.date.fromisoformat,
+        default=None,
+        help="override 'today' for the freshness check (ISO date) -- for --fixture "
+        "reprocessing/backfill and deterministic tests only; a live fetch should "
+        "not normally need this",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        run(
+            fixture_path=args.fixture,
+            history_path=args.history,
+            aliases_path=args.aliases,
+            schema_path=args.schema,
+            site_out=args.site_out,
+            base_url=args.base_url,
+            write_site=not args.no_site,
+            run_today=args.run_today,
+            fixture_fetched_at=args.fixture_fetched_at,
+        )
+    except (
+        fetch_mod.FetchError,
+        fetch_mod.StalePageError,
+        fetch_mod.RobotsDisallowedError,
+        parse_mod.ParseError,
+        history_mod.HistoryIntegrityError,
+    ) as exc:
+        print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

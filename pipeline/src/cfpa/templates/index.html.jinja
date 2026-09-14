@@ -1,0 +1,47 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>This week's trout planting schedule: {{ source_week_label }}</h1>
+<p class="lede">
+  California Department of Fish and Wildlife scheduled these waters for
+  planting the {{ source_week_label }}. Plants are <strong>subject to
+  change</strong> by CDFW &mdash; treat every entry as scheduled, not
+  confirmed. Data refreshed {{ generated_at_label }}.
+</p>
+
+{% if regions %}
+{% for region in regions %}
+<section aria-labelledby="region-{{ region.code }}">
+  <h2 id="region-{{ region.code }}">{{ region.name }}</h2>
+  <table>
+    <caption class="visually-hidden">Waters scheduled for planting in {{ region.name }} for the {{ source_week_label }}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Water</th>
+        <th scope="col">County</th>
+        <th scope="col">Species</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in region.rows %}
+      <tr>
+        <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+        <td>{{ row.counties }}</td>
+        <td>{{ row.species }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endfor %}
+{% else %}
+<p>No plants are listed for the {{ source_week_label }} on CDFW's schedule. This is CDFW's own page saying so &mdash; not a failed or stale fetch, which this site refuses to publish (see <a href="{{ root }}about/">about &amp; attribution</a>).</p>
+{% endif %}
+
+<h2>Browse by water</h2>
+<p><a href="{{ root }}about/#app">Get the iOS app</a> for local notifications when a favourite water appears in the new week &mdash; no account, no server, alerts happen on your device.</p>
+<ul class="water-index">
+  {% for w in all_waters %}
+  <li><a href="{{ root }}water/{{ w.slug }}/">{{ w.name }}</a> <span class="muted">({{ w.county }})</span></li>
+  {% endfor %}
+</ul>
+{% endblock %}

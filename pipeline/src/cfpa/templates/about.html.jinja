@@ -1,0 +1,88 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>About, attribution &amp; privacy</h1>
+
+<h2>What this is</h2>
+<p>
+  A free, static mirror of the California Department of Fish and Wildlife's
+  weekly trout (and occasional catfish) planting schedule, organised by
+  water, with the full planting history this site has observed &mdash; CDFW's
+  own page only ever shows a rolling window, so this is the only place
+  keeping every week.
+</p>
+
+<h2>Privacy: literally nothing is collected</h2>
+<p>This is a plain static site. Specifically:</p>
+<ul>
+  <li>No cookies are set by this site.</li>
+  <li>No JavaScript runs on this site, at all &mdash; there is nothing to run
+      analytics, tracking, or a "third-party script" with.</li>
+  <li>No request made by a page on this site contacts any server other than
+      the one serving the page itself. Nothing you do here leaves your
+      browser.</li>
+  <li>No account, no email address, no sign-up, anywhere on this site.</li>
+  <li>Calendar subscriptions (.ics) are plain files; your calendar app
+      fetches them directly from this site on whatever schedule it chooses.
+      This site does not know who has subscribed.</li>
+</ul>
+<p>
+  Standard web server logs (IP address, requested path, timestamp) are kept
+  by GitHub Pages, which hosts this site &mdash; see GitHub's own
+  <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">privacy
+  statement</a>. This site does not add any collection on top of that.
+</p>
+
+<h2 id="app">The iOS app</h2>
+<p>
+  A companion iOS app lets you favourite specific waters and get a local
+  notification when a favourite appears in a new week's schedule. The
+  notification is generated on your device from a snapshot the app
+  downloads periodically in the background &mdash; there is no push
+  service, no account, and no server that knows which waters you favourited.
+  It is a one-time paid purchase, not a subscription. The schedule updates
+  weekly, so alerts arrive on CDFW's schedule, not instantly.
+</p>
+
+<h2>Data, licence &amp; attribution</h2>
+<p>{{ attribution_text }}</p>
+<p>{{ licence_summary }}</p>
+<table>
+  <caption class="visually-hidden">Sources this site is built from, with licence terms</caption>
+  <thead>
+    <tr>
+      <th scope="col">Source</th>
+      <th scope="col">Terms read on</th>
+      <th scope="col">Commercial reuse</th>
+      <th scope="col">Attribution required</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in licence_sources %}
+    <tr>
+      <td><a href="{{ s.url }}">{{ s.name }}</a></td>
+      <td>{{ s.terms_read_on }}</td>
+      <td>{{ s.commercial_reuse }}</td>
+      <td>{{ "yes" if s.attribution_required else "no" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Accuracy</h2>
+<p>
+  CDFW: "all fish plants are subject to change depending on road, water,
+  weather and operational conditions." Every date on this site is a
+  <strong>week</strong>, never a day &mdash; CDFW does not publish a more
+  specific date, on purpose ("to avoid focusing excess fishing activity
+  immediately after a plant"). Nothing on this site should be read as
+  confirmation that a plant happened.
+</p>
+
+<h2>Source</h2>
+<p>
+  Generated {{ generated_at_label }} from
+  <a href="{{ attribution_url }}">CDFW's Fish Planting Schedule</a>, fetched
+  {{ source_fetched_label }}. Machine-readable snapshot:
+  <a href="{{ root }}snapshot/v1.json">{{ root }}snapshot/v1.json</a>.
+</p>
+{% endblock %}

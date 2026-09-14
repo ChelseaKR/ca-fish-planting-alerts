@@ -1,0 +1,52 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<p><a href="{{ root }}">&larr; This week, statewide</a></p>
+<h1>{{ water.name }} trout stocking schedule and history</h1>
+<p class="lede">
+  {{ water.name }} ({{ water.counties }}) is stocked by the California
+  Department of Fish and Wildlife.
+  {% if water.last_listed_label %}
+  {{ water.name }} was last scheduled for planting the {{ water.last_listed_label }}.
+  {% else %}
+  No planting has been scheduled for {{ water.name }} in the period this site has observed.
+  {% endif %}
+</p>
+
+<p>
+  <a href="feed.ics">Subscribe to {{ water.name }}'s planting calendar (.ics)</a>
+  &middot; <a href="{{ root }}about/#app">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
+</p>
+
+<h2>Planting history</h2>
+{% if water.plants %}
+<table>
+  <caption class="visually-hidden">Every week CDFW has scheduled a plant at {{ water.name }}, most recent first</caption>
+  <thead>
+    <tr>
+      <th scope="col">Week</th>
+      <th scope="col">Species</th>
+      <th scope="col">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in water.plants %}
+    <tr>
+      <td>{{ p.label }}</td>
+      <td>{{ p.species }}</td>
+      <td>{{ p.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No plants observed yet for {{ water.name }}.</p>
+{% endif %}
+
+<h2>About this water</h2>
+<dl>
+  <dt>Counties</dt><dd>{{ water.counties }}</dd>
+  <dt>CDFW region</dt><dd>{{ water.region_name }}</dd>
+  <dt>CDFW water map</dt><dd><a href="{{ water.cdfw_map_url }}">View {{ water.name }} on CDFW's map</a></dd>
+  {% if water.other_names %}<dt>Also listed by CDFW as</dt><dd>{{ water.other_names }}</dd>{% endif %}
+</dl>
+{% endblock %}

@@ -18,6 +18,7 @@
 		F5AB81A0DE71F0E1B4FD87B8 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A24082BEE264A5C795D13B3 /* AboutView.swift */; };
 		540436FB5EB64BDEEB9BDAFD /* snapshot.json in Resources */ = {isa = PBXBuildFile; fileRef = 8DA262DB11089DBA5942828D /* snapshot.json */; };
 		5B72DAFB9D304A6648D69606 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C661B6960753ACD2B6DC0E0E /* PrivacyInfo.xcprivacy */; };
+		DDC1AADCDBD52DBD3F0FFE27 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 99DFBE62E3062E0D4D4DAB8A /* Assets.xcassets */; };
 		73DB78A4B671398390946107 /* HostAllowlistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */; };
 		699F3EA3324CB23619BBF2E3 /* AppEnvironmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */; };
 		B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */; };
@@ -69,6 +70,7 @@
 		4A24082BEE264A5C795D13B3 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		8DA262DB11089DBA5942828D /* snapshot.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = snapshot.json; sourceTree = "<group>"; };
 		C661B6960753ACD2B6DC0E0E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		99DFBE62E3062E0D4D4DAB8A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E27B125909BC3802154036C7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAllowlistTests.swift; sourceTree = "<group>"; };
 		786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentTests.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 				8DA262DB11089DBA5942828D /* snapshot.json */,
 				C661B6960753ACD2B6DC0E0E /* PrivacyInfo.xcprivacy */,
 				E27B125909BC3802154036C7 /* Info.plist */,
+				99DFBE62E3062E0D4D4DAB8A /* Assets.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -299,6 +302,7 @@
 			files = (
 				540436FB5EB64BDEEB9BDAFD /* snapshot.json in Resources */,
 				5B72DAFB9D304A6648D69606 /* PrivacyInfo.xcprivacy in Resources */,
+				DDC1AADCDBD52DBD3F0FFE27 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,7 +478,7 @@
 		754064D2901B6752E802BA06 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6X5YH93QNM;
@@ -498,7 +502,7 @@
 		831F0B0E7AD0243B76867D45 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6X5YH93QNM;

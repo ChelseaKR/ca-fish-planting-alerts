@@ -51,6 +51,24 @@ jobs:
             echo "ios/PlantingCore isn't on this branch -- nothing to test here."
           fi
 
+      # PlantingCore declares zero third-party dependencies on purpose (see
+      # Package.swift), so there's no Package.resolved and no package
+      # downloads to skip. What this actually buys is SwiftPM's own .build
+      # dir -- compiled .o/.swiftmodule output -- so a run whose sources
+      # didn't change can link instead of recompile from empty. The key
+      # hashes both Package.swift and Package.resolved (the latter absent
+      # today) so it's already correct the day a dependency is added: a new
+      # or changed dependency changes the hash and forces a miss instead of
+      # silently reusing a build made against different package contents.
+      - name: cache swiftpm build
+        if: steps.present.outputs.present == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ios/PlantingCore/.build
+          key: spm-plantingcore-${{ runner.os }}-${{ hashFiles('ios/PlantingCore/Package.swift', 'ios/PlantingCore/Package.resolved') }}
+          restore-keys: |
+            spm-plantingcore-${{ runner.os }}-
+
       - name: swift test
         if: steps.present.outputs.present == 'true'
         working-directory: ios/PlantingCore

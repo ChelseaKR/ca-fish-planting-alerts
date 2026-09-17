@@ -1,0 +1,57 @@
+name: ci
+
+# Pull-request gate for the iOS lane: `swift test` on the ios/PlantingCore
+# Swift package (the app's Foundation-only data layer -- see its
+# Package.swift for why it's a dynamic library). Deliberately NOT
+# `xcodebuild`: building/testing the full CAFishPlanting app target (and its
+# UI tests) needs simulator provisioning and a signing/scheme setup this
+# repo hasn't proven out headlessly in CI yet, and a flaky xcodebuild lane is
+# worse than none. Revisit xcodebuild once the scheme is confirmed to build
+# headlessly on a runner. (Same call made in
+# queer-tv-guide/.github/workflows/ci.yml -- see its comment for the
+# original reasoning; this job mirrors that repo's "guidecore" job shape.)
+#
+# The pipeline's own pytest suite already has its own gate in test.yml, so
+# this workflow only carries the iOS lane. It checks whether ios/PlantingCore
+# is present before doing anything else, and no-ops (green, not skipped)
+# when it isn't. That guard is not hypothetical, just no longer live on
+# main: this workflow was written while pipeline/ (PR #1) and ios/
+# (PR #2) were still separate branches, each missing the other's directory
+# -- see git history for the two original PRs. Both are merged now, so
+# every PR off main carries both directories and this job runs for real;
+# the presence check stays as a cheap safeguard for any future branch that
+# again carries only one half of the tree.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-14
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: check this lane is present on this branch
+        id: present
+        run: |
+          if [ -f ios/PlantingCore/Package.swift ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "ios/PlantingCore isn't on this branch -- nothing to test here."
+          fi
+
+      - name: swift test
+        if: steps.present.outputs.present == 'true'
+        working-directory: ios/PlantingCore
+        run: swift test

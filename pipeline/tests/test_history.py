@@ -110,3 +110,39 @@ def test_merge_observations_adds_a_new_listed_record():
     assert len(merged) == 1
     assert merged[0].status == "listed"
     assert merged[0].first_observed_at == merged[0].last_observed_at
+
+
+def test_merge_observations_relists_a_removed_plant_preserving_first_observed_at():
+    """removed -> listed again: a water that dropped off one run's page and
+    came back on a later run's page is news again (matches the iOS-side
+    AlertPlannerTests.testRemovedThenRelistedNotifiesAgain), but
+    first_observed_at is provenance -- the original sighting date -- and must
+    survive the removal untouched."""
+    key = (1, "2026-09-13", "Trout")
+    original_first_observed = dt.datetime(2026, 9, 6, tzinfo=dt.timezone.utc)
+
+    removed = [
+        _rec(
+            stock_id=1,
+            week_start="2026-09-13",
+            status="removed",
+            first="2026-09-06T00:00:00Z",
+            last="2026-09-20T00:00:00Z",
+        )
+    ]
+    assert removed[0].first_observed_at == original_first_observed
+
+    relisted_at = dt.datetime(2026, 9, 27, tzinfo=dt.timezone.utc)
+    merged = history.merge_observations(
+        removed,
+        observed_this_run={key},
+        parsed_rows={key: (1, dt.date(2026, 9, 13), dt.date(2026, 9, 19), "Trout")},
+        page_window_start=dt.date(2025, 9, 13),
+        page_window_end=dt.date(2026, 9, 27),
+        fetched_at=relisted_at,
+    )
+
+    assert len(merged) == 1
+    assert merged[0].status == "listed"
+    assert merged[0].first_observed_at == original_first_observed
+    assert merged[0].last_observed_at == relisted_at

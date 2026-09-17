@@ -64,7 +64,19 @@ struct WaterDetailView: View {
                 }
                 .accessibilityLabel(isFavourite ? "Remove \(water.name) from favourites" : "Add \(water.name) to favourites")
             }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                ShareLink(item: shareText, subject: Text(water.name)) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+                .accessibilityLabel("Share \(water.name)")
+            }
         }
+    }
+
+    /// The real, grounded share message — see `ShareContent` in
+    /// `PlantingCore` for what it does and doesn't claim.
+    private var shareText: String {
+        ShareContent.message(for: water, siteURL: SnapshotEndpoint.siteWaterURL(slug: water.slug))
     }
 
     @ViewBuilder

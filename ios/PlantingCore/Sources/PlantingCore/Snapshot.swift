@@ -208,6 +208,20 @@ public struct Water: Equatable, Sendable, Identifiable {
         return seen
     }
 
+    /// Distinct species actually listed in `lastListedWeek`, in the order
+    /// first observed. Empty when `lastListedWeek` is `nil` (nothing has
+    /// ever been listed for a non-future week) — never a guess, and never
+    /// falls back to `speciesSeen`, which can include species from other
+    /// weeks or from `removed` plants that never happened.
+    public var lastListedSpecies: [String] {
+        guard let lastListedWeek else { return [] }
+        var seen: [String] = []
+        for plant in plants where plant.week == lastListedWeek && plant.status == .listed {
+            if !seen.contains(plant.species) { seen.append(plant.species) }
+        }
+        return seen
+    }
+
     public var years: [Int] { Array(Set(plants.map { $0.week.start.year })).sorted(by: >) }
 
     public var countyLabel: String {

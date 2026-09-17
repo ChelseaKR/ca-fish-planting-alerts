@@ -1,8 +1,21 @@
 # App Store listing (draft) and TestFlight path
 
-Status: draft, unsubmitted. This session has `xcodebuild` and simulator
-access only — no App Store Connect access — and submits nothing (per the
-task boundary). Everything below is prepared for Chelsea to execute.
+Status: draft, unsubmitted. This session (like the one that wrote the
+original draft below) has `xcodebuild` and simulator access only — no
+App Store Connect access, no Apple Developer portal access, and no
+interactive Apple ID sign-in — and submits and registers nothing (per
+the task boundary). Everything below is prepared for Chelsea to execute.
+
+**2026-09-14 follow-up pass.** Re-verified against `origin/main` after
+PR #1 (pipeline/site) and PR #2 (iOS app) merged: the app icon gap this
+doc originally flagged is closed (`0be59fd`, before this pass started —
+see "App icon" under Known gaps), `xcodebuild ... -destination
+'generic/platform=iOS Simulator' build` still succeeds clean (zero
+warnings) from a fresh worktree, and `swift test` in `ios/PlantingCore`
+still passes 38/38, and a universal-links/`.well-known` section and a
+screenshots plan are added below since the task that produced this doc
+didn't cover either. Nothing else in the listing draft, review-clause
+analysis, or owner steps needed correction.
 
 ## Listing draft
 
@@ -94,6 +107,79 @@ the app.
   submission; if it changes, that is an owner decision under 0003, not an
   `ios/` code change.
 
+## Universal links / `.well-known` — not needed, and none is present
+
+Checked (2026-09-14): there is no `ios/CAFishPlanting.xcodeproj` entitlements
+file at all (`git ls-tree -r origin/main -- ios/ | grep -i entitlement` is
+empty), no `Associated Domains` capability, and no `.well-known/`
+directory anywhere in this repo (`site/` included). That's correct, not
+missing:
+
+- The app has exactly one outbound web link pattern — `Link` views to
+  `water.cdfwMapURL` (CDFW's own page) and, when the snapshot supplies
+  one, `SnapshotEndpoint.siteWaterURL(slug:)` (this repo's own static
+  site) — both opened in the system browser via a plain `URL`, not a
+  custom scheme or a universal link. Tapping either never needs to route
+  back *into* the app.
+- Nothing in `site/` links to `cafishplanting://` or any
+  `applinks:`-style URL that would need an `apple-app-site-association`
+  file to resolve into the app. The site and the app are two independent
+  surfaces (DECISIONS 0001: "the site is the discovery surface... the
+  app is the product") that share a data snapshot, not a navigation path.
+- Every alert is a local notification (`NotificationScheduler.swift`)
+  scheduled by `BGAppRefreshTask`; tapping one opens the app directly
+  through the standard `UNUserNotificationCenter` delegate, which needs
+  no associated domain either.
+
+Conclusion: this is a fully standalone, notification-only app. Add
+`Associated Domains` and an `apple-app-site-association` file only if a
+future decision makes the site deep-link into specific app screens
+(e.g. "Add to Favourites" from a site water page) — there's no such
+feature today, so building the infrastructure now would be unused
+surface area with its own review and hosting requirements.
+
+## Screenshots plan
+
+Not yet captured. App Store Connect requires at least one 6.9" (or
+6.5"/6.7") iPhone screenshot set before a listing can be submitted, even
+for TestFlight-only builds heading toward review. Capture from a real
+simulator run against the bundled snapshot — `ios/README.md` confirms
+`CAFishPlanting/Resources/snapshot.json` is real CDFW pipeline output
+(385 waters, real "week of 2026-09-13" data), not a hand-built fixture —
+so no seeding or synthetic data is needed first; just favourite a couple
+of real waters that actually appear in the current snapshot before
+shooting.
+
+Suggested order (matches the description draft's own emphasis and the
+4.2 rebuttal above, which leans on the history view being the
+substance):
+
+1. **Waters / Browse** (`BrowseView`) — the region picker and the "this
+   week" freshness row visible, ideally with the search bar showing a
+   real county or water name. Establishes the full catalogue and the
+   weekly-cadence framing from screenshot one.
+2. **Water detail — stocking history** (`WaterDetailView`) — a water
+   with a real, non-trivial history (more than one or two rows), the
+   "Species seen" line populated, and the CDFW/site links visible. This
+   is the single most important screenshot for the 4.2 argument: it's
+   the thing CDFW's own page doesn't show.
+3. **Favourites** (`FavoritesView`) — at least two favourited waters, one
+   of which ideally appears in `thisWeek` so the "new this week" state is
+   visible, not an empty-favourites placeholder.
+4. **About / privacy** (`AboutView`) — the "Privacy" and "How alerts
+   work" sections, both fully visible in one frame. Doubles as evidence
+   for the "Data Not Collected" privacy label and the 2.5.4 background-
+   modes explanation — a reviewer or a sceptical user can see the claim
+   and the UI agree.
+
+Avoid: any screen captured mid-load (`SnapshotUnavailableView`'s "No
+stocking schedule is available yet." state), the search field showing a
+query with zero results, or a freshly-installed/no-favourites state for
+anything other than screenshot one if a "getting started" shot is
+wanted separately. None of those represent what a real user sees after
+using the app for a week, and a reviewer comparing the screenshots to a
+fresh install will notice if the "history" screenshot shows one row.
+
 ## Owner steps to a TestFlight build
 
 Commands, run from `ios/`, in order. Each `xcodebuild archive`/`gh` step
@@ -111,22 +197,23 @@ cd ios
 xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
   -destination 'platform=iOS Simulator,name=iPhone 17' clean build test
 
-# 3. Add a real app icon (this repo ships none — see "Known gaps" below).
-#    Xcode: CAFishPlanting/Resources — add an Assets.xcassets with an
-#    AppIcon set, then set ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
-#    in the CAFishPlanting target's build settings (currently empty string
-#    in project.pbxproj, deliberately, so a build never silently ships a
-#    placeholder icon it doesn't have).
-
-# 4. Sign in to Xcode with the Apple ID for Team 6X5YH93QNM
+# 3. Sign in to Xcode with the Apple ID for Team 6X5YH93QNM
 #    (Xcode > Settings > Accounts) — interactive, cannot be scripted here.
+#    project.pbxproj already sets DEVELOPMENT_TEAM = 6X5YH93QNM and
+#    PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.cafishplanting with
+#    CODE_SIGN_STYLE = Automatic, so once this Apple ID is signed in,
+#    Xcode should register/reuse the App ID itself on the next archive —
+#    but that registration cannot be confirmed from this session (no
+#    Apple Developer portal access); verify it actually succeeded
+#    (Xcode > Settings > Accounts > [team] > "Manage Certificates", or
+#    the Signing & Capabilities tab showing no red error) before step 5.
 
-# 5. Archive for release.
+# 4. Archive for release.
 xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
   -configuration Release -destination 'generic/platform=iOS' \
   -archivePath build/CAFishPlanting.xcarchive archive
 
-# 6. Export an App Store-signed .ipa. Requires an ExportOptions.plist
+# 5. Export an App Store-signed .ipa. Requires an ExportOptions.plist
 #    (teamID 6X5YH93QNM, method app-store-connect) — not included in this
 #    repo; create it alongside build/ (it contains no secret, but keep it
 #    out of git since it's a local export artifact, not app source).
@@ -135,26 +222,33 @@ xcodebuild -exportArchive \
   -exportOptionsPlist build/ExportOptions.plist \
   -exportPath build/export
 
-# 7. Upload to App Store Connect (needs an app-specific password or API key
+# 6. Upload to App Store Connect (needs an app-specific password or API key
 #    Chelsea generates in App Store Connect — interactive/credentialed,
 #    not available to this session).
 xcrun altool --upload-app -f build/export/CAFishPlanting.ipa \
   -t ios -u "<APPLE_ID_EMAIL>" -p "<APP_SPECIFIC_PASSWORD>"
 
-# 8. In App Store Connect: create the app record (bundle id
+# 7. In App Store Connect: create the app record (bundle id
 #    com.chelseakr.cafishplanting), fill in the listing fields from the
 #    table above, complete the privacy questionnaire as "Data Not
-#    Collected" for every category, attach the build from step 7 to a
-#    TestFlight group, and submit for TestFlight review (a lighter review
-#    than full App Store review, but still Apple's, not this session's).
+#    Collected" for every category, attach the build from step 6 to a
+#    TestFlight group, upload the screenshots plan's captures, and submit
+#    for TestFlight review (a lighter review than full App Store review,
+#    but still Apple's, not this session's).
 ```
 
 ## Known gaps to close before any of the above
 
-1. **No app icon** — `ASSETCATALOG_COMPILER_APPICON_NAME` is deliberately
-   empty in the project so a Debug/simulator build never ships a fake
-   placeholder; a real 1024×1024 icon is an owner asset (design or
-   commission it), step 3 above.
+1. ~~No app icon~~ **Closed 2026-09-14** (was open when this doc was
+   first drafted). `0be59fd` wired a full `AppIcon.appiconset` (all
+   required iPhone sizes plus the 1024×1024 marketing image) and set
+   `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` in `project.pbxproj`.
+   It's a real, presentable vector-style icon (a golden trout over
+   rippling water on a green gradient) — but per the task boundary that
+   produced it, it's a **placeholder graphic**, not commissioned final
+   art; confirm it's the icon Chelsea wants to ship before archiving, or
+   swap `icon-*.png`/`icon-1024.png` in the same asset set for a final
+   version (no build-setting changes needed either way).
 2. **No purchase mechanism** — DECISIONS 0003 says "paid up front, no
    StoreKit," meaning App Store Connect's own price tier is the gate;
    confirm that is still how Apple prices non-subscription paid apps
@@ -164,3 +258,21 @@ xcrun altool --upload-app -f build/export/CAFishPlanting.ipa \
    field above is a placeholder; `CFBundleDisplayName` ("CA Fish
    Planting") is the one place a working name appears in `ios/` and is
    safe to change without touching logic.
+4. **App ID registration status unverified.** `project.pbxproj` already
+   declares `DEVELOPMENT_TEAM = 6X5YH93QNM` (the same Apple Developer
+   Program team as family-greenhouse) and
+   `PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.cafishplanting` with
+   `CODE_SIGN_STYLE = Automatic` — so the *project* already knows which
+   team and bundle ID to use. Whether that specific App ID
+   (`com.chelseakr.cafishplanting`) is actually registered under that
+   team in the Apple Developer portal cannot be checked from this
+   session (no portal access, no interactive Apple ID sign-in — see the
+   task boundary at the top of this doc). With Automatic signing, Xcode
+   normally registers a new App ID itself the first time it archives or
+   builds for a real device once Chelsea is signed in, so this is likely
+   a non-issue — but it's unverified, not confirmed, and is the one
+   step in "Owner steps" (step 3) worth watching for a signing error
+   rather than assuming success.
+5. **No screenshots captured yet** — see "Screenshots plan" above; none
+   of the required App Store Connect image sizes exist in this repo or
+   elsewhere in this session's outputs.

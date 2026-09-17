@@ -128,3 +128,23 @@ def test_parse_select_options_missing_id_raises():
     html = FRESH.read_text(encoding="utf-8")
     with pytest.raises(parse.ParseError):
         parse.parse_select_options(html, "Params_DoesNotExist")
+
+
+def test_parse_select_options_zero_options_raises_not_silently_empty():
+    """A <select> that survives but loses all its <option>s (e.g. a markup
+    drift that breaks the attribute regex) must fail loudly -- these are
+    static reference catalogs (waters, counties), never legitimately empty.
+    Silently returning [] would publish a wrong-but-plausible number like
+    "waters_known": 0 instead of refusing the run."""
+    html = FRESH.read_text(encoding="utf-8")
+    import re as _re
+
+    drifted, n = _re.subn(
+        r'(?s)(<select[^>]*id="Params_StockingWaterID"[^>]*>).*?(</select>)',
+        r"\1\2",
+        html,
+        count=1,
+    )
+    assert n == 1, "test setup: expected to find exactly one matching <select>"
+    with pytest.raises(parse.ParseError, match="zero non-blank"):
+        parse.parse_select_options(drifted, "Params_StockingWaterID")

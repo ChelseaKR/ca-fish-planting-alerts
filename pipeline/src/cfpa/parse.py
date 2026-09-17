@@ -160,11 +160,31 @@ class SelectOption:
 
 def parse_select_options(html_doc: str, select_id: str) -> list[SelectOption]:
     """Parse a <select id="..."> element's <option>s (used for coverage: how
-    many waters CDFW's own picker knows about, region and county lists)."""
+    many waters CDFW's own picker knows about, region and county lists).
+
+    These are static reference catalogs (every CA county, every water CDFW
+    tracks), not week-dependent data -- unlike a schedule week, there is no
+    legitimate reason for one to come back with zero real options. A
+    well-formed <select> with zero non-blank <option>s is therefore treated
+    the same as a missing <select>: a signal the markup drifted (attribute
+    quoting, added wrapper markup), not a real empty catalog. Silently
+    passing an empty list through here would surface as a quietly-wrong
+    published number (e.g. "waters_known": 0) rather than a refused run --
+    only ``counties`` happens to be caught downstream today, by the schema's
+    ``minItems: 58``; the water-picker and region-mapping selects have no
+    such backstop.
+    """
     sel_m = re.search(
         rf'(?s)<select[^>]*id="{re.escape(select_id)}"[^>]*>(.*?)</select>', html_doc
     )
     if not sel_m:
         raise ParseError(f"no <select id=\"{select_id}\"> found in the page")
     opts = re.findall(r'<option[^>]*value="([^"]*)"[^>]*>\s*([^<]*?)\s*</option>', sel_m.group(1))
-    return [SelectOption(value=v, label=html.unescape(lbl)) for v, lbl in opts if v]
+    options = [SelectOption(value=v, label=html.unescape(lbl)) for v, lbl in opts if v]
+    if not options:
+        raise ParseError(
+            f'<select id="{select_id}"> was found but has zero non-blank <option>s -- '
+            "refusing to treat a reference catalog as empty; this is a parse/format "
+            "problem, not a real empty list"
+        )
+    return options

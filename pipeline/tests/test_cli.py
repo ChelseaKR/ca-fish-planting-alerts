@@ -14,6 +14,7 @@ def _kwargs(tmp_path: Path) -> dict:
         fixture_path=str(FRESH),
         history_path=tmp_path / "history.json",
         aliases_path=tmp_path / "aliases.json",
+        species_aliases_path=tmp_path / "species_aliases.json",
         schema_path=SCHEMA_PATH,
         site_out=tmp_path / "site",
         base_url="https://example.invalid/ca-fish-planting-alerts",
@@ -54,6 +55,57 @@ def test_aliases_file_is_committed_shape(tmp_path: Path):
     assert data["waters"]
     ids = [w["cdfw_stock_id"] for w in data["waters"]]
     assert ids == sorted(ids)  # deterministic, diff-friendly ordering
+
+
+def test_species_alias_normalizes_an_inconsistent_spelling_end_to_end(tmp_path: Path):
+    """The scenario this whole layer exists for: CDFW spells one row's
+    species inconsistently ('Trout (Rainbow)' instead of 'Trout'). With a
+    curated species_aliases.json entry, that row must fold into the same
+    history/species identity as every other 'Trout' row -- not fork into a
+    spurious second species."""
+    variant_html = FRESH.read_text(encoding="utf-8").replace(
+        "<td>\n                            Trout\n                        </td>",
+        "<td>\n                            Trout (Rainbow)\n                        </td>",
+        1,  # exactly one row gets the inconsistent spelling
+    )
+    variant_fixture = tmp_path / "schedule-variant-spelling.html"
+    variant_fixture.write_text(variant_html, encoding="utf-8")
+
+    species_aliases_path = tmp_path / "species_aliases.json"
+    species_aliases_path.write_text(
+        json.dumps(
+            {
+                "schema": "cfpa-species-aliases-v1",
+                "species": [
+                    {
+                        "canonical_name": "Trout",
+                        "slug": "trout",
+                        "aliases": ["Trout", "Trout (Rainbow)"],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    kwargs = _kwargs(tmp_path)
+    kwargs["fixture_path"] = str(variant_fixture)
+    kwargs["species_aliases_path"] = species_aliases_path
+    snap = cli.run(**kwargs)
+
+    # the inconsistent spelling normalized away -- only the two real species
+    # remain, no spurious "Trout (Rainbow)" category
+    assert snap["species"] == ["Catfish", "Trout"]
+    history = json.loads((tmp_path / "history.json").read_text())
+    species_in_history = {p["species"] for p in history["plants"]}
+    assert species_in_history == {"Catfish", "Trout"}
+
+
+def test_species_without_curated_alias_passes_through_unchanged(tmp_path: Path):
+    """No curated species_aliases.json entry exists for real data today --
+    confirm the default (empty) table changes nothing about a normal run."""
+    snap = cli.run(**_kwargs(tmp_path))
+    assert snap["species"] == ["Catfish", "Trout"]
 
 
 def test_main_cli_exits_nonzero_and_prints_reason_on_stale_fixture(tmp_path: Path, capsys):

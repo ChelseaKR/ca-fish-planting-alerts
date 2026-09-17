@@ -16,11 +16,13 @@ from pathlib import Path
 
 from . import VERSION, aliases as aliases_mod, fetch as fetch_mod, history as history_mod
 from . import parse as parse_mod, site as site_mod, snapshot as snapshot_mod
+from . import species_aliases as species_aliases_mod
 
 PIPELINE_DIR = Path(__file__).resolve().parents[2]
 REPO_ROOT = PIPELINE_DIR.parent
 DEFAULT_HISTORY_PATH = PIPELINE_DIR / "data" / "history.json"
 DEFAULT_ALIASES_PATH = PIPELINE_DIR / "data" / "aliases.json"
+DEFAULT_SPECIES_ALIASES_PATH = PIPELINE_DIR / "data" / "species_aliases.json"
 DEFAULT_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v1.json"
 DEFAULT_SITE_OUT = REPO_ROOT / "site"
 DEFAULT_BASE_URL = "https://chelseakr.github.io/ca-fish-planting-alerts"
@@ -35,6 +37,7 @@ def run(
     fixture_path: str | None,
     history_path: Path,
     aliases_path: Path,
+    species_aliases_path: Path = DEFAULT_SPECIES_ALIASES_PATH,
     schema_path: Path,
     site_out: Path,
     base_url: str,
@@ -69,13 +72,20 @@ def run(
     match_report = aliases_mod.apply_all(alias_table, observed_names)
     match_report.print_report()
 
+    species_alias_table = species_aliases_mod.SpeciesAliasTable.load(species_aliases_path)
+
     existing_history = history_mod.HistoryStore.load(history_path)
 
+    # Species text is normalized *before* it becomes part of a history
+    # record's identity (see species_aliases.py's module docstring): a
+    # future inconsistent CDFW spelling must not fork one species into two
+    # separate (and separately removed/relisted) history keys.
     parsed_rows_by_key: dict[history_mod.RecordKey, tuple] = {}
     observed_keys: set[history_mod.RecordKey] = set()
     for r in rows:
-        key = (r.cdfw_stock_id, r.week_start.isoformat(), r.species)
-        parsed_rows_by_key[key] = (r.cdfw_stock_id, r.week_start, r.week_end, r.species)
+        species = species_alias_table.normalize(r.species)
+        key = (r.cdfw_stock_id, r.week_start.isoformat(), species)
+        parsed_rows_by_key[key] = (r.cdfw_stock_id, r.week_start, r.week_end, species)
         observed_keys.add(key)
 
     merged_records = history_mod.merge_observations(
@@ -135,6 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--history", type=Path, default=DEFAULT_HISTORY_PATH)
     parser.add_argument("--aliases", type=Path, default=DEFAULT_ALIASES_PATH)
+    parser.add_argument("--species-aliases", type=Path, default=DEFAULT_SPECIES_ALIASES_PATH)
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA_PATH)
     parser.add_argument("--site-out", type=Path, default=DEFAULT_SITE_OUT)
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
@@ -154,6 +165,7 @@ def main(argv: list[str] | None = None) -> int:
             fixture_path=args.fixture,
             history_path=args.history,
             aliases_path=args.aliases,
+            species_aliases_path=args.species_aliases,
             schema_path=args.schema,
             site_out=args.site_out,
             base_url=args.base_url,

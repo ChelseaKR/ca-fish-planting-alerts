@@ -88,4 +88,39 @@ final class PersistenceTests: XCTestCase {
         let layout = AppStorageLayout(directory: tempDir)
         XCTAssertThrowsError(try SnapshotStore(layout: layout, bundledSnapshotURL: nil))
     }
+
+    func testEntitlementDefaultsToNotPurchasedWithNoFile() throws {
+        let layout = AppStorageLayout(directory: tempDir)
+        let store = EntitlementStore(layout: layout)
+        XCTAssertEqual(store.load(), PurchaseEntitlement(isPurchased: false))
+    }
+
+    func testEntitlementRoundTripsThroughDisk() throws {
+        let layout = AppStorageLayout(directory: tempDir)
+        let store = EntitlementStore(layout: layout)
+        try store.save(PurchaseEntitlement(isPurchased: true))
+        XCTAssertEqual(store.load(), PurchaseEntitlement(isPurchased: true))
+    }
+
+    func testEntitlementCorruptFileReadsAsNotPurchasedNotCrash() throws {
+        let layout = AppStorageLayout(directory: tempDir)
+        try "not json at all {{{".write(to: layout.entitlementFile, atomically: true, encoding: .utf8)
+        let store = EntitlementStore(layout: layout)
+        XCTAssertEqual(store.load(), PurchaseEntitlement(isPurchased: false), "a corrupt entitlement file must fail toward locked, never toward a free unlock")
+    }
+}
+
+final class FreeTierTests: XCTestCase {
+    func testEntitledHasNoLimit() {
+        XCTAssertTrue(FreeTier.canAddFavourite(currentCount: FreeTier.maxFavourites, isEntitled: true))
+        XCTAssertTrue(FreeTier.canAddFavourite(currentCount: 999, isEntitled: true))
+    }
+
+    func testNonPurchaserIsCappedAtMaxFavourites() {
+        for count in 0..<FreeTier.maxFavourites {
+            XCTAssertTrue(FreeTier.canAddFavourite(currentCount: count, isEntitled: false), "count \(count) should still be under the cap")
+        }
+        XCTAssertFalse(FreeTier.canAddFavourite(currentCount: FreeTier.maxFavourites, isEntitled: false))
+        XCTAssertFalse(FreeTier.canAddFavourite(currentCount: FreeTier.maxFavourites + 1, isEntitled: false))
+    }
 }

@@ -16,11 +16,14 @@
 		35B24F0B9AF01AF261F753E3 /* WaterDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B31EB45EC95630DFC10927 /* WaterDetailView.swift */; };
 		D8EEA5FF73C12181DB1CAB1E /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B074D06A52CA7DB1A4E9CA /* FavoritesView.swift */; };
 		F5AB81A0DE71F0E1B4FD87B8 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A24082BEE264A5C795D13B3 /* AboutView.swift */; };
+		DE5C3AA9D0F26980149CF6C4 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63C8B0C2C2207D48119767B6 /* PurchaseManager.swift */; };
+		96B4E33690816BD0B916A793 /* PurchaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802BDDCC053F7ED0BA40CF83 /* PurchaseView.swift */; };
 		540436FB5EB64BDEEB9BDAFD /* snapshot.json in Resources */ = {isa = PBXBuildFile; fileRef = 8DA262DB11089DBA5942828D /* snapshot.json */; };
 		5B72DAFB9D304A6648D69606 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C661B6960753ACD2B6DC0E0E /* PrivacyInfo.xcprivacy */; };
 		DDC1AADCDBD52DBD3F0FFE27 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 99DFBE62E3062E0D4D4DAB8A /* Assets.xcassets */; };
 		73DB78A4B671398390946107 /* HostAllowlistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */; };
 		699F3EA3324CB23619BBF2E3 /* AppEnvironmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */; };
+		CB8310E205828530BA5957F3 /* PurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1754B738174DFB550243642 /* PurchaseManagerTests.swift */; };
 		B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */; };
 		FF536AE84AB86CFCEFEFA610 /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3148F689D98979AD9E0825B9 /* PlantingCore */; };
 		0D461A4A948C50257AC59FAA /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3148F689D98979AD9E0825B9 /* PlantingCore */; };
@@ -68,12 +71,16 @@
 		48B31EB45EC95630DFC10927 /* WaterDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterDetailView.swift; sourceTree = "<group>"; };
 		C9B074D06A52CA7DB1A4E9CA /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		4A24082BEE264A5C795D13B3 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		63C8B0C2C2207D48119767B6 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
+		802BDDCC053F7ED0BA40CF83 /* PurchaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseView.swift; sourceTree = "<group>"; };
+		F1623476D8A83E2EDC723706 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		8DA262DB11089DBA5942828D /* snapshot.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = snapshot.json; sourceTree = "<group>"; };
 		C661B6960753ACD2B6DC0E0E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		99DFBE62E3062E0D4D4DAB8A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E27B125909BC3802154036C7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAllowlistTests.swift; sourceTree = "<group>"; };
 		786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentTests.swift; sourceTree = "<group>"; };
+		E1754B738174DFB550243642 /* PurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManagerTests.swift; sourceTree = "<group>"; };
 		157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokeUITests.swift; sourceTree = "<group>"; };
 		3054F6C342DF00206DE60541 /* CAFishPlanting.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CAFishPlanting.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27400D6F95DB03B111B5BD32 /* CAFishPlantingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CAFishPlantingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -133,6 +140,7 @@
 				432B3FF64A0248C2A7CB462B /* App */,
 				AD2968FBB0BEF9F1EF259FC0 /* Views */,
 				4B63DEE37A46A8897D5BC9A2 /* Resources */,
+				F1623476D8A83E2EDC723706 /* Configuration.storekit */,
 			);
 			path = CAFishPlanting;
 			sourceTree = "<group>";
@@ -144,6 +152,7 @@
 				FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */,
 				CE0EC688C496E26D7E3FAD77 /* NotificationScheduler.swift */,
 				210FC40A1E6193A5F430DFFD /* BackgroundRefresh.swift */,
+				63C8B0C2C2207D48119767B6 /* PurchaseManager.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -156,6 +165,7 @@
 				48B31EB45EC95630DFC10927 /* WaterDetailView.swift */,
 				C9B074D06A52CA7DB1A4E9CA /* FavoritesView.swift */,
 				4A24082BEE264A5C795D13B3 /* AboutView.swift */,
+				802BDDCC053F7ED0BA40CF83 /* PurchaseView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -176,6 +186,7 @@
 			children = (
 				3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */,
 				786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */,
+				E1754B738174DFB550243642 /* PurchaseManagerTests.swift */,
 			);
 			path = CAFishPlantingTests;
 			sourceTree = "<group>";
@@ -322,6 +333,8 @@
 				35B24F0B9AF01AF261F753E3 /* WaterDetailView.swift in Sources */,
 				D8EEA5FF73C12181DB1CAB1E /* FavoritesView.swift in Sources */,
 				F5AB81A0DE71F0E1B4FD87B8 /* AboutView.swift in Sources */,
+				DE5C3AA9D0F26980149CF6C4 /* PurchaseManager.swift in Sources */,
+				96B4E33690816BD0B916A793 /* PurchaseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,6 +344,7 @@
 			files = (
 				73DB78A4B671398390946107 /* HostAllowlistTests.swift in Sources */,
 				699F3EA3324CB23619BBF2E3 /* AppEnvironmentTests.swift in Sources */,
+				CB8310E205828530BA5957F3 /* PurchaseManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -61,6 +61,37 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertEqual(env.pendingNotificationExplainer?.water.id, water.id)
     }
 
+    /// The free tier (`FreeTier`, PlantingCore — a placeholder gate pending
+    /// a real free/paid decision) must actually hold for a non-purchaser: a
+    /// default `AppEnvironment()` has made no purchase, so this exercises
+    /// the real default path, not an injected fake.
+    func testFreeTierCapsNonPurchaserAtMaxFavouritesAndShowsPaywall() throws {
+        let env = AppEnvironment()
+        XCTAssertFalse(env.purchases.isEntitled, "sanity check: a fresh environment must not already be entitled")
+        let waters = try XCTUnwrap(env.snapshot?.waters)
+        XCTAssertGreaterThan(waters.count, FreeTier.maxFavourites, "fixture needs more waters than the cap for this test to mean anything")
+
+        for water in waters.prefix(FreeTier.maxFavourites) {
+            env.toggleFavourite(water)
+        }
+        XCTAssertEqual(env.favourites.count, FreeTier.maxFavourites)
+        XCTAssertNil(env.pendingPaywall, "must not show the paywall before the cap is reached")
+
+        let overCap = waters[FreeTier.maxFavourites]
+        env.toggleFavourite(overCap)
+
+        XCTAssertEqual(env.favourites.count, FreeTier.maxFavourites, "a non-purchaser must never exceed the free-tier cap")
+        XCTAssertFalse(env.isFavourite(overCap.id))
+        XCTAssertEqual(env.pendingPaywall?.water.id, overCap.id)
+
+        // Unfavouriting must still work at the cap, freeing a slot.
+        let firstFavourite = waters[0]
+        env.toggleFavourite(firstFavourite)
+        XCTAssertEqual(env.favourites.count, FreeTier.maxFavourites - 1)
+        env.dismissPaywall()
+        XCTAssertNil(env.pendingPaywall)
+    }
+
     func testBackgroundTaskIdentifierMatchesInfoPlistDeclaration() throws {
         let infoPlistURL = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent() // CAFishPlantingTests

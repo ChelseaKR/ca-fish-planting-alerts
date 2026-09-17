@@ -28,7 +28,7 @@ analysis, or owner steps needed correction.
 | Category (primary) | **Sports** | See justification below. |
 | Category (secondary) | Weather | The alert mechanism (scheduled, local, "check back") reads closer to a weather-alert app than a game/score app; Sports is still primary since the audience and the underlying activity (angling) are sport, not meteorology. |
 | Age rating | **4+** | No objectionable content categories apply (no UGC, no gambling, no mature themes, no web browser). Apple's questionnaire should be answered "None" throughout. |
-| Price | **$9.99, one-time purchase, no subscription** | `docs/DECISIONS.md` 0003: [moved to private strategy notes] No StoreKit is implemented in `ios/` yet (0003: "no StoreKit") — the owner steps below include adding an in-app purchase or paid-app-price flow before submission; this app currently has no purchase gate of any kind. |
+| Price | **Free to download; $9.99 one-time in-app purchase, no subscription** | `docs/DECISIONS.md` 0003/0007: the app itself is free (App Store Connect price tier "Free"); the $9.99 is the one-time non-consumable in-app purchase implemented in `ios/` (`PurchaseManager.swift`). See "In-App Purchase to create in App Store Connect" below for the exact product to configure. |
 | Privacy label | **Data Not Collected** | Matches `ios/CAFishPlanting/Resources/PrivacyInfo.xcprivacy` (`NSPrivacyCollectedDataTypes` is empty) and `docs/DECISIONS.md` 0002 ("posture: none"). Fill in the App Store Connect privacy questionnaire identically: every category "Data Not Collected." |
 
 ### Description draft
@@ -99,13 +99,56 @@ the app.
   review notes, since "why does a fish-schedule app run in the
   background" is a fair reviewer question and the honest answer (weekly
   source, local alerts, no server push) is also the selling point.
-- **3.1.1 / payment model.** DECISIONS 0003 chose a one-time paid-up-front
-  app with no StoreKit (i.e., the *app itself* is the paywall — Apple's
-  standard paid-app pricing, not an in-app purchase). This requires
-  **no StoreKit code** — App Store Connect's own price tier gates the
-  download. Confirm this reading against Apple's current guidelines before
-  submission; if it changes, that is an owner decision under 0003, not an
-  `ios/` code change.
+- **3.1.1 / payment model.** DECISIONS 0007 (superseding 0003's "no
+  StoreKit" line) implements the one-time purchase as a StoreKit 2
+  non-consumable in-app purchase — this *is* a real digital unlock inside
+  the app, so it correctly goes through Apple's in-app purchase system
+  rather than any external payment link (which 3.1.1 would reject). No
+  entitlements/capability toggle is needed in Xcode for non-consumable
+  IAP — unlike Push or HealthKit, it is available to every app by default.
+
+## In-App Purchase to create in App Store Connect
+
+The app ships free; `ios/CAFishPlanting/App/PurchaseManager.swift` looks up
+exactly one product. Nothing will load until this exists in App Store
+Connect with this exact identifier:
+
+| Field | Value |
+|---|---|
+| Type | **Non-Consumable** |
+| Product ID | `com.chelseakr.cafishplanting.fullaccess` — must match `PurchaseManager.productID` exactly, byte-for-byte |
+| Reference Name (internal, App Store Connect only) | `Full Access` |
+| Price tier | $9.99 (USD Tier matching $9.99; DECISIONS 0003/0007) |
+| Display Name (customer-facing) | `Full Access` |
+| Description (customer-facing) | `Unlocks favouriting as many waters as you like, with an alert for every one of them.` |
+| Cleared for sale | Yes, once the app record itself is created |
+| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView` — reachable from About > "Unlock full access", or automatically when favouriting past the free-tier cap) is required by App Store Connect for the IAP's own review |
+
+App-side, what it unlocks is currently a **placeholder** pending a real
+free/paid product decision: `PlantingCore/Sources/PlantingCore/FreeTier.swift`
+caps non-purchasers at `FreeTier.maxFavourites` (3) favourited waters;
+purchasing removes the cap. See DECISIONS 0007 for why this is a
+placeholder and not guessed-at real scope.
+
+### Local testing without an App Store Connect product
+
+`ios/CAFishPlanting/Configuration.storekit` is a local StoreKit testing
+configuration already carrying this exact product (same ID, $9.99, same
+description) — no App Store Connect access is needed to exercise the full
+purchase/restore/entitlement flow:
+
+- **Automated tests** (`ios/CAFishPlantingTests/PurchaseManagerTests.swift`)
+  drive it directly via `StoreKitTest.SKTestSession(contentsOf:)` — this is
+  what `xcodebuild test` already runs; see "Owner steps" step 2.
+- **Manual testing in Simulator**: the scheme (`CAFishPlanting.xcscheme`)
+  already references `Configuration.storekit` for both Run and Test, so
+  building and running the app in Xcode/Simulator gets a working local
+  App Store — purchase, cancel, and Manage StoreKit Transactions
+  (Xcode's Debug menu, while the app is running) are all live immediately,
+  no signing-in required.
+- This file is intentionally **not** part of the app's Resources/Copy
+  Bundle build phase — it must never ship inside the real app bundle;
+  Xcode reads it straight from the project during local development only.
 
 ## Universal links / `.well-known` — not needed, and none is present
 
@@ -192,7 +235,10 @@ Xcode and is outside this session's access.
 #    ios/CAFishPlanting.xcodeproj/project.pbxproj build settings.
 #    CFBundleDisplayName lives in ios/CAFishPlanting/Resources/Info.plist.
 
-# 2. Run the full local check one more time.
+# 2. Run the full local check one more time. This exercises the StoreKit
+#    purchase/restore/entitlement flow for real, against the local
+#    Configuration.storekit file — see "In-App Purchase to create in App
+#    Store Connect" below. No App Store Connect access needed for this step.
 cd ios
 xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
   -destination 'platform=iOS Simulator,name=iPhone 17' clean build test
@@ -229,12 +275,17 @@ xcrun altool --upload-app -f build/export/CAFishPlanting.ipa \
   -t ios -u "<APPLE_ID_EMAIL>" -p "<APP_SPECIFIC_PASSWORD>"
 
 # 7. In App Store Connect: create the app record (bundle id
-#    com.chelseakr.cafishplanting), fill in the listing fields from the
-#    table above, complete the privacy questionnaire as "Data Not
+#    com.chelseakr.cafishplanting, price tier Free), create the
+#    in-app purchase from the table in "In-App Purchase to create in App
+#    Store Connect" above, fill in the listing fields from the table at
+#    the top of this doc, complete the privacy questionnaire as "Data Not
 #    Collected" for every category, attach the build from step 6 to a
 #    TestFlight group, upload the screenshots plan's captures, and submit
 #    for TestFlight review (a lighter review than full App Store review,
 #    but still Apple's, not this session's).
+#    Note: TestFlight does not require the in-app purchase to be
+#    "Ready to Submit" first, but full App Store review does — create and
+#    fill in the IAP well before submitting for real review.
 ```
 
 ## Known gaps to close before any of the above
@@ -249,11 +300,13 @@ xcrun altool --upload-app -f build/export/CAFishPlanting.ipa \
    art; confirm it's the icon Chelsea wants to ship before archiving, or
    swap `icon-*.png`/`icon-1024.png` in the same asset set for a final
    version (no build-setting changes needed either way).
-2. **No purchase mechanism** — DECISIONS 0003 says "paid up front, no
-   StoreKit," meaning App Store Connect's own price tier is the gate;
-   confirm that is still how Apple prices non-subscription paid apps
-   before archiving, since App Store Connect's pricing UI changes
-   independently of this codebase.
+2. **The in-app purchase does not exist in App Store Connect yet** —
+   `ios/` now has a complete, tested StoreKit 2 purchase mechanism
+   (DECISIONS 0007), but `Product.products(for:)` will return nothing
+   until Chelsea creates the exact product in "In-App Purchase to create
+   in App Store Connect" above. Until then the purchase button in the app
+   will show "Not available right now" against the real App Store (it
+   already works today against the local `Configuration.storekit`).
 3. **Name and domain undecided** (DECISIONS 0006) — the listing Name
    field above is a placeholder; `CFBundleDisplayName` ("CA Fish
    Planting") is the one place a working name appears in `ios/` and is
@@ -276,3 +329,6 @@ xcrun altool --upload-app -f build/export/CAFishPlanting.ipa \
 5. **No screenshots captured yet** — see "Screenshots plan" above; none
    of the required App Store Connect image sizes exist in this repo or
    elsewhere in this session's outputs.
+6. **The free/paid feature split is a placeholder** — see DECISIONS 0007
+   and `PlantingCore/Sources/PlantingCore/FreeTier.swift`. The purchase
+   mechanism is real; what it unlocks is Chelsea's call and is not final.

@@ -7,10 +7,23 @@ SwiftUI, iOS 17+, no third-party dependencies. Two pieces:
   tests with plain `swift build` / `swift test` — **no Xcode project, no
   simulator needed** for this half.
 - `CAFishPlanting.xcodeproj` — the app target (SwiftUI views, `BGAppRefreshTask`,
-  `UNUserNotificationCenter`), plus `CAFishPlantingTests` (hosted unit tests)
-  and `CAFishPlantingUITests`. Depends on `PlantingCore` as a local Swift
-  package (`type: .dynamic` — see the comment in `PlantingCore/Package.swift`
-  for why static fails to link here).
+  `UNUserNotificationCenter`, StoreKit 2), plus `CAFishPlantingTests` (hosted
+  unit tests) and `CAFishPlantingUITests`. Depends on `PlantingCore` as a
+  local Swift package (`type: .dynamic` — see the comment in
+  `PlantingCore/Package.swift` for why static fails to link here).
+
+## The one-time purchase
+
+`CAFishPlanting/App/PurchaseManager.swift` is StoreKit 2 only (no
+`SKPaymentQueue`/transaction-observer code) for the app's single
+non-consumable product. `CAFishPlanting/Configuration.storekit` is a local
+StoreKit testing configuration carrying that same product — no App Store
+Connect access is needed to build, run, or test the purchase flow; the
+scheme already points both Run and Test at it. See `docs/APP-STORE.md`
+("In-App Purchase to create in App Store Connect") for the exact product
+Chelsea has to create there before a real purchase can happen outside this
+local configuration, and `docs/DECISIONS.md` 0007 for why this replaced
+0003's original "no StoreKit, App-Store-price-tier" plan.
 
 ## Commands
 

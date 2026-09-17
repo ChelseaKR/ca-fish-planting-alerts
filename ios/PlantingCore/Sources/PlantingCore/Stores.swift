@@ -10,6 +10,7 @@ public struct AppStorageLayout: Sendable {
     public var snapshotMetaFile: URL { directory.appendingPathComponent("snapshot.meta.json") }
     public var favouritesFile: URL { directory.appendingPathComponent("favourites.json") }
     public var alertStateFile: URL { directory.appendingPathComponent("alert-state.json") }
+    public var entitlementFile: URL { directory.appendingPathComponent("entitlement.json") }
 
     /// `~/Library/Application Support/<bundle id>/`, created if needed.
     public static func applicationSupport(bundleIdentifier: String, fileManager: FileManager = .default) throws -> AppStorageLayout {
@@ -109,5 +110,32 @@ public struct AlertStateStore: Sendable {
 
     public func save(_ state: AlertState) throws {
         try file.save(state)
+    }
+}
+
+/// The one-time purchase's local state. `Transaction.currentEntitlements`
+/// (StoreKit, app target only — this package stays Foundation-only) is
+/// always the source of truth; this on-disk cache exists only so the app
+/// can show the right paywall/unlocked state instantly at launch instead
+/// of waiting on an async StoreKit round trip first.
+public struct PurchaseEntitlement: Codable, Equatable, Sendable {
+    public var isPurchased: Bool
+    public init(isPurchased: Bool = false) { self.isPurchased = isPurchased }
+}
+
+/// Persistence for the cached entitlement. A corrupt or missing file reads
+/// as "not purchased" — never as "purchased" — so a disk problem can only
+/// ever fail toward showing the paywall again, not toward a false unlock;
+/// the next successful StoreKit entitlement check corrects it either way.
+public struct EntitlementStore: Sendable {
+    let file: JSONFileStore<PurchaseEntitlement>
+    public init(layout: AppStorageLayout) { file = JSONFileStore(url: layout.entitlementFile) }
+
+    public func load() -> PurchaseEntitlement {
+        (try? file.load()) ?? PurchaseEntitlement()
+    }
+
+    public func save(_ entitlement: PurchaseEntitlement) throws {
+        try file.save(entitlement)
     }
 }

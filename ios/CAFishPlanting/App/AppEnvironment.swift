@@ -13,6 +13,15 @@ struct FirstFavouriteExplainer: Identifiable {
     }
 }
 
+/// Shown when a non-purchaser tries to favourite past the free-tier cap
+/// (`FreeTier.maxFavourites`, PlantingCore). Carries the water that was
+/// tapped only so a future "and then favourite it" flow is easy to add;
+/// today the sheet is purely informational.
+struct PaywallPrompt: Identifiable {
+    let water: Water
+    var id: Water.ID { water.id }
+}
+
 /// The app's one shared piece of state. Owns the on-disk snapshot, the
 /// favourites list, the alert baseline, and the network+notification
 /// plumbing that touches them. A SwiftUI `@Observable` so views update
@@ -35,6 +44,11 @@ final class AppEnvironment {
     private let refresher: SnapshotRefresher
     private let notifications: NotificationScheduler
 
+    /// The one-time purchase. `let`, not injected-per-call: it owns its
+    /// own StoreKit listeners for the app's lifetime. Tests may inject a
+    /// pre-built instance (e.g. one wired to an `SKTestSession`).
+    let purchases: PurchaseManager
+
     private(set) var favourites = Favourites()
     private var alertState = AlertState()
     private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
@@ -44,13 +58,17 @@ final class AppEnvironment {
     /// or `dismissNotificationExplainer()`.
     var pendingNotificationExplainer: FirstFavouriteExplainer?
 
+    /// Set when a non-purchaser tries to favourite past the free-tier cap.
+    var pendingPaywall: PaywallPrompt?
+
     var snapshot: Snapshot? { store?.snapshot }
     var snapshotOrigin: SnapshotOrigin? { store?.origin }
     var refreshMeta: SnapshotMeta? { store?.meta }
 
-    init(notificationCenter: UNUserNotificationCenter = .current()) {
+    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil) {
         self.notifications = NotificationScheduler(center: notificationCenter)
         self.refresher = SnapshotRefresher(session: SnapshotRefresher.makeSession())
+        var entitlementStore: EntitlementStore?
         do {
             let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: bundleIdentifier)
             let bundledURL = Bundle.main.url(forResource: "snapshot", withExtension: "json")
@@ -62,11 +80,13 @@ final class AppEnvironment {
             self.alertStateStore = stateStore
             self.favourites = favStore.load()
             self.alertState = stateStore.load()
+            entitlementStore = EntitlementStore(layout: layout)
         } catch {
             // Never fabricate a snapshot to paper over this: an honest
             // error screen (see AboutView / RootTabView) beats fake data.
             loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
+        self.purchases = purchases ?? PurchaseManager(entitlementStore: entitlementStore)
         Task { notificationAuthorization = await notifications.authorizationStatus() }
     }
 
@@ -76,6 +96,14 @@ final class AppEnvironment {
 
     func toggleFavourite(_ water: Water) {
         let wasEmpty = favourites.isEmpty
+
+        if !isFavourite(water.id) {
+            guard FreeTier.canAddFavourite(currentCount: favourites.count, isEntitled: purchases.isEntitled) else {
+                pendingPaywall = PaywallPrompt(water: water)
+                return
+            }
+        }
+
         var updated = favourites
         let nowFavourited = updated.toggle(water.id)
         favourites = updated
@@ -91,6 +119,10 @@ final class AppEnvironment {
             alertState = AlertPlanner.pruning(alertState, unfavouriting: water.id)
             try? alertStateStore?.save(alertState)
         }
+    }
+
+    func dismissPaywall() {
+        pendingPaywall = nil
     }
 
     func confirmNotificationExplainer() async {

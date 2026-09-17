@@ -4,9 +4,22 @@ import PlantingCore
 
 struct AboutView: View {
     @Environment(AppEnvironment.self) private var environment
+    @State private var showingPurchaseSheet = false
 
     var body: some View {
         List {
+            Section("Full access") {
+                if environment.purchases.isEntitled {
+                    Label("Unlocked", systemImage: "checkmark.seal.fill")
+                        .foregroundStyle(.green)
+                } else {
+                    Text("The free version tracks up to \(FreeTier.maxFavourites) favourite waters. Unlock full access to favourite as many as you like.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Button("Unlock full access") { showingPurchaseSheet = true }
+                }
+            }
+
             Section("What this app does") {
                 Text("Favourite California waters and get a notification on this device when one appears in the California Department of Fish and Wildlife's weekly stocking schedule. Every water's page also shows its stocking history.")
                 Text("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
@@ -46,6 +59,9 @@ struct AboutView: View {
             }
         }
         .navigationTitle("About")
+        .sheet(isPresented: $showingPurchaseSheet) {
+            PurchaseView()
+        }
     }
 
     private var authorizationDescription: String {

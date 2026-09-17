@@ -19,6 +19,9 @@ struct RootTabView: View {
             .sheet(item: notificationExplainerBinding) { explainer in
                 FirstFavouriteExplainerSheet(explainer: explainer)
             }
+            .sheet(item: paywallBinding) { prompt in
+                PurchaseView(contextMessage: "You've favourited \(FreeTier.maxFavourites) waters — the most the free version tracks. \(prompt.water.name) will be right here once you unlock full access.")
+            }
         }
     }
 
@@ -28,6 +31,13 @@ struct RootTabView: View {
         Binding(
             get: { environment.pendingNotificationExplainer },
             set: { if $0 == nil { environment.dismissNotificationExplainer() } }
+        )
+    }
+
+    private var paywallBinding: Binding<PaywallPrompt?> {
+        Binding(
+            get: { environment.pendingPaywall },
+            set: { if $0 == nil { environment.dismissPaywall() } }
         )
     }
 }

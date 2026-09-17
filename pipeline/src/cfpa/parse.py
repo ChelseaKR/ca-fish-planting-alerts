@@ -4,6 +4,17 @@ The table format will drift eventually (it's someone else's ASP.NET app).
 Every assumption here is checked; on drift we raise ParseError rather than
 emit a partial table as if it were complete. A silent partial parse would be
 worse than no data: it would look like a real (low) week.
+
+Zero rows is NOT automatically drift. Confirmed live against production on
+2026-09-14 (see ``tests/fixtures/schedule-empty-week-2026-09-14.html``, a
+real captured response): a query CDFW's own server can answer with nothing
+still renders the full ``#fishPlantsExternal`` table -- exact ``<thead>``,
+a present ``<tbody>`` -- with zero ``<tr>``. It does not omit the table, and
+it does not swap in an error page. So by the time every structural check
+below has passed (table found, headers match exactly, tbody found), a
+tbody with zero rows is CDFW's real "nothing matched" shape, not a broken
+fetch -- a broken fetch fails one of the *earlier* checks instead. See
+``parse_schedule_table``.
 """
 
 from __future__ import annotations
@@ -75,8 +86,14 @@ def parse_schedule_table(html_doc: str) -> list[RawRow]:
     """Parse every row of the '#fishPlantsExternal' table.
 
     Raises ParseError on any structural surprise: missing table, wrong
-    column count, unparseable cell. Never returns a partial list silently --
-    either every row parses, or the function raises.
+    header shape, missing tbody, wrong column count, unparseable cell.
+    Never returns a partial list silently -- either every row parses, or
+    the function raises.
+
+    The one case that does NOT raise: the table, headers, and tbody are all
+    present and well-formed, but the tbody has zero <tr> rows. That is a
+    real "nothing matched" result (confirmed against production -- see the
+    module docstring), not a parse failure, and returns an empty list.
     """
     table_m = re.search(
         r'(?s)<table[^>]*id="fishPlantsExternal"[^>]*>(.*?)</table>', html_doc
@@ -98,11 +115,11 @@ def parse_schedule_table(html_doc: str) -> list[RawRow]:
         raise ParseError("schedule table has no <tbody>")
 
     row_htmls = re.findall(r"(?s)<tr[^>]*>(.*?)</tr>", tbody_m.group(1))
-    if not row_htmls:
-        raise ParseError(
-            "schedule table body has zero rows -- refusing to treat as 'no plants'; "
-            "this is a parse/format problem, not a real empty week"
-        )
+    # Reaching here means the table exists, its headers matched exactly, and
+    # its tbody exists -- every structural gate above has already passed.
+    # Zero <tr> at this point is CDFW's real "nothing matched" shape (see
+    # the module docstring), not a parse failure, so it returns [] rather
+    # than raising.
 
     rows: list[RawRow] = []
     for i, row_html in enumerate(row_htmls):

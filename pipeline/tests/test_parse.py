@@ -7,6 +7,7 @@ from cfpa import parse
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
+EMPTY_WEEK = FIXTURES / "schedule-empty-week-2026-09-14.html"
 
 
 def test_parses_every_row_and_shapes_are_sane():
@@ -75,13 +76,42 @@ def test_missing_stockid_link_raises_parse_error():
         parse.parse_schedule_table(drifted)
 
 
-def test_zero_rows_is_a_parse_error_not_an_empty_week():
+def test_zero_rows_in_a_well_formed_table_is_a_valid_empty_week():
+    """A table+headers+tbody that are all structurally intact, just with zero
+    <tr> rows, is CDFW's own real "nothing matched" shape (confirmed live
+    against production on 2026-09-14 -- see
+    test_real_empty_query_response_parses_to_zero_rows below), not a parse
+    failure. It must return [], not raise."""
     html = FRESH.read_text(encoding="utf-8")
     import re
 
     emptied = re.sub(r"(?s)(<tbody>).*?(</tbody>)", r"\1\2", html)
-    with pytest.raises(parse.ParseError, match="zero rows"):
-        parse.parse_schedule_table(emptied)
+    assert parse.parse_schedule_table(emptied) == []
+
+
+def test_real_empty_query_response_parses_to_zero_rows():
+    """fixtures/schedule-empty-week-2026-09-14.html is a real, unmodified
+    response captured live from CDFW's production search on 2026-09-14, for
+    a Params.StockingWaterID + Params.PlantTimeFrame combination known to
+    match nothing in the current-future window. It is direct evidence (not
+    a synthetic guess) that a genuine zero-result query still renders the
+    full #fishPlantsExternal table with exact headers and a present, empty
+    tbody -- not a missing table, not an error page. This is the real shape
+    a genuinely empty statewide week would be expected to take."""
+    html = EMPTY_WEEK.read_text(encoding="utf-8")
+    assert parse.parse_schedule_table(html) == []
+
+
+def test_missing_tbody_tag_entirely_still_raises_parse_error():
+    """Distinguish 'tbody present but empty' (valid empty week, see above)
+    from 'tbody missing entirely' (a structurally different, broken
+    response) -- the latter must still raise, never fall through to []."""
+    html = FRESH.read_text(encoding="utf-8")
+    import re
+
+    no_tbody = re.sub(r"(?s)<tbody>.*?</tbody>", "", html, count=1)
+    with pytest.raises(parse.ParseError, match="no <tbody>"):
+        parse.parse_schedule_table(no_tbody)
 
 
 def test_parse_select_options_reads_waters_regions_counties():

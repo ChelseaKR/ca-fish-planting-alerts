@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Fish Planting Schedule</title>
+
+    
+    
+
+    
+    <meta name="MobileOptimized" content="320">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    
+    <link rel="stylesheet" href="/statetemplate_v5/css/cagov.core.min.css">
+    
+    <link rel="stylesheet" href="/statetemplate_v5/css/colorscheme-oceanside.min.css">
+    
+    <link rel="stylesheet" href="/statetemplate_v5/css/custom.css" />
+
+    
+    <link rel="apple-touch-icon-precomposed" sizes="100x100" href="/statetemplate_v5/images/apple-touch-icon-precomposed.png">
+    <link rel="icon" sizes="192x192" href="/statetemplate_v5/images/apple-touch-icon-192x192.png">
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/statetemplate_v5/images/apple-touch-icon-180x180.png">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/statetemplate_v5/images/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/statetemplate_v5/images/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/statetemplate_v5/images/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/statetemplate_v5/images/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/statetemplate_v5/images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon-precomposed" href="/statetemplate_v5/images/apple-touch-icon-57x57.png">
+    <link rel="shortcut icon" href="/statetemplate_v5/images/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" href="/statetemplate_v5/images/apple-touch-icon.png">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+
+    
+    
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RBM7D8L716"></script>
+    <script src="/statetemplate_v5/js/ga.js"></script>
+
+
+
+    
+    
+    
+    <link href="/Scripts/datatables-2.0.8/datatables.min.css" rel="stylesheet" />
+    <link href="/Scripts/select2-4.0.13/select2.min.css" rel="stylesheet" />
+    <link href="/Scripts/select2-4.0.13/select2-bootstrap4.min.css" rel="stylesheet" />
+    <link href="/FishPlants/Content/Site.css" rel="stylesheet" />
+
+</head>
+<body>
+    <header role="banner" id="header" class="global-header">
+    <div id="skip-to-content"><a href="#main-content">Skip to Main Content</a></div>
+    
+    
+
+
+    
+    <div class="utility-header">
+    <div class="container">
+        <div class="group flex-row">
+            <div class="social-media-links">
+                <div class="header-cagov-logo">
+                    <a href="https://ca.gov">
+                        <span class="sr-only">CA.gov</span><img runat="server"
+                                                                src="/images/cagov-logo-1.0/cagov-logo-white/cagov-logo-white.svg" class="pos-rel p-t-sm top-minus-5" alt="" aria-hidden="true" />
+                    </a>
+                </div>
+                <a href="https://wildlife.ca.gov" class="ca-gov-icon-home"><span class="sr-only">Home</span></a>
+                
+            </div>
+            <div class="settings-links">
+                
+                    <a name="notloggedin">
+
+        <span class="ca-gov-icon-people"></span>
+        Not logged in
+    </a>
+    <a href="/myaccount/login.aspx?ReturnURL=%2fFishPlants%2fPublicPlantSearch%3fParams.StockingWaterID%3d27401%26Params.PlantTimeFrame%3d2%26submit%3dSearch">Login</a>
+
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#siteSettings"
+                        aria-expanded="false" aria-controls="siteSettings">
+                    <span class="ca-gov-icon-gear"
+                          aria-hidden="true"></span> Settings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+    <div class="site-settings section section-standout collapse collapsed" id="siteSettings">
+    <div class="container p-y">
+
+
+        <div class="btn-group btn-group-justified-sm" aria-label="contrastMode">
+            <div class="btn-group">
+                <button type="button"
+                        class="btn btn-standout disableHighContrastMode">
+                    Default
+                </button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-standout enableHighContrastMode">
+                    High
+                    Contrast
+                </button>
+            </div>
+        </div>
+
+        <div class="btn-group" aria-label="textSizeMode">
+            <div class="btn-group"><button type="button" class="btn btn-standout resetTextSize">Reset</button></div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-standout increaseTextSize">
+                    <span class="hidden-xs">Increase Font Size</span><span class="visible-xs">
+                        Font <span class="sr-only">Increase</span><span class="ca-gov-icon-plus-line small"
+                                                                        aria-hidden="true"></span>
+                    </span>
+                </button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-standout decreaseTextSize">
+                    <span class="hidden-xs">Decrease Font Size</span><span class="visible-xs">
+                        Font <span class="sr-only">Decrease</span><span class="ca-gov-icon-minus-line small"
+                                                                        aria-hidden="true"></span>
+                    </span>
+                </button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-standout dyslexicFont">Dyslexic Font</button>
+            </div>
+        </div>
+        <button type="button" class="close" data-bs-toggle="collapse" data-bs-target="#siteSettings"
+                aria-label="Close">
+            <span aria-hidden="true" class=" ca-gov-icon-close-mark"></span>
+        </button>
+    </div>
+</div>
+
+    
+    
+<div class="section-default">
+    <div class="branding">
+        <div class="header-organization-banner">
+            <a href="https://wildlife.ca.gov">
+                <div class="logo-assets">
+                    <img runat="server" src="/images/ca_dfg/CDFW-Insignia-146x193.png" class="logo-img" alt="Department of Fish and Wildlife Logo" />
+                    <div class="logo-text">
+                        <span class="logo-state">State of California</span>
+                        <span class="logo-dept">Department Fish and Wildlife &bull; Data Portal</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+    
+    
+<div class="mobile-controls">
+    <span class="mobile-control-group mobile-header-icons">
+      
+    </span>
+    <div class="mobile-control-group main-nav-icons">
+        <button type="button" class="mobile-control toggle-search">
+            <span class="ca-gov-icon-search hidden-print" aria-hidden="true"></span><span class="sr-only">Search</span>
+        </button>
+        <button id="nav-icon3" type="button" class="mobile-control toggle-menu" aria-expanded="false" aria-controls="navigation"
+                data-bs-toggle="collapse" data-bs-target="#navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span class="sr-only">Menu</span>
+        </button>
+
+    </div>
+</div>
+
+
+    <div class="navigation-search full-width-nav container">
+        <div id="head-search" class="search-container featured-search">
+            
+            
+<div class="container">
+    <form method="get" autocomplete="off" action="https://wildlife.ca.gov/Search-Results" class="pos-rel">
+        <label id="SearchInput" class="sr-only">Search</label>
+        <input id="txtSearch" type="text" name="q" aria-labelledby="SearchInput" placeholder="Search this website"
+               class="height-50 border-0 p-x-sm w-100 search-textfield" required />
+        <button type="submit" class="pos-abs gsc-search-button top-0 width-50 height-50 border-0 bg-transparent">
+            <span class="ca-gov-icon-search font-size-30 color-gray" aria-hidden="true"></span><span class="sr-only">Submit</span>
+        </button>
+        <div class="width-50 height-50 close-search-btn">
+            <button class="close-search gsc-clear-button width-50 height-50 border-0 bg-transparent pos-rel"
+                    type="reset">
+                <span class="sr-only">Close Search</span><span class="ca-gov-icon-close-mark"
+                                                               aria-hidden="true"></span>
+            </button>
+        </div>
+    </form>
+</div>
+
+        </div>
+        
+        
+
+<nav id="navigation" class="main-navigation megadropdown auto-highlight no-icons">
+    <ul id="nav_list" class="top-level-nav">
+        <li class="nav-item">
+            <a href="/default.aspx" class="first-level-link">Data Portal</a>
+            <div class="sub-nav">
+                    <div class="second-level-nav flex">
+                            <a href="/default.aspx" class="second-level-link">
+                                <span class="h4">Data Portal</span>
+                                <div class="link-description">CDFW Data Portal</div>
+                            </a>
+                            <a href="/fisheries.aspx" class="second-level-link">
+                                <span class="h4">Fisheries</span>
+                                <div class="link-description">Fisheries Topics</div>
+                            </a>
+                            <a href="/habconservation.aspx" class="second-level-link">
+                                <span class="h4">Habitat Conservation</span>
+                                <div class="link-description">Habitat Conservation Topics</div>
+                            </a>
+                            <a href="/wildlife.aspx" class="second-level-link">
+                                <span class="h4">Wildlife</span>
+                                <div class="link-description">Wildlife Topics</div>
+                            </a>
+                    </div>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a href="/documents/Default.aspx" class="first-level-link">Document Library</a>
+            <div class="sub-nav">
+                    <div class="second-level-nav flex">
+                            <a href="/documents/Default.aspx" class="second-level-link">
+                                <span class="h4">Document Library</span>
+                                <div class="link-description">Introductory page for the Document Library.</div>
+                            </a>
+                            <a href="/documents/docviewer.aspx" class="second-level-link">
+                                <span class="h4">Search</span>
+                                <div class="link-description">Search the Document Library</div>
+                            </a>
+                            <a href="/documents/DocContexts.aspx" class="second-level-link">
+                                <span class="h4">Browse by Category</span>
+                                <div class="link-description">Browse documents by available categories</div>
+                            </a>
+                            <a href="/documents/About.aspx" class="second-level-link">
+                                <span class="h4">About</span>
+                                <div class="link-description">Explains the details of the document management system</div>
+                            </a>
+                    </div>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a href="/myaccount/default.aspx" class="first-level-link">My Account</a>
+            <div class="sub-nav">
+                    <div class="second-level-nav flex">
+                            <a href="/myaccount/default.aspx" class="second-level-link">
+                                <span class="h4">My Account</span>
+                                <div class="link-description">Manage My Account</div>
+                            </a>
+                            <a href="/myaccount/login.aspx" class="second-level-link">
+                                <span class="h4">Login</span>
+                                <div class="link-description">Login to your account.</div>
+                            </a>
+                            <a href="/myaccount/resetpassword.aspx" class="second-level-link">
+                                <span class="h4">Forgot Password</span>
+                                <div class="link-description">Forgot your password?  Reset it here.</div>
+                            </a>
+                            <a href="/myaccount/register.aspx" class="second-level-link">
+                                <span class="h4">Create Account</span>
+                                <div class="link-description">Create a new account.</div>
+                            </a>
+                            <a href="/myaccount/activateaccount.aspx" class="second-level-link">
+                                <span class="h4">Activate Account</span>
+                                <div class="link-description">Activate your account.</div>
+                            </a>
+                    </div>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a href="/help.aspx" class="first-level-link">Help</a>
+            <div class="sub-nav">
+                    <div class="second-level-nav flex">
+                            <a href="/help.aspx" class="second-level-link">
+                                <span class="h4">Help</span>
+                                <div class="link-description">Data Portal Help</div>
+                            </a>
+                            <a href="/contactus.aspx" class="second-level-link">
+                                <span class="h4">Contact the Data Portal Team</span>
+                                <div class="link-description">Contact the Data Portal team</div>
+                            </a>
+                            <a href="/Search.aspx" class="second-level-link">
+                                <span class="h4">Site Search</span>
+                                <div class="link-description">Search all CDFW websites.</div>
+                            </a>
+                            <a href="/Issues.aspx" class="second-level-link">
+                                <span class="h4">Site Issues</span>
+                                <div class="link-description">View current issues with the Data Portal website.</div>
+                            </a>
+                    </div>
+            </div>
+        </li>
+    </ul>
+</nav>
+
+
+    </div>
+
+    <div class="header-decoration"></div>
+</header>
+
+    <div id="main-content" class="main-content">
+        <div class="container">
+            <main class="main-primary">
+                
+                
+
+
+<!-- Side navigation -->
+
+
+
+
+
+<ul class="breadcrumb " style="margin:unset">
+    <li><a href="/">Data Portal</a></li>
+    <li><a href="/fisheries.aspx">Fisheries</a></li>
+
+
+    <li class="active">Fish Planting Schedule</li>
+
+
+</ul>
+
+
+
+
+<h3 class="compact_header_item" style="margin-bottom:unset">Fish Planting Schedule</h3>
+
+
+<form action="/fishplants/publicplantsearch" method="get">    <div class="panel panel-default 1highlight">
+
+
+        <div class="panel-body">
+
+            <cagov-accordion>
+    <details>
+        <summary>Page Info...</summary>
+        <div class="accordion-body">
+
+
+            <p>
+                This dynamic Fish Planting Schedule is updated in real time, directly by CDFW Hatchery staff. Although it contains current information,
+                all fish plants are subject to change depending on road, water, weather and operational conditions.
+                Conditions permitting, the waters listed here will be restocked with catchable-size fish from CDFW hatcheries, according to this schedule.
+                More specific dates are not given to avoid focusing excess fishing activity immediately after a plant.
+            </p>
+            <p> If you have questions about Fish Planting activities, please call the <a href="https://www.wildlife.ca.gov/Regions/" target="_blank">Regional Office</a> that covers the area in question.</p>
+
+
+
+            <p>
+                <a href="https://www.wildlife.ca.gov/Fishing/Guide/" target="_blank">See Fish Plants on a Map in our Fishing Guide</a>
+            </p>
+
+            <p>
+                <b>NOTE:</b> The globe icon <span class="ca-gov-icon-globe"></span>
+                                            <span class="sr-only">
+                                                globe icon
+                                            </span>
+                links and resulting map markers do not indicate the exact or only planting locations,
+                but rather the general location of the waters being planted.
+            </p>
+
+    </details>
+</cagov-accordion>
+
+
+<hr style="margin:0px" />
+
+
+<cagov-accordion>
+    <details>
+        <summary>Page Instructions...</summary>
+        <div class="accordion-body">
+            <p>
+                Range of dates available for viewing: the current week, one week in the future, and six months in the past.
+
+            </p>
+            <b>On this page you may:</b>
+            <ul>
+                <li>Sort any column in ascending or descending order by clicking its column heading</li>
+                <li>Focus your search for water name or county by using the "Search Criteria" link </li>
+                <li>Export your results to a spreadsheet using the "Export" button </li>
+                <li>
+                    Map any water location using the globe icon <span class="ca-gov-icon-globe"></span>
+                                                                <span class="sr-only">
+                                                                    globe icon
+                                                                </span>
+
+
+                    link
+                </li>
+
+                <li>These search parameters can be saved as a bookmark/favorite on your browser. Use the appropiate method on your browser to do so (e.g. Press Ctrl+D (or Cmd+D on Mac) or find the appropiate menu option  </li>
+            </ul>
+
+
+                <b>Sign Up For Fish Plants Subscription</b>
+                <br />
+                <ul>
+                    <li>In order to suscribe, you must first login.</li>
+                    <li> If you do not have CDFW account you must <a href="/myaccount/register.aspx">create one</a>.</li>
+                    <li>Next, after logging in go to <a href="/myaccount/MySubscriptions.aspx">My Subscriptions</a>. </li>
+                    <li>Check the box next to the Fish Plants subscription and once a week you'll receive a weekly list of current plants.</li>
+                </ul>
+                <b>Search Fish Plant Results</b> <br /><br />
+                <span> All plants will be shown below unless search criteria has been chosen to limit results.</span>
+                <br /><br />
+        </div>
+    </details>
+</cagov-accordion>
+
+<hr style="margin:0px" />
+
+
+<cagov-accordion>
+    <details>
+        <summary>
+            Related Links and Regional Contact Info...
+        </summary>
+        <div class="accordion-body">
+            <p>Related Links</p>
+
+            <ul class="list_decorative_dark">
+                <li><a href="https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=74004&inline" target="_blank">Provisional Stocking Document for Trout and Inland Salmon (PDF)</a></li>
+                <li><a href="https://www.wildlife.ca.gov/Fishing/Hatcheries/Criteria" target="_blank">Planting Criteria</a></li>
+            </ul>
+
+            <!--tel:, a URI scheme used e.g. on the Web to link to telephone numbers-->
+            <p>Regional Fish Planting Schedule</p>
+            <ul class="1breadcrumb">
+                <li>Northern:<br /><a style="text-decoration:none" href="tel:+1-530-225-2146">+1-530-225-2146</a></li>
+                <li>North Central:<br /><a style="text-decoration:none" href="tel:+1-916-351-0832">+1-916-351-0832</a></li>
+                <li>Bay Delta:<br /><a style="text-decoration:none" href="tel:+1-707-944-5581">+1-707-944-5581</a></li>
+                <li>Central:<br /><a style="text-decoration:none" href="tel:+1-559-243-4005">+1-559-243-4005 ext. 151</a></li>
+                <li>South Coast:<br /><a style="text-decoration:none" href="tel:+1-858-467-4201">+1-858-467-4201</a></li>
+                <li>Inland Deserts:<br /><a style="text-decoration:none" href="tel:+1-909-484-0167">+1-909-484-0167</a></li>
+            </ul>
+        </div>
+    </details>
+</cagov-accordion>
+
+<hr style="margin:0px" />
+
+
+            <div style="background-color:#f5f5f5; padding: 10px; border:ridge">
+
+                <div class="row">
+
+
+                    <div class="col-md-3">
+                        <label class="control-label" for="Params_Regions">Regions</label>
+                        <select class="form-control select2multiple" id="Params_Regions" multiple="multiple" name="Params.Regions" size="12"><option value="R1">Northern Region (R1)</option>
+<option value="R2">North Central Region (R2)</option>
+<option value="R3">Bay Delta Region (R3)</option>
+<option value="R4">Central Region (R4)</option>
+<option value="R5">South Coast Region (R5)</option>
+<option value="R6">Inland Deserts Region (R6)</option>
+</select>
+                        <div>
+                            <input type="checkbox" id="Params.Regions_SelectAll" class="selectAll" /><span class="selectAllStyle">&nbsp;Select/Deselect All</span>
+                        </div>
+
+
+
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="control-label" for="Params_Counties">Counties</label>
+                        <select class="form-control  select2multiple" id="Params_Counties" multiple="multiple" name="Params.Counties" size="8"><option value="1">Alameda</option>
+<option value="2">Alpine</option>
+<option value="3">Amador</option>
+<option value="4">Butte</option>
+<option value="5">Calaveras</option>
+<option value="6">Colusa</option>
+<option value="7">Contra Costa</option>
+<option value="8">Del Norte</option>
+<option value="9">El Dorado</option>
+<option value="10">Fresno</option>
+<option value="11">Glenn</option>
+<option value="12">Humboldt</option>
+<option value="13">Imperial</option>
+<option value="14">Inyo</option>
+<option value="15">Kern</option>
+<option value="16">Kings</option>
+<option value="17">Lake</option>
+<option value="18">Lassen</option>
+<option value="19">Los Angeles</option>
+<option value="20">Madera</option>
+<option value="21">Marin</option>
+<option value="22">Mariposa</option>
+<option value="23">Mendocino</option>
+<option value="24">Merced</option>
+<option value="25">Modoc</option>
+<option value="26">Mono</option>
+<option value="27">Monterey</option>
+<option value="28">Napa</option>
+<option value="29">Nevada</option>
+<option value="30">Orange</option>
+<option value="31">Placer</option>
+<option value="32">Plumas</option>
+<option value="33">Riverside</option>
+<option value="34">Sacramento</option>
+<option value="35">San Benito</option>
+<option value="36">San Bernardino</option>
+<option value="37">San Diego</option>
+<option value="38">San Francisco</option>
+<option value="39">San Joaquin</option>
+<option value="40">San Luis Obispo</option>
+<option value="41">San Mateo</option>
+<option value="42">Santa Barbara</option>
+<option value="43">Santa Clara</option>
+<option value="44">Santa Cruz</option>
+<option value="45">Shasta</option>
+<option value="46">Sierra</option>
+<option value="47">Siskiyou</option>
+<option value="48">Solano</option>
+<option value="49">Sonoma</option>
+<option value="50">Stanislaus</option>
+<option value="51">Sutter</option>
+<option value="52">Tehama</option>
+<option value="53">Trinity</option>
+<option value="54">Tulare</option>
+<option value="55">Tuolumne</option>
+<option value="56">Ventura</option>
+<option value="57">Yolo</option>
+<option value="58">Yuba</option>
+</select>
+
+                        <div>
+                            <input type="checkbox" id="Params.Counties_SelectAll" class="selectAll" /><span class="selectAllStyle">&nbsp;Select/Deselect All</span>
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="control-label" for="Params_StockingWaterID">Water Name</label>
+                        <select class="searchableselect form-control" data-val="true" data-val-number="The field Water Name must be a number." id="Params_StockingWaterID" name="Params.StockingWaterID" size="12"><option value=""></option>
+<option selected="selected" value="27401">Aerojet Pond (Sacramento)</option>
+<option value="17556">Agnew Lake (Mono)</option>
+<option value="500008">Alder Creek (Kern)</option>
+<option value="17428">Alger Lake #3 (Mono)</option>
+<option value="7422">Alondra Park Lake (Los Angeles)</option>
+<option value="17740">Altha Lake (Madera)</option>
+<option value="500017">American River Silver Fork (El Dorado)</option>
+<option value="500018">American River South Fork, Coloma (El Dorado)</option>
+<option value="501955">American River, South Fork, Camp Sacramento (El Dorado)</option>
+<option value="503124">American River, South Fork, Chili Bar (El Dorado)</option>
+<option value="18381">Amy Lake (Fresno)</option>
+<option value="27425">Anderson River Park Pond (Shasta)</option>
+<option value="500021">Angels Creek (Calaveras)</option>
+<option value="14214">Angora Lake Lower (El Dorado)</option>
+<option value="14223">Angora Lake Upper (El Dorado)</option>
+<option value="15777">Anna Lake (Mono)</option>
+<option value="18113">Anne Lake (Madera)</option>
+<option value="18736">Anne Lake (Fresno)</option>
+<option value="125">Annie Lake (Modoc)</option>
+<option value="500029">Antelope Creek (Siskiyou)</option>
+<option value="11687">Antelope Reservoir (Plumas)</option>
+<option value="6898">Apollo Community Regional Park Lake  (Los Angeles)</option>
+<option value="19221">Apollo Lake (Fresno)</option>
+<option value="20894">Arctic Lake (Fresno)</option>
+<option value="7147">Arrowbear Lake (San Bernardino)</option>
+<option value="501933">Ash Creek Lower (Modoc)</option>
+<option value="501935">Ash Creek Upper (Lassen)</option>
+<option value="6526">Atascadero Lake (San Luis Obispo)</option>
+<option value="2242">Auburn Regional Park Pond (Placer)</option>
+<option value="19378">Avalanche Lake (Fresno)</option>
+<option value="5629">Avocado Lake (Fresno)</option>
+<option value="500052">Bailey Creek Upper (Shasta)</option>
+<option value="868">Bailey Reservoir (Lassen)</option>
+<option value="500055">Baker Creek (Inyo)</option>
+<option value="20669">Baker Lake (Inyo)</option>
+<option value="28387">Bakersfield Sports Show Pond (Kern)</option>
+<option value="21620">Balch Park Lake Lower (Tulare)</option>
+<option value="21619">Balch Park Lake Upper (Tulare)</option>
+<option value="9254">Ballard Reservoir (Modoc)</option>
+<option value="28512">Balsam Forebay (Fresno)</option>
+<option value="28310">Barney Schwartz Park Lake (San Luis Obispo)</option>
+<option value="10163">Barrett Lake (Shasta)</option>
+<option value="202">Bass Lake (Siskiyou)</option>
+<option value="19260">Bass Lake (Madera)</option>
+<option value="28589">Bass Pond (Tehama)</option>
+<option value="500070">Battle Creek South Fork (Tehama)</option>
+<option value="783">Baum Lake (Shasta)</option>
+<option value="526">Bayley Reservoir (Modoc)</option>
+<option value="191">Bear Lake (Siskiyou)</option>
+<option value="15004">Bear River Reservoir Lower (Amador)</option>
+<option value="15685">Beardsley Reservoir (Tuolumne)</option>
+<option value="500088">Bearskin Creek (Fresno)</option>
+<option value="500091">Beaver Creek (Tuolumne)</option>
+<option value="27403">Bedrock Park Pond (Butte)</option>
+<option value="27430">Belvedere Lake (Los Angeles)</option>
+<option value="20568">Beryl Lake (Fresno)</option>
+<option value="10879">Betty Lake (Lassen)</option>
+<option value="7101">Big Bear Lake (San Bernardino)</option>
+<option value="12247">Big Bear Lake (Plumas)</option>
+<option value="500102">Big Creek, Huntington (Fresno)</option>
+<option value="500103">Big Creek, Kings (Fresno)</option>
+<option value="500104">Big Creek, Madera (Mariposa)</option>
+<option value="501831">Big Grizzly Creek (Plumas)</option>
+<option value="16855">Big Lake (Tuolumne)</option>
+<option value="500109">Big Meadows Creek (Tulare)</option>
+<option value="500110">Big Pine Creek (Inyo)</option>
+<option value="20897">Big Pine Lake #1 (Inyo)</option>
+<option value="18663">Bighorn Lake (Fresno)</option>
+<option value="10664">Bimber Lake (Lassen)</option>
+<option value="21166">Birch Lake (Inyo)</option>
+<option value="500125">Bishop Creek Lower (Inyo)</option>
+<option value="19936">Bishop Creek, Intake II (Inyo)</option>
+<option value="500126">Bishop Creek, Middle Fork (Inyo)</option>
+<option value="500128">Bishop Creek, South Fork (Inyo)</option>
+<option value="16539">Black Bear Lake (Tuolumne)</option>
+<option value="607">Black Lake (Humboldt)</option>
+<option value="10693">Black Lake (Lassen)</option>
+<option value="21340">Black Rock Reservoir (Fresno)</option>
+<option value="27420">Blair Lake (Nevada)</option>
+<option value="501">Blue Lake (Humboldt)</option>
+<option value="9642">Blue Lake (Lassen)</option>
+<option value="17860">Blue Lake (Madera)</option>
+<option value="14726">Blue Lake Lower (Alpine)</option>
+<option value="2023">Blue Lake Upper (Lake)</option>
+<option value="14670">Blue Lake Upper (Alpine)</option>
+<option value="246">Blue Pond (Siskiyou)</option>
+<option value="12499">Boca Reservoir (Nevada, Sierra)</option>
+<option value="28599">Bogart Park Pond (Riverside)</option>
+<option value="3844">Bon Tempe Lake (Marin)</option>
+<option value="500158">Bone Creek (Tulare)</option>
+<option value="12494">Bowman Reservoir (Nevada)</option>
+<option value="18516">Brave Lake (Fresno)</option>
+<option value="3070">Bridgeport Reservoir (Mono)</option>
+<option value="8630">Briles Reservoir (Modoc)</option>
+<option value="27442">Brite Valley Reservoir (Kern)</option>
+<option value="28526">Broodfish Waters (Siskiyou)</option>
+<option value="20597">Brown Lake (Inyo)</option>
+<option value="28282">Browns Pond (Modoc)</option>
+<option value="145">Buck Lake (Siskiyou)</option>
+<option value="16500">Buck Lake Lower (Tuolumne)</option>
+<option value="16361">Buck Lake Upper (Tuolumne)</option>
+<option value="500181">Buckeye Creek (Mono)</option>
+<option value="848">Buckhorn Reservoir (Lassen)</option>
+<option value="12092">Bucks Lake (Plumas)</option>
+<option value="20800">Bull Frog Lake (Fresno)</option>
+<option value="12493">Bullards Bar Reservoir (Yuba)</option>
+<option value="12615">Bullpen Lake (Nevada)</option>
+<option value="8944">Bullseye Lake (Siskiyou)</option>
+<option value="500199">Burney Creek Lower (Shasta)</option>
+<option value="500200">Burney Creek Middle (Shasta)</option>
+<option value="500201">Burney Creek Upper (Shasta)</option>
+<option value="14525">Burnside Lake (Alpine)</option>
+<option value="1170">Butt Valley Reservoir (Plumas)</option>
+<option value="500206">Butte Creek (Siskiyou)</option>
+<option value="500207">Butte Creek, Big (Butte)</option>
+<option value="6933">Cachuma Lake (Santa Barbara)</option>
+<option value="7532">Cahuilla Park Lake (Riverside)</option>
+<option value="3209">Camanche Reservoir (Amador, Calaveras, San Joaquin)</option>
+<option value="16392">Camp Lake (Tuolumne)</option>
+<option value="27427">Camp Tehama Pond (Tehama)</option>
+<option value="27423">Campbell Perc Pond (Santa Clara)</option>
+<option value="14535">Caples Lake (Alpine)</option>
+<option value="28594">Carbon Canyon Reservoir (Orange)</option>
+<option value="10726">Caribou Lake (Lassen)</option>
+<option value="12786">Carr Lake (Nevada)</option>
+<option value="27443">Carr Park Lake (Orange)</option>
+<option value="679">Carrville Pond (Trinity)</option>
+<option value="500247">Carson River East Fork (Alpine)</option>
+<option value="500248">Carson River West Fork (Alpine)</option>
+<option value="7054">Casitas Lake (Ventura)</option>
+<option value="6953">Castaic Lake (Los Angeles)</option>
+<option value="6872">Cat Fish Lake (Kern)</option>
+<option value="7994">Cave Lake (Modoc)</option>
+<option value="500261">Cedar Creek (Kern)</option>
+<option value="27444">Centennial Lake (Orange)</option>
+<option value="27431">Cerritos Lake (Los Angeles)</option>
+<option value="4168">Chabot Reservoir (Alameda)</option>
+<option value="20805">Chagrin Lake (Fresno)</option>
+<option value="21296">Chain Lake Upper (Fresno)</option>
+<option value="17177">Cherry Valley Reservoir (Tuolumne)</option>
+<option value="18949">Chickenfoot Lake (Inyo)</option>
+<option value="500276">Chiquito Creek West Fork (Madera)</option>
+<option value="500277">Chiquito Creek, Lower (Madera)</option>
+<option value="7908">Chollas Park Lake (San Diego)</option>
+<option value="500284">Clark Creek Lower (Shasta)</option>
+<option value="500285">Clear Creek (Lassen)</option>
+<option value="500286">Clear Creek, above Whiskeytown Lake (Shasta)</option>
+<option value="16834">Clear Lake (Tuolumne)</option>
+<option value="297">Cliff Lake (Siskiyou)</option>
+<option value="28569">Clover Creek Pond (Shasta)</option>
+<option value="14462">Cody Lake (El Dorado)</option>
+<option value="500293">Coffee Creek (Trinity)</option>
+<option value="500294">Cold Creek (Siskiyou)</option>
+<option value="28579">Cold Springs Lake (Modoc)</option>
+<option value="27398">Coldstream Creek Pond (Placer)</option>
+<option value="13355">Coldstream Pond, Donner Lake Park (Nevada)</option>
+<option value="1904">Collins Lake (Yuba)</option>
+<option value="3827">Contra Loma Reservoir (Contra Costa)</option>
+<option value="500306">Convict Creek (Mono)</option>
+<option value="18122">Convict Lake (Mono)</option>
+<option value="18130">Cora Lake, Middle (Madera)</option>
+<option value="19595">Corbett Lake (Fresno)</option>
+<option value="20744">Corrine Lake (Madera)</option>
+<option value="500316">Cottonwood Creek (Inyo)</option>
+<option value="27424">Cottonwood Lake (Santa Clara)</option>
+<option value="20919">Courtright Reservoir (Fresno)</option>
+<option value="20484">Coyote Lake (Fresno)</option>
+<option value="18720">Coyote Lake, Margaret (Fresno)</option>
+<option value="28590">Coyote Pond (Tehama)</option>
+<option value="10356">Crater Lake (Lassen)</option>
+<option value="17884">Crowley Lake (Mono)</option>
+<option value="21258">Crown Lake (Fresno)</option>
+<option value="7083">Crystal Lake (Los Angeles)</option>
+<option value="11829">Crystal Lake (Plumas)</option>
+<option value="7338">Cucamonga Guasti Park Lake (San Bernardino)</option>
+<option value="27432">Cuddy Creek Pond (Kern)</option>
+<option value="12626">Culbertson Lake (Nevada)</option>
+<option value="27413">Cunningham Lake (Santa Clara)</option>
+<option value="7796">Cuyamaca Lake (San Diego)</option>
+<option value="10885">Cypress Lake (Lassen)</option>
+<option value="17356">Dana Lake #4 (Mono)</option>
+<option value="14460">Dardanelles Lake (El Dorado)</option>
+<option value="14296">Dark Lake (El Dorado)</option>
+<option value="500361">Deadman Creek (Mono)</option>
+<option value="12348">Deadman Lake (Sierra)</option>
+<option value="500366">Deer Creek (Tehama)</option>
+<option value="500368">Deer Creek (Tulare)</option>
+<option value="1958">Deer Creek Reservoir (Nevada)</option>
+<option value="12329">Deer Lake,  Big (Sierra)</option>
+<option value="12290">Deer Lake, Little (Sierra)</option>
+<option value="28311">Del Lago Park Lake (Tulare)</option>
+<option value="6325">Del Venturi Pond (Monterey)</option>
+<option value="538">Delta Reservoir (Modoc)</option>
+<option value="1371">Desabla Reservoir (Butte)</option>
+<option value="153">Devils Punchbowl Lake (Siskiyou)</option>
+<option value="8208">Diamond Reservoir (Modoc)</option>
+<option value="27433">Diamond Valley Reservoir (Riverside)</option>
+<option value="5970">Diaz Lake (Inyo)</option>
+<option value="500392">Dinkey Creek (Fresno)</option>
+<option value="20752">Dinkey Lake Second (Fresno)</option>
+<option value="27445">Doane Pond (San Diego)</option>
+<option value="755">Dodge Reservoir (Lassen)</option>
+<option value="4234">Don Castro Reservoir (Alameda)</option>
+<option value="3994">Don Pedro Reservoir (Tuolumne)</option>
+<option value="13306">Donner Lake (Nevada)</option>
+<option value="18287">Dorothy Lake (Mono)</option>
+<option value="27434">Downey Wilderness Park Lake (Los Angeles)</option>
+<option value="175">Dry Lake (Del Norte)</option>
+<option value="500415">Dry Meadow Creek (Tulare)</option>
+<option value="8993">Duncan Reservoir (Modoc)</option>
+<option value="10186">Durbin Lake (Shasta)</option>
+<option value="19910">Dutch Lake (Fresno)</option>
+<option value="1056">Dymesich Pond (Shasta)</option>
+<option value="27364">Eagle Lake (Lassen)</option>
+<option value="17095">East Lake (Mono)</option>
+<option value="20566">East Lake (Fresno)</option>
+<option value="500430">East Walker River (Mono)</option>
+<option value="4630">Eastman Lake (Madera, Mariposa)</option>
+<option value="11436">Echo Lake (Plumas)</option>
+<option value="12518">Echo Lake (Nevada)</option>
+<option value="20779">Echo Lake (Inyo)</option>
+<option value="14320">Echo Lake, Lower (El Dorado)</option>
+<option value="28584">Echo Lake, Upper  (El Dorado)</option>
+<option value="7342">Echo Park Lake (Los Angeles)</option>
+<option value="18937">Edison Lake (Fresno)</option>
+<option value="10096">Eiler Lake (Shasta)</option>
+<option value="7449">Eisenhower Park Lake (Orange)</option>
+<option value="7826">El Capitan Lake (San Diego)</option>
+<option value="27686">El Capitan Lake (Siskiyou)</option>
+<option value="28386">El Dorado County Fairgrounds Pond (El Dorado)</option>
+<option value="2409">El Dorado Forebay (El Dorado)</option>
+<option value="7466">El Dorado Park Lakes (Los Angeles)</option>
+<option value="5928">El Estero Lake (Monterey)</option>
+<option value="10666">Eleanor Lake (Lassen)</option>
+<option value="6922">Elizabeth Lake (Los Angeles)</option>
+<option value="28309">Elk Grove Park Pond (Sacramento)</option>
+<option value="17316">Ellery Lake (Mono)</option>
+<option value="10791">Emerald Lake (Lassen)</option>
+<option value="9494">Emerson Lake North (Modoc)</option>
+<option value="9506">Emerson Lake South (Modoc)</option>
+<option value="12176">Eureka Lake (Plumas)</option>
+<option value="7372">Evans Lake (Riverside)</option>
+<option value="11322">Evelyn Lake 1 (Lassen)</option>
+<option value="10211">Everett Lake (Shasta)</option>
+<option value="14756">Evergreen Lake (Alpine)</option>
+<option value="977">Ewing Gulch Reservoir (Trinity)</option>
+<option value="717">Fall River Lake (Shasta)</option>
+<option value="14003">Fallen Leaf Lake (El Dorado)</option>
+<option value="12577">Faucherie Lake (Nevada)</option>
+<option value="500491">Feather River Middle Fork, Graeagle (Plumas)</option>
+<option value="503112">Feather River Middle Fork, Portola (Plumas)</option>
+<option value="500492">Feather River North Fork, Almanor (Plumas)</option>
+<option value="500493">Feather River North Fork, Belden (Plumas)</option>
+<option value="501778">Feather River, East Branch North Fork (Plumas)</option>
+<option value="158">Fee Reservoir (Modoc)</option>
+<option value="12780">Feeley Lake (Nevada)</option>
+<option value="502244">Feliz Creek (Mendocino)</option>
+<option value="18177">Fernandez Lake Middle (Madera)</option>
+<option value="2373">Finnon Reservoir (El Dorado)</option>
+<option value="500503">Fish Creek (Madera)</option>
+<option value="485">Fish Lake (Humboldt)</option>
+<option value="20799">Fleming Lake (Fresno)</option>
+<option value="19697">Florence Lake (Fresno)</option>
+<option value="28313">Florin Creek Park Pond (Sacramento)</option>
+<option value="2315">Folsom Lake (El Dorado, Placer, Sacramento)</option>
+<option value="28608">Foothill Regional Park Pond B (Sonoma)</option>
+<option value="7348">Ford Park Ponds (San Bernardino)</option>
+<option value="12820">Fordyce Lake (Nevada)</option>
+<option value="18833">Fourth Recess Lake (Fresno)</option>
+<option value="18855">Francis Lake (Inyo)</option>
+<option value="500522">Freeman Creek (Tulare)</option>
+<option value="15657">Fremont Lake (Mono)</option>
+<option value="12587">French Lake (Nevada)</option>
+<option value="13667">French Meadows Reservoir (Placer)</option>
+<option value="12063">Frenchman Reservoir (Plumas)</option>
+<option value="472">Freshwater Lagoon (Humboldt)</option>
+<option value="28285">Fresno City Sports Complex Lake (Fresno)</option>
+<option value="28286">Fresno City Woodward Park Lake (Fresno)</option>
+<option value="5453">Fresno Sportmens Club Pond (Fresno)</option>
+<option value="14560">Frog Lake (Alpine)</option>
+<option value="18772">Frog Lake, Margaret (Fresno)</option>
+<option value="13199">Fuller Lake (Nevada)</option>
+<option value="20327">Funnel Lake (Inyo)</option>
+<option value="17732">Garnet Lake (Madera)</option>
+<option value="10747">Gem Lake (Lassen)</option>
+<option value="16439">Gem Lake (Tuolumne)</option>
+<option value="17552">Gem Lake (Mono)</option>
+<option value="18110">George Lake (Mono)</option>
+<option value="19598">George Lake (Fresno)</option>
+<option value="500546">Georges Creek (Inyo)</option>
+<option value="2457">Gibson Ranch Park Pond (Sacramento)</option>
+<option value="17856">Gladys Lake (Madera)</option>
+<option value="500555">Glass Creek (Mono)</option>
+<option value="7155">Glen Helen Park Lake (San Bernardino)</option>
+<option value="20161">Goethe Lake (Lower) (Fresno)</option>
+<option value="20184">Goethe Lake (Upper) (Fresno)</option>
+<option value="12260">Gold Lake (Sierra)</option>
+<option value="500561">Goodale Creek (Inyo)</option>
+<option value="500563">Goodrich Creek Lower (Lassen)</option>
+<option value="19387">Gordon Lake (Fresno)</option>
+<option value="1034">Grace Lake (Shasta)</option>
+<option value="1506">Graeagle Mill Pond (Plumas)</option>
+<option value="500569">Granite Creek (West Fork) (Madera)</option>
+<option value="14728">Granite Lake (Alpine)</option>
+<option value="28287">Granite Park Pond (Sacramento)</option>
+<option value="17387">Grant Lake (Mono)</option>
+<option value="20593">Green Lake (Inyo)</option>
+<option value="7121">Green Valley Lake (San Bernardino)</option>
+<option value="193">Greenhorn Reservoir (Siskiyou)</option>
+<option value="27446">Greer Park Lake (Orange)</option>
+<option value="7116">Gregory Lake (San Bernardino)</option>
+<option value="16004">Grizzley Peak Lake East (Tuolumne)</option>
+<option value="18591">Grizzly Lake (Madera)</option>
+<option value="16564">Grouse Lake (Tuolumne)</option>
+<option value="17467">Gull Lake (Mono)</option>
+<option value="2507">Hagan Community Park Pond (Sacramento)</option>
+<option value="2227">Halsey Forebay (Placer)</option>
+<option value="500612">Hamilton Branch Creek (Lassen)</option>
+<option value="500613">Hamilton Branch Creek (Plumas)</option>
+<option value="1235">Hammerhorn Lake (Mendocino)</option>
+<option value="7115">Hansen Dam Lake (Los Angeles)</option>
+<option value="15752">Harding Lake (Lower Long Lake) (Mono)</option>
+<option value="1926">Harry L Englebright Lake (Nevada, Yuba)</option>
+<option value="6539">Hart Park Lake (Kern)</option>
+<option value="19408">Harvey Lake (Fresno)</option>
+<option value="500623">Hat Creek Middle (Shasta)</option>
+<option value="500624">Hat Creek Upper (Shasta)</option>
+<option value="27458">Hatchery Ponds (Siskiyou)</option>
+<option value="500626">Hatchet Creek (Shasta)</option>
+<option value="12264">Hawley lake (Sierra)</option>
+<option value="11404">Heart Lake (Shasta)</option>
+<option value="28288">Heather Farms Pond (Contra Costa)</option>
+<option value="21531">Hedrick Pond (Redwood Lake) (Tulare)</option>
+<option value="2593">Heenan Lake (Alpine)</option>
+<option value="13681">Hellhole Reservoir (Placer)</option>
+<option value="4899">Hensley Lake (Madera)</option>
+<option value="500644">Herring Creek (Tuolumne)</option>
+<option value="11345">Hidden Lake #1 (Lassen)</option>
+<option value="11324">Hidden Lake #2 (Lassen)</option>
+<option value="11323">Hidden Lake #3 (Lassen)</option>
+<option value="11281">Hidden Lake #4 (Lassen)</option>
+<option value="11256">Hidden Lake #5 (Lassen)</option>
+<option value="19965">Hidden Lake, Florence (Fresno)</option>
+<option value="28586">Hidden Valley Park Pond (Kings)</option>
+<option value="28289">Hidden Valley Pond (Contra Costa)</option>
+<option value="20873">Hobler Lake (Fresno)</option>
+<option value="675">Holbrook Reservoir (Lassen)</option>
+<option value="27435">Hollenbeck Park Lake (Los Angeles)</option>
+<option value="19469">Hooper Lake (Fresno)</option>
+<option value="28588">Horse Creek Dam Pond (Riverside)</option>
+<option value="4368">Horseshoe Lake (Alameda)</option>
+<option value="500692">Hot Creek (Mono)</option>
+<option value="10773">Hourglass Lake (Lassen)</option>
+<option value="1323">Howard Lake (Mendocino)</option>
+<option value="28355">Howe Community Park Lake (Sacramento)</option>
+<option value="10213">Hufford Lake (Shasta)</option>
+<option value="21425">Hume Lake (Fresno)</option>
+<option value="19904">Huntington Lake (Fresno)</option>
+<option value="7520">Huntington Park Lake (Orange)</option>
+<option value="16866">Hyatt Lake (Tuolumne)</option>
+<option value="14386">Icehouse Reservoir (El Dorado)</option>
+<option value="500709">Independence Creek (Inyo)</option>
+<option value="2439">Indian Creek Reservoir (Alpine)</option>
+<option value="7">Indian Tom Lake (Siskiyou)</option>
+<option value="2055">Indian Valley Reservoir (Lake)</option>
+<option value="689">Iron Canyon Reservoir (Shasta)</option>
+<option value="17961">Isberg Lake Lower (Madera)</option>
+<option value="171">Island Lake (Del Norte)</option>
+<option value="20776">Island Lake (Fresno)</option>
+<option value="12782">Island Lake Big (Nevada)</option>
+<option value="12813">Island Lake Little (Nevada)</option>
+<option value="19087">Italy Lake (Fresno)</option>
+<option value="28581">IWA Wister Pond (Imperial)</option>
+<option value="18370">Jackass Lake Lower (Madera)</option>
+<option value="18377">Jackass Lake Middle (Madera)</option>
+<option value="7053">Jackson Lake (Los Angeles)</option>
+<option value="12435">Jackson Meadows Reservoir (Nevada, Sierra)</option>
+<option value="500728">Jamison Creek (Plumas)</option>
+<option value="27400">Jenkinson Lake (El Dorado)</option>
+<option value="7180">Jenks Lake (San Bernardino)</option>
+<option value="21447">Jennie Lake (Tulare)</option>
+<option value="10711">Jewel Lake (Lassen)</option>
+<option value="16426">Jewelry Lake (Tuolumne)</option>
+<option value="4323">Joe Crane Lake (Madera)</option>
+<option value="28305">John Anson Ford Park Lake (Los Angeles)</option>
+<option value="162">Juanita Lake (Siskiyou)</option>
+<option value="18492">Junction Lake (Madera)</option>
+<option value="15559">Junction Reservoir (Mono)</option>
+<option value="17431">June Lake (Mono)</option>
+<option value="14035">Kalmia Lake (El Dorado)</option>
+<option value="458">Kangaroo Lake (Siskiyou)</option>
+<option value="28585">Kapusta Pond (Shasta)</option>
+<option value="6120">Kaweah Reservoir (Tulare)</option>
+<option value="92">Kelly Lake (Siskiyou)</option>
+<option value="27436">Kenneth Hahn Lake (Los Angeles)</option>
+<option value="500757">Kern River South Fork (Tulare)</option>
+<option value="500758">Kern River, Section 0 (Kern)</option>
+<option value="500759">Kern River, Section 1 (Kern)</option>
+<option value="500760">Kern River, Section 2 (Kern)</option>
+<option value="502014">Kern River, Section 3 (Kern)</option>
+<option value="500761">Kern River, Section 4 (Kern)</option>
+<option value="500762">Kern River, Section 5 (Kern, Tulare)</option>
+<option value="500763">Kern River, Section 6 (Tulare)</option>
+<option value="500765">Keswick Canal (Shasta)</option>
+<option value="930">Kilarc Reservoir (Shasta)</option>
+<option value="500770">Kings River, Below Pine Flat Dam (Fresno)</option>
+<option value="501721">Kings River, Upper (Fresno)</option>
+<option value="15006">Kinney Reservoir (Alpine)</option>
+<option value="14537">Kirkwood Lake (El Dorado)</option>
+<option value="15553">Kirmen Lake (Mono)</option>
+<option value="702240">Kiwanis Fish Derby Pond (Yuba)</option>
+<option value="7410">La Mirada Lake (Los Angeles)</option>
+<option value="3982">Lafayette Reservoir (Contra Costa)</option>
+<option value="3023">Lagoon Valley (Solano)</option>
+<option value="7406">Laguna Lake (Orange)</option>
+<option value="3868">Lagunitas Lake (Marin)</option>
+<option value="1116">Lake Almanor (Plumas)</option>
+<option value="15216">Lake Alpine (Alpine)</option>
+<option value="3079">Lake Amador (Amador)</option>
+<option value="2455">Lake Berryessa (Napa)</option>
+<option value="3458">Lake Chabot (Solano)</option>
+<option value="12078">Lake Davis (Plumas)</option>
+<option value="4320">Lake Del Valle (Alameda)</option>
+<option value="4425">Lake Elizabeth (Alameda)</option>
+<option value="7525">Lake Elsinore (Riverside)</option>
+<option value="27460">Lake Emily (Mendocino)</option>
+<option value="7453">Lake Fulmor (Riverside)</option>
+<option value="7515">Lake Hemet (Riverside)</option>
+<option value="2801">Lake Hennessey (Napa)</option>
+<option value="3508">Lake Herman (Solano)</option>
+<option value="21584">Lake Isabella (Kern)</option>
+<option value="7855">Lake Jennings (San Diego)</option>
+<option value="7027">Lake Los Carneros (Santa Barbara)</option>
+<option value="1954">Lake Mendocino (Mendocino)</option>
+<option value="7844">Lake Miramar (San Diego)</option>
+<option value="7887">Lake Murray (San Diego)</option>
+<option value="12438">Lake of the Woods (Sierra)</option>
+<option value="28297">Lake Refugio (Contra Costa)</option>
+<option value="20257">Lake Sabrina (Inyo)</option>
+<option value="6342">Lake San Antonio (Monterey)</option>
+<option value="298">Lake Shastina (Siskiyou)</option>
+<option value="7230">Lake Sherwood (Ventura)</option>
+<option value="28602">Lake Solano Park Fishing Pond (Solano)</option>
+<option value="13165">Lake Sterling (Nevada)</option>
+<option value="3021">Lake Tabeaud (Amador)</option>
+<option value="26526">Lake Tahoe (El Dorado, Placer)</option>
+<option value="13421">Lake Valley Reservoir (Placer)</option>
+<option value="7714">Lake Wohlford (San Diego)</option>
+<option value="4413">Lakeshore Park Pond (Alameda)</option>
+<option value="26693">Lane Lake (Mono)</option>
+<option value="27428">Lassen Pines Pond (Shasta)</option>
+<option value="17780">Laura Lake (Madera)</option>
+<option value="18171">Laurel Lake #1 (Mono)</option>
+<option value="18178">Laurel Lake #2 (Mono)</option>
+<option value="15628">Leavitt Lake (Mono)</option>
+<option value="500822">Lee Vining Creek (Mono)</option>
+<option value="500823">Lee Vining Creek South Fork (Mono)</option>
+<option value="7367">Legg Lakes (Los Angeles)</option>
+<option value="28527">Lely Aquatic Park Pond (Glenn)</option>
+<option value="1922">Letts Lake (Colusa)</option>
+<option value="500827">Lewis Creek (Madera)</option>
+<option value="859">Lewiston Lake (Trinity)</option>
+<option value="28572">Libby Water (Calaveras)</option>
+<option value="18221">Lillian Lake (Madera)</option>
+<option value="8004">Lily Lake (Modoc)</option>
+<option value="27437">Lincoln Park Lake (Los Angeles)</option>
+<option value="27447">Lindo Lake (San Diego)</option>
+<option value="12671">Lindsey Lake Lower (Nevada)</option>
+<option value="12654">Lindsey Lake Upper (Nevada)</option>
+<option value="12183">Little Grass Valley Reservoir (Plumas)</option>
+<option value="7498">Little Lake (Riverside)</option>
+<option value="501622">Little Truckee River Hwy 89 (Sierra)</option>
+<option value="502239">Little Truckee River, Perazzo Meadows (Sierra)</option>
+<option value="17377">Little Walker Lake (Mono)</option>
+<option value="500850">Little Walker River (Mono)</option>
+<option value="13500">Loch Leven Lakes (lower) (Placer)</option>
+<option value="13534">Loch Leven Lakes (upper) (Placer)</option>
+<option value="4913">Loch Lomond (Santa Cruz)</option>
+<option value="500860">Lone Pine Creek (Inyo)</option>
+<option value="21464">Lone Pine Lake (Inyo)</option>
+<option value="58">Lonesome Lake (Siskiyou)</option>
+<option value="11151">Long Lake (Lassen)</option>
+<option value="27396">Long Lake (Tehama)</option>
+<option value="12795">Long Lake, Grouse Ridge (Nevada)</option>
+<option value="26567">Long Lake, Highway 44 (Lassen)</option>
+<option value="13750">Loon Lake (El Dorado)</option>
+<option value="6664">Lopez Lake (San Luis Obispo)</option>
+<option value="5284">Los Banos Reservoir (Merced)</option>
+<option value="27407">Los Vaqueros Reservoir (Contra Costa)</option>
+<option value="13753">Lost Lake (El Dorado)</option>
+<option value="15404">Lost Lake (Alpine)</option>
+<option value="14635">Lost Lakes (Lower) (Alpine)</option>
+<option value="14648">Lost Lakes (Upper) (Alpine)</option>
+<option value="189">Lower Bear Lake (Siskiyou)</option>
+<option value="12098">Lower Bucks Lake (Plumas)</option>
+<option value="13212">Lower Lola Montez Lake (Nevada)</option>
+<option value="7921">Lower Otay Lake (San Diego)</option>
+<option value="28298">Lumsden Pond (El Dorado)</option>
+<option value="17168">Lundy Lake (Mono)</option>
+<option value="500891">Lyons Canal (Columbia Ditch) (Tuolumne)</option>
+<option value="27404">Lyons Lake (Nevada)</option>
+<option value="16955">Lyons Reservoir (Tuolumne)</option>
+<option value="500894">Lytle Creek Middle Fork (San Bernardino)</option>
+<option value="500895">Lytle Creek North Fork (San Bernardino)</option>
+<option value="7351">MacArthur Park Lake (Los Angeles)</option>
+<option value="10217">Magee Lake (Shasta)</option>
+<option value="27438">Magic Johnson Lake (Los Angeles)</option>
+<option value="18076">Mamie Lake (Mono)</option>
+<option value="500902">Mammoth Creek (Mono)</option>
+<option value="18988">Mammoth Pool Lake (Fresno, Madera)</option>
+<option value="310">Man Eaten Lake (Siskiyou)</option>
+<option value="19955">Manzanita Lake (Madera)</option>
+<option value="500910">Markleeville Creek (Alpine)</option>
+<option value="13318">Martis Creek Reservoir (Nevada, Placer)</option>
+<option value="18091">Mary Lake (Mono)</option>
+<option value="2753">Mather Lake (Sacramento)</option>
+<option value="18086">McCleod Lake (Mono)</option>
+<option value="602">McCloud Reservoir (Shasta)</option>
+<option value="501874">McCloud River, Fowlers, Lower Falls (Siskiyou)</option>
+<option value="500924">McCloud River, Lakin Dam (Siskiyou)</option>
+<option value="4245">McClure Reservoir (Mariposa)</option>
+<option value="10977">McCoy Flat Reservoir (Lassen)</option>
+<option value="997">McCumber Reservoir (Shasta)</option>
+<option value="500930">McGee Creek (Mono)</option>
+<option value="4426">McSwain Reservoir (Mariposa)</option>
+<option value="12636">Meadow Lake (Nevada)</option>
+<option value="14808">Meadow Lake (Alpine)</option>
+<option value="28525">Meadow Vista Park Pond (Placer)</option>
+<option value="8879">Medicine Lake (Siskiyou)</option>
+<option value="8878">Medicine Lake Little (Siskiyou)</option>
+<option value="4169">Merced Lake North (San Francisco)</option>
+<option value="4171">Merced Lake South (San Francisco)</option>
+<option value="500942">Merced River, Section I (Merced)</option>
+<option value="500943">Merced River, Section ll (Mariposa)</option>
+<option value="1817">Mile Pond (Butte)</option>
+<option value="27448">Mile Square Park Lake (Orange)</option>
+<option value="12862">Milk Lake (Nevada)</option>
+<option value="500950">Mill Creek (Mono)</option>
+<option value="27461">Mill Creek Lake (Mendocino)</option>
+<option value="617">Mill Creek Lake Lower (Humboldt)</option>
+<option value="500959">Miller Canyon Creek (San Bernardino)</option>
+<option value="6540">Ming Lake (Kern)</option>
+<option value="18714">Minnie Lake (Fresno)</option>
+<option value="20282">Mirror Lake (Fresno)</option>
+<option value="500968">Moccasin Creek (Tuolumne)</option>
+<option value="4250">Modesto Reservoir (Stanislaus)</option>
+<option value="28530">Modesto VFW Park Pond (Stanislaus)</option>
+<option value="6967">Mojave Narrows Regional Park Lake (San Bernardino)</option>
+<option value="500978">Molybdenite Creek (Mono)</option>
+<option value="500979">Mono Creek (Fresno)</option>
+<option value="500984">Montgomery Creek (Shasta)</option>
+<option value="18183">Monument Lake (Madera)</option>
+<option value="28597">Mooney Grove Park Pond (Tulare)</option>
+<option value="7914">Morena Reservoir (San Diego)</option>
+<option value="15155">Mosquito Lake, Lower (Alpine)</option>
+<option value="15158">Mosquito Lake, Upper (Alpine)</option>
+<option value="28536">Mount Whitney Hatchery Display Pond (Inyo)</option>
+<option value="1134">Mountain Meadows Reservoir (Lassen)</option>
+<option value="28573">Moura Pond (Mendocino)</option>
+<option value="20073">Muriel Lake (Fresno)</option>
+<option value="28303">Murry Park Pond (Tulare)</option>
+<option value="199">Muslatt Lake (Del Norte)</option>
+<option value="20729">Mystery Lake (Fresno)</option>
+<option value="501820">Nacimiento River, Upper (Monterey)</option>
+<option value="501015">Nelder Creek (Madera)</option>
+<option value="652">Nelson Corral Lake (Lassen)</option>
+<option value="20969">Nelson Lake Lower (Fresno)</option>
+<option value="26882">New Melones Reservoir (Calaveras, Tuolumne)</option>
+<option value="501024">Nobe Young Creek (Tulare)</option>
+<option value="1038">Nora Lake (Shasta)</option>
+<option value="18376">Norris Lake (Madera)</option>
+<option value="10374">North Battle Creek Reservoir (Shasta)</option>
+<option value="20117">North Lake (Inyo)</option>
+<option value="28595">North Natomas Regional Park Pond (Sacramento)</option>
+<option value="27397">North Yolla Bolly Lake (Tehama)</option>
+<option value="13987">Number 3 Lake (El Dorado)</option>
+<option value="27414">Oak Grove Park Lake (San Joaquin)</option>
+<option value="17213">Odell Lake (Mono)</option>
+<option value="27408">Okizu Camp Ponds (Butte)</option>
+<option value="314">Oogaromtock Lake (Siskiyou)</option>
+<option value="19253">Orchid Lake (Fresno)</option>
+<option value="26575">Oroville Lake (Butte)</option>
+<option value="28605">Oroville Wildlife Area Finger Pond A (Butte)</option>
+<option value="28606">Oroville Wildlife Area Finger Pond C (Butte)</option>
+<option value="219">Orr Lake (Siskiyou)</option>
+<option value="501051">Owens River, below Tinnemaha (Inyo)</option>
+<option value="501053">Owens River, Section 2 (Inyo)</option>
+<option value="501054">Owens River, Section 3 (Mono)</option>
+<option value="12343">Packer Lake (Sierra)</option>
+<option value="20116">Paine Lake (Fresno)</option>
+<option value="27409">Paradise Pond (Butte)</option>
+<option value="1382">Paradise Reservoir (Butte)</option>
+<option value="3124">Pardee Reservoir (Amador, Calaveras)</option>
+<option value="9269">Patterson Lake (Modoc)</option>
+<option value="27439">Peck Road Park Lake (Los Angeles)</option>
+<option value="501070">Peppermint Creek (Tulare)</option>
+<option value="501071">Peppermint Creek, Lower (Tulare)</option>
+<option value="501072">Peppermint Creek, Upper (Tulare)</option>
+<option value="7415">Perris Lake (Riverside)</option>
+<option value="11851">Philbrook Reservoir (Butte)</option>
+<option value="1787">Pillsbury Reservoir (Lake)</option>
+<option value="9337">Pine Creek Basin Lake #1 (Modoc)</option>
+<option value="9328">Pine Creek Basin Lake #2 (Modoc)</option>
+<option value="397">Pine Creek Reservoir (Modoc)</option>
+<option value="21343">Pine Flat Reservoir (Fresno)</option>
+<option value="15944">Pinecrest Lake (Tuolumne)</option>
+<option value="5321">Pinto Lake (Santa Cruz)</option>
+<option value="501096">Pit River South Fork (Modoc)</option>
+<option value="16441">Piute Lake (Tuolumne)</option>
+<option value="1522">Plaskett Meadows Pond (Glenn)</option>
+<option value="28578">Plaza Park Pond (Tulare)</option>
+<option value="4507">Pleasant Valley Reservoir (Inyo)</option>
+<option value="501103">Plum Creek (Tehama)</option>
+<option value="703123">Plumas-Sierra County Fair Temporary Pond (Plumas)</option>
+<option value="19303">Portal Forebay (Fresno)</option>
+<option value="11237">Posey Lake (Lassen)</option>
+<option value="501111">Powerhouse Stream (Tuolumne)</option>
+<option value="27449">Prado Park Lake (San Bernardino)</option>
+<option value="12920">Prosser Reservoir (Nevada)</option>
+<option value="19310">Pryor Lake (Fresno)</option>
+<option value="7306">Puddingstone Lake (Los Angeles)</option>
+<option value="18344">Purple Lake (Fresno)</option>
+<option value="6918">Pyramid Lake (Los Angeles)</option>
+<option value="20762">Rae Lake (Fresno)</option>
+<option value="27410">Railroad Days Pool (Plumas)</option>
+<option value="18186">Rainbow Lake (Madera)</option>
+<option value="9470">Rainbow Pond (Modoc)</option>
+<option value="27450">Ralph Clark Regional Park Lake (Orange)</option>
+<option value="2848">Ralphine Lake (Sonoma)</option>
+<option value="501128">Rancheria Creek (Fresno)</option>
+<option value="7379">Rancho Jurupa Park Pond (Riverside)</option>
+<option value="3028">Rancho Seco Lake (Sacramento)</option>
+<option value="27440">Rancho Simi Park Lake (Ventura)</option>
+<option value="131">Raspberry Lake (Siskiyou)</option>
+<option value="14778">Raymond Lake (Alpine)</option>
+<option value="14544">Red Lake (Alpine)</option>
+<option value="17153">Red Lake (Mono)</option>
+<option value="20425">Red Lake (Fresno)</option>
+<option value="21272">Red Lake (Inyo)</option>
+<option value="20701">Redinger Lake (Fresno, Madera)</option>
+<option value="17992">Reds Lake (Madera)</option>
+<option value="28292">Reseda Park Lake (Los Angeles)</option>
+<option value="8789">Reservoir &quot;C&quot; (Modoc)</option>
+<option value="26531">Reservoir &quot;F&quot; (Modoc)</option>
+<option value="501146">Reyes Creek (Ventura)</option>
+<option value="10823">Rim Lake (Lassen)</option>
+<option value="1000000">Rio Vista Derby Pond (Solano)</option>
+<option value="27406">Rios Pond (Calaveras)</option>
+<option value="703124">River Bend Elementary School Derby Temporary Pond (Yuba)</option>
+<option value="27466">River Walk Lake (Kern)</option>
+<option value="501150">Robinson Creek (Mono)</option>
+<option value="501151">Rock Creek (Madera)</option>
+<option value="18767">Rock Creek Lake (Inyo)</option>
+<option value="501154">Rock Creek, Section 1 (Mono)</option>
+<option value="501155">Rock Creek, Section 2 (Mono)</option>
+<option value="15265">Rock Lake (Alpine)</option>
+<option value="12569">Rock Lake Lower (Nevada)</option>
+<option value="12561">Rock Lake Upper (Nevada)</option>
+<option value="13780">Rockbound Lake (El Dorado)</option>
+<option value="17887">Rockbound Lake (Madera)</option>
+<option value="20326">Rocky Bottom Lake (Inyo)</option>
+<option value="2063">Rollins Reservoir (Nevada, Placer)</option>
+<option value="15601">Roosevelt Lake (Mono)</option>
+<option value="17843">Rosalie Lake (Madera)</option>
+<option value="16695">Rosasco Lake (Tuolumne)</option>
+<option value="27454">Round Corral Reservoir (Lassen)</option>
+<option value="14469">Round Lake (Alpine, El Dorado)</option>
+<option value="14589">Round Top Lake (Alpine)</option>
+<option value="11748">Round Valley Reservoir (Plumas)</option>
+<option value="503128">Rowdy Creek (downstream of Rowdy Creek Rd Crossing) (Del Norte)</option>
+<option value="13831">Rubicon Reservoir (El Dorado)</option>
+<option value="17709">Ruby Lake (Madera)</option>
+<option value="501185">Rush Creek (Mono)</option>
+<option value="501705">Russian River, Upper East Branch (Mendocino)</option>
+<option value="501627">Russian River, West Branch (Mendocino)</option>
+<option value="1062">Ruth Reservoir (Trinity)</option>
+<option value="501199">Sacramento River (Shasta)</option>
+<option value="501200">Sacramento River (Siskiyou)</option>
+<option value="501203">Sacramento River South Fork (Siskiyou)</option>
+<option value="501205">Saddlebag Creek (Lee Vining Creek) (Mono)</option>
+<option value="17271">Saddlebag Lake (Mono)</option>
+<option value="20871">Saddlerock Lake (Inyo)</option>
+<option value="12326">Salmon Lake, Lower (Sierra)</option>
+<option value="12309">Salmon Lake, Upper (Sierra)</option>
+<option value="502250">Salsipuedes Creek (Monterey)</option>
+<option value="501230">San Joaquin River, below Friant Dam (Fresno, Madera)</option>
+<option value="501228">San Joaquin River, Middle Fork (Madera)</option>
+<option value="501229">San Joaquin River, South Fork (Fresno)</option>
+<option value="3884">San Pablo Reservoir (Contra Costa)</option>
+<option value="7841">San Vicente Reservoir (San Diego)</option>
+<option value="27415">Sandy Wool Lake (Santa Clara)</option>
+<option value="109">Sanger Lake (Del Norte)</option>
+<option value="501243">Santa Ana River (San Bernardino)</option>
+<option value="501244">Santa Ana River South Fork (San Bernardino)</option>
+<option value="27441">Santa Fe Reservoir (Los Angeles)</option>
+<option value="6595">Santa Margarita Lake (San Luis Obispo)</option>
+<option value="12358">Sardine Lake Lower (Sierra)</option>
+<option value="12360">Sardine Lake Upper (Sierra)</option>
+<option value="12521">Sawmill Lake (Nevada)</option>
+<option value="21371">Sawmill Lake (Inyo)</option>
+<option value="27416">Sawmill Pond (El Dorado)</option>
+<option value="12351">Saxonia Lake (Sierra)</option>
+<option value="2958">Schaads Reservoir (Calaveras)</option>
+<option value="18392">Scoop Lake (Fresno)</option>
+<option value="1946">Scotts Flat Reservoir (Nevada)</option>
+<option value="14456">Scotts Lake (Alpine)</option>
+<option value="28296">Scottsdale Pond (Marin)</option>
+<option value="7236">Seccombe Park Lake (San Bernardino)</option>
+<option value="15588">Secret Lake (Mono)</option>
+<option value="18816">Secret Lake (Inyo)</option>
+<option value="18640">Sedge Lake, Margaret (Fresno)</option>
+<option value="28598">Sequoia Park Pond (Humboldt)</option>
+<option value="27417">Shadow Cliff Lake (Alameda)</option>
+<option value="17809">Shadow Lake (Madera)</option>
+<option value="703126">Shasta County Fairgrounds Sportsman Pond (Shasta)</option>
+<option value="784">Shasta Lake (Shasta)</option>
+<option value="20780">Shaver Lake (Fresno)</option>
+<option value="18860">Shelf Lake (Fresno)</option>
+<option value="501291">Shepherd Creek (Inyo)</option>
+<option value="501293">Sherwin Creek (Mono)</option>
+<option value="10951">Shotoverin Lake (Lassen)</option>
+<option value="14485">Shower Lake (El Dorado)</option>
+<option value="15094">Shriner Lake (Amador)</option>
+<option value="501302">Silver Creek (Alpine)</option>
+<option value="10784">Silver Lake (Lassen)</option>
+<option value="14582">Silver Lake (Amador)</option>
+<option value="17432">Silver Lake (Mono)</option>
+<option value="7084">Silverwood Lake (San Bernardino)</option>
+<option value="28592">Siskiyou County Fairgrounds Pond (Siskiyou)</option>
+<option value="494">Siskiyou Lake (Siskiyou)</option>
+<option value="7564">Skinner Lake (Riverside)</option>
+<option value="12347">Sly Creek Reservoir (Butte, Plumas, Yuba)</option>
+<option value="643">Smith Flat Reservoir (Lassen)</option>
+<option value="12187">Smith Lake (Plumas)</option>
+<option value="501321">Smithneck Creek (Sierra)</option>
+<option value="12293">Snag Lake (Sierra)</option>
+<option value="9332">Snake Lake (Modoc)</option>
+<option value="12030">Snake Lake (Plumas)</option>
+<option value="18034">Sotcher Lake (Madera)</option>
+<option value="20572">South Lake (Inyo)</option>
+<option value="20735">South Lake (Fresno)</option>
+<option value="28294">Southside Park Pond (Sacramento)</option>
+<option value="501333">Spanish Creek (Plumas)</option>
+<option value="13198">Spaulding Reservoir (Nevada)</option>
+<option value="501110">Spear Creek (aka Poso Creek) (Tulare)</option>
+<option value="12227">Spencer Lakes, Upper (Sierra)</option>
+<option value="21600">Spicer Meadows Reservoir (Tuolumne, Alpine)</option>
+<option value="19044">Spire Lake (Inyo)</option>
+<option value="19059">Split Lake (Inyo)</option>
+<option value="11885">Spring Valley Lake (Plumas)</option>
+<option value="28307">Spring Valley Pond (Santa Clara)</option>
+<option value="27395">Square Lake (Tehama)</option>
+<option value="501351">Squaw Creek (Siskiyou)</option>
+<option value="12444">Stampede Reservoir (Sierra)</option>
+<option value="18475">Stanford Lake (Mono)</option>
+<option value="501359">Stanislaus River Clarks Fork (Alpine, Tuolumne)</option>
+<option value="501360">Stanislaus River Middle Fork (Tuolumne)</option>
+<option value="501361">Stanislaus River North Fork (Calaveras, Tuolumne)</option>
+<option value="501362">Stanislaus River South Fork (Tuolumne)</option>
+<option value="11513">Star Lake (Plumas)</option>
+<option value="19605">Star Lake (Fresno)</option>
+<option value="18408">Star Lake, Lower (Madera)</option>
+<option value="17903">Starkweather Lake (Madera)</option>
+<option value="703066">Steehead Festival Children&#39;s temporary pond (Sonoma)</option>
+<option value="19419">Steelhead Lake (Fresno)</option>
+<option value="17219">Steelhead Lake, Mill Creek (Mono)</option>
+<option value="501379">Stony Creek (Tulare)</option>
+<option value="8956">Stough Reservoir (Modoc)</option>
+<option value="501383">Strawberry Creek (Riverside)</option>
+<option value="20336">Strawberry Lake (Fresno)</option>
+<option value="14044">Stumpy Meadows Reservoir (El Dorado)</option>
+<option value="6285">Success Reservoir (Tulare)</option>
+<option value="26875">Sugar Pine Reservoir (Placer)</option>
+<option value="7605">Sulphur Creek Reservoir (Orange)</option>
+<option value="20330">Summit Lake (Fresno)</option>
+<option value="20841">Summit Lake (Inyo)</option>
+<option value="7874">Sunbeam Lake (Imperial)</option>
+<option value="11337">Sundae Lake (Lassen)</option>
+<option value="501402">Susan River Lower (Lassen)</option>
+<option value="501403">Susan River Middle (Lassen)</option>
+<option value="501404">Susan River Upper (Lassen)</option>
+<option value="20743">Swede Lake (Fresno)</option>
+<option value="28570">Sycamore Island Pond (Madera)</option>
+<option value="501411">Symmes Creek (Inyo)</option>
+<option value="501414">Taboose Creek (Inyo)</option>
+<option value="501416">Tamarack Creek (Fresno)</option>
+<option value="501426">Taylor Creek (El Dorado)</option>
+<option value="4018">Temescal Lake (Alameda)</option>
+<option value="501431">Tenmile Creek, Upper (Fresno)</option>
+<option value="1743">Thermalito Afterbay (Butte)</option>
+<option value="1721">Thermalito Forebay (Butte)</option>
+<option value="28531">Thomas Ranch Pond (Tuolumne)</option>
+<option value="12041">Three Lakes, Middle (Plumas)</option>
+<option value="12043">Three Lakes, Upper (Plumas)</option>
+<option value="15287">Three Quarter Lake (Alpine)</option>
+<option value="501442">Tinnemaha Creek (Inyo)</option>
+<option value="17336">Tioga Lake (Mono)</option>
+<option value="20656">Tocher Lake (Fresno)</option>
+<option value="12556">Tollhouse Lake (Nevada)</option>
+<option value="19302">Tooth Lake (Fresno)</option>
+<option value="2532">Topaz Lake (Mono)</option>
+<option value="17226">Towser Lake (Mono)</option>
+<option value="501455">Trabuco Creek (Orange)</option>
+<option value="11003">Trail Lake (Lassen)</option>
+<option value="10472">Triangle Lake (Lassen)</option>
+<option value="7408">Tri-city Lake (Orange)</option>
+<option value="669">Trinity Lake (Clair Engle Lake) (Trinity)</option>
+<option value="501743">Trinity River East Fork (Trinity)</option>
+<option value="501467">Trinity River Stuart Fork (Trinity)</option>
+<option value="501468">Trinity River, above Clair Engle Lake (Trinity)</option>
+<option value="207">Trout Lake (Siskiyou)</option>
+<option value="501470">Truckee River (Placer)</option>
+<option value="17133">Trumbull Lake (Mono)</option>
+<option value="27465">Truxtun Lake (Kern)</option>
+<option value="702029">Tryon Park Pool (Calaveras)</option>
+<option value="501474">Tule River Middle Fork (Tulare)</option>
+<option value="501475">Tule River North Fork, Middle Fork #1 (Tulare)</option>
+<option value="501476">Tule River South Fork, Middle Fork #2 (Tulare)</option>
+<option value="501477">Tule River South Fork, Middle Fork #3 (Tulare)</option>
+<option value="3910">Tulloch Lake (Calaveras, Tuolumne)</option>
+<option value="28329">Tuolumne County Fair Pool (Tuolumne)</option>
+<option value="501481">Tuolumne River Middle Fork (Tuolumne)</option>
+<option value="501482">Tuolumne River North Fork (Tuolumne)</option>
+<option value="501483">Tuolumne River South Fork (Tuolumne)</option>
+<option value="4321">Turlock Reservoir (Stanislaus)</option>
+<option value="10620">Turnaround Lake (Lassen)</option>
+<option value="501487">Tuttle Creek (Inyo)</option>
+<option value="21049">Twin Buck Lake, East (Fresno)</option>
+<option value="21058">Twin Buck Lake, West (Fresno)</option>
+<option value="10533">Twin Lake (Lassen)</option>
+<option value="14780">Twin Lake (Alpine)</option>
+<option value="16313">Twin Lake Lower, Bridgeport (Mono)</option>
+<option value="19583">Twin Lake Lower, Kaiser (Fresno)</option>
+<option value="16523">Twin Lake Upper, Bridgeport (Mono)</option>
+<option value="18044">Twin Lakes, Mammoth (Mono)</option>
+<option value="20557">Tyee Lake #6 (Inyo)</option>
+<option value="15311">Union Reservoir (Alpine)</option>
+<option value="14059">Union Valley Reservoir (El Dorado)</option>
+<option value="15763">Upper Long Lake (Mono)</option>
+<option value="503122">Upper McCloud River (Siskiyou)</option>
+<option value="15743">Upper Relief Valley Lakes, North (Tuolumne)</option>
+<option value="15772">Upper Relief Valley Lakes, South (Tuolumne)</option>
+<option value="18288">Vandeberg Lake (Madera)</option>
+<option value="4631">Vasona Reservoir (Santa Clara)</option>
+<option value="19266">Vee Lake (Fresno)</option>
+<option value="18814">Vengeance Lake (Fresno)</option>
+<option value="28587">Veterans Pond (Calaveras)</option>
+<option value="12688">View Lake (Lindsey Lakes) (Nevada)</option>
+<option value="501529">Virginia Creek (Mono)</option>
+<option value="18396">Virginia Lake (Fresno)</option>
+<option value="17148">Virginia Lake Lower (Mono)</option>
+<option value="17150">Virginia Lake Upper (Mono)</option>
+<option value="12364">Volcano Lake (Sierra)</option>
+<option value="12210">Wades Lake (Plumas)</option>
+<option value="501535">Wagon Creek (Siskiyou)</option>
+<option value="19477">Walling Lake (Fresno)</option>
+<option value="13989">Walton Pond (El Dorado)</option>
+<option value="19474">Ward Lake (Fresno)</option>
+<option value="12847">Warren Lake (Nevada)</option>
+<option value="28607">Water Dog Lake (San Mateo)</option>
+<option value="15775">Waterhouse Lake (Tuolumne)</option>
+<option value="27421">Waterloo Gun &amp; Bocci Club Pool (San Joaquin)</option>
+<option value="12470">Weaver Lake (Nevada)</option>
+<option value="21445">Weaver Lake (Tulare)</option>
+<option value="12451">Webber Lake (Sierra)</option>
+<option value="7766">Weist Lake (Imperial)</option>
+<option value="20365">West Lake (Fresno)</option>
+<option value="580">West Valley Reservoir (Lassen, Modoc)</option>
+<option value="501558">West Walker River, Section 2 (Mono)</option>
+<option value="501559">West Walker River, Section 3 (Mono)</option>
+<option value="934">Whiskeytown Lake (Shasta)</option>
+<option value="15633">White Pines Lake (Calaveras)</option>
+<option value="501565">White River (Tulare)</option>
+<option value="28295">William Land Park Pond (Sacramento)</option>
+<option value="501572">Willow Creek North Fork (Madera)</option>
+<option value="501573">Willow Creek, South Fork (Madera)</option>
+<option value="2601">Willow Hills Reservoir (Sacramento)</option>
+<option value="2275">Wise Forebay (Placer)</option>
+<option value="21249">Wishon Reservoir (Fresno)</option>
+<option value="14562">Woods Lake (Alpine)</option>
+<option value="18204">Woods Lakes (upper) (Mono)</option>
+<option value="4014">Woodward Reservoir (Stanislaus)</option>
+<option value="6416">Woollomes Lake (Kern)</option>
+<option value="14295">Wrights Lake (El Dorado)</option>
+<option value="16870">Yellowhammer Lake (Tuolumne)</option>
+<option value="28571">Yolo Portable Pond (Yolo)</option>
+<option value="701930">Yolo Wildlife Area Demonstration Pond (Yolo)</option>
+<option value="28516">Yolo Wildlife Duck Pond (Yolo)</option>
+<option value="7423">Yorba Linda Regional Park Lake (Orange)</option>
+<option value="4530">Yosemite Lake (Merced)</option>
+<option value="12366">Young America Lake (Sierra)</option>
+<option value="501597">Yuba River North Fork (Sierra)</option>
+<option value="501739">Yuba River North Fork, Downieville (Sierra)</option>
+<option value="703125">Yuba-Sutter Fairground temporary pond (Sutter)</option>
+<option value="27451">Yucaipa Lake (San Bernardino)</option>
+</select>
+
+                        <select id="RegionCountyMappings" name="RegionCountyMappings" style="visibility: hidden;"><option value=""></option>
+<option value="1">R3</option>
+<option value="2">R2</option>
+<option value="3">R2</option>
+<option value="4">R2</option>
+<option value="5">R2</option>
+<option value="6">R2</option>
+<option value="7">R3</option>
+<option value="8">R1</option>
+<option value="9">R2</option>
+<option value="10">R4</option>
+<option value="11">R2</option>
+<option value="12">R1</option>
+<option value="13">R6</option>
+<option value="14">R6</option>
+<option value="15">R4</option>
+<option value="16">R4</option>
+<option value="17">R2</option>
+<option value="18">R1</option>
+<option value="19">R5</option>
+<option value="20">R4</option>
+<option value="21">R3</option>
+<option value="22">R4</option>
+<option value="23">R1</option>
+<option value="24">R4</option>
+<option value="25">R1</option>
+<option value="26">R6</option>
+<option value="27">R4</option>
+<option value="28">R3</option>
+<option value="29">R2</option>
+<option value="30">R5</option>
+<option value="31">R2</option>
+<option value="32">R2</option>
+<option value="33">R6</option>
+<option value="34">R2</option>
+<option value="34">R3</option>
+<option value="35">R4</option>
+<option value="36">R6</option>
+<option value="37">R5</option>
+<option value="38">R3</option>
+<option value="39">R2</option>
+<option value="39">R3</option>
+<option value="40">R4</option>
+<option value="41">R3</option>
+<option value="42">R5</option>
+<option value="43">R3</option>
+<option value="44">R3</option>
+<option value="45">R1</option>
+<option value="46">R2</option>
+<option value="47">R1</option>
+<option value="48">R3</option>
+<option value="49">R3</option>
+<option value="50">R4</option>
+<option value="51">R2</option>
+<option value="52">R1</option>
+<option value="53">R1</option>
+<option value="54">R4</option>
+<option value="55">R4</option>
+<option value="56">R5</option>
+<option value="57">R2</option>
+<option value="57">R3</option>
+<option value="58">R2</option>
+</select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="control-label" for="Params_PlantTimeFrame">Time Period</label>
+                        <div>
+                                <div class="nowrap">
+                                    <input data-val="true" data-val-number="The field Time Period must be a number." id="list1" name="Params.PlantTimeFrame" text="All Plants (9/13/2025 - 9/27/2026)" type="radio" value="1" />
+                                    <label for="list1" style="font-size:small; font-style:normal; ">All Plants (9/13/2025 - 9/27/2026)</label>
+                                </div>
+                                <div class="nowrap">
+                                    <input checked="checked" id="list2" name="Params.PlantTimeFrame" text="Current-Future Plants (9/13/2026 - 9/27/2026)" type="radio" value="2" />
+                                    <label for="list2" style="font-size:small; font-style:normal; ">Current-Future Plants (9/13/2026 - 9/27/2026)</label>
+                                </div>
+                                <div class="nowrap">
+                                    <input id="list3" name="Params.PlantTimeFrame" text="Past Plants (9/13/2025 - 9/13/2026)" type="radio" value="3" />
+                                    <label for="list3" style="font-size:small; font-style:normal; ">Past Plants (9/13/2025 - 9/13/2026)</label>
+                                </div>
+                        </div>
+
+
+
+                    </div>
+
+
+
+
+                </div>
+
+
+                <div class="row" style="margin-top:20px">
+                    <div class="col-md-8">
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <input name="submit" type="submit" value="Search" class="btn btn-default" />
+                        <input name="submit" type="submit" value="Clear" class="btn btn-secondary" />
+                        <input name="submit" type="submit" value="Export" class="btn btn-secondary" />
+                        
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+</form>
+
+
+
+
+
+
+
+<div class="container-fluid">
+
+
+
+    <div class="small">
+
+        
+
+        <table class="table table-sm table-striped wrap" id="fishPlantsExternal" style="width:100%">
+
+            <thead>
+                <tr>
+
+
+                    <th style="text-align:left">
+                        Week of Plant
+                    </th>
+
+                    <th>
+                        Water Name
+                    </th>
+
+                    <th>
+                        Counties
+                    </th>
+
+
+                    <th>
+                        Species
+                    </th>
+
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+            </main>
+        </div>
+    </div>
+    
+<footer id="footer" class="global-footer">
+    <button class="return-top"><span class="sr-only">Back to top</span></button>
+    <cagov-back-to-top data-hide-after="7000" data-label="Back to top">
+    </cagov-back-to-top>
+    <div class="container">
+        <div class="row">
+            <div class="three-quarters">
+                <ul class="footer-links">
+                    <li><a href="#skip-to-content">Back to Top</a></li>
+                    <li><a href="https://wildlife.ca.gov/Conditions-of-Use">Conditions of Use</a></li>
+                    <li><a href="https://wildlife.ca.gov/Privacy-Policy">Privacy Policy</a></li>
+                    <li><a href="https://wildlife.ca.gov/Accessibility">Accessibility</a></li>
+                    
+                    <li><a href="https://wildlife.ca.gov/Contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="quarter text-right">
+                <ul class="socialsharer-container">
+                    <li><a href="https://wildlife.ca.gov/Connect" title="Facebook Pages"><span class="ca-gov-icon-facebook" aria-hidden="true"></span><span class="sr-only">Facebook</span></a></li>
+                    <li><a href="https://wildlife.ca.gov/Connect" title="Twitter Feeds"><span class="ca-gov-icon-twitter" aria-hidden="true"></span><span class="sr-only">Twitter</span></a></li>
+                    <li><a href="https://www.youtube.com/user/CaliforniaDFG" title="YouTube Channel"><span class="ca-gov-icon-youtube" aria-hidden="true"></span><span class="sr-only">YouTube</span></a></li>
+                    <li><a href="https://wildlife.ca.gov/Connect" title="Blog Sites"><span class="ca-gov-icon-loud-speaker" aria-hidden="true"></span><span class="sr-only">Blogs</span></a></li>
+                    <li><a href="https://www.flickr.com/photos/CaliforniaDFG" title="Photos"><span class="ca-gov-icon-flickr" aria-hidden="true"></span><span class="sr-only">Flickr</span></a></li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    
+    <div class="copyright">
+        <div class="container">
+            Copyright &copy; 2026 State of California
+        </div>
+    </div>
+</footer>
+
+
+<div class="decoration-last">&nbsp;</div>
+    
+<script type="application/json" id="globalConfig">
+    {
+        "SERVER_MAINTENANCE": {"MSToStart":0,"MSToEnd":0}
+    }
+</script>
+    <script src="/statetemplate_v5/js/cagov.core.min.js" Type="text/javascript"></script>
+    <script src="/statetemplate_v5/js/wildlifecagov.js" Type="text/javascript"></script>
+    
+    
+
+    <script src="/Scripts/jquery-3.6.0.min.js"></script>
+    <script src="/Scripts/datatables-2.0.8/dataTables.min.js"></script>
+    <script src="/Scripts/select2-4.0.13/select2.min.js"></script>
+    <script src="/FishPlants/Scripts/fish-plants-index.js"></script>
+    <script src="/FishPlants/Scripts/fish-plants-external-index.js"></script>
+
+
+
+
+
+</body>
+</html>

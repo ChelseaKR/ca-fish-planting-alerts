@@ -120,15 +120,21 @@ Connect with this exact identifier:
 | Reference Name (internal, App Store Connect only) | `Full Access` |
 | Price tier | $9.99 (USD Tier matching $9.99; DECISIONS 0003/0007) |
 | Display Name (customer-facing) | `Full Access` |
-| Description (customer-facing) | `Unlocks favouriting as many waters as you like, with an alert for every one of them.` |
+| Description (customer-facing, 45 max) | `Alerts when a favourite water is listed` (39 characters) |
 | Cleared for sale | Yes, once the app record itself is created |
-| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView` — reachable from About > "Unlock full access", or automatically when favouriting past the free-tier cap) is required by App Store Connect for the IAP's own review |
+| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView` — reachable from About > "Unlock full access" only; there is no other trigger) is required by App Store Connect for the IAP's own review |
 
-App-side, what it unlocks is currently a **placeholder** pending a real
-free/paid product decision: `PlantingCore/Sources/PlantingCore/FreeTier.swift`
-caps non-purchasers at `FreeTier.maxFavourites` (3) favourited waters;
-purchasing removes the cap. See DECISIONS 0007 for why this is a
-placeholder and not guessed-at real scope.
+App-side, what it unlocks is decided (DECISIONS 0009, resolving 0007's
+"owner follow-up"): favouriting and browsing are free and unconstrained for
+everyone, matching the free website. Purchasing unlocks **local
+notifications** — a notification on this device whenever a favourited
+water's planting schedule changes. Without the purchase, favouriting still
+works in full; no local notification is ever scheduled for any favourited
+water. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
+(`notificationsAllowed(isEntitled:)`) and
+`ios/CAFishPlanting/App/AppEnvironment.swift`'s `performBackgroundRefresh()`,
+which is the one call site that checks it before
+`NotificationScheduler.schedule(_:)`.
 
 ### Local testing without an App Store Connect product
 
@@ -329,6 +335,8 @@ xcrun altool --upload-app -f build/export/CAFishPlanting.ipa \
 5. **No screenshots captured yet** — see "Screenshots plan" above; none
    of the required App Store Connect image sizes exist in this repo or
    elsewhere in this session's outputs.
-6. **The free/paid feature split is a placeholder** — see DECISIONS 0007
-   and `PlantingCore/Sources/PlantingCore/FreeTier.swift`. The purchase
-   mechanism is real; what it unlocks is Chelsea's call and is not final.
+6. ~~The free/paid feature split is a placeholder~~ **Closed 2026-09-17**
+   (DECISIONS 0009). Favouriting and browsing are free and unconstrained
+   for everyone; the purchase unlocks local notifications on a favourited
+   water's schedule change. See
+   `PlantingCore/Sources/PlantingCore/FreeTier.swift`.

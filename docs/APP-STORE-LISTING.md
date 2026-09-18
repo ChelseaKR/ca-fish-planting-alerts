@@ -58,11 +58,9 @@ because without it the page has no contact line.
 | Display name | 30 | `Full Access` | 11 |
 | Description | 45 | `Alerts when a favourite water is listed` | 39 |
 
-PR #12 proposes this IAP description: "Unlocks a notification on this device
-whenever one of your favourite waters appears in CDFW's new weekly schedule.
-Favouriting and browsing are always free." That is **156** characters,
-against App Store Connect's 45-character limit for an IAP description. Use
-the line above in the form, or check the form's limit before pasting.
+PR #12 first proposed a 156-character IAP description, well over App Store
+Connect's 45-character limit. #12 now uses the line above in both
+`APP-STORE.md` and `ios/CAFishPlanting/Configuration.storekit`.
 
 ## Description
 

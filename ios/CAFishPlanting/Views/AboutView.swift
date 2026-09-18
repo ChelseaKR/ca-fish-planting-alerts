@@ -13,7 +13,7 @@ struct AboutView: View {
                     Label("Unlocked", systemImage: "checkmark.seal.fill")
                         .foregroundStyle(.green)
                 } else {
-                    Text("The free version tracks up to \(FreeTier.maxFavourites) favourite waters. Unlock full access to favourite as many as you like.")
+                    Text("Favouriting and browsing are free and unlimited. Unlock full access to get a notification on this device whenever a favourite's stocking schedule changes.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     Button("Unlock full access") { showingPurchaseSheet = true }
@@ -21,12 +21,12 @@ struct AboutView: View {
             }
 
             Section("What this app does") {
-                Text("Favourite California waters and get a notification on this device when one appears in the California Department of Fish and Wildlife's weekly stocking schedule. Every water's page also shows its stocking history.")
+                Text("Favourite any California water for free and browse its full stocking history. With full access, also get a notification on this device when a favourite appears in the California Department of Fish and Wildlife's weekly stocking schedule.")
                 Text("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
             }
 
             Section("How alerts work") {
-                Text("Alerts are local notifications this app schedules on this device — there is no server, no push service, and no account. iOS decides when the app is allowed to refresh in the background, and the schedule itself is weekly, so an alert arrives within the week a water is added, not the minute it is.")
+                Text("Alerts are local notifications this app schedules on this device for full-access purchasers only — there is no server, no push service, and no account. iOS decides when the app is allowed to refresh in the background, and the schedule itself is weekly, so an alert arrives within the week a water is added, not the minute it is.")
                 Text("Notification status: \(authorizationDescription)")
                     .font(.footnote)
                     .foregroundStyle(.secondary)

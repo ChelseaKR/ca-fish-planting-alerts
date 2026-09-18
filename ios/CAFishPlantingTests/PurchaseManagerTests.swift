@@ -1,6 +1,7 @@
 import XCTest
 import StoreKit
 import StoreKitTest
+import UserNotifications
 @testable import CAFishPlanting
 import PlantingCore
 
@@ -127,10 +128,12 @@ final class PurchaseManagerTests: XCTestCase {
 
     // MARK: - Free tier, unlocked
 
-    /// The mirror of `AppEnvironmentTests.testFreeTierCapsNonPurchaserAtMaxFavouritesAndShowsPaywall`:
+    /// The mirror of `AppEnvironmentTests.testNonPurchaserFavouritesAreUnconstrained`:
     /// an actual purchaser (a real purchase through this SKTestSession, not
-    /// a stubbed flag) must have no favourites cap at all.
-    func testPurchaserHasNoFavouriteCap() async throws {
+    /// a stubbed flag) has exactly the same unconstrained favouriting a
+    /// non-purchaser has — favouriting was never part of what this purchase
+    /// unlocks (see `FreeTier`, PlantingCore).
+    func testPurchaserFavouritesAreAlsoUnconstrained() async throws {
         let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: Bundle.main.bundleIdentifier ?? "com.chelseakr.cafishplanting")
         try? FileManager.default.removeItem(at: layout.directory)
 
@@ -141,14 +144,48 @@ final class PurchaseManagerTests: XCTestCase {
 
         let env = AppEnvironment(purchases: manager)
         let waters = try XCTUnwrap(env.snapshot?.waters)
-        XCTAssertGreaterThan(waters.count, FreeTier.maxFavourites, "fixture needs more waters than the cap for this test to mean anything")
+        XCTAssertGreaterThan(waters.count, 10, "fixture needs enough waters for this test to mean anything")
 
-        for water in waters.prefix(FreeTier.maxFavourites + 2) {
+        for water in waters.prefix(10) {
             env.toggleFavourite(water)
         }
 
-        XCTAssertEqual(env.favourites.count, FreeTier.maxFavourites + 2, "an entitled purchaser must have no favourites cap")
-        XCTAssertNil(env.pendingPaywall)
+        XCTAssertEqual(env.favourites.count, 10, "an entitled purchaser must have no favourites cap")
+    }
+
+    /// The other half of
+    /// `AppEnvironmentTests.testNonPurchaserGetsNoScheduledNotificationEvenWhenAFavouritesScheduleChanges`:
+    /// the exact same favourite-schedule change that produces zero
+    /// notifications for a non-purchaser must produce exactly one for a
+    /// real purchaser (a real purchase through this `SKTestSession`, not a
+    /// stubbed `isEntitled` flag), through the real `performBackgroundRefresh()`
+    /// path.
+    func testPurchaserGetsAScheduledNotificationWhenAFavouritesScheduleChanges() async throws {
+        let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: Bundle.main.bundleIdentifier ?? "com.chelseakr.cafishplanting")
+        try? FileManager.default.removeItem(at: layout.directory)
+
+        let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: layout))
+        try await waitForProductToLoad(manager)
+        await manager.purchase()
+        XCTAssertTrue(manager.isEntitled)
+
+        let env = AppEnvironment(purchases: manager, refresher: makeMockedSnapshotRefresher())
+        let snapshot = try XCTUnwrap(env.snapshot)
+        let target = try XCTUnwrap(waterWithNoCurrentOrFutureListing(in: snapshot), "fixture needs a water with nothing listed at/after source_week yet")
+        env.toggleFavourite(target)
+
+        let (data, newWeekStartISO) = try updatedSnapshotFixture(addingListingTo: target.id, after: snapshot.sourceWeek)
+        MockSnapshotURLProtocol.responseData = data
+        defer { MockSnapshotURLProtocol.responseData = nil }
+
+        let outcome = await env.performBackgroundRefresh()
+        XCTAssertEqual(outcome, .updated, "sanity check: the mocked refresh must actually land as an update")
+
+        let center = UNUserNotificationCenter.current()
+        let pending = await center.pendingNotificationRequests()
+        XCTAssertEqual(pending.map(\.identifier), ["plant.\(target.id).\(newWeekStartISO)"],
+                       "a purchaser must have exactly one notification scheduled, deterministically identified")
+        center.removeAllPendingNotificationRequests()
     }
 
     // MARK: -

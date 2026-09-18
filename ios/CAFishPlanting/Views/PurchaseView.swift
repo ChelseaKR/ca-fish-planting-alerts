@@ -1,13 +1,12 @@
 import SwiftUI
 import StoreKit
 
-/// The purchase sheet. Shown when a non-purchaser hits the free-tier cap
-/// (see `FreeTier` in PlantingCore — a placeholder gate pending a real
-/// free/paid decision) and reachable any time from About.
+/// The purchase sheet. Favouriting and browsing are always free (see
+/// `FreeTier` in PlantingCore); this sheet is reachable only from About >
+/// "Unlock full access", never as an upsell on the favourite action itself.
 struct PurchaseView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(\.dismiss) private var dismiss
-    var contextMessage: String?
 
     private var purchases: PurchaseManager { environment.purchases }
 
@@ -22,19 +21,14 @@ struct PurchaseView: View {
                 if purchases.isEntitled {
                     Text("Full access unlocked")
                         .font(.title2.bold())
-                    Text("Thank you — every water is favouritable and every favourite gets alerts.")
+                    Text("Thank you — every favourite now gets a notification when its stocking schedule changes.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 } else {
-                    if let contextMessage {
-                        Text(contextMessage)
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                    }
                     Text("Unlock full access")
                         .font(.title2.bold())
-                    Text("Favourite as many waters as you like and get an alert for every one of them. One payment, forever — no subscription, no account.")
+                    Text("Favouriting and browsing are always free. Unlock full access to get a notification on this device whenever one of your favourites appears in CDFW's new weekly schedule. One payment, forever — no subscription, no account.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)

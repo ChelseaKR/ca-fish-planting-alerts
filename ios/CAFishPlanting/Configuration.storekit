@@ -8,7 +8,7 @@
       "internalID" : "1380ACD8358C",
       "localizations" : [
         {
-          "description" : "Unlocks favouriting as many waters as you like, with an alert for every one of them.",
+          "description" : "Alerts when a favourite water is listed",
           "displayName" : "Full Access",
           "locale" : "en_US"
         }

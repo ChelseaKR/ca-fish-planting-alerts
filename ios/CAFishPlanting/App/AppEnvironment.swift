@@ -5,21 +5,19 @@ import PlantingCore
 
 /// What to tell the person before the system permission prompt appears —
 /// deliverable #3's "a sentence that says what will and won't happen".
+/// Shown on the first-ever favourite regardless of purchase status, so
+/// permission is already granted by the moment someone unlocks full access
+/// (see `FreeTier`) — `isEntitled` is carried through only so the sentence
+/// can say so accurately, rather than implying alerts start immediately
+/// for a non-purchaser.
 struct FirstFavouriteExplainer: Identifiable {
     let water: Water
+    let isEntitled: Bool
     var id: Water.ID { water.id }
     var sentence: String {
-        "If you allow notifications, this app will alert you on this device, only when \(water.name) or another favourite you add appears in CDFW's new weekly schedule — it will not send any other notification, and nothing about you or your favourites ever leaves this device."
+        let when = isEntitled ? "" : " — once you unlock full access —"
+        return "If you allow notifications, this app will alert you on this device\(when) only when \(water.name) or another favourite you add appears in CDFW's new weekly schedule; it will not send any other notification, and nothing about you or your favourites ever leaves this device."
     }
-}
-
-/// Shown when a non-purchaser tries to favourite past the free-tier cap
-/// (`FreeTier.maxFavourites`, PlantingCore). Carries the water that was
-/// tapped only so a future "and then favourite it" flow is easy to add;
-/// today the sheet is purely informational.
-struct PaywallPrompt: Identifiable {
-    let water: Water
-    var id: Water.ID { water.id }
 }
 
 /// The app's one shared piece of state. Owns the on-disk snapshot, the
@@ -58,16 +56,16 @@ final class AppEnvironment {
     /// or `dismissNotificationExplainer()`.
     var pendingNotificationExplainer: FirstFavouriteExplainer?
 
-    /// Set when a non-purchaser tries to favourite past the free-tier cap.
-    var pendingPaywall: PaywallPrompt?
-
     var snapshot: Snapshot? { store?.snapshot }
     var snapshotOrigin: SnapshotOrigin? { store?.origin }
     var refreshMeta: SnapshotMeta? { store?.meta }
 
-    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil) {
+    /// Tests may inject a pre-built refresher (e.g. one wired to a mocked
+    /// `URLSession` via `SnapshotRefresher.makeSession(protocolClasses:)`)
+    /// to exercise `performBackgroundRefresh()` without a live network call.
+    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil) {
         self.notifications = NotificationScheduler(center: notificationCenter)
-        self.refresher = SnapshotRefresher(session: SnapshotRefresher.makeSession())
+        self.refresher = refresher ?? SnapshotRefresher(session: SnapshotRefresher.makeSession())
         var entitlementStore: EntitlementStore?
         do {
             let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: bundleIdentifier)
@@ -94,15 +92,11 @@ final class AppEnvironment {
 
     func isFavourite(_ id: Water.ID) -> Bool { favourites.contains(id) }
 
+    /// Favouriting is never gated — every water may be favourited by
+    /// anyone, purchaser or not (see `FreeTier`). What the one-time
+    /// purchase unlocks is local notifications, not this.
     func toggleFavourite(_ water: Water) {
         let wasEmpty = favourites.isEmpty
-
-        if !isFavourite(water.id) {
-            guard FreeTier.canAddFavourite(currentCount: favourites.count, isEntitled: purchases.isEntitled) else {
-                pendingPaywall = PaywallPrompt(water: water)
-                return
-            }
-        }
 
         var updated = favourites
         let nowFavourited = updated.toggle(water.id)
@@ -113,16 +107,12 @@ final class AppEnvironment {
             alertState = AlertPlanner.seeding(alertState, favouriting: water.id, snapshot: snapshot)
             try? alertStateStore?.save(alertState)
             if wasEmpty {
-                pendingNotificationExplainer = FirstFavouriteExplainer(water: water)
+                pendingNotificationExplainer = FirstFavouriteExplainer(water: water, isEntitled: purchases.isEntitled)
             }
         } else if !nowFavourited {
             alertState = AlertPlanner.pruning(alertState, unfavouriting: water.id)
             try? alertStateStore?.save(alertState)
         }
-    }
-
-    func dismissPaywall() {
-        pendingPaywall = nil
     }
 
     func confirmNotificationExplainer() async {
@@ -147,9 +137,15 @@ final class AppEnvironment {
 
     /// Entry point for `BGAppRefreshTask`. Refreshes the snapshot, replans
     /// alerts for every favourite against the (possibly) new snapshot, and
-    /// schedules any resulting local notifications. Safe to call with a
-    /// stale or unusable store: it simply does nothing beyond the network
-    /// attempt so the last good snapshot is never disturbed.
+    /// — for a purchaser only (`FreeTier.notificationsAllowed`) — schedules
+    /// any resulting local notifications. Safe to call with a stale or
+    /// unusable store: it simply does nothing beyond the network attempt so
+    /// the last good snapshot is never disturbed.
+    ///
+    /// The alert baseline itself is always replanned and saved, purchaser
+    /// or not: it is bookkeeping ("what's already been seen"), not a
+    /// notification, and keeping it current means a later purchase doesn't
+    /// suddenly announce every listing change that happened while locked.
     func performBackgroundRefresh() async -> RefreshOutcome {
         guard let store else { return .failed("no snapshot store") }
         let outcome = await refresher.refresh(into: store, now: Date())
@@ -157,7 +153,7 @@ final class AppEnvironment {
             let plan = AlertPlanner.plan(snapshot: store.snapshot, favourites: favourites.ids, state: alertState)
             alertState = plan.state
             try? alertStateStore?.save(alertState)
-            if !plan.notifications.isEmpty {
+            if !plan.notifications.isEmpty, FreeTier.notificationsAllowed(isEntitled: purchases.isEntitled) {
                 await notifications.schedule(plan.notifications)
             }
         }

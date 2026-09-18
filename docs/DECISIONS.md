@@ -98,6 +98,10 @@ and real without inventing product scope that is Chelsea's call. Owner
 follow-up: decide the real free/paid split and repoint `FreeTier` (or
 delete it in favour of whatever the real gate turns out to be).
 
+**Owner follow-up resolved by 0009** — favouriting is free and
+unconstrained for everyone; the paid unlock is local notifications, not a
+favourites cap. `FreeTier` is repointed accordingly, not deleted.
+
 ## 0004 — Licence before bytes (2026-09-13)
 
 CDFW's terms are quoted verbatim in `docs/LICENSES-AND-ATTRIBUTION.md` before
@@ -145,7 +149,7 @@ audience already uses for the thing the product tracks.
   so no copy says "only",
   "first" or "the app for".
 
-## 0007 — Zero parsed rows is a valid empty week, not a parse error (2026-09-14)
+## 0008 — Zero parsed rows is a valid empty week, not a parse error (2026-09-14)
 
 `parse_schedule_table` originally raised on any zero-row table body,
 because the 54 weeks of real production data on hand (2025-09-14 to
@@ -167,3 +171,40 @@ for the reasoning kept next to the code.
 This does not weaken decision 0005: a stale page is still caught
 independently and earlier, in `fetch.py`'s own freshness check, before
 `parse_schedule_table` ever sees the HTML.
+
+## 0009 — Free/paid split: notifications are the paid unlock, not favouriting (2026-09-17)
+
+Resolves 0007's "owner follow-up" (decide the real free/paid split and
+repoint `FreeTier` or delete it). The placeholder gate 0007 shipped — a cap
+of 3 favourited waters for non-purchasers — is removed entirely.
+
+- **Free, for everyone, no purchase required:** favouriting and browsing
+  any water, with the same full lookup capability as the free website
+  (0001) already gives anyone. This app's free tier must never be worse
+  than the free site.
+- **Paid (`com.chelseakr.cafishplanting.fullaccess`, still $9.99, still
+  one-time — 0003/0007 unchanged on price and mechanism):** local push
+  notifications when a favourited water's planting schedule changes.
+  Without the purchase, favouriting still works fully; no local
+  notification is ever scheduled or delivered for any favourited water.
+
+Rationale: a website cannot push a native notification to someone's
+phone — that is the one piece of value this app has that the free site
+structurally cannot replicate, so it is the coherent thing to gate,
+rather than gating a capability (favouriting) the free site already gives
+away for nothing.
+
+Implementation: `AlertPlanner` (the diff logic) and `NotificationScheduler`
+(the `UNUserNotificationCenter` wrapper) already existed, fully built and
+tested, wired into `AppEnvironment.performBackgroundRefresh()` — but
+unconditionally, for every user, regardless of purchase. The only change
+needed there was one entitlement check
+(`FreeTier.notificationsAllowed(isEntitled:)`) immediately before
+`notifications.schedule(...)`; the alert baseline itself is still always
+replanned and saved for non-purchasers too, so a later purchase doesn't
+suddenly announce every listing change that happened while locked.
+`PlantingCore/Sources/PlantingCore/FreeTier.swift` is repointed at this
+gate (`notificationsAllowed(isEntitled:)`) rather than a favourites cap;
+`toggleFavourite` in `AppEnvironment` is no longer gated at all, and the
+paywall sheet that used to interrupt the favourite action is removed —
+`PurchaseView` is reachable only from About > "Unlock full access".

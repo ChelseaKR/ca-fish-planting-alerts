@@ -1,4 +1,6 @@
+import Foundation
 import XCTest
+import UserNotifications
 @testable import CAFishPlanting
 @testable import PlantingCore
 
@@ -61,35 +63,26 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertEqual(env.pendingNotificationExplainer?.water.id, water.id)
     }
 
-    /// The free tier (`FreeTier`, PlantingCore — a placeholder gate pending
-    /// a real free/paid decision) must actually hold for a non-purchaser: a
-    /// default `AppEnvironment()` has made no purchase, so this exercises
-    /// the real default path, not an injected fake.
-    func testFreeTierCapsNonPurchaserAtMaxFavouritesAndShowsPaywall() throws {
+    /// Favouriting is never gated (see `FreeTier`, PlantingCore, and the
+    /// DECISIONS entry that resolves 0007's "owner follow-up"): a default
+    /// `AppEnvironment()` has made no purchase, so this exercises the real
+    /// default non-purchaser path, not an injected fake.
+    func testNonPurchaserFavouritesAreUnconstrained() throws {
         let env = AppEnvironment()
         XCTAssertFalse(env.purchases.isEntitled, "sanity check: a fresh environment must not already be entitled")
         let waters = try XCTUnwrap(env.snapshot?.waters)
-        XCTAssertGreaterThan(waters.count, FreeTier.maxFavourites, "fixture needs more waters than the cap for this test to mean anything")
+        // Well past the old placeholder cap of 3, to prove there is no limit at all.
+        XCTAssertGreaterThan(waters.count, 10, "fixture needs enough waters for this test to mean anything")
 
-        for water in waters.prefix(FreeTier.maxFavourites) {
+        for water in waters.prefix(10) {
             env.toggleFavourite(water)
         }
-        XCTAssertEqual(env.favourites.count, FreeTier.maxFavourites)
-        XCTAssertNil(env.pendingPaywall, "must not show the paywall before the cap is reached")
+        XCTAssertEqual(env.favourites.count, 10, "a non-purchaser must be able to favourite as many waters as a purchaser")
 
-        let overCap = waters[FreeTier.maxFavourites]
-        env.toggleFavourite(overCap)
-
-        XCTAssertEqual(env.favourites.count, FreeTier.maxFavourites, "a non-purchaser must never exceed the free-tier cap")
-        XCTAssertFalse(env.isFavourite(overCap.id))
-        XCTAssertEqual(env.pendingPaywall?.water.id, overCap.id)
-
-        // Unfavouriting must still work at the cap, freeing a slot.
+        // Unfavouriting still works normally.
         let firstFavourite = waters[0]
         env.toggleFavourite(firstFavourite)
-        XCTAssertEqual(env.favourites.count, FreeTier.maxFavourites - 1)
-        env.dismissPaywall()
-        XCTAssertNil(env.pendingPaywall)
+        XCTAssertEqual(env.favourites.count, 9)
     }
 
     func testBackgroundTaskIdentifierMatchesInfoPlistDeclaration() throws {
@@ -102,4 +95,130 @@ final class AppEnvironmentTests: XCTestCase {
         let declared = plist?["BGTaskSchedulerPermittedIdentifiers"] as? [String] ?? []
         XCTAssertEqual(declared, [BackgroundRefresh.taskIdentifier], "Info.plist must permit exactly the identifier the code registers")
     }
+
+    // MARK: - Notification gating (DECISIONS: local notifications are the paid unlock, not favouriting)
+
+    /// The other half of `PurchaseManagerTests.testPurchaserGetsAScheduledNotificationWhenAFavouritesScheduleChanges`:
+    /// exercises the real `performBackgroundRefresh()` path (not just the
+    /// pure `FreeTier.notificationsAllowed` predicate) via a mocked network
+    /// response, and confirms a non-purchaser never gets a local
+    /// notification scheduled even though the exact same schedule change
+    /// would notify a purchaser.
+    func testNonPurchaserGetsNoScheduledNotificationEvenWhenAFavouritesScheduleChanges() async throws {
+        let env = AppEnvironment(refresher: makeMockedSnapshotRefresher())
+        XCTAssertFalse(env.purchases.isEntitled, "sanity check: a fresh environment must not already be entitled")
+
+        let snapshot = try XCTUnwrap(env.snapshot)
+        let target = try XCTUnwrap(waterWithNoCurrentOrFutureListing(in: snapshot), "fixture needs a water with nothing listed at/after source_week yet")
+        env.toggleFavourite(target)
+        XCTAssertTrue(env.isFavourite(target.id))
+
+        let (data, _) = try updatedSnapshotFixture(addingListingTo: target.id, after: snapshot.sourceWeek)
+        MockSnapshotURLProtocol.responseData = data
+        defer { MockSnapshotURLProtocol.responseData = nil }
+
+        let outcome = await env.performBackgroundRefresh()
+        XCTAssertEqual(outcome, .updated, "sanity check: the mocked refresh must actually land as an update")
+
+        let center = UNUserNotificationCenter.current()
+        let pending = await center.pendingNotificationRequests()
+        XCTAssertTrue(pending.isEmpty, "a non-purchaser must never have a local notification scheduled")
+        center.removeAllPendingNotificationRequests()
+    }
+}
+
+// MARK: - Notification-gating test support (shared with PurchaseManagerTests)
+//
+// `SnapshotRefresher.makeSession(protocolClasses:)` exists specifically so a
+// test can intercept the snapshot GET without a live network call — see its
+// doc comment in `SnapshotRefresher.swift`. These helpers build an "an
+// update just landed" snapshot by mutating the real bundled fixture (not a
+// hand-built one — see `ios/README.md`'s "real pipeline output" note),
+// adding one new `listed` plant to a water chosen to have nothing listed at
+// or after `source_week` already, so it is guaranteed "new" on the next
+// refresh. File-scope (not nested in one test class) because both
+// `AppEnvironmentTests` (non-purchaser: no notification) and
+// `PurchaseManagerTests` (purchaser: one notification) need them to
+// exercise the same real `performBackgroundRefresh()` integration point.
+
+enum NotificationGatingFixtureError: Error { case bundledSnapshotMissing, waterNotFound }
+
+final class MockSnapshotURLProtocol: URLProtocol {
+    /// Set by a test immediately before calling `performBackgroundRefresh()`;
+    /// reset to `nil` in a `defer` once that test is done with it.
+    static var responseData: Data?
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        request.url?.host == SnapshotEndpoint.host
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        guard let url = request.url, let data = Self.responseData else {
+            client?.urlProtocol(self, didFailWithError: URLError(.unknown))
+            return
+        }
+        let response = HTTPURLResponse(
+            url: url, statusCode: 200, httpVersion: "HTTP/1.1",
+            headerFields: ["Content-Type": "application/json", "ETag": "\"mock-update\""]
+        )!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: data)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
+}
+
+func makeMockedSnapshotRefresher() -> SnapshotRefresher {
+    SnapshotRefresher(session: SnapshotRefresher.makeSession(protocolClasses: [MockSnapshotURLProtocol.self]))
+}
+
+func waterWithNoCurrentOrFutureListing(in snapshot: Snapshot) -> Water? {
+    snapshot.waters.first { $0.listedPlants(onOrAfter: snapshot.sourceWeek).isEmpty }
+}
+
+/// Returns the mutated snapshot's bytes and the new plant's week-start ISO
+/// date, so a test can assert the exact deterministic notification
+/// identifier `AlertPlanner`/`PlannedNotification` produces
+/// (`plant.<water id>.<week start>`).
+func updatedSnapshotFixture(addingListingTo waterID: Water.ID, after sourceWeek: Week) throws -> (data: Data, newWeekStartISO: String) {
+    guard let bundledURL = Bundle.main.url(forResource: "snapshot", withExtension: "json") else {
+        throw NotificationGatingFixtureError.bundledSnapshotMissing
+    }
+    guard var json = try JSONSerialization.jsonObject(with: try Data(contentsOf: bundledURL)) as? [String: Any],
+          var waters = json["waters"] as? [[String: Any]],
+          let index = waters.firstIndex(where: { ($0["id"] as? String) == waterID })
+    else {
+        throw NotificationGatingFixtureError.waterNotFound
+    }
+
+    var utcCalendar = Calendar(identifier: .gregorian)
+    utcCalendar.timeZone = TimeZone(identifier: "UTC")!
+    // 4 weeks after source_week.start: safely in the future relative to the
+    // fixture's own current week, however this fixture is later refreshed.
+    let newStart = utcCalendar.date(byAdding: .day, value: 28, to: sourceWeek.start.noonUTC)!
+    let newEnd = utcCalendar.date(byAdding: .day, value: 6, to: newStart)!
+    let formatter = DateFormatter()
+    formatter.timeZone = TimeZone(identifier: "UTC")
+    formatter.dateFormat = "yyyy-MM-dd"
+    let startISO = formatter.string(from: newStart)
+    let endISO = formatter.string(from: newEnd)
+
+    var water = waters[index]
+    var plants = (water["plants"] as? [[String: Any]]) ?? []
+    plants.append([
+        "week": ["start": startISO, "end": endISO, "label": "week of \(startISO)"],
+        "species": "Trout",
+        "status": "listed",
+        "first_observed_at": "2026-09-21T00:00:00Z",
+        "last_observed_at": "2026-09-21T00:00:00Z",
+    ])
+    water["plants"] = plants
+    waters[index] = water
+    json["waters"] = waters
+
+    let data = try JSONSerialization.data(withJSONObject: json)
+    return (data, startISO)
 }

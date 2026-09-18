@@ -111,16 +111,11 @@ final class PersistenceTests: XCTestCase {
 }
 
 final class FreeTierTests: XCTestCase {
-    func testEntitledHasNoLimit() {
-        XCTAssertTrue(FreeTier.canAddFavourite(currentCount: FreeTier.maxFavourites, isEntitled: true))
-        XCTAssertTrue(FreeTier.canAddFavourite(currentCount: 999, isEntitled: true))
+    func testEntitledMayReceiveNotifications() {
+        XCTAssertTrue(FreeTier.notificationsAllowed(isEntitled: true))
     }
 
-    func testNonPurchaserIsCappedAtMaxFavourites() {
-        for count in 0..<FreeTier.maxFavourites {
-            XCTAssertTrue(FreeTier.canAddFavourite(currentCount: count, isEntitled: false), "count \(count) should still be under the cap")
-        }
-        XCTAssertFalse(FreeTier.canAddFavourite(currentCount: FreeTier.maxFavourites, isEntitled: false))
-        XCTAssertFalse(FreeTier.canAddFavourite(currentCount: FreeTier.maxFavourites + 1, isEntitled: false))
+    func testNonPurchaserMayNotReceiveNotifications() {
+        XCTAssertFalse(FreeTier.notificationsAllowed(isEntitled: false))
     }
 }

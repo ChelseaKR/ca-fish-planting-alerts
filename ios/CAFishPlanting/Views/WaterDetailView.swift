@@ -106,9 +106,12 @@ private struct PlantRow: View {
             }
             Spacer()
             if plant.status == .removed {
-                Text("Schedule changed")
+                // Words plus a symbol, in a color that keeps 4.5:1 in light
+                // and dark mode; orange text on white doesn't.
+                Label("Schedule changed", systemImage: "arrow.uturn.backward.circle")
                     .font(.caption2)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.secondary)
+                    .labelStyle(.titleAndIcon)
             }
         }
         .accessibilityElement(children: .combine)

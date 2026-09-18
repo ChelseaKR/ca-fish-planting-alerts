@@ -94,6 +94,17 @@ This repository was republished with a new history on 2026-09-18
   all aged off (PR 13).
 - App: the shared Xcode scheme points at the right StoreKit configuration
   file (PR 24).
+- App accessibility: at the largest text sizes a water's "This week" tag
+  moves under its name instead of squeezing it, and the purchase sheet
+  scrolls and wraps its title instead of cutting off. Text that was below
+  4.5:1 contrast (the tag, "Schedule changed" in orange, "Unlocked" in
+  green, a purchase error in red, the purchase sheet's gray body text over
+  its see-through half-height background) now uses the label colors on an
+  opaque sheet, with the color kept on the symbol. An automated
+  accessibility audit (`AccessibilityAuditUITests`) covers every main
+  screen and the purchase sheet at the default size in light and dark
+  mode and at the largest size. The smoke test no longer taps the Region
+  row by mistake.
 - App: it checks for a newer schedule on launch and on return to the
   foreground, at most every 6 hours (30 minutes after a failed check).
   Before, a fresh install showed the schedule bundled at build time until

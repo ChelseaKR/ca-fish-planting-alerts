@@ -31,6 +31,7 @@
 		CB8310E205828530BA5957F3 /* PurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1754B738174DFB550243642 /* PurchaseManagerTests.swift */; };
 		B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */; };
 		7A11E5C0A1B2C3D4E5F60718 /* AppStoreScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */; };
+		980F5DE25013ABD66938186A /* AccessibilityAuditUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */; };
 		FF536AE84AB86CFCEFEFA610 /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3148F689D98979AD9E0825B9 /* PlantingCore */; };
 		0D461A4A948C50257AC59FAA /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3148F689D98979AD9E0825B9 /* PlantingCore */; };
 		1D91D109329673A1B21EA0D8 /* PlantingCore in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 3148F689D98979AD9E0825B9 /* PlantingCore */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -94,6 +95,7 @@
 		E1754B738174DFB550243642 /* PurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManagerTests.swift; sourceTree = "<group>"; };
 		157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokeUITests.swift; sourceTree = "<group>"; };
 		7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotsUITests.swift; sourceTree = "<group>"; };
+		C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityAuditUITests.swift; sourceTree = "<group>"; };
 		3054F6C342DF00206DE60541 /* CAFishPlanting.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CAFishPlanting.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27400D6F95DB03B111B5BD32 /* CAFishPlantingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CAFishPlantingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		686BFC51DCAA63E9B04E5EC0 /* CAFishPlantingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CAFishPlantingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -213,6 +215,7 @@
 			children = (
 				7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */,
 				157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */,
+				C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */,
 			);
 			path = CAFishPlantingUITests;
 			sourceTree = "<group>";
@@ -377,6 +380,7 @@
 			files = (
 				7A11E5C0A1B2C3D4E5F60718 /* AppStoreScreenshotsUITests.swift in Sources */,
 				B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */,
+				980F5DE25013ABD66938186A /* AccessibilityAuditUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

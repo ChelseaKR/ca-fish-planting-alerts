@@ -13,8 +13,12 @@ struct AboutView: View {
         List {
             Section("Full access") {
                 if environment.purchases.isEntitled {
-                    Label("Unlocked", systemImage: "checkmark.seal.fill")
-                        .foregroundStyle(.green)
+                    // Green on the seal only: green text on white is below 4.5:1.
+                    Label {
+                        Text("Unlocked")
+                    } icon: {
+                        Image(systemName: "checkmark.seal.fill").foregroundStyle(.green)
+                    }
                 } else {
                     Text("Favouriting and browsing are free and unlimited. Unlock full access to get a notification on this device whenever a favourite's stocking schedule changes.")
                         .font(.footnote)

@@ -30,4 +30,27 @@ public enum FreeTier {
     public static func notificationsAllowed(isEntitled: Bool) -> Bool {
         isEntitled
     }
+
+    /// Whether the Home Screen and Lock Screen widget needs the one-time
+    /// purchase. It does: the owner decided on 2026-09-18 that the widget is
+    /// part of full access, like alerts (`docs/DECISIONS.md` 0015). Before
+    /// the purchase the widget says it is part of full access, and a tap
+    /// opens the purchase screen (`WidgetDigest.locked`,
+    /// `UnlockLink`). It never shows made-up or partial favorites.
+    public static let widgetsRequireFullAccess = true
+
+    /// Whether the widget may show favorites, given whether the one-time
+    /// purchase is owned. Read in one place: where the app builds the
+    /// widget's digest (`AppEnvironment.publishWidgetDigest()`).
+    public static func widgetsAllowed(isEntitled: Bool) -> Bool {
+        !widgetsRequireFullAccess || isEntitled
+    }
+
+    /// What full access unlocks, in the words the purchase screen lists.
+    /// One place, so the screen, About and the App Store copy can't drift
+    /// apart (`FullAccessCopyTests` checks the App Store side).
+    public static let fullAccessFeatures = [
+        "An alert on this device when a favorite is newly on CDFW's weekly schedule",
+        "The Favorite waters widget for your Home Screen and Lock Screen",
+    ]
 }

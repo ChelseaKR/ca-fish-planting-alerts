@@ -20,7 +20,7 @@ struct AboutView: View {
                         Image(systemName: "checkmark.seal.fill").foregroundStyle(.green)
                     }
                 } else {
-                    Text("Favouriting and browsing are free and unlimited. Unlock full access to get a notification on this device whenever a favourite's stocking schedule changes.")
+                    Text("Favoriting and browsing are free and unlimited. Full access adds an alert on this device when a favorite is newly on the schedule, and the Favorite waters widget for your Home Screen and Lock Screen.")
                         .font(.footnote)
                         .foregroundStyle(.secondaryText)
                     Button("Unlock full access") { showingPurchaseSheet = true }
@@ -30,7 +30,7 @@ struct AboutView: View {
             }
 
             Section {
-                Text("Favourite any California water for free and browse its full schedule history. With full access, also get a notification on this device when a favourite appears in the California Department of Fish and Wildlife's weekly stocking schedule.")
+                Text("Favorite any California water for free and browse its full schedule history. With full access, also get a notification on this device when a favorite appears in the California Department of Fish and Wildlife's weekly stocking schedule, and a Home Screen and Lock Screen widget with your favorites.")
                 Text("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
             } header: {
                 SectionHeader("What this app does")

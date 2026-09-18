@@ -105,11 +105,16 @@ in `code` are exact; paste them as they are.
 7. **Register the bundle ID** at developer.apple.com → Certificates,
    Identifiers & Profiles → Identifiers → **+** → App IDs → App:
    Description `Trout Truck`, Bundle ID **Explicit**
-   `com.chelseakr.cafishplanting`. Don't add capabilities. In-App Purchase
-   is on for every App ID by default. Push Notifications is **not**
-   needed, because every alert is local. Xcode's automatic signing can also
-   register it on the first archive (step 16), but it has to exist before
-   it appears in step 8's Bundle ID menu.
+   `com.chelseakr.cafishplanting`. Add one capability, **App Groups**,
+   with the group `group.com.chelseakr.cafishplanting` (register it under
+   Identifiers → App Groups first). The Home Screen widget reads the app's
+   schedule digest through it. In-App Purchase is on for every App ID by
+   default. Push Notifications is **not** needed, because every alert is
+   local. Then register the widget's App ID the same way: Bundle ID
+   **Explicit** `com.chelseakr.cafishplanting.widgets`, capability **App
+   Groups** with the same group. Xcode's automatic signing can also
+   register both, and the group, on the first archive (step 16), but the
+   app's ID has to exist before it appears in step 8's Bundle ID menu.
 8. **Create the app record.** App Store Connect → Apps → **+** → New App:
    Platforms **iOS**; Name `Trout Truck`; Primary Language **English
    (U.S.)**; Bundle ID `com.chelseakr.cafishplanting`; SKU
@@ -145,8 +150,8 @@ in `code` are exact; paste them as they are.
     - Price: **$9.99** (USD), all storefronts at Apple's equivalents, or
       the availability chosen in step 10.
     - Localization, English (U.S.): Display Name `Full Access`;
-      Description `Alerts when a favourite water is listed` (39 of 45
-      characters).
+      Description `Alerts and a widget for your favorite waters` (44 of
+      45 characters).
     - Family Sharing: your call. Once turned on for a product, it
       can't be turned off.
     - Review Information: a screenshot of the purchase sheet (About →
@@ -154,7 +159,8 @@ in `code` are exact; paste them as they are.
       App Store, so it may show the price. Take it from the TestFlight
       build in step 18, where the sandbox price loads. The simulator can't
       load it on iOS 26.5 (`ios/README.md`). Review notes: "Unlocks local
-      notifications for favourited waters. About → Unlock full access."
+      notifications and the Home Screen widget for favorited waters.
+      About → Unlock full access."
     - Status must reach **Ready to Submit**. Apple reviews the first
       in-app purchase with an app version (step 20).
 13. **Version page (iOS App 0.1.0):**
@@ -329,8 +335,8 @@ the code supports both.
 **No analytics or third-party SDK.**
 - Every `import` in `CAFishPlanting/` and `PlantingCore/Sources` is an
   Apple framework (`Foundation`, `SwiftUI`, `Observation`,
-  `UserNotifications`, `BackgroundTasks`, `StoreKit`) or the local
-  `PlantingCore` package.
+  `UserNotifications`, `BackgroundTasks`, `StoreKit`, and `WidgetKit` in
+  the app and its widget extension) or the local `PlantingCore` package.
 - `PlantingCore/Package.swift` declares no dependencies. The Xcode
   project has one package reference, the local `PlantingCore`
   (`XCLocalSwiftPackageReference`), and no remote package. There is no
@@ -359,7 +365,16 @@ the code supports both.
   the device.
 - Notifications are local `UNUserNotificationCenter` requests. There is
   no `registerForRemoteNotifications`, no `aps-environment` entitlement
-  (the project has no entitlements file) and so no device token.
+  and so no device token. The two entitlements files
+  (`CAFishPlanting/CAFishPlanting.entitlements` and
+  `CAFishPlantingWidgets/CAFishPlantingWidgets.entitlements`) hold one
+  key, the App Group, and `WidgetBridgeTests` fails if either gains
+  another.
+- The Home Screen and Lock Screen widget reads one file the app writes
+  to the App Group container (`widget-digest.json`: the schedule's week,
+  and each favorite's name and status). It makes no network request, and
+  the file never leaves the device. An App Group is a shared directory
+  here, not a `UserDefaults` suite, so it is not a required-reason API.
 
 **The privacy manifest agrees.** `PrivacyInfo.xcprivacy` sets
 `NSPrivacyTracking` false with no tracking domains, no collected data
@@ -480,17 +495,19 @@ Connect with this exact identifier:
 | Reference Name (internal, App Store Connect only) | `Full Access` |
 | Price tier | $9.99 (USD Tier matching $9.99; DECISIONS 0003/0007) |
 | Display Name (customer-facing) | `Full Access` |
-| Description (customer-facing, 45 max) | `Alerts when a favourite water is listed` (39 characters) |
+| Description (customer-facing, 45 max) | `Alerts and a widget for your favorite waters` (44 characters) |
 | Cleared for sale | Yes, once the app record itself is created |
-| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView` — reachable from About > "Unlock full access" only; there is no other trigger) is required by App Store Connect for the IAP's own review |
+| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView`, reachable from About > "Unlock full access" and from a tap on the locked Home Screen widget) is required by App Store Connect for the IAP's own review |
 
 App-side, what it unlocks is decided (DECISIONS 0009, resolving 0007's
 "owner follow-up"): favouriting and browsing are free and unconstrained for
 everyone, matching the free website. Purchasing unlocks **local
-notifications** — a notification on this device whenever a favourited
-water's planting schedule changes. Without the purchase, favouriting still
-works in full; no local notification is ever scheduled for any favourited
-water. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
+notifications** (a notification on this device whenever a favorited
+water's planting schedule changes) and, since DECISIONS 0015, **the Home
+Screen and Lock Screen widget**. Without the purchase, favoriting still
+works in full; no local notification is ever scheduled for any favorited
+water, and the widget says it is part of full access instead of listing
+favorites. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
 (`notificationsAllowed(isEntitled:)`) and
 `ios/CAFishPlanting/App/AppEnvironment.swift`'s `performBackgroundRefresh()`,
 which is the one call site that checks it before

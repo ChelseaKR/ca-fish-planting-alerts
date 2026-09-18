@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<!--
+	The widget collects nothing. It reads one file the app writes to the
+	shared App Group container (widget-digest.json: the schedule's week and
+	the favorite waters' names and statuses) and makes no network request.
+	-->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<!--
+	No required-reason API: no UserDefaults (the App Group is a shared
+	directory, not a suite), no file-timestamp reads, no boot-time,
+	disk-space or keyboard APIs.
+	-->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>

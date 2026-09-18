@@ -213,3 +213,22 @@ gate (`notificationsAllowed(isEntitled:)`) rather than a favourites cap;
 `toggleFavourite` in `AppEnvironment` is no longer gated at all, and the
 paywall sheet that used to interrupt the favourite action is removed —
 `PurchaseView` is reachable only from About > "Unlock full access".
+
+## 0015 — The widget is part of full access (2026-09-18)
+
+The owner decided that the Home Screen and Lock Screen widget ("Favorite
+waters") is part of full access, the same one-time purchase
+(`com.chelseakr.cafishplanting.fullaccess`) that unlocks local
+notifications (0009). Browsing, history and favoriting stay free for
+everyone.
+
+- Before the purchase the widget is honest about it: it says the widget is
+  part of full access, shows the published schedule's week and how many
+  waters it lists, shows no favorites and no made-up data, and a tap opens
+  the purchase screen (`trouttruck://unlock`).
+- After a purchase, a restore, or a purchase on another device, the widget
+  lists the favorites at once. A refund locks it again.
+- One flag carries the decision: `FreeTier.widgetsRequireFullAccess`.
+- Everything that says what full access unlocks now names both alerts and
+  the widget: the purchase screen, About, `docs/APP-STORE.md`,
+  `docs/APP-STORE-LISTING.md` and the local StoreKit configuration.

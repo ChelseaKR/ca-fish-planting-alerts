@@ -28,6 +28,15 @@ final class WaterLinkTests: XCTestCase {
         }
     }
 
+    func testTheUnlockLinkIsItsOwnLink() throws {
+        XCTAssertEqual(UnlockLink.url.absoluteString, "trouttruck://unlock")
+        XCTAssertTrue(UnlockLink.matches(UnlockLink.url))
+        XCTAssertTrue(UnlockLink.matches(try XCTUnwrap(URL(string: "TroutTruck://Unlock"))))
+        XCTAssertNil(WaterLink.waterID(from: UnlockLink.url), "the unlock link never opens a water")
+        XCTAssertFalse(UnlockLink.matches(WaterLink.url(for: "cdfw-1")))
+        XCTAssertFalse(UnlockLink.matches(try XCTUnwrap(URL(string: "otherapp://unlock"))))
+    }
+
     func testANotificationCarriesItsWaterID() {
         XCTAssertEqual(WaterLink.waterID(fromNotificationUserInfo: [WaterLink.notificationWaterIDKey: "cdfw-9"]), "cdfw-9")
         XCTAssertNil(WaterLink.waterID(fromNotificationUserInfo: [:]), "an alert without a water opens the app, not a blank screen")

@@ -80,6 +80,9 @@ final class AppEnvironment {
     private let refresher: SnapshotRefresher
     private let notifications: NotificationScheduler
     private let openThrottle: RefreshThrottle
+    /// Writes what the Home Screen widget shows (`WidgetDigest`) to the App
+    /// Group container. No network, and only when it changed.
+    private let widgetBridge: WidgetBridge
     /// The one refresh running now, if any. Launch, return to the
     /// foreground and the background task can all ask at once; they share
     /// this task rather than racing two GETs into one `SnapshotStore`.
@@ -90,7 +93,10 @@ final class AppEnvironment {
     /// pre-built instance (e.g. one wired to an `SKTestSession`).
     let purchases: PurchaseManager
 
-    private(set) var favourites = Favourites()
+    /// Every change reaches the widget, whichever path made it.
+    private(set) var favourites = Favourites() {
+        didSet { publishWidgetDigest() }
+    }
     private var alertState = AlertState()
     private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
 
@@ -119,10 +125,11 @@ final class AppEnvironment {
     /// Tests may inject a pre-built refresher (e.g. one wired to a mocked
     /// `URLSession` via `SnapshotRefresher.makeSession(protocolClasses:)`)
     /// to exercise `performBackgroundRefresh()` without a live network call.
-    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil, openThrottle: RefreshThrottle = .foreground) {
+    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil, openThrottle: RefreshThrottle = .foreground, widgetBridge: WidgetBridge? = nil) {
         self.notifications = NotificationScheduler(center: notificationCenter)
         self.refresher = refresher ?? SnapshotRefresher(session: SnapshotRefresher.makeSession())
         self.openThrottle = openThrottle
+        self.widgetBridge = widgetBridge ?? WidgetBridge()
         var entitlementStore: EntitlementStore?
         do {
             let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: bundleIdentifier)
@@ -142,6 +149,9 @@ final class AppEnvironment {
             loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
         self.purchases = purchases ?? PurchaseManager(entitlementStore: entitlementStore)
+        // The widget is part of full access: a purchase, a restore or a
+        // refund redraws it straight away.
+        self.purchases.onEntitlementChange = { [weak self] _ in self?.publishWidgetDigest() }
         syncFromStore()
         Task { notificationAuthorization = await notifications.authorizationStatus() }
     }
@@ -150,6 +160,19 @@ final class AppEnvironment {
         snapshot = store?.snapshot
         snapshotOrigin = store?.origin
         refreshMeta = store?.meta
+        publishWidgetDigest()
+    }
+
+    /// Hands the widget the snapshot's week at the current favorites. Runs
+    /// after every refresh (the background task's too) and every change to
+    /// `favourites`; `WidgetBridge` skips the write when nothing changed. Whether
+    /// the widget may list favorites is `FreeTier.widgetsAllowed`, the one
+    /// place that flag is read.
+    func publishWidgetDigest() {
+        guard let snapshot, let refreshMeta else { return }
+        let digest = WidgetDigest(snapshot: snapshot, meta: refreshMeta, favorites: favourites.ids,
+                                  locked: !FreeTier.widgetsAllowed(isEntitled: purchases.isEntitled))
+        widgetBridge.publish(digest)
     }
 
     // MARK: Favourites

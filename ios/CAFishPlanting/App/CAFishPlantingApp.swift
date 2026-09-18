@@ -32,6 +32,9 @@ struct CAFishPlantingApp: App {
                 Task { await refreshOnOpen() }
             case .background:
                 BackgroundRefresh.scheduleNextRefresh()
+                // Leaving the app: make sure the widget shows what the app
+                // shows (a purchase, for one, isn't a snapshot change).
+                environment.publishWidgetDigest()
             default:
                 break
             }

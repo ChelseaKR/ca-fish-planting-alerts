@@ -12,6 +12,43 @@ SwiftUI, iOS 17+, no third-party dependencies. Two pieces:
   local Swift package (`type: .dynamic` — see the comment in
   `PlantingCore/Package.swift` for why static fails to link here).
 
+## The Home Screen and Lock Screen widget
+
+`CAFishPlantingWidgets/` is a WidgetKit extension
+(`com.chelseakr.cafishplanting.widgets`) with one widget, "Favorite
+waters", in small, medium and large Home Screen sizes and the Lock
+Screen's rectangular and inline sizes.
+
+- **Data.** The app writes a small digest of the snapshot it already has
+  (`WidgetDigest` in PlantingCore) to the App Group
+  `group.com.chelseakr.cafishplanting`, after every refresh (the
+  background task's too), every favorite change, and when the app goes to
+  the background (`App/WidgetBridge.swift`). It reloads the widget only
+  when the digest changed. The widget reads that file and nothing else:
+  **it makes no network request**, so the snapshot GET stays the app's
+  only one. The digest is ~1 KB; the widget never decodes the 1 MB
+  snapshot.
+- **Honest when stale or missing.** Every line names its week. At
+  midnight after the week's Saturday (Los Angeles time) the timeline
+  switches from "This week" to "Schedule for the week of …", without the
+  app running. A failed last check says so. No digest yet reads "Open
+  Trout Truck to load the schedule here", and favorites the snapshot no
+  longer has are counted, never shown as "nothing scheduled".
+- **Taps.** Each row in the medium and large sizes, and the small and
+  Lock Screen widgets as a whole, open a water through
+  `trouttruck://water/<id>`.
+- **Part of full access** (`docs/DECISIONS.md` 0015).
+  `FreeTier.widgetsRequireFullAccess` is `true`. Before the purchase the
+  digest is `locked`: it carries the schedule's week and how many waters
+  it lists, and no favorites. The widget says it is part of full access,
+  and a tap opens the purchase screen through `trouttruck://unlock`
+  (`UnlockLink`). `PurchaseManager.onEntitlementChange` rewrites the
+  digest the moment the entitlement changes, so a purchase, a restore or
+  a refund redraws the widget without waiting for a refresh.
+- **Signing.** Both targets use team `6X5YH93QNM` with automatic signing,
+  as before. On a device (not the simulator) the App Group has to be
+  registered for the team; see `docs/APP-STORE.md` step 7.
+
 ## The one-time purchase
 
 `CAFishPlanting/App/PurchaseManager.swift` is StoreKit 2 only (no

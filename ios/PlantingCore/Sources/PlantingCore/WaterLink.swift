@@ -45,6 +45,26 @@ public enum WaterLink {
     }
 }
 
+/// The app's link to its purchase screen: `trouttruck://unlock`. The
+/// widget's locked state uses it, so a tap goes straight to the one-time
+/// purchase. Like `WaterLink`, it makes no network request.
+public enum UnlockLink {
+    static let host = "unlock"
+
+    /// `trouttruck://unlock`.
+    public static let url: URL = {
+        var components = URLComponents()
+        components.scheme = WaterLink.scheme
+        components.host = host
+        return components.url!
+    }()
+
+    /// Whether `url` is this link. Anything after the host is ignored.
+    public static func matches(_ url: URL) -> Bool {
+        url.scheme?.lowercased() == WaterLink.scheme && url.host?.lowercased() == host
+    }
+}
+
 extension PlannedNotification {
     /// What the local notification carries so a tap can open this water.
     /// The water's ID only: it is CDFW's public key for the water, and

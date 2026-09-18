@@ -70,4 +70,21 @@ final class SmokeUITests: XCTestCase {
         back.tap()
         XCTAssertTrue(app.navigationBars[listTitle].waitForExistence(timeout: 5), "Back returns to the list")
     }
+
+    /// The locked widget's link (`UnlockLink`) opens the purchase screen,
+    /// from anywhere in the running app, and closing it leaves About.
+    func testTheUnlockLinkOpensThePurchaseScreen() throws {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
+
+        app.open(URL(string: "trouttruck://unlock")!)
+
+        XCTAssertTrue(app.navigationBars["Full access"].waitForExistence(timeout: 15), "the link should open the purchase screen:\n\(app.debugDescription)")
+        let alerts = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "An alert on this device")).firstMatch
+        let widget = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Favorite waters widget")).firstMatch
+        XCTAssertTrue(alerts.exists && widget.exists, "the purchase screen lists alerts and the widget:\n\(app.debugDescription)")
+        app.buttons["Not now"].tap()
+        XCTAssertTrue(app.staticTexts["Full access"].waitForExistence(timeout: 10), "closing it leaves About")
+    }
 }

@@ -31,6 +31,10 @@ final class AppRouter {
     /// A water asked for by a tapped alert or a link, not opened yet.
     private(set) var pendingWaterID: Water.ID?
 
+    /// The purchase screen is showing because a link asked for it (the
+    /// locked widget's `trouttruck://unlock`).
+    var showingPurchase = false
+
     /// Asks for a water to be opened as soon as the UI can.
     func request(waterID: Water.ID) {
         pendingWaterID = waterID
@@ -40,6 +44,13 @@ final class AppRouter {
     /// for nothing, for any other URL.
     @discardableResult
     func handle(_ url: URL) -> Bool {
+        if UnlockLink.matches(url) {
+            // Over About, where the purchase otherwise lives, so closing the
+            // sheet leaves the person next to "Full access".
+            selectedTab = .about
+            showingPurchase = true
+            return true
+        }
         guard let id = WaterLink.waterID(from: url) else { return false }
         request(waterID: id)
         return true

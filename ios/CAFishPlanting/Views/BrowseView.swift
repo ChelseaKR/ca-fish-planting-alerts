@@ -5,6 +5,7 @@ struct BrowseView: View {
     @Environment(AppEnvironment.self) private var environment
     @State private var searchText = ""
     @State private var selectedRegion: String? // nil = all regions
+    @State private var selectedCounty: String? // nil = all counties
 
     var body: some View {
         Group {
@@ -32,6 +33,15 @@ struct BrowseView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                // Only the counties that have a water in the chosen region.
+                Picker("County", selection: $selectedCounty) {
+                    Text("All counties").tag(String?.none)
+                    ForEach(WaterSearch.counties(of: regionWaters(snapshot)), id: \.self) { county in
+                        Text(county).tag(String?.some(county))
+                    }
+                }
+                .pickerStyle(.menu)
+                .onChange(of: selectedRegion) { selectedCounty = nil }
                 if let freshness {
                     FreshnessRow(freshness: freshness)
                 }
@@ -58,17 +68,17 @@ struct BrowseView: View {
         .refreshable { await environment.refreshNow() }
     }
 
+    private func regionWaters(_ snapshot: Snapshot) -> [Water] {
+        guard let selectedRegion else { return snapshot.waters }
+        return snapshot.waters(inRegion: selectedRegion)
+    }
+
+    /// Region, then county, then the search text: a water's name, any name
+    /// CDFW has used for it, or its county (`WaterSearch`).
     private func filtered(_ waters: [Water], thisWeekIDs: Set<Water.ID>) -> [Water] {
         var result = waters
         if let selectedRegion { result = result.filter { $0.region == selectedRegion } }
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !query.isEmpty {
-            result = result.filter { water in
-                water.name.localizedCaseInsensitiveContains(query)
-                    || water.counties.contains { $0.localizedCaseInsensitiveContains(query) }
-            }
-        }
-        return result.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+        return WaterSearch(text: searchText, county: selectedCounty).filter(result)
     }
 }
 

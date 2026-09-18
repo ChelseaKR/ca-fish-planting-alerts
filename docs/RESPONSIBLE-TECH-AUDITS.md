@@ -5,7 +5,7 @@ repository. It records what is true of the product today and which
 commitments are enforced by CI (AUTO) or by a person (REVIEW).
 
 **Status: the audit facts are recorded. Every owner sign-off is pending
-(#30).** The REVIEW-GATEs below are the owner's to give. Nothing in this file
+(#9).** The REVIEW-GATEs below are the owner's to give. Nothing in this file
 signs off on her behalf.
 
 Last regenerated: 2026-09-17
@@ -20,11 +20,11 @@ Last regenerated: 2026-09-17
 - D Transparency: applies. Every page makes claims about a state agency's
   schedule.
 - E Accessibility: applies. Site and app. Gates and open work are in
-  `docs/standards/ACCESSIBILITY-STANDARD.md` and #26.
+  `docs/standards/ACCESSIBILITY-STANDARD.md` and #5.
 - F Security: applies.
 - AI-EVAL: N/A. There is no model, prompt or retrieval surface anywhere in
   the pipeline, the site or the app.
-- I18N: applies, deferred. See `docs/I18N.md` and #27.
+- I18N: applies, deferred. See `docs/I18N.md` and #6.
 
 ## A. Ethics
 
@@ -52,7 +52,7 @@ Last regenerated: 2026-09-17
   `test_fetch` (stale pages refused), `test_history` (append-only, no false
   removal), `test_parse` (a malformed table is refused).
 - REVIEW: owner sign-off on this consequence scan and the non-goals.
-  **Pending (#30).**
+  **Pending (#9).**
 
 ## B. Bias
 
@@ -61,10 +61,10 @@ Last regenerated: 2026-09-17
 - **Geographic coverage.** Only waters CDFW lists appear, grouped by
   CDFW's own regions. No water or region is ranked.
 - **Language.** English only, which is a real gap for Spanish-speaking
-  anglers (#27).
+  anglers (#6).
 - REVIEW: representational-harm review. The content is waters and fish
   species, not people, so the expected finding is "none". The owner still
-  records that finding. **Pending (#30).**
+  records that finding. **Pending (#9).**
 
 ## C. Privacy (DPIA)
 
@@ -81,13 +81,13 @@ Last regenerated: 2026-09-17
   Global Privacy Control or Do Not Track, advertising features are off,
   and Consent Mode defaults deny ad storage everywhere and analytics
   storage in the EEA, the UK and Switzerland. A footer opt-out is
-  remembered on the device (#31). The privacy page at `/privacy/` states
+  remembered on the device (PR 31). The privacy page at `/privacy/` states
   all of this and the retention period.
-- **Open:** classify the GA4 data under DATA-GOVERNANCE-STANDARD §0 (#29).
+- **Open:** classify the GA4 data under DATA-GOVERNANCE-STANDARD §0 (#8).
 - AUTO: gitleaks in pre-commit, in `make verify`, and on the staged diff
   before the daily data commit. The GA4 guard behaviour (GPC, DNT, opt-out)
   is executed in node by `test_site_analytics*.py`.
-- REVIEW: DPIA sign-off. **Pending (#30).** GA4 reopened it.
+- REVIEW: DPIA sign-off. **Pending (#9).** GA4 reopened it.
 
 ## D. Transparency
 
@@ -99,14 +99,14 @@ Last regenerated: 2026-09-17
   endorsed by CDFW (`test_site.py`; the app's About screen).
 - No copy claims "only", "first" or completeness (DECISIONS 0010).
 - REVIEW: honesty-of-framing review of the site copy and the App Store
-  listing. **Pending (#30).**
+  listing. **Pending (#9).**
 
 ## E. Accessibility
 
 See `docs/standards/ACCESSIBILITY-STANDARD.md`. AUTO: axe, pa11y-ci and
 Lighthouse on every built page (`site-checks.yml`). REVIEW: the site and app
 walkthroughs, the statement, and the third-party (GA4) audit are open in
-#26.
+#5.
 
 ## F. Security
 
@@ -124,7 +124,7 @@ AUTO-GATEs below.
 | CDFW text → HTML and `.ics` | Injection (XSS) through a water or species name | Jinja autoescape on every `.html.jinja`; `.ics` escaping in `site.py`; no `|safe` anywhere | Low |
 | Pipeline → `main` (daily bot commit) | A secret or a wrong file committed unattended | Explicit paths, never a wildcard `git add` (checked by `make verify`); gitleaks on the staged diff; history integrity check | Low |
 | Workflows → Pages | Supply-chain compromise of an action | Every `uses:` pinned to a SHA; zizmor; no cache in the deploy job; least-privilege tokens | A compromised pinned SHA. Renovate cooldown is 72 hours. |
-| Site → visitor | Third-party script (gtag.js) compromised | Loads only without GPC, DNT or opt-out. No forms or credentials on the site | gtag.js is dynamic, so SRI is not possible. **Accepted by the owner?** Pending (#30). |
+| Site → visitor | Third-party script (gtag.js) compromised | Loads only without GPC, DNT or opt-out. No forms or credentials on the site | gtag.js is dynamic, so SRI is not possible. **Accepted by the owner?** Pending (#9). |
 | Snapshot → app | Spoofed or malformed snapshot | HTTPS to an allowlisted host (`SnapshotEndpoint`, `HostAllowlistTests`); strict decoder | A wrong but well-formed snapshot from a compromised Pages deploy |
 
 **§F declarations (SECURITY-AND-SUPPLY-CHAIN §8)**
@@ -133,7 +133,7 @@ AUTO-GATEs below.
 2. Container scanning: N/A (no Dockerfile).
 3. SBOM + signing: not yet. The repository is release-producing (a
    deployed site and an App Store app), and the release pipeline that
-   would generate them does not exist (#23).
+   would generate them does not exist (#3).
 4. Secret management: the repository holds **no Actions secrets**.
    Workflows use only the short-lived `GITHUB_TOKEN`. Repository variables
    (`SITE_BASE_URL`, `APP_STORE_URL`, `SUPPORT_EMAIL`) are not secret. App
@@ -144,7 +144,7 @@ AUTO-GATEs below.
    advisory. The site-checks toolchain clears its HIGHs with overrides
    (`perf/README.md`).
 
-- REVIEW: threat-model and residual-risk sign-off. **Pending (#30).**
+- REVIEW: threat-model and residual-risk sign-off. **Pending (#9).**
 
 ---
 

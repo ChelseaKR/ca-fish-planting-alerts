@@ -7,7 +7,7 @@ name: zizmor
 # newly published advisories against the actions these workflows pin.
 #
 # The pinned zizmor from PyPI rather than zizmor-action: the action uploads
-# SARIF to code scanning, which is not enabled on this private repository.
+# SARIF to code scanning, which this repository has not set up.
 # GH_TOKEN lets the online audits (known-vulnerable-actions, impostor-commit,
 # ref-confusion) resolve the pinned SHAs.
 

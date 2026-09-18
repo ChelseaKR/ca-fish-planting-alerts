@@ -49,6 +49,14 @@ This repository was republished with a new history on 2026-09-18
   because a plant is a scheduled week. There is a place for the Search
   Console verification tag, and the owner steps are in
   `docs/SEARCH-CONSOLE.md` (ADR 0013).
+- App: a Home Screen and Lock Screen widget, "Favorite waters": which of
+  your favorites are on CDFW's schedule this week, a later week, or not
+  listed, each with its week. It reads what the app already downloaded,
+  through an App Group, and makes no network request. When the week ends
+  it stops saying "this week", and a failed check or a missing schedule is
+  said plainly. Tapping a water opens it. Widgets are free for now; one
+  flag (`FreeTier.widgetsRequireFullAccess`) would put them in full
+  access.
 - A root `make verify` that runs every lint, type, test and security gate,
   and runs in CI (PR 18). CodeQL, workflow scanning, and a weekly scan of the
   full history for secrets (PR 21).

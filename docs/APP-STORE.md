@@ -105,11 +105,16 @@ in `code` are exact; paste them as they are.
 7. **Register the bundle ID** at developer.apple.com → Certificates,
    Identifiers & Profiles → Identifiers → **+** → App IDs → App:
    Description `Trout Truck`, Bundle ID **Explicit**
-   `com.chelseakr.cafishplanting`. Don't add capabilities. In-App Purchase
-   is on for every App ID by default. Push Notifications is **not**
-   needed, because every alert is local. Xcode's automatic signing can also
-   register it on the first archive (step 16), but it has to exist before
-   it appears in step 8's Bundle ID menu.
+   `com.chelseakr.cafishplanting`. Add one capability, **App Groups**,
+   with the group `group.com.chelseakr.cafishplanting` (register it under
+   Identifiers → App Groups first). The Home Screen widget reads the app's
+   schedule digest through it. In-App Purchase is on for every App ID by
+   default. Push Notifications is **not** needed, because every alert is
+   local. Then register the widget's App ID the same way: Bundle ID
+   **Explicit** `com.chelseakr.cafishplanting.widgets`, capability **App
+   Groups** with the same group. Xcode's automatic signing can also
+   register both, and the group, on the first archive (step 16), but the
+   app's ID has to exist before it appears in step 8's Bundle ID menu.
 8. **Create the app record.** App Store Connect → Apps → **+** → New App:
    Platforms **iOS**; Name `Trout Truck`; Primary Language **English
    (U.S.)**; Bundle ID `com.chelseakr.cafishplanting`; SKU
@@ -329,8 +334,8 @@ the code supports both.
 **No analytics or third-party SDK.**
 - Every `import` in `CAFishPlanting/` and `PlantingCore/Sources` is an
   Apple framework (`Foundation`, `SwiftUI`, `Observation`,
-  `UserNotifications`, `BackgroundTasks`, `StoreKit`) or the local
-  `PlantingCore` package.
+  `UserNotifications`, `BackgroundTasks`, `StoreKit`, and `WidgetKit` in
+  the app and its widget extension) or the local `PlantingCore` package.
 - `PlantingCore/Package.swift` declares no dependencies. The Xcode
   project has one package reference, the local `PlantingCore`
   (`XCLocalSwiftPackageReference`), and no remote package. There is no
@@ -359,7 +364,16 @@ the code supports both.
   the device.
 - Notifications are local `UNUserNotificationCenter` requests. There is
   no `registerForRemoteNotifications`, no `aps-environment` entitlement
-  (the project has no entitlements file) and so no device token.
+  and so no device token. The two entitlements files
+  (`CAFishPlanting/CAFishPlanting.entitlements` and
+  `CAFishPlantingWidgets/CAFishPlantingWidgets.entitlements`) hold one
+  key, the App Group, and `WidgetBridgeTests` fails if either gains
+  another.
+- The Home Screen and Lock Screen widget reads one file the app writes
+  to the App Group container (`widget-digest.json`: the schedule's week,
+  and each favorite's name and status). It makes no network request, and
+  the file never leaves the device. An App Group is a shared directory
+  here, not a `UserDefaults` suite, so it is not a required-reason API.
 
 **The privacy manifest agrees.** `PrivacyInfo.xcprivacy` sets
 `NSPrivacyTracking` false with no tracking domains, no collected data

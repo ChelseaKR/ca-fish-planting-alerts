@@ -33,6 +33,7 @@ final class ScheduleWordingTests: XCTestCase {
     func testTheWordingScanSeesTheAppAndCatchesTheOldLabel() throws {
         let all = try literals()
         XCTAssertTrue(all.contains { $0.file == "WaterDetailView.swift" }, "the scan must read the app's views")
+        XCTAssertTrue(all.contains { $0.file == "FavoriteWatersWidget.swift" }, "the scan must read the widget")
         XCTAssertTrue(all.contains { $0.text.contains("scheduled") }, "the scan must see real copy")
         XCTAssertTrue(Self.claimsAConfirmedPlant("Last planted \\(last.label)"))
         XCTAssertTrue(Self.claimsAConfirmedPlant("Not yet planted in the schedule this app has observed"))
@@ -57,7 +58,7 @@ final class ScheduleWordingTests: XCTestCase {
             .deletingLastPathComponent() // Tests
             .deletingLastPathComponent() // PlantingCore
             .deletingLastPathComponent() // ios
-        let directories = ["CAFishPlanting/Views", "CAFishPlanting/App", "PlantingCore/Sources"].map { ios.appendingPathComponent($0) }
+        let directories = ["CAFishPlanting/Views", "CAFishPlanting/App", "CAFishPlantingWidgets", "PlantingCore/Sources"].map { ios.appendingPathComponent($0) }
         // One-line Swift string literals, escapes included.
         let pattern = try NSRegularExpression(pattern: #""((?:[^"\\\n]|\\.)*)""#)
         var found: [Literal] = []

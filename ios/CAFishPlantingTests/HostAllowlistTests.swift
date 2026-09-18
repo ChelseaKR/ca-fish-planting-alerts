@@ -28,6 +28,7 @@ final class HostAllowlistTests: XCTestCase {
             ios.appendingPathComponent("PlantingCore/Sources"),
             ios.appendingPathComponent("CAFishPlanting/App"),
             ios.appendingPathComponent("CAFishPlanting/Views"),
+            ios.appendingPathComponent("CAFishPlantingWidgets"),
         ]
     }
 

@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		957930AAE88B2301316666C5 /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3076F5A9AE46931E33CCE8 /* WidgetBridge.swift */; };
+		BA4D70CA059BA4A5915228C4 /* WidgetBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279A9238A08B48D4E8275E89 /* WidgetBridgeTests.swift */; };
+		16F9E0A05F4F30213A894235 /* TroutTruckWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F441586939DFBD4FD413E3 /* TroutTruckWidgets.swift */; };
+		A6B4F047B8F3073524F6AC9E /* FavoriteWatersWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8052DF351D256DCD1680CA1B /* FavoriteWatersWidget.swift */; };
+		C78A27DF6F9FAE99E8A019A0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 32DD4892C89BEBDCA314E6ED /* PrivacyInfo.xcprivacy */; };
+		2C7CC2AA840C71B41C2F821D /* CAFishPlantingWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2DB7B2CD0EB5AD6EADBA4A66 /* CAFishPlantingWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1F79791BC35841510BDDA35F /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = FDD457F5E6EE20F1612EB897 /* PlantingCore */; };
 		4FC3D4E75324FB1C87E2BC58 /* CAFishPlantingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F974BD82B04FC663443931C /* CAFishPlantingApp.swift */; };
 		0B618C0DAC1AD20A1CF5A3B7 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */; };
 		1EA443A92DA0D57DF5B3C809 /* ScheduleIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04AF963921A2AE834344E4B /* ScheduleIntents.swift */; };
@@ -54,6 +61,13 @@
 			remoteGlobalIDString = 29C7B681C8D62CBAC94D51C0;
 			remoteInfo = CAFishPlanting;
 		};
+		824788BFD2593A0B5CF001C2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A98613C25606001752A1432;
+			remoteInfo = CAFishPlantingWidgets;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -68,9 +82,29 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		862DC96E71C653419E455CBE /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				2C7CC2AA840C71B41C2F821D /* CAFishPlantingWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3A3076F5A9AE46931E33CCE8 /* WidgetBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridge.swift; sourceTree = "<group>"; };
+		279A9238A08B48D4E8275E89 /* WidgetBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridgeTests.swift; sourceTree = "<group>"; };
+		CD39626A89522D230CA30AAB /* CAFishPlanting.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CAFishPlanting.entitlements; sourceTree = "<group>"; };
+		30F441586939DFBD4FD413E3 /* TroutTruckWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TroutTruckWidgets.swift; sourceTree = "<group>"; };
+		8052DF351D256DCD1680CA1B /* FavoriteWatersWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteWatersWidget.swift; sourceTree = "<group>"; };
+		16BEC5940FAC3E0A41B37940 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C965665EEA71E3D4A1E025BB /* CAFishPlantingWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CAFishPlantingWidgets.entitlements; sourceTree = "<group>"; };
+		32DD4892C89BEBDCA314E6ED /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2DB7B2CD0EB5AD6EADBA4A66 /* CAFishPlantingWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CAFishPlantingWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F974BD82B04FC663443931C /* CAFishPlantingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CAFishPlantingApp.swift; sourceTree = "<group>"; };
 		FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		E04AF963921A2AE834344E4B /* ScheduleIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleIntents.swift; sourceTree = "<group>"; };
@@ -129,6 +163,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7364C4D96BE6900F0F7BBE93 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1F79791BC35841510BDDA35F /* PlantingCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -138,6 +180,7 @@
 				D3822E31034F039C9CAC243A /* CAFishPlanting */,
 				249ED19B2167022D51E9072C /* CAFishPlantingTests */,
 				AD75229C2852D32F706B6758 /* CAFishPlantingUITests */,
+				9D7D35C77B49C58A1D66C4FB /* CAFishPlantingWidgets */,
 				328EC33DF3954DC9B83FA285 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -148,8 +191,21 @@
 				3054F6C342DF00206DE60541 /* CAFishPlanting.app */,
 				27400D6F95DB03B111B5BD32 /* CAFishPlantingTests.xctest */,
 				686BFC51DCAA63E9B04E5EC0 /* CAFishPlantingUITests.xctest */,
+				2DB7B2CD0EB5AD6EADBA4A66 /* CAFishPlantingWidgets.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9D7D35C77B49C58A1D66C4FB /* CAFishPlantingWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				30F441586939DFBD4FD413E3 /* TroutTruckWidgets.swift */,
+				8052DF351D256DCD1680CA1B /* FavoriteWatersWidget.swift */,
+				16BEC5940FAC3E0A41B37940 /* Info.plist */,
+				C965665EEA71E3D4A1E025BB /* CAFishPlantingWidgets.entitlements */,
+				32DD4892C89BEBDCA314E6ED /* PrivacyInfo.xcprivacy */,
+			);
+			path = CAFishPlantingWidgets;
 			sourceTree = "<group>";
 		};
 		D3822E31034F039C9CAC243A /* CAFishPlanting */ = {
@@ -159,6 +215,7 @@
 				AD2968FBB0BEF9F1EF259FC0 /* Views */,
 				4B63DEE37A46A8897D5BC9A2 /* Resources */,
 				F1623476D8A83E2EDC723706 /* Configuration.storekit */,
+				CD39626A89522D230CA30AAB /* CAFishPlanting.entitlements */,
 			);
 			path = CAFishPlanting;
 			sourceTree = "<group>";
@@ -166,6 +223,7 @@
 		432B3FF64A0248C2A7CB462B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				3A3076F5A9AE46931E33CCE8 /* WidgetBridge.swift */,
 				6F974BD82B04FC663443931C /* CAFishPlantingApp.swift */,
 				FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */,
 				E04AF963921A2AE834344E4B /* ScheduleIntents.swift */,
@@ -206,6 +264,7 @@
 		249ED19B2167022D51E9072C /* CAFishPlantingTests */ = {
 			isa = PBXGroup;
 			children = (
+				279A9238A08B48D4E8275E89 /* WidgetBridgeTests.swift */,
 				3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */,
 				786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */,
 				2ED61777415BBB89E23AC86C /* ScheduleIntentsTests.swift */,
@@ -237,10 +296,12 @@
 				5B9773D84493B3D713DB9AC0 /* Frameworks */,
 				B681E6ECC54B86FE775FEC3C /* Resources */,
 				5BA2DE8089FD1B011F522833 /* Embed Frameworks */,
+				862DC96E71C653419E455CBE /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				040BF45AFDD31B42AAA287EC /* PBXTargetDependency */,
 			);
 			name = CAFishPlanting;
 			packageProductDependencies = (
@@ -287,6 +348,26 @@
 			productReference = 686BFC51DCAA63E9B04E5EC0 /* CAFishPlantingUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		4A98613C25606001752A1432 /* CAFishPlantingWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC8EA7014B1E7ED0EE8E3E1D /* Build configuration list for PBXNativeTarget "CAFishPlantingWidgets" */;
+			buildPhases = (
+				F56F6410E2240A41ECCAB7F7 /* Sources */,
+				7364C4D96BE6900F0F7BBE93 /* Frameworks */,
+				A213D9C15D230DD20EA26EE7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CAFishPlantingWidgets;
+			packageProductDependencies = (
+				FDD457F5E6EE20F1612EB897 /* PlantingCore */,
+			);
+			productName = CAFishPlantingWidgets;
+			productReference = 2DB7B2CD0EB5AD6EADBA4A66 /* CAFishPlantingWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -303,6 +384,9 @@
 					7EC8F98B7A265120217712DE = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 29C7B681C8D62CBAC94D51C0;
+					};
+					4A98613C25606001752A1432 = {
+						CreatedOnToolsVersion = 26.6;
 					};
 					CEFEF1F5CE13C5A04BC4C468 = {
 						CreatedOnToolsVersion = 26.6;
@@ -329,6 +413,7 @@
 				29C7B681C8D62CBAC94D51C0 /* CAFishPlanting */,
 				7EC8F98B7A265120217712DE /* CAFishPlantingTests */,
 				CEFEF1F5CE13C5A04BC4C468 /* CAFishPlantingUITests */,
+				4A98613C25606001752A1432 /* CAFishPlantingWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -344,6 +429,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A213D9C15D230DD20EA26EE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C78A27DF6F9FAE99E8A019A0 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -351,6 +444,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				957930AAE88B2301316666C5 /* WidgetBridge.swift in Sources */,
 				4FC3D4E75324FB1C87E2BC58 /* CAFishPlantingApp.swift in Sources */,
 				0B618C0DAC1AD20A1CF5A3B7 /* AppEnvironment.swift in Sources */,
 				1EA443A92DA0D57DF5B3C809 /* ScheduleIntents.swift in Sources */,
@@ -373,6 +467,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA4D70CA059BA4A5915228C4 /* WidgetBridgeTests.swift in Sources */,
 				73DB78A4B671398390946107 /* HostAllowlistTests.swift in Sources */,
 				699F3EA3324CB23619BBF2E3 /* AppEnvironmentTests.swift in Sources */,
 				AA1C3555F8A0BBEE14DB44BB /* ScheduleIntentsTests.swift in Sources */,
@@ -392,6 +487,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F56F6410E2240A41ECCAB7F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				16F9E0A05F4F30213A894235 /* TroutTruckWidgets.swift in Sources */,
+				A6B4F047B8F3073524F6AC9E /* FavoriteWatersWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -404,6 +508,11 @@
 			isa = PBXTargetDependency;
 			target = 29C7B681C8D62CBAC94D51C0 /* CAFishPlanting */;
 			targetProxy = FF353E983866995CDA64642B /* PBXContainerItemProxy */;
+		};
+		040BF45AFDD31B42AAA287EC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4A98613C25606001752A1432 /* CAFishPlantingWidgets */;
+			targetProxy = 824788BFD2593A0B5CF001C2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -531,6 +640,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = CAFishPlanting/CAFishPlanting.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6X5YH93QNM;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -556,6 +666,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = CAFishPlanting/CAFishPlanting.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6X5YH93QNM;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -645,6 +756,54 @@
 			};
 			name = Release;
 		};
+		464A198EDC07D1A993E92590 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CAFishPlantingWidgets/CAFishPlantingWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6X5YH93QNM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CAFishPlantingWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.cafishplanting.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		95382FEE84491D141606B800 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CAFishPlantingWidgets/CAFishPlantingWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6X5YH93QNM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CAFishPlantingWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.cafishplanting.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -684,6 +843,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		CC8EA7014B1E7ED0EE8E3E1D /* Build configuration list for PBXNativeTarget "CAFishPlantingWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				464A198EDC07D1A993E92590 /* Debug */,
+				95382FEE84491D141606B800 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -695,6 +863,10 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		3148F689D98979AD9E0825B9 /* PlantingCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlantingCore;
+		};
+		FDD457F5E6EE20F1612EB897 /* PlantingCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlantingCore;
 		};

@@ -30,4 +30,19 @@ public enum FreeTier {
     public static func notificationsAllowed(isEntitled: Bool) -> Bool {
         isEntitled
     }
+
+    /// Whether the Home Screen and Lock Screen widget needs the one-time
+    /// purchase. **Not decided yet (owner question):** until it is, widgets
+    /// are free for everyone, like favoriting and browsing. Flip this one
+    /// flag to make them part of full access; the widget then says to
+    /// unlock full access instead of listing favorites
+    /// (`WidgetDigest.locked`). Nothing else changes.
+    public static let widgetsRequireFullAccess = false
+
+    /// Whether the widget may show favorites, given whether the one-time
+    /// purchase is owned. Read in one place: where the app builds the
+    /// widget's digest (`AppEnvironment.publishWidgetDigest()`).
+    public static func widgetsAllowed(isEntitled: Bool) -> Bool {
+        !widgetsRequireFullAccess || isEntitled
+    }
 }

@@ -5,7 +5,7 @@
 <p class="lede">
   The {{ site_name }} website uses Google Analytics 4 to count visits and see
   which pages are read, unless your browser sends Global Privacy Control or
-  Do Not Track. The {{ site_name }} iOS app collects no data at all: no
+  Do Not Track, or you opt out. The {{ site_name }} iOS app collects no data at all: no
   analytics, no tracking, and no third-party SDK. Neither has an account or
   advertising.
 </p>
@@ -32,6 +32,17 @@
   <li><strong>Global Privacy Control and Do Not Track are honoured.</strong>
       If your browser sends either signal, the analytics script is never
       loaded: nothing is sent to Google and no analytics cookie is set.</li>
+  <li id="opt-out"><strong>Opting out on this device.</strong> The
+      &ldquo;Opt out of analytics&rdquo; button at the bottom of every page
+      turns Google Analytics off in this browser. Every page you open
+      afterwards checks for that choice before loading Google Analytics, and
+      so does not load it at all. The choice is saved in this
+      browser&rsquo;s local storage for this site, not in a cookie, and is
+      never sent anywhere. The button then reads &ldquo;Opt back in&rdquo;;
+      press it to undo the choice. Clearing this site&rsquo;s data in your
+      browser clears the choice too. Google Analytics cookies set before you
+      opted out stay in your browser until they expire or you clear them,
+      but nothing sends them to Google while you are opted out.</li>
   <li><strong>The EEA, the UK and Switzerland:</strong> analytics cookies are
       denied by default there, using Google's Consent Mode. Google Analytics
       then sets no cookie and receives only cookieless measurements.</li>

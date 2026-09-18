@@ -6,6 +6,12 @@
   that sends Global Privacy Control or Do Not Track gets nothing: no
   dataLayer, no request to Google, no cookie. The guard runs first.
 
+  The same goes for a visitor who opted out with the footer button in
+  base.html.jinja: that choice is a localStorage flag on this device, read
+  here before anything loads. The key names this site because every
+  github.io project site of this account shares one origin, and so one
+  localStorage.
+
   Consent Mode v2 defaults: the three ad signals are denied everywhere;
   analytics_storage is denied in the EEA, the UK and Switzerland (the
   region-specific default wins there) and granted elsewhere. Google signals
@@ -13,10 +19,48 @@
 #}
 <script>
 (function () {
-  var n = navigator, w = window;
-  if (n.globalPrivacyControl === true) return;
+  var n = navigator, w = window, d = document;
+  var id = {{ ga4_measurement_id|tojson }};
+  var key = "trout-truck:analytics-opt-out";
   var dnt = n.doNotTrack || w.doNotTrack || n.msDoNotTrack;
+  var signal = n.globalPrivacyControl === true || dnt === "1" || dnt === "yes";
+  var optedOut = false;
+  try { optedOut = w.localStorage.getItem(key) === "1"; } catch (e) {}
+
+  // The footer's opt-out control. It stays hidden unless this runs.
+  d.addEventListener("DOMContentLoaded", function () {
+    var box = d.getElementById("analytics-choice");
+    var button = d.getElementById("analytics-opt-out");
+    var status = d.getElementById("analytics-status");
+    if (!box || !button || !status) return;
+    box.hidden = false;
+    if (signal) {
+      status.textContent = "Analytics is off: your browser sends Global Privacy Control or Do Not Track.";
+      return;
+    }
+    function show(message) {
+      button.textContent = optedOut ? "Opt back in" : "Opt out of analytics";
+      status.textContent = message;
+    }
+    button.hidden = false;
+    show(optedOut ? "Analytics is off on this device." : "");
+    button.addEventListener("click", function () {
+      optedOut = !optedOut;
+      w["ga-disable-" + id] = optedOut;
+      try {
+        if (optedOut) w.localStorage.setItem(key, "1");
+        else w.localStorage.removeItem(key);
+      } catch (e) {
+        show("Your browser would not save this choice, so it lasts only until you leave this page.");
+        return;
+      }
+      show(optedOut ? "Analytics is off on this device." : "Analytics is back on from the next page you open.");
+    });
+  });
+
+  if (n.globalPrivacyControl === true) return;
   if (dnt === "1" || dnt === "yes") return;
+  if (optedOut) return;
   w.dataLayer = w.dataLayer || [];
   function gtag() { w.dataLayer.push(arguments); }
   gtag("consent", "default", {

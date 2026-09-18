@@ -302,6 +302,7 @@ const window = Object.assign({}, c.window);
 const document = {
   createElement: (tag) => ({ tagName: tag }),
   head: { appendChild: (el) => { appended.push(el); } },
+  addEventListener: () => {},  // footer opt-out: test_site_analytics_optout.py
 };
 const context = { navigator, window, document, Date, encodeURIComponent };
 vm.runInContext(code, vm.createContext(context));

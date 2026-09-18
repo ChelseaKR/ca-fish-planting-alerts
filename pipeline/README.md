@@ -102,10 +102,12 @@ The Google Analytics 4 measurement ID is not one of these variables. It is
 public, so it is committed: `GA4_MEASUREMENT_ID` in `src/cfpa/site.py`
 (currently `G-ZYL3RMXCZF`, property 554849409; DECISIONS 0011). `cfpa` reads
 it on every run and refuses the run, writing nothing, if it is not of the
-form `G-XXXXXXXXXX`. With an ID, every page gets the tag, which loads nothing
-when the browser sends Global Privacy Control or Do Not Track. With `""`,
-no page gets any script, and the about, privacy and support pages say
-nothing is collected. `build_site()` and `cli.run()` default to no analytics;
+form `G-XXXXXXXXXX`. With an ID, every page gets the tag and a footer
+"Opt out of analytics" button. The tag loads nothing when the browser sends
+Global Privacy Control or Do Not Track, or when this browser has opted out
+(the localStorage key `trout-truck:analytics-opt-out`, read before the tag
+loads). With `""`, no page gets any script, and the about, privacy and
+support pages say nothing is collected. `build_site()` and `cli.run()` default to no analytics;
 only `cfpa`'s `main()` passes the committed ID.
 
 Pages built besides the per-water ones: `/` (this week), `/about/`,

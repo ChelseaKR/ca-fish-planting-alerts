@@ -85,6 +85,20 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .site-tagline { color: var(--muted); font-size: 0.9rem; }
 nav a { margin-right: 1rem; }
 .site-footer p { color: var(--muted); font-size: 0.9rem; }
+/* The footer's analytics opt-out is a button, because it changes a setting
+   rather than going anywhere, drawn like the links next to it. The padding
+   keeps it a 24px target (WCAG 2.2 SC 2.5.8). */
+.link-button {
+  font: inherit;
+  color: var(--link);
+  background: none;
+  border: none;
+  padding: 0.25rem 0;
+  min-height: 24px;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
 
 h1 { font-size: 1.6rem; margin-top: 1.25rem; }
 h2 { font-size: 1.2rem; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.25rem; }

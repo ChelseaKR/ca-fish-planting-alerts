@@ -18,14 +18,14 @@
 {% if canonical_url %}
 <meta property="og:url" content="{{ canonical_url }}">
 {% endif %}
-<meta property="og:site_name" content="CA Trout Planting Alerts">
+<meta property="og:site_name" content="{{ site_name }}">
 <meta name="twitter:card" content="summary">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 <header class="site-header">
   <div class="wrap">
-    <p class="site-name"><a href="{{ root }}">CA Trout Planting Alerts</a></p>
+    <p class="site-name"><a href="{{ root }}">{{ site_name }}</a> <span class="site-tagline">California trout planting &amp; stocking schedule</span></p>
     <nav aria-label="Primary">
       <a href="{{ root }}">This week</a>
       <a href="{{ root }}about/">About &amp; privacy</a>
@@ -37,7 +37,7 @@
 </main>
 <footer class="site-footer">
   <div class="wrap">
-    <p>{{ attribution_text }} This site is independent and is not affiliated with or endorsed by CDFW.</p>
+    <p>{{ attribution_text }} {{ site_name }} is independent and is not affiliated with or endorsed by CDFW.</p>
     <p><a href="{{ attribution_url }}">{{ attribution_url }}</a> &middot; <a href="{{ root }}about/">about &amp; attribution</a> &middot; <a href="{{ root }}privacy/">privacy</a> &middot; <a href="{{ root }}support/">support</a></p>
   </div>
 </footer>

@@ -24,9 +24,14 @@ import Foundation
 /// already uses for this exact field) — as opposed to a future/current-week
 /// plant, which the app calls "scheduled" and this type never describes.
 public enum ShareContent {
+    /// The product name the message is signed with (DECISIONS 0010). Same
+    /// string as the app's `CFBundleDisplayName` in `Info.plist`; repeated
+    /// here because this type never reads `Bundle.main`.
+    public static let productName = "Trout Truck"
+
     /// The full share-sheet message: water name, real status, real link.
     public static func message(for water: Water, siteURL: URL?) -> String {
-        var parts = ["\(water.name) — CA fish planting alerts.", statusLine(for: water)]
+        var parts = ["\(water.name) — \(productName), CA fish planting alerts.", statusLine(for: water)]
         if let siteURL {
             parts.append("Stocking history and schedule: \(siteURL.absoluteString)")
         }

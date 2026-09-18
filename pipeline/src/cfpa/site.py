@@ -17,6 +17,14 @@ import jinja2
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
+# The product name (DECISIONS 0010). It says nothing a searcher types, so
+# every title and meta description keeps the descriptive "trout planting" /
+# "stocking" phrase next to it -- the brand never replaces the search terms.
+SITE_NAME = "Trout Truck"
+# Appended after the brand on pages whose own label carries no search terms
+# (about, privacy, support, 404).
+SITE_TAGLINE = "CA trout planting schedule"
+
 REGION_NAME_BY_CODE = {
     "R1": "Northern Region",
     "R2": "North Central Region",
@@ -189,6 +197,7 @@ def build_site(
         "attribution_url": attribution_url,
         "app_store_url": app_store_url,
         "support_email": support_email,
+        "site_name": SITE_NAME,
     }
 
     # ---- assets/style.css
@@ -227,8 +236,11 @@ def build_site(
     )
 
     index_html = env.get_template("index.html.jinja").render(
-        title="This week's CA trout planting schedule | CA Trout Planting Alerts",
-        description=f"CDFW-scheduled trout plants for the {source_week_label}, by region, from the official weekly schedule.",
+        title=f"This week's CA trout planting schedule | {SITE_NAME}",
+        description=(
+            f"CDFW's California trout planting and stocking schedule for the {source_week_label}, "
+            "by region, from the official weekly schedule."
+        ),
         canonical_url=f"{base_url}/",
         root="./",
         **common,
@@ -243,8 +255,11 @@ def build_site(
 
     # ---- about
     about_html = env.get_template("about.html.jinja").render(
-        title="About, attribution & privacy | CA Trout Planting Alerts",
-        description="What this site is, what it collects (nothing), and where its data and licence terms come from.",
+        title=f"About, attribution & privacy | {SITE_NAME}, {SITE_TAGLINE}",
+        description=(
+            f"What {SITE_NAME} is, what it collects (nothing), and where its trout planting "
+            "and stocking data and licence terms come from."
+        ),
         canonical_url=f"{base_url}/about/",
         root="../",
         **common,
@@ -263,14 +278,16 @@ def build_site(
         (
             "privacy",
             "privacy.html.jinja",
-            "Privacy policy | CA Trout Planting Alerts",
-            "What this site and its iOS app collect: nothing. No account, no analytics, no tracking.",
+            f"Privacy policy | {SITE_NAME}, {SITE_TAGLINE}",
+            f"What the {SITE_NAME} trout planting site and iOS app collect: nothing. "
+            "No account, no analytics, no tracking.",
         ),
         (
             "support",
             "support.html.jinja",
-            "Support & FAQ | CA Trout Planting Alerts",
-            "How the planting schedule, calendar feeds and iOS app alerts work, and why an alert may not arrive.",
+            f"Support & FAQ | {SITE_NAME}, {SITE_TAGLINE}",
+            "How the trout planting schedule, stocking calendar feeds and iOS app alerts work, "
+            "and why an alert may not arrive.",
         ),
     ):
         page_html = env.get_template(template).render(
@@ -291,7 +308,7 @@ def build_site(
     # e.g. /ca-fish-planting-alerts/ -- rather than ./ or ../; never
     # indexed, no canonical)
     not_found_html = env.get_template("404.html.jinja").render(
-        title="Page not found | CA Trout Planting Alerts",
+        title=f"Page not found | {SITE_NAME}, {SITE_TAGLINE}",
         description="This page does not exist.",
         canonical_url=None,
         noindex=True,
@@ -320,7 +337,7 @@ def build_site(
         else:
             recency = "no planting currently listed"
         html = env.get_template("water.html.jinja").render(
-            title=f"{view['qualified_name']} trout stocking schedule & history | CA Trout Planting Alerts",
+            title=f"{view['qualified_name']} trout stocking schedule & history | {SITE_NAME}",
             description=(
                 f"{view['qualified_name']}: CDFW trout planting schedule and history, "
                 f"{recency}. {view['listed_week_count']} planting week(s) recorded, "

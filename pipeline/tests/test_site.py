@@ -264,7 +264,9 @@ def test_no_uniqueness_claims_in_site_copy(tmp_path: Path):
     """Other California stocking-alert products exist (checked 2026-09-17),
     so the copy must not claim to be the only or first one."""
     out = _build_site(tmp_path)
-    banned = re.compile(r"\b(the only|only place|only app|first app|the first|no one else|nobody else)\b", re.I)
+    banned = re.compile(
+        r"\b(the only|only place|only app|first app|the first|no one else|nobody else|the app for)\b", re.I
+    )
     for f in _all_html(out):
         text = re.sub(r"<[^>]+>", " ", f.read_text(encoding="utf-8"))
         m = banned.search(text)
@@ -278,3 +280,22 @@ def test_every_page_says_it_is_not_affiliated_with_cdfw(tmp_path: Path):
     for f in _all_html(out):
         html = f.read_text(encoding="utf-8")
         assert "not affiliated with or endorsed by CDFW" in html, f
+
+
+def test_every_page_carries_the_brand_and_the_search_terms(tmp_path: Path):
+    """DECISIONS 0010: the brand is "Trout Truck", but nobody searches for
+    it, so every title and meta description keeps "trout planting" or
+    "stocking" next to it, and every page still credits CDFW as the source."""
+    out = _build_site(tmp_path)
+    search_terms = re.compile(r"trout planting|stocking", re.I)
+    for f in _all_html(out):
+        html = f.read_text(encoding="utf-8")
+        title = re.search(r"<title>([^<]+)</title>", html).group(1)
+        description = re.search(r'<meta name="description" content="([^"]+)">', html).group(1)
+        assert "Trout Truck" in title, f
+        assert '<meta property="og:site_name" content="Trout Truck">' in html, f
+        assert "CA Trout Planting Alerts" not in html, f
+        if f.name != "404.html":  # noindex: never shown in search results
+            assert search_terms.search(title), (f, title)
+            assert search_terms.search(description), (f, description)
+        assert "Data: California Department of Fish and Wildlife" in html, f

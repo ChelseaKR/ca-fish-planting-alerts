@@ -4,6 +4,13 @@ import XCTest
 final class ShareContentTests: XCTestCase {
     private let siteURL = SnapshotEndpoint.siteWaterURL(slug: "test-lake")!
 
+    /// The message minus the product name. "Trout Truck" contains "Trout",
+    /// which is a brand, not a species claim, so species assertions run on
+    /// the rest of the message.
+    private func withoutBrand(_ message: String) -> String {
+        message.replacingOccurrences(of: ShareContent.productName, with: "")
+    }
+
     func testMessageNamesTheWaterAndTheRealLastPlantedSpeciesAndWeek() {
         let water = TS.water(id: "cdfw-1", name: "Test Lake", plants: [
             TS.plant("2026-08-30", species: "Catfish"),
@@ -14,6 +21,7 @@ final class ShareContentTests: XCTestCase {
         let message = ShareContent.message(for: water, siteURL: siteURL)
 
         XCTAssertTrue(message.contains("Test Lake"), "should name the water")
+        XCTAssertTrue(message.contains("Trout Truck"), "should name the product (DECISIONS 0010)")
         XCTAssertTrue(message.contains("Last planted with Trout, week of 2026-09-06."),
                        "should state the real species and week for the real last-listed plant, not the earlier catfish week")
         XCTAssertFalse(message.contains("Catfish"), "must not surface an older week's species as the current status")
@@ -41,7 +49,7 @@ final class ShareContentTests: XCTestCase {
 
         XCTAssertTrue(message.contains("Not yet planted in the schedule this app has observed."))
         XCTAssertFalse(message.contains("Last planted"), "no real last-planted date exists — must not invent one")
-        XCTAssertFalse(message.localizedCaseInsensitiveContains("trout"),
+        XCTAssertFalse(withoutBrand(message).localizedCaseInsensitiveContains("trout"),
                         "must not name a species with nothing in the real history to back it")
     }
 
@@ -56,7 +64,7 @@ final class ShareContentTests: XCTestCase {
         let message = ShareContent.message(for: water, siteURL: siteURL)
 
         XCTAssertTrue(message.contains("Not yet planted in the schedule this app has observed."))
-        XCTAssertFalse(message.contains("Trout"), "a removed/cancelled plant is not a real planting")
+        XCTAssertFalse(withoutBrand(message).contains("Trout"), "a removed/cancelled plant is not a real planting")
     }
 
     func testMessageOmitsTheLinkSentenceRatherThanFabricatingAURLWhenNoneIsAvailable() {

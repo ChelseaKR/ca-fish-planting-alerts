@@ -69,6 +69,39 @@ The pipeline never overwrites history; a stale or failed fetch never becomes a
 "no plants this week" fact.
 
 ## 0006 — Name and domain: undecided
+**Settled by 0010** (2026-09-17): the name is Trout Truck, and the site
+stays on `github.io` for now.
+
+## 0010 — Name: Trout Truck; domain stays on github.io for now (2026-09-17)
+
+The product is **Trout Truck**. Anglers call the hatchery truck that
+delivers planted trout "the trout truck", so the name uses words the
+audience already uses for the thing the product tracks.
+
+- **App Store:** a US App Store search on 2026-09-17 returned 0 apps using
+  the name.
+- **Trademarks were not searched.** No USPTO or state trademark search has
+  been done. Run one before the App Store submission and before buying a
+  domain.
+- **Search terms stay next to the brand.** The name says neither
+  "planting" nor "stocking", which are the words people search with, so
+  page titles and meta descriptions keep that wording beside the name
+  ("This week's CA trout planting schedule | Trout Truck"), and the App
+  Store subtitle carries it (`CA trout stocking alerts`).
+- **Domain: none yet.** The site stays at
+  `https://chelseakr.github.io/ca-fish-planting-alerts/` with no CNAME. The
+  owner may buy `trouttruck.com` later. If that happens, set
+  `SITE_BASE_URL`, and the `github.io` URL becomes a 301 to the new domain
+  (`schema/README.md`).
+- **What does not change:** the repository name, the bundle identifier
+  `com.chelseakr.cafishplanting`, the StoreKit product ID
+  `com.chelseakr.cafishplanting.fullaccess`, the Xcode scheme and target
+  names (`CAFishPlanting`), the snapshot URL, the pipeline's `User-Agent`,
+  and the `.ics` event UIDs. Changing a UID would duplicate every event in
+  a subscriber's calendar. Only the names people see change.
+- **No uniqueness claims.** Other California stocking-alert apps exist,
+  so no copy says "only",
+  "first" or "the app for".
 
 ## 0007 — Zero parsed rows is a valid empty week, not a parse error (2026-09-14)
 

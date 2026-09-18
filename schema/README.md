@@ -10,10 +10,11 @@ directory is the contract; the pipeline owns it, the app consumes it.
 | Snapshot (this contract) | `https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json` |
 | Schema it validates against | `https://chelseakr.github.io/ca-fish-planting-alerts/schema/snapshot.v1.json` (same bytes as `schema/snapshot.v1.json` in this repo) |
 
-The domain is undecided (DECISIONS 0006). When a custom domain is set, the
-`github.io` URL becomes a 301 to it, so **follow redirects**. The path
-`/snapshot/v1.json` is stable for the life of v1; a breaking change ships as
-`/snapshot/v2.json` alongside, never in place.
+There is no custom domain yet: the site stays on `github.io` for now
+(DECISIONS 0010). If one is set later, the `github.io` URL becomes a 301 to
+it, so **follow redirects**. The path `/snapshot/v1.json` is stable for the
+life of v1; a breaking change ships as `/snapshot/v2.json` alongside, never
+in place.
 
 - Served with `Content-Type: application/json` from GitHub Pages (which sets
   `ETag`/`Last-Modified`; send `If-None-Match` on refresh — a 304 costs

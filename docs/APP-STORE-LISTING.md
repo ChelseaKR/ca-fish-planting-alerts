@@ -1,12 +1,15 @@
 # App Store Connect: paste-ready listing copy (draft)
 
-Drafted 2026-09-17. This file holds only the text that gets pasted into App
+Drafted 2026-09-17, and updated the same day for the name **Trout Truck**
+(DECISIONS 0010). This file holds only the text that gets pasted into App
 Store Connect. The review-clause analysis, the in-app purchase setup, the
 screenshot plan and the TestFlight steps are in `docs/APP-STORE.md`.
 
 Nothing here has been submitted. Everything in `[brackets]` is the owner's to
-fill in. Character counts were measured with `len()` on the exact strings
-below, and the limits are Apple's.
+fill in. Character counts were measured with Python's `len()` on the exact
+strings below (for the description, the text between the two rules with
+line breaks counted), re-measured after the rename, and the limits are
+Apple's.
 
 **What this copy assumes about the product.** It follows the free/paid split
 in PR #12 (DECISIONS 0009 there): browsing, history and favourites are free,
@@ -18,7 +21,7 @@ description.
 - Plants are "scheduled for the week of…". Never write "stocked on" or a
   single day (CDFW publishes weeks on purpose, and plants are subject to
   change).
-- No "only", "first" or "nobody else" claims. Other apps
+- No "only", "first", "nobody else" or "the app for" claims. Other apps
   already cover California stocking.
 - No competitor names anywhere in the metadata.
 - Counts come from the snapshot at submission time, never from this file.
@@ -27,12 +30,11 @@ description.
 
 | Field | Limit | Value | Chars |
 |---|---|---|---|
-| Name | 30 | `[Name]`. DECISIONS 0006 leaves the name undecided. If the brand is 11 characters or fewer, `[Name]: CA Trout Stocking` puts the highest-intent phrase in the field Apple weights most. | — |
+| Name | 30 | `Trout Truck` | 11 |
 | Subtitle | 30 | `CA trout stocking alerts` | 24 |
-| Subtitle, if the name already says "Trout Stocking" | 30 | `Stocking alerts for California` | 30 |
 | Keywords | 100 | `California,fish planting,stocked,catfish,lake,reservoir,creek,river,hatchery,angler,fishing,CDFW` | 96 |
 | Promotional text | 170 | `Know when your lake is on California's trout planting schedule. Week-by-week history, local alerts, no account, nothing tracked.` | 128 |
-| Description | 4000 | See [Description](#description) below. | 1,638 |
+| Description | 4000 | See [Description](#description) below. | 1,647 |
 | Primary category | — | Sports. | — |
 | Secondary category | — | **Reference**, not the Weather that `APP-STORE.md` suggests. The app is a schedule-and-history lookup with no weather content, and guideline 2.3.5 asks for the most appropriate category. | — |
 | Age rating | — | Answer "None" to every content question in the questionnaire, which should come out at the lowest tier. There is no user-generated content, no web browsing, no gambling and no messaging. | — |
@@ -42,11 +44,11 @@ description.
 | Privacy Policy URL | — | `[SITE]/privacy/` | — |
 | Copyright | — | `2026 [legal name of the account holder]` | — |
 
-`[SITE]` means `https://chelseakr.github.io/ca-fish-planting-alerts` until a
-custom domain is set. Once one is set, it means that domain (repository
-variable `SITE_BASE_URL`). The `/support/` and `/privacy/` pages come from
-PR #14 and go live on the first successful `publish` run, which needs
-PR #13. The Support URL also needs the owner to set `SUPPORT_EMAIL`,
+`[SITE]` means `https://chelseakr.github.io/ca-fish-planting-alerts`.
+DECISIONS 0010 keeps the site on `github.io` for now. If a custom domain is
+set later, it means that domain (repository variable `SITE_BASE_URL`). The
+`/support/` and `/privacy/` pages come from PR #14 and go live on the first
+successful `publish` run, which needs PR #13. The Support URL also needs the owner to set `SUPPORT_EMAIL`,
 because without it the page has no contact line.
 
 ## In-app purchase localization
@@ -72,7 +74,7 @@ submit. It was 385 on 2026-09-17.
 
 Get a notification when a California lake, reservoir or creek you fish appears on the Department of Fish and Wildlife's trout planting schedule.
 
-CDFW updates its schedule weekly and lists each plant by the week, never the day. This app checks the schedule in the background, and when a water you've favourited is newly listed, it schedules an alert on your phone. The source changes weekly and iOS decides when background checks run, so an alert arrives within days of a new listing, not the minute it's posted.
+CDFW updates its schedule weekly and lists each plant by the week, never the day. Trout Truck checks the schedule in the background, and when a water you've favourited is newly listed, it schedules an alert on your phone. The source changes weekly and iOS decides when background checks run, so an alert arrives within days of a new listing, not the minute it's posted.
 
 EVERY WATER, WEEK BY WEEK
 • Browse [N] waters CDFW has scheduled, or search by water or county, or filter by CDFW region.
@@ -86,9 +88,9 @@ PRIVATE BY DESIGN
 No account, no ads, no analytics, no tracking. The app makes one kind of network request: it downloads the public schedule file. Your favourites never leave your phone. Privacy label: Data Not Collected.
 
 HONEST ABOUT THE DATA
-CDFW notes that all plants are subject to change depending on road, water, weather and operational conditions. So this app always says "scheduled for the week of", never "stocked on".
+CDFW notes that all plants are subject to change depending on road, water, weather and operational conditions. So Trout Truck always says "scheduled for the week of", never "stocked on".
 
-Data: California Department of Fish and Wildlife, Fish Planting Schedule. This app is independent and is not affiliated with or endorsed by CDFW.
+Data: California Department of Fish and Wildlife, Fish Planting Schedule. Trout Truck is independent and is not affiliated with or endorsed by CDFW.
 
 ---
 
@@ -116,7 +118,7 @@ Paste this into App Review Information → Notes. No demo account is needed.
 
 This app has no accounts and no sign-in (5.1.1).
 
-What it is: a schedule-and-history app for California's public trout planting schedule, published weekly by the Department of Fish and Wildlife (CDFW). Each water keeps its week-by-week history beyond CDFW's own one-year window, which is the main content. Open any water from Browse to see it.
+What it is: Trout Truck is a schedule-and-history app for California's public trout planting schedule, published weekly by the Department of Fish and Wildlife (CDFW). Each water keeps its week-by-week history beyond CDFW's own one-year window, which is the main content. Open any water from Browse to see it.
 
 Network: the app's only request is a GET of one public JSON file, https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json, rebuilt daily from CDFW's schedule. A copy ships in the app, so it works offline on first launch.
 
@@ -134,7 +136,7 @@ The app is independent and not affiliated with CDFW. Data attribution is shown i
 
 | Item | Blocks | Owner step |
 |---|---|---|
-| Name | Name field, and the brand in the copy | Decide (DECISIONS 0006) |
+| Trademark search | Name field | The name is decided (Trout Truck, DECISIONS 0010), but no trademark search has been run. Run one before submitting. |
 | Live `/support/` and `/privacy/` | Support and Privacy Policy URLs | Merge #13 and #14, let `publish` run, and set `SUPPORT_EMAIL` |
 | Free/paid split | Description and IAP text | Merge or reject #12 |
 | "Not affiliated with CDFW" line inside the app | Parity with this description and the review notes | The app shows attribution in About but has no non-affiliation line. That is an `ios/` change, which is outside this PR's scope. |

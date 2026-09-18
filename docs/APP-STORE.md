@@ -21,7 +21,7 @@ analysis, or owner steps needed correction.
 
 | Field | Value | Notes |
 |---|---|---|
-| Name | **TBD** — `docs/DECISIONS.md` 0006 ("Name and domain: undecided") | Working placeholder in code/Info.plist: "CA Fish Planting" (`CFBundleDisplayName`, `ios/CAFishPlanting/Resources/Info.plist`) — the one place that string appears. |
+| Name | **Trout Truck** — `docs/DECISIONS.md` 0010 (settles 0006) | `CFBundleDisplayName` in `ios/CAFishPlanting/Resources/Info.plist` is "Trout Truck". The bundle ID, product ID, scheme and target names keep `CAFishPlanting`. No trademark search has been run yet. |
 | Subtitle | See `docs/APP-STORE-LISTING.md` | The earlier draft, "Trout stocking alerts for California", is **36** characters, over the 30-character limit (it was miscounted as 29). The paste-ready replacement, with measured counts, is in `APP-STORE-LISTING.md`. |
 | Description | See draft below. | States the weekly cadence and local-only alerts in the first two sentences, per the task's plain-statement requirement. |
 | Keywords | See `docs/APP-STORE-LISTING.md` | The earlier list repeated subtitle words, which Apple already indexes. The replacement is 96/100 characters. No brand terms beyond CDFW's own program name (a factual reference, not a trademark claim). |
@@ -307,10 +307,10 @@ xcrun altool --upload-app -f build/export/CAFishPlanting.ipa \
    in App Store Connect" above. Until then the purchase button in the app
    will show "Not available right now" against the real App Store (it
    already works today against the local `Configuration.storekit`).
-3. **Name and domain undecided** (DECISIONS 0006) — the listing Name
-   field above is a placeholder; `CFBundleDisplayName` ("CA Fish
-   Planting") is the one place a working name appears in `ios/` and is
-   safe to change without touching logic.
+3. ~~Name and domain undecided~~ **Closed 2026-09-17** (DECISIONS 0010).
+   The name is Trout Truck (`CFBundleDisplayName` and the share-sheet
+   text), and the site stays on `github.io`. Still open: a trademark
+   search before submitting.
 4. **App ID registration status unverified.** `project.pbxproj` already
    declares `DEVELOPMENT_TEAM = 6X5YH93QNM` (the same Apple Developer
    Program team as family-greenhouse) and

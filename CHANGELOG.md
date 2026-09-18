@@ -38,6 +38,12 @@ once releases exist. No release has been tagged yet (#23).
 - A root `make verify` that runs every lint, type, test and security gate,
   and runs in CI (#18). CodeQL, workflow scanning, and a weekly scan of the
   full history for secrets (#21).
+- App: Favorites has search (name, a name CDFW used before, or county) and
+  a county filter, swipe to remove, pull to refresh, and the schedule's
+  week at the top. A favorite the schedule no longer lists is shown as
+  such, and can be removed, instead of the list saying there are no
+  favorites. Browse has a county filter within the chosen region, and its
+  search matches every word typed and earlier names too.
 
 ### Changed
 

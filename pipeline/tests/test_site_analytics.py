@@ -105,11 +105,19 @@ def _pages(out: Path) -> dict[str, str]:
     return pages
 
 
+# Any <script> element, whatever its attributes, case or end-tag spelling.
+# The exact-string `<script>...</script>` this replaced let a script with an
+# attribute, or one closed as `</script >`, through: its JavaScript then
+# counted as visible page text in the copy checks below, and was not seen by
+# _scripts(). CodeQL flagged both uses as py/bad-tag-filter.
+_SCRIPT = re.compile(r"<script\b[^>]*>(.*?)</script\b[^>]*>", re.IGNORECASE | re.DOTALL)
+
+
 def _text(html: str) -> str:
     """What a reader or a search result shows: the visible text plus the
     meta description, lowercased, whitespace collapsed."""
     description = re.search(r'<meta name="description" content="([^"]*)">', html)
-    text = re.sub(r"<script>.*?</script>", " ", html, flags=re.S)
+    text = _SCRIPT.sub(" ", html)
     text = re.sub(r"<[^>]+>", " ", text)
     if description:
         text += " " + description.group(1)
@@ -126,7 +134,7 @@ def _ga_markers(html: str) -> list[str]:
 
 
 def _scripts(html: str) -> list[str]:
-    return re.findall(r"<script>(.*?)</script>", html, flags=re.S)
+    return _SCRIPT.findall(html)
 
 
 def _guard_problems(html: str, measurement_id: str) -> list[str]:

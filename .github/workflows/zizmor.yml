@@ -1,0 +1,48 @@
+name: zizmor
+
+# Workflow SAST (CI-CD-STANDARD §7, CICD-19): zero high-or-critical zizmor
+# findings across .github/workflows/. It runs on every pull request, not only
+# on ones that touch workflows: it takes seconds, and a required check behind
+# a paths filter never reports on the PRs it skips. The weekly run picks up
+# newly published advisories against the actions these workflows pin.
+#
+# The pinned zizmor from PyPI rather than zizmor-action: the action uploads
+# SARIF to code scanning, which is not enabled on this private repository.
+# GH_TOKEN lets the online audits (known-vulnerable-actions, impostor-commit,
+# ref-confusion) resolve the pinned SHAs.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 10 * * 2" # Tuesdays, 10:23 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  zizmor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: zizmor (fail on high or critical)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZIZMOR_VERSION: 1.30.1
+        run: uvx "zizmor==${ZIZMOR_VERSION}" --min-severity=high .github/workflows

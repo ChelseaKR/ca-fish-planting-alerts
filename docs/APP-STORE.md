@@ -150,8 +150,8 @@ in `code` are exact; paste them as they are.
     - Price: **$9.99** (USD), all storefronts at Apple's equivalents, or
       the availability chosen in step 10.
     - Localization, English (U.S.): Display Name `Full Access`;
-      Description `Alerts when a favourite water is listed` (39 of 45
-      characters).
+      Description `Alerts and a widget for your favorite waters` (44 of
+      45 characters).
     - Family Sharing: your call. Once turned on for a product, it
       can't be turned off.
     - Review Information: a screenshot of the purchase sheet (About →
@@ -159,7 +159,8 @@ in `code` are exact; paste them as they are.
       App Store, so it may show the price. Take it from the TestFlight
       build in step 18, where the sandbox price loads. The simulator can't
       load it on iOS 26.5 (`ios/README.md`). Review notes: "Unlocks local
-      notifications for favourited waters. About → Unlock full access."
+      notifications and the Home Screen widget for favorited waters.
+      About → Unlock full access."
     - Status must reach **Ready to Submit**. Apple reviews the first
       in-app purchase with an app version (step 20).
 13. **Version page (iOS App 0.1.0):**
@@ -494,17 +495,19 @@ Connect with this exact identifier:
 | Reference Name (internal, App Store Connect only) | `Full Access` |
 | Price tier | $9.99 (USD Tier matching $9.99; DECISIONS 0003/0007) |
 | Display Name (customer-facing) | `Full Access` |
-| Description (customer-facing, 45 max) | `Alerts when a favourite water is listed` (39 characters) |
+| Description (customer-facing, 45 max) | `Alerts and a widget for your favorite waters` (44 characters) |
 | Cleared for sale | Yes, once the app record itself is created |
-| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView` — reachable from About > "Unlock full access" only; there is no other trigger) is required by App Store Connect for the IAP's own review |
+| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView`, reachable from About > "Unlock full access" and from a tap on the locked Home Screen widget) is required by App Store Connect for the IAP's own review |
 
 App-side, what it unlocks is decided (DECISIONS 0009, resolving 0007's
 "owner follow-up"): favouriting and browsing are free and unconstrained for
 everyone, matching the free website. Purchasing unlocks **local
-notifications** — a notification on this device whenever a favourited
-water's planting schedule changes. Without the purchase, favouriting still
-works in full; no local notification is ever scheduled for any favourited
-water. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
+notifications** (a notification on this device whenever a favorited
+water's planting schedule changes) and, since DECISIONS 0015, **the Home
+Screen and Lock Screen widget**. Without the purchase, favoriting still
+works in full; no local notification is ever scheduled for any favorited
+water, and the widget says it is part of full access instead of listing
+favorites. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
 (`notificationsAllowed(isEntitled:)`) and
 `ios/CAFishPlanting/App/AppEnvironment.swift`'s `performBackgroundRefresh()`,
 which is the one call site that checks it before

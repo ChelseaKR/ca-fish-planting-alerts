@@ -17,10 +17,11 @@ struct FavoriteWatersWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: Self.kind, provider: FavoriteWatersProvider()) { entry in
             FavoriteWatersView(entry: entry)
+                .tint(.troutTruckGreen)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("Favorite waters")
-        .description("Which of your favorite waters are on CDFW's schedule this week.")
+        .description("Which of your favorite waters are on CDFW's schedule this week. Part of full access.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular, .accessoryInline])
     }
 }
@@ -94,13 +95,15 @@ struct FavoriteWatersView: View {
 /// "nothing scheduled".
 private enum EmptyReason {
     case noDigest
-    case locked
+    /// Before the purchase (`FreeTier.widgetsRequireFullAccess`). Carries
+    /// the digest for its week, never for favorites (it has none).
+    case locked(WidgetDigest)
     case noFavorites(WidgetDigest)
     case onlyMissingFavorites(WidgetDigest)
 
     init?(_ digest: WidgetDigest?) {
         guard let digest else { self = .noDigest; return }
-        if digest.locked { self = .locked; return }
+        if digest.locked { self = .locked(digest); return }
         guard digest.favorites.isEmpty else { return nil }
         self = digest.missingFavorites > 0 ? .onlyMissingFavorites(digest) : .noFavorites(digest)
     }
@@ -110,7 +113,7 @@ private enum EmptyReason {
         case .noDigest:
             return "Open Trout Truck to load the schedule here."
         case .locked:
-            return "Unlock full access in Trout Truck to see your favorite waters here."
+            return "This widget is part of full access, a one-time purchase in Trout Truck."
         case .noFavorites:
             return "Star a water in Trout Truck to see its schedule here."
         case .onlyMissingFavorites:
@@ -118,15 +121,25 @@ private enum EmptyReason {
         }
     }
 
-    /// A true line about the schedule itself, when there is one.
+    /// A true line about the schedule itself, when there is one. The
+    /// locked widget shows it too: it is the published schedule, not a
+    /// preview of anyone's favorites.
     func context(at now: Date) -> String? {
         switch self {
-        case .noFavorites(let digest), .onlyMissingFavorites(let digest):
+        case .noFavorites(let digest), .onlyMissingFavorites(let digest), .locked(let digest):
             let count = digest.watersListed
             let waters = count == 1 ? "1 water is" : "\(count) waters are"
             return "\(waters) listed for the \(digest.week.label)."
-        case .noDigest, .locked:
+        case .noDigest:
             return nil
+        }
+    }
+
+    /// What a tap does, when it isn't just "open the app".
+    var action: String? {
+        switch self {
+        case .locked: return "Tap to unlock"
+        case .noDigest, .noFavorites, .onlyMissingFavorites: return nil
         }
     }
 }
@@ -143,10 +156,15 @@ private struct HomeScreenView: View {
                 Text(reason.message)
                     .font(.footnote)
                     .fixedSize(horizontal: false, vertical: true)
-                if let context = reason.context(at: entry.date) {
+                if let action = reason.action {
+                    Label(action, systemImage: "lock.open")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tint)
+                }
+                if family != .systemSmall, let context = reason.context(at: entry.date) {
                     Text(context)
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                 }
                 Spacer(minLength: 0)
             } else if let digest = entry.digest {
@@ -174,7 +192,7 @@ private struct HomeScreenView: View {
             if let digest = entry.digest, !digest.locked, family != .systemSmall {
                 Text(digest.subheadline(at: entry.date))
                     .font(.caption2)
-                    .foregroundStyle(digest.isStale(at: entry.date) || digest.lastCheckFailed ? .primary : .secondary)
+                    .foregroundStyle(digest.isStale(at: entry.date) || digest.lastCheckFailed ? Color.primary : Color.secondaryText)
                     .lineLimit(2)
             }
         }
@@ -185,7 +203,7 @@ private struct HomeScreenView: View {
     /// room for the week's label in its header, so it says the week ended
     /// and its footer names the week.
     private var headerTitle: String {
-        guard let digest = entry.digest else { return "Trout Truck" }
+        guard let digest = entry.digest, !digest.locked else { return "Trout Truck" }
         if family == .systemSmall, digest.isStale(at: entry.date) { return "Week ended" }
         return digest.headline(at: entry.date)
     }
@@ -209,18 +227,21 @@ private struct HomeScreenView: View {
         if family == .systemSmall {
             Text(digest.summary(at: entry.date))
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
                 .lineLimit(2)
         } else if hidden > 0 {
             Text(hidden == 1 ? "1 more favorite in the app" : "\(hidden) more favorites in the app")
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
         }
     }
 
-    /// The small widget is one tap target: the first favorite shown. The
-    /// others link each row. Without a digest, a tap just opens the app.
+    /// Before the purchase, every size opens the purchase screen. After
+    /// it, the small widget is one tap target, the first favorite shown,
+    /// and the others link each row. Without a digest, a tap just opens
+    /// the app.
     private var defaultURL: URL? {
+        if entry.digest?.locked == true { return UnlockLink.url }
         guard family == .systemSmall, let first = entry.digest?.favoritesByStatus.first else { return nil }
         return WaterLink.url(for: first.id)
     }
@@ -233,7 +254,7 @@ private struct StatusMark: View {
 
     var body: some View {
         Image(systemName: symbol)
-            .foregroundStyle(isScheduled ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+            .foregroundStyle(isScheduled ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.secondaryText))
             .accessibilityHidden(true)
     }
 
@@ -267,7 +288,7 @@ private struct Row: View {
                     .lineLimit(1)
                 Text(digest.statusLine(of: favorite, at: now))
                     .font(.caption2)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(Color.secondaryText)
                     .lineLimit(1)
             }
         }
@@ -304,7 +325,7 @@ private struct RectangularView: View {
                 Text("Trout Truck")
                     .font(.headline)
                     .widgetAccentable()
-                Text(reason.message)
+                Text(reason.action == nil ? reason.message : "Part of full access. Tap to unlock.")
                     .font(.caption)
                     .lineLimit(2)
             } else if let digest = entry.digest {
@@ -330,7 +351,9 @@ private struct RectangularView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .widgetURL(entry.digest?.favoritesByStatus.first.map { WaterLink.url(for: $0.id) })
+        .widgetURL(entry.digest?.locked == true
+            ? UnlockLink.url
+            : entry.digest?.favoritesByStatus.first.map { WaterLink.url(for: $0.id) })
     }
 
     /// Relative to the headline's week, which the line above names.
@@ -347,10 +370,22 @@ private struct InlineView: View {
     let entry: FavoriteWatersEntry
 
     var body: some View {
-        if let digest = entry.digest {
+        if let digest = entry.digest, digest.locked {
+            Label(digest.summary(at: entry.date), systemImage: "lock")
+                .widgetURL(UnlockLink.url)
+        } else if let digest = entry.digest {
             Label(digest.summary(at: entry.date), systemImage: "fish.fill")
         } else {
             Label("Open Trout Truck to load the schedule", systemImage: "fish")
         }
+    }
+}
+
+extension ShapeStyle where Self == Color {
+    /// The app's accent (its icon's green, lighter in dark mode), so the
+    /// widget's checks and links match the app. The extension has no asset
+    /// catalog of its own, so without this it would be the default blue.
+    static var troutTruckGreen: Color {
+        Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(rgb: 0x2E9E68) : UIColor(rgb: 0x0F784B) })
     }
 }

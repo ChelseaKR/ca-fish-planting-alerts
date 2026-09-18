@@ -60,6 +60,16 @@ final class AppRouterTests: XCTestCase {
         XCTAssertNil(router.pendingWaterID)
     }
 
+    /// The locked widget's link opens the purchase screen over About.
+    func testTheUnlockLinkOpensThePurchaseScreen() {
+        let router = AppRouter()
+        XCTAssertFalse(router.showingPurchase)
+        XCTAssertTrue(router.handle(UnlockLink.url))
+        XCTAssertTrue(router.showingPurchase)
+        XCTAssertEqual(router.selectedTab, .about)
+        XCTAssertNil(router.pendingWaterID, "it opens no water")
+    }
+
     func testOtherLinksAreIgnored() throws {
         let router = AppRouter()
         let url = try XCTUnwrap(URL(string: "trouttruck://county/Modoc"))

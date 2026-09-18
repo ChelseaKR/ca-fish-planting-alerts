@@ -54,9 +54,10 @@ This repository was republished with a new history on 2026-09-18
   listed, each with its week. It reads what the app already downloaded,
   through an App Group, and makes no network request. When the week ends
   it stops saying "this week", and a failed check or a missing schedule is
-  said plainly. Tapping a water opens it. Widgets are free for now; one
-  flag (`FreeTier.widgetsRequireFullAccess`) would put them in full
-  access.
+  said plainly. Tapping a water opens it. The widget is part of full
+  access (DECISIONS 0015): before the purchase it says so, shows no
+  favorites, and a tap opens the purchase screen. A purchase, a restore or
+  a refund redraws it at once.
 - A root `make verify` that runs every lint, type, test and security gate,
   and runs in CI (PR 18). CodeQL, workflow scanning, and a weekly scan of the
   full history for secrets (PR 21).

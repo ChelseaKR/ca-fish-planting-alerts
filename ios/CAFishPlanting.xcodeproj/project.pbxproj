@@ -11,6 +11,7 @@
 		BA4D70CA059BA4A5915228C4 /* WidgetBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279A9238A08B48D4E8275E89 /* WidgetBridgeTests.swift */; };
 		16F9E0A05F4F30213A894235 /* TroutTruckWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F441586939DFBD4FD413E3 /* TroutTruckWidgets.swift */; };
 		A6B4F047B8F3073524F6AC9E /* FavoriteWatersWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8052DF351D256DCD1680CA1B /* FavoriteWatersWidget.swift */; };
+		6B7EA2F7F95020EE567605C3 /* TextColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D40716CC05CF8E701D8EBA /* TextColors.swift */; };
 		C78A27DF6F9FAE99E8A019A0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 32DD4892C89BEBDCA314E6ED /* PrivacyInfo.xcprivacy */; };
 		2C7CC2AA840C71B41C2F821D /* CAFishPlantingWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2DB7B2CD0EB5AD6EADBA4A66 /* CAFishPlantingWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1F79791BC35841510BDDA35F /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = FDD457F5E6EE20F1612EB897 /* PlantingCore */; };
@@ -493,6 +494,7 @@
 			files = (
 				16F9E0A05F4F30213A894235 /* TroutTruckWidgets.swift in Sources */,
 				A6B4F047B8F3073524F6AC9E /* FavoriteWatersWidget.swift in Sources */,
+				6B7EA2F7F95020EE567605C3 /* TextColors.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

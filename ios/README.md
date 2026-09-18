@@ -37,10 +37,14 @@ Screen's rectangular and inline sizes.
 - **Taps.** Each row in the medium and large sizes, and the small and
   Lock Screen widgets as a whole, open a water through
   `trouttruck://water/<id>`.
-- **Free or paid.** `FreeTier.widgetsRequireFullAccess` is `false`: the
-  widget is free until the owner decides otherwise. Setting it to `true`
-  makes a non-purchaser's widget say to unlock full access, and changes
-  nothing else.
+- **Part of full access** (`docs/DECISIONS.md` 0015).
+  `FreeTier.widgetsRequireFullAccess` is `true`. Before the purchase the
+  digest is `locked`: it carries the schedule's week and how many waters
+  it lists, and no favorites. The widget says it is part of full access,
+  and a tap opens the purchase screen through `trouttruck://unlock`
+  (`UnlockLink`). `PurchaseManager.onEntitlementChange` rewrites the
+  digest the moment the entitlement changes, so a purchase, a restore or
+  a refund redraws the widget without waiting for a refresh.
 - **Signing.** Both targets use team `6X5YH93QNM` with automatic signing,
   as before. On a device (not the simulator) the App Group has to be
   registered for the team; see `docs/APP-STORE.md` step 7.

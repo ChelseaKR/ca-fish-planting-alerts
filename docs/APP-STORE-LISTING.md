@@ -33,8 +33,8 @@ description.
 | Name | 30 | `Trout Truck` | 11 |
 | Subtitle | 30 | `CA stocking schedule & alerts` | 29 |
 | Keywords | 100 | `california,fish,fishing,planting,plant,cdfw,stocked,lake,river,creek,reservoir,pond,wildlife,angler` | 99 |
-| Promotional text | 170 | `This week's California trout planting schedule and each water's week-by-week history, free to browse. A one-time purchase adds alerts. No account, no tracking.` | 159 |
-| Description | 4000 | See [Description](#description) below. | 1,807 |
+| Promotional text | 170 | `This week's California trout planting schedule and each water's week-by-week history, free to browse. One-time purchase adds alerts and a widget. No account, no tracking.` | 170 |
+| Description | 4000 | See [Description](#description) below. | 1,900 |
 | Primary category | — | Sports. | — |
 | Secondary category | — | **Reference**, not the Weather an earlier draft suggested. The app is a schedule-and-history lookup with no weather content, and guideline 2.3.5 asks for the most appropriate category. | — |
 | Age rating | — | Answer "None" to every content question in the questionnaire, which should come out at the lowest tier. There is no user-generated content, no web browsing, no gambling and no messaging. | — |
@@ -57,11 +57,12 @@ checklist in `APP-STORE.md`.
 | Field | Limit | Value | Chars |
 |---|---|---|---|
 | Display name | 30 | `Full Access` | 11 |
-| Description | 45 | `Alerts when a favourite water is listed` | 39 |
+| Description | 45 | `Alerts and a widget for your favorite waters` | 44 |
 
-PR 12 first proposed a 156-character IAP description, well over App Store
-Connect's 45-character limit. PR 12 now uses the line above in both
-`APP-STORE.md` and `ios/CAFishPlanting/Configuration.storekit`.
+The description names both things full access unlocks, alerts and the
+widget (DECISIONS 0015), within App Store Connect's 45-character limit.
+`APP-STORE.md` and `ios/CAFishPlanting/Configuration.storekit` use the same
+line.
 
 ## Description
 
@@ -71,7 +72,7 @@ submit. It was 385 on 2026-09-17.
 
 ---
 
-See which California lakes, reservoirs, rivers and creeks are on the Department of Fish and Wildlife's trout planting schedule, and each water's week-by-week history. Browsing, search and favourites are free. A one-time purchase adds an alert on your phone when a water you've favourited is newly listed.
+See which California lakes, reservoirs, rivers and creeks are on the Department of Fish and Wildlife's trout planting schedule, and each water's week-by-week history. Browsing, search and favourites are free. A one-time purchase adds an alert on your phone when a water you've favorited is newly listed, and a Home Screen widget with your favorite waters.
 
 CDFW updates its schedule weekly and lists each plant by the week, never the day. Trout Truck checks the schedule in the background, and when a water you've favourited is newly listed, it schedules an alert on your phone. The source changes weekly and iOS decides when background checks run, so an alert arrives within days of a new listing, not the minute it's posted.
 
@@ -81,7 +82,7 @@ EVERY WATER, WEEK BY WEEK
 • Plants CDFW later drops from its schedule stay in the history, marked as removed.
 
 FREE, WITH ONE OPTIONAL PURCHASE
-Browsing, history and favourites are free, with no limit. A one-time purchase unlocks local notifications for your favourites. No subscription. No account.
+Browsing, history and favourites are free, with no limit. A one-time purchase unlocks local notifications and the Home Screen and Lock Screen widget for your favorites. No subscription. No account.
 
 PRIVATE BY DESIGN
 No account, no ads, no analytics, no tracking. The app makes one kind of network request: it downloads the public schedule file. Your favourites never leave your phone. Privacy label: Data Not Collected.
@@ -129,7 +130,7 @@ WHERE THE DATA COMES FROM
 The California Department of Fish and Wildlife (CDFW) Fish Planting Schedule, nrm.dfg.ca.gov/FishPlants/PublicPlantSearch. CDFW lists each plant by week, never by day, and says all plants are subject to change, so the app always shows "week of <date>" and never a stocking day. Our pipeline reads the schedule once a day and publishes one public JSON file: https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json. A copy ships inside the app, so it works offline on first launch; About, "This snapshot", shows which copy is on screen. The app is independent and not affiliated with or endorsed by CDFW; the attribution is on the About screen.
 
 IN-APP PURCHASE (SANDBOX)
-One non-consumable product, Full Access (com.chelseakr.cafishplanting.fullaccess). To test: About tab, "Unlock full access", then the purchase button, which shows the price. Nothing else in the app opens this sheet. After a sandbox purchase, the About tab's "Full access" section reads "Unlocked". "Restore purchases" is on the same sheet. Browsing, history and favourites are free and unlimited; the purchase unlocks notifications only.
+One non-consumable product, Full Access (com.chelseakr.cafishplanting.fullaccess). To test: About tab, "Unlock full access", then the purchase button, which shows the price. A tap on the locked Home Screen widget opens it too. After a sandbox purchase, the About tab's "Full access" section reads "Unlocked". "Restore purchases" is on the same sheet. Browsing, history and favourites are free and unlimited; the purchase unlocks notifications and the Home Screen widget.
 
 NOTIFICATIONS ARE LOCAL
 There is no push service, no APNs and no device token. Favouriting a water (the star on its page) first shows a short explanation, and the system permission prompt appears only if you choose "Allow notifications". The "fetch" and "processing" background modes (2.5.4) exist only for one BGAppRefreshTask: when iOS runs it, the app downloads the JSON file above and, for purchasers only, schedules a local notification if a favourited water is newly listed. CDFW updates weekly and iOS decides when background refresh runs, so a notification may not fire during review; the entitlement state is visible in About.

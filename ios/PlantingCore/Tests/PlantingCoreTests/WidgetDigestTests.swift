@@ -147,9 +147,20 @@ final class WidgetDigestTests: XCTestCase {
         XCTAssertNil(store.load(), "a digest from another app version is not misread")
     }
 
-    func testFreeTierKeepsWidgetsFreeUnlessTheFlagSaysOtherwise() {
-        XCTAssertFalse(FreeTier.widgetsRequireFullAccess, "widgets are free until the owner decides otherwise")
-        XCTAssertTrue(FreeTier.widgetsAllowed(isEntitled: false))
+    /// DECISIONS 0015: the widget is part of full access.
+    func testTheWidgetIsPartOfFullAccess() {
+        XCTAssertTrue(FreeTier.widgetsRequireFullAccess)
+        XCTAssertFalse(FreeTier.widgetsAllowed(isEntitled: false), "before the purchase the widget is locked")
         XCTAssertTrue(FreeTier.widgetsAllowed(isEntitled: true))
+    }
+
+    /// A locked digest still carries the published week (the widget says
+    /// how many waters it lists), and nothing from anyone's favorites.
+    func testALockedDigestKeepsTheWeekButNoFavorites() {
+        let d = digest(favorites: ["cdfw-1", "cdfw-2"], locked: true)
+        XCTAssertEqual(d.week.label, "week of 2026-09-13")
+        XCTAssertEqual(d.watersListed, digest(favorites: [], locked: false).watersListed, "the published count, locked or not")
+        XCTAssertEqual(d.favoritesListedThisWeek, 0)
+        XCTAssertTrue(d.favoritesByStatus.isEmpty)
     }
 }

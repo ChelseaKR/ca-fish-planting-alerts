@@ -37,7 +37,7 @@ struct FavoritesView: View {
     private var emptyDescription: String {
         let alerts = environment.purchases.isEntitled
             ? "You'll get an alert when one appears in a new week's schedule."
-            : "With full access, you also get an alert when one appears in a new week's schedule."
+            : "With full access, you also get an alert when one appears in a new week's schedule, and a widget with your favorites."
         return "Tap the star on any water in Browse to keep its schedule here. \(alerts)"
     }
 

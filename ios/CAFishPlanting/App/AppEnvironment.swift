@@ -149,6 +149,9 @@ final class AppEnvironment {
             loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
         self.purchases = purchases ?? PurchaseManager(entitlementStore: entitlementStore)
+        // The widget is part of full access: a purchase, a restore or a
+        // refund redraws it straight away.
+        self.purchases.onEntitlementChange = { [weak self] _ in self?.publishWidgetDigest() }
         syncFromStore()
         Task { notificationAuthorization = await notifications.authorizationStatus() }
     }

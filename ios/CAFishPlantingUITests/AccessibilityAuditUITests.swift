@@ -177,6 +177,11 @@ final class AccessibilityAuditUITests: XCTestCase {
         add(shot)
     }
 
+    private static let wrapsButShowsInFull: Set<String> = [
+        "Unlock full access",
+        "Browsing and favoriting are always free. Full access adds:",
+    ]
+
     private static func verdict(for issue: XCUIAccessibilityAuditIssue, chrome: [CGRect], screen: CGRect, isAX5: Bool) -> Verdict {
         guard let element = issue.element else {
             return .record("no element: the audit couldn't say what it saw")
@@ -191,11 +196,11 @@ final class AccessibilityAuditUITests: XCTestCase {
         if chrome.contains(where: { $0.intersects(frame) }) {
             return .record("under the tab bar, its scroll-edge fade or the keyboard: the audit samples the system chrome, not the app's content")
         }
-        // One measured false positive: at AX5 the purchase sheet's title
-        // wraps onto two lines, and the audit calls wrapped text clipped.
-        // Its own element screenshot shows the whole title.
-        if issue.auditType == .textClipped, element.elementType == .staticText, element.label == "Unlock full access" {
-            return .record("the whole title shows, wrapped onto two lines (the audit's own element screenshot)")
+        // Measured false positives: at AX5 these purchase-sheet lines wrap,
+        // and the audit calls them clipped, but its own element screenshot
+        // shows every word. Named one by one, so anything else still fails.
+        if issue.auditType == .textClipped, element.elementType == .staticText, Self.wrapsButShowsInFull.contains(element.label) {
+            return .record("the whole text shows, wrapped (the audit's own element screenshot)")
         }
         if issue.auditType == .contrast, !element.isEnabled {
             return .record("a disabled control; WCAG 1.4.3 exempts inactive components")

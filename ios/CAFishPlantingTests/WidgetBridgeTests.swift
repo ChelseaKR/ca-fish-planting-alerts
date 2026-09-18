@@ -20,13 +20,20 @@ final class WidgetBridgeTests: XCTestCase {
         try? FileManager.default.removeItem(at: tempDir)
     }
 
-    func testFavoritingUpdatesTheWidgetDigestAndReloadsOnlyOnChange() throws {
+    /// The widget is part of full access (DECISIONS 0015). Before the
+    /// purchase its digest is locked and carries nobody's favorites. A
+    /// purchase or a restore unlocks it at once, and a refund locks it
+    /// again. Both purchase and restore end in `setEntitled`, which is what
+    /// this drives: StoreKit itself can't run on the iOS 26.5 simulator.
+    func testTheWidgetUnlocksOnPurchaseOrRestoreAndLocksOnRefund() throws {
         var reloads = 0
         let store = WidgetDigestStore(directory: tempDir)
         let bridge = WidgetBridge(store: store, reload: { reloads += 1 })
         let env = AppEnvironment(widgetBridge: bridge)
+        XCTAssertFalse(env.purchases.isEntitled, "sanity check: a fresh install hasn't bought anything")
 
-        let initial = try XCTUnwrap(store.load(), "launch writes a digest, so the widget has the week even before a favorite")
+        let initial = try XCTUnwrap(store.load(), "launch writes a digest, so the widget has the week even before a purchase")
+        XCTAssertTrue(initial.locked)
         XCTAssertEqual(initial.week, env.snapshot?.sourceWeek)
         XCTAssertTrue(initial.favorites.isEmpty)
         XCTAssertEqual(reloads, 1)
@@ -36,12 +43,16 @@ final class WidgetBridgeTests: XCTestCase {
         let listed = try XCTUnwrap(snapshot.water(id: listedID))
         env.toggleFavourite(listed)
         env.dismissNotificationExplainer()
+        XCTAssertEqual(store.load()?.favorites, [], "a locked widget shows nobody's favorites")
+        XCTAssertEqual(reloads, 1, "so favoriting doesn't redraw it")
 
-        let digest = try XCTUnwrap(store.load())
-        XCTAssertEqual(digest.favorites.map(\.id), [listedID])
-        XCTAssertTrue(digest.favorites[0].isListedThisWeek)
-        XCTAssertFalse(digest.locked, "widgets are free until the owner decides otherwise")
-        XCTAssertEqual(reloads, 2)
+        // A purchase, or a restore on a new device.
+        env.purchases.setEntitled(true)
+        let unlocked = try XCTUnwrap(store.load())
+        XCTAssertFalse(unlocked.locked)
+        XCTAssertEqual(unlocked.favorites.map(\.id), [listedID])
+        XCTAssertTrue(unlocked.favorites[0].isListedThisWeek)
+        XCTAssertEqual(reloads, 2, "the widget redraws straight away, not at the next refresh")
 
         env.publishWidgetDigest()
         XCTAssertEqual(reloads, 2, "an unchanged digest doesn't spend the widget's reload budget")
@@ -49,6 +60,13 @@ final class WidgetBridgeTests: XCTestCase {
         env.toggleFavourite(listed)
         XCTAssertEqual(store.load()?.favorites, [])
         XCTAssertEqual(reloads, 3)
+
+        // A refund.
+        env.toggleFavourite(listed)
+        env.purchases.setEntitled(false)
+        let relocked = try XCTUnwrap(store.load())
+        XCTAssertTrue(relocked.locked)
+        XCTAssertEqual(relocked.favorites, [])
     }
 
     /// Both targets must declare the one group the code reads, or the

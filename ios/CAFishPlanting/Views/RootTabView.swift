@@ -29,6 +29,10 @@ struct RootTabView: View {
             .sheet(item: notificationExplainerBinding) { explainer in
                 FirstFavouriteExplainerSheet(explainer: explainer)
             }
+            // The locked widget's link. The same sheet About opens.
+            .sheet(isPresented: $router.showingPurchase) {
+                PurchaseView()
+            }
         }
     }
 

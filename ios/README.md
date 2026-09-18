@@ -56,6 +56,20 @@ when `XCTestConfigurationFilePath` is set. `AppEnvironmentTests` calls
 `refreshIfDue` itself against a mocked session. UI tests launch the app
 normally, so they fetch the live snapshot.
 
+## Opening a water from an alert or a link
+
+A local notification carries only its water's ID (`WaterLink` in
+PlantingCore, key `water_id`). `App/NotificationResponder.swift` is the
+`UNUserNotificationCenter` delegate, installed in `App.init()` so the tap
+that launches the app is delivered too. It hands the ID to
+`App/AppRouter.swift`, which opens the water under Favorites (every alert is
+for a favorite) or, for any other water, under Browse. A water the snapshot
+doesn't have is never pushed as a blank screen.
+
+`trouttruck://water/<water id>` (registered in `Info.plist`) goes through the
+same router. The Home Screen widget uses it. Opening one makes no network
+request and can only show a water already on the device.
+
 ## Commands
 
 ```sh

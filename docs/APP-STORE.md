@@ -335,6 +335,10 @@ the code supports both.
   project has one package reference, the local `PlantingCore`
   (`XCLocalSwiftPackageReference`), and no remote package. There is no
   CocoaPods or Carthage.
+- The Shortcuts and Siri action (`App/ScheduleIntents.swift`) also
+  imports Apple's `AppIntents`. It reads the snapshot and favorites
+  already on the device, makes no network request, and returns its answer
+  only to Shortcuts or Siri on the device.
 - **Built app (2026-09-18, simulator build from this branch).** `otool -L`
   on the app's code (`CAFishPlanting.debug.dylib`) lists only system
   frameworks: Foundation, SwiftUI, UIKit, StoreKit, UserNotifications,

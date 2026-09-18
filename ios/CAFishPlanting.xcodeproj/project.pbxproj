@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4FC3D4E75324FB1C87E2BC58 /* CAFishPlantingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F974BD82B04FC663443931C /* CAFishPlantingApp.swift */; };
 		0B618C0DAC1AD20A1CF5A3B7 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */; };
+		1EA443A92DA0D57DF5B3C809 /* ScheduleIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04AF963921A2AE834344E4B /* ScheduleIntents.swift */; };
 		01541F8B86471E0CE93DB0F3 /* NotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0EC688C496E26D7E3FAD77 /* NotificationScheduler.swift */; };
 		DCC2BDA94F1DF35A115EEF10 /* BackgroundRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210FC40A1E6193A5F430DFFD /* BackgroundRefresh.swift */; };
 		6C60EAAC54621979E87FBBC3 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E1F6EB12C1A16AFB6CBF15 /* RootTabView.swift */; };
@@ -18,11 +19,15 @@
 		F5AB81A0DE71F0E1B4FD87B8 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A24082BEE264A5C795D13B3 /* AboutView.swift */; };
 		DE5C3AA9D0F26980149CF6C4 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63C8B0C2C2207D48119767B6 /* PurchaseManager.swift */; };
 		96B4E33690816BD0B916A793 /* PurchaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802BDDCC053F7ED0BA40CF83 /* PurchaseView.swift */; };
+		8B1CEF144B5F8A77219587A1 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 431A5FEC3671B2CBDAE193D8 /* AppRouter.swift */; };
+		63B6BEB6791D13AE17D0186D /* NotificationResponder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC60C88F7D53C4149D2FB77 /* NotificationResponder.swift */; };
+		87236135696BAC9C69AFC062 /* AppRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EAB9BE0973CFC9B96198A4D /* AppRouterTests.swift */; };
 		540436FB5EB64BDEEB9BDAFD /* snapshot.json in Resources */ = {isa = PBXBuildFile; fileRef = 8DA262DB11089DBA5942828D /* snapshot.json */; };
 		5B72DAFB9D304A6648D69606 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C661B6960753ACD2B6DC0E0E /* PrivacyInfo.xcprivacy */; };
 		DDC1AADCDBD52DBD3F0FFE27 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 99DFBE62E3062E0D4D4DAB8A /* Assets.xcassets */; };
 		73DB78A4B671398390946107 /* HostAllowlistTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */; };
 		699F3EA3324CB23619BBF2E3 /* AppEnvironmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */; };
+		AA1C3555F8A0BBEE14DB44BB /* ScheduleIntentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED61777415BBB89E23AC86C /* ScheduleIntentsTests.swift */; };
 		CB8310E205828530BA5957F3 /* PurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1754B738174DFB550243642 /* PurchaseManagerTests.swift */; };
 		B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */; };
 		7A11E5C0A1B2C3D4E5F60718 /* AppStoreScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */; };
@@ -65,6 +70,7 @@
 /* Begin PBXFileReference section */
 		6F974BD82B04FC663443931C /* CAFishPlantingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CAFishPlantingApp.swift; sourceTree = "<group>"; };
 		FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		E04AF963921A2AE834344E4B /* ScheduleIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleIntents.swift; sourceTree = "<group>"; };
 		CE0EC688C496E26D7E3FAD77 /* NotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationScheduler.swift; sourceTree = "<group>"; };
 		210FC40A1E6193A5F430DFFD /* BackgroundRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefresh.swift; sourceTree = "<group>"; };
 		88E1F6EB12C1A16AFB6CBF15 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
@@ -74,6 +80,9 @@
 		4A24082BEE264A5C795D13B3 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		63C8B0C2C2207D48119767B6 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
 		802BDDCC053F7ED0BA40CF83 /* PurchaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseView.swift; sourceTree = "<group>"; };
+		431A5FEC3671B2CBDAE193D8 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
+		6EC60C88F7D53C4149D2FB77 /* NotificationResponder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationResponder.swift; sourceTree = "<group>"; };
+		7EAB9BE0973CFC9B96198A4D /* AppRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouterTests.swift; sourceTree = "<group>"; };
 		F1623476D8A83E2EDC723706 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		8DA262DB11089DBA5942828D /* snapshot.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = snapshot.json; sourceTree = "<group>"; };
 		C661B6960753ACD2B6DC0E0E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -81,6 +90,7 @@
 		E27B125909BC3802154036C7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostAllowlistTests.swift; sourceTree = "<group>"; };
 		786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentTests.swift; sourceTree = "<group>"; };
+		2ED61777415BBB89E23AC86C /* ScheduleIntentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleIntentsTests.swift; sourceTree = "<group>"; };
 		E1754B738174DFB550243642 /* PurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManagerTests.swift; sourceTree = "<group>"; };
 		157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokeUITests.swift; sourceTree = "<group>"; };
 		7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotsUITests.swift; sourceTree = "<group>"; };
@@ -152,9 +162,12 @@
 			children = (
 				6F974BD82B04FC663443931C /* CAFishPlantingApp.swift */,
 				FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */,
+				E04AF963921A2AE834344E4B /* ScheduleIntents.swift */,
 				CE0EC688C496E26D7E3FAD77 /* NotificationScheduler.swift */,
 				210FC40A1E6193A5F430DFFD /* BackgroundRefresh.swift */,
 				63C8B0C2C2207D48119767B6 /* PurchaseManager.swift */,
+				431A5FEC3671B2CBDAE193D8 /* AppRouter.swift */,
+				6EC60C88F7D53C4149D2FB77 /* NotificationResponder.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -188,7 +201,9 @@
 			children = (
 				3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */,
 				786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */,
+				2ED61777415BBB89E23AC86C /* ScheduleIntentsTests.swift */,
 				E1754B738174DFB550243642 /* PurchaseManagerTests.swift */,
+				7EAB9BE0973CFC9B96198A4D /* AppRouterTests.swift */,
 			);
 			path = CAFishPlantingTests;
 			sourceTree = "<group>";
@@ -329,6 +344,7 @@
 			files = (
 				4FC3D4E75324FB1C87E2BC58 /* CAFishPlantingApp.swift in Sources */,
 				0B618C0DAC1AD20A1CF5A3B7 /* AppEnvironment.swift in Sources */,
+				1EA443A92DA0D57DF5B3C809 /* ScheduleIntents.swift in Sources */,
 				01541F8B86471E0CE93DB0F3 /* NotificationScheduler.swift in Sources */,
 				DCC2BDA94F1DF35A115EEF10 /* BackgroundRefresh.swift in Sources */,
 				6C60EAAC54621979E87FBBC3 /* RootTabView.swift in Sources */,
@@ -338,6 +354,8 @@
 				F5AB81A0DE71F0E1B4FD87B8 /* AboutView.swift in Sources */,
 				DE5C3AA9D0F26980149CF6C4 /* PurchaseManager.swift in Sources */,
 				96B4E33690816BD0B916A793 /* PurchaseView.swift in Sources */,
+				8B1CEF144B5F8A77219587A1 /* AppRouter.swift in Sources */,
+				63B6BEB6791D13AE17D0186D /* NotificationResponder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -347,7 +365,9 @@
 			files = (
 				73DB78A4B671398390946107 /* HostAllowlistTests.swift in Sources */,
 				699F3EA3324CB23619BBF2E3 /* AppEnvironmentTests.swift in Sources */,
+				AA1C3555F8A0BBEE14DB44BB /* ScheduleIntentsTests.swift in Sources */,
 				CB8310E205828530BA5957F3 /* PurchaseManagerTests.swift in Sources */,
+				87236135696BAC9C69AFC062 /* AppRouterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -496,6 +516,7 @@
 		754064D2901B6752E802BA06 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -520,6 +541,7 @@
 		831F0B0E7AD0243B76867D45 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

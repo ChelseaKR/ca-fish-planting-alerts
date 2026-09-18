@@ -62,6 +62,11 @@ struct WaterDetailView: View {
                 } label: {
                     Image(systemName: isFavourite ? "star.fill" : "star")
                 }
+                // A firmer tap for adding a favorite than for removing one.
+                // iOS skips it when system haptics are off.
+                .sensoryFeedback(trigger: isFavourite) { _, nowFavorite in
+                    nowFavorite ? .success : .selection
+                }
                 .accessibilityLabel(isFavourite ? "Remove \(water.name) from favourites" : "Add \(water.name) to favourites")
             }
             ToolbarItem(placement: .navigationBarTrailing) {

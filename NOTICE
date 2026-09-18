@@ -1,0 +1,39 @@
+Trout Truck (github.com/ChelseaKR/ca-fish-planting-alerts)
+Copyright (c) 2026 Chelsea Kelly-Reif
+
+The software in this repository is licensed under the Elastic License 2.0.
+See LICENSE.
+
+
+Data: California Department of Fish and Wildlife
+------------------------------------------------
+
+The fish planting schedule comes from the California Department of Fish and
+Wildlife (CDFW), Fish Planting Schedule:
+https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch
+
+It is used under CDFW's Conditions of Use,
+https://wildlife.ca.gov/Conditions-of-Use. This repository uses no CDFW
+seals, logos or marks, which those terms reserve.
+
+The Elastic License 2.0 applies to the software. It does not change the
+terms of CDFW's data. These files contain CDFW data, or data derived from it:
+
+- pipeline/data/history.json and pipeline/data/aliases.json
+- ios/CAFishPlanting/Resources/snapshot.json
+- pipeline/tests/fixtures/*.html, pages captured from CDFW's site and kept
+  as test fixtures
+- the snapshot and website the pipeline builds from them
+
+Every page the website and the app show carries this attribution. Keep it
+if you reuse the data:
+
+    Data: California Department of Fish and Wildlife, Fish Planting Schedule
+    (https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch). Schedule is
+    subject to change; treat all plants as scheduled, not confirmed.
+
+Trout Truck is independent. It is not affiliated with or endorsed by the
+California Department of Fish and Wildlife.
+
+The terms, quoted verbatim, and the reasoning behind the attribution are in
+docs/LICENSES-AND-ATTRIBUTION.md.

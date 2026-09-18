@@ -57,10 +57,6 @@ for the full gate and `pipeline/README.md` for the pipeline's own commands.
 Trout Truck, decided 2026-09-17 (`docs/DECISIONS.md` 0010). The site stays on
 `github.io` for now, with no custom domain. Trademarks have not been searched.
 
-## Background
-
-[moved to private strategy notes]
-
 ## Standards Conformance
 
 This repository follows the portfolio standards, vendored unedited in
@@ -80,8 +76,19 @@ tier are in `docs/ROADMAP.md`.
 | Accessibility | Applies — gap tracked in #26 (automated gates on every page; screen-reader walkthrough, statement and a VoiceOver pass on the app still open) |
 | Internationalization | Applies — gap tracked in #27 (English-only; declared in `docs/I18N.md`) |
 | AI Evaluation | N/A — no model, prompt or retrieval surface in the pipeline, the site or the app |
-| Documentation | Applies — gap tracked in #22 (LICENSE, CITATION.cff and a security reporting address need owner decisions) |
+| Documentation | Applies — gap tracked in #22 (CITATION.cff and a security reporting address need owner decisions) |
 | Quality & Metrics | Applies — `DEFINITION_OF_DONE.md` and the metrics ledger in `docs/ROADMAP.md` |
 | AI Development Measurement | Applies — delivery metrics are mined from this repository's history by the standards repository's `automation/delivery_metrics.py`; observe-only, never a gate here |
 | Incident Response | Applies — gap tracked in #25 (`incident` and `sevN` labels not created yet) |
 | Data Governance | Applies — gap tracked in #29 (data card in `docs/data/`; dataset versioning and the site's analytics data not yet classified) |
+
+## License
+
+The code is under the [Elastic License 2.0](LICENSE). You may read, run,
+modify and self-host it. You may not offer Trout Truck, or a substantial
+copy of it, to others as a hosted or managed service.
+
+The planting schedule data is the California Department of Fish and
+Wildlife's. It is used under CDFW's Conditions of Use and credited on every
+page the website and the app show. The license above does not cover that
+data. See [NOTICE](NOTICE) and `docs/LICENSES-AND-ATTRIBUTION.md`.

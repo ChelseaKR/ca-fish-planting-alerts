@@ -18,6 +18,12 @@ once releases exist. No release has been tagged yet (#23).
   (#2). It also has a one-time StoreKit 2 purchase (#7), a first-run welcome
   screen (#8), and a way to share a water (#9). The app is not yet in the
   App Store.
+- App: a Shortcuts and Siri action, "When is <water> scheduled in Trout
+  Truck?", answered from the schedule already on the device: the week the
+  water is next scheduled for (a week, never a day), or that it isn't on
+  the schedule for that week or later and when it last was. It always
+  names the schedule's week, says when that week has ended, and makes no
+  network request.
 - A curated species-name table, so one species is never split across two
   spellings (#6).
 - Site: page titles and descriptions for search, a privacy page and a

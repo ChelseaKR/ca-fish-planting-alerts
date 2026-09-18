@@ -53,6 +53,9 @@ struct BrowseView: View {
                 WaterDetailView(water: water)
             }
         }
+        // Pull down to check for a newer schedule now, past the throttle.
+        // The freshness row above says how it went.
+        .refreshable { await environment.refreshNow() }
     }
 
     private func filtered(_ waters: [Water], thisWeekIDs: Set<Water.ID>) -> [Water] {

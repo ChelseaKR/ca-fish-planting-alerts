@@ -5,7 +5,8 @@ from pathlib import Path
 import jsonschema
 import pytest
 
-from cfpa import cli, fetch as fetch_mod
+from cfpa import cli
+from cfpa import fetch as fetch_mod
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
@@ -20,7 +21,7 @@ def _run(tmp_path: Path, fixture=FRESH):
         schema_path=SCHEMA_PATH,
         site_out=tmp_path / "site",
         base_url="https://example.invalid/ca-fish-planting-alerts",
-        fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.timezone.utc),
+        fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.UTC),
         run_today=dt.date(2026, 9, 13),
     )
 
@@ -34,7 +35,9 @@ def test_schema_file_is_valid_json_schema():
 
 def test_built_snapshot_validates_against_the_schema(tmp_path: Path):
     snap = _run(tmp_path)
-    jsonschema.validate(instance=snap, schema=__import__("json").loads(SCHEMA_PATH.read_text()))
+    jsonschema.validate(
+        instance=snap, schema=__import__("json").loads(SCHEMA_PATH.read_text())
+    )
 
 
 def test_a_plant_is_never_a_single_day(tmp_path: Path):
@@ -55,7 +58,9 @@ def test_a_plant_is_never_a_single_day(tmp_path: Path):
     assert checked > 0
     # this_week entries reference weeks the same way -- no shortcut to a day
     for entry in snap["this_week"]:
-        assert "week_id" not in entry  # no alternate single-value date field exists at all
+        assert (
+            "week_id" not in entry
+        )  # no alternate single-value date field exists at all
 
 
 def test_source_week_is_a_week_not_a_day(tmp_path: Path):
@@ -70,12 +75,12 @@ def test_source_week_is_a_week_not_a_day(tmp_path: Path):
 
 def test_this_week_matches_waters_plants_for_source_week(tmp_path: Path):
     snap = _run(tmp_path)
-    by_id = {w["id"]: w for w in snap["waters"]}
     derived = {
         (w["id"], p["species"])
         for w in snap["waters"]
         for p in w["plants"]
-        if p["week"]["start"] == snap["source_week"]["start"] and p["status"] == "listed"
+        if p["week"]["start"] == snap["source_week"]["start"]
+        and p["status"] == "listed"
     }
     reported = {(e["water_id"], e["species"]) for e in snap["this_week"]}
     assert derived == reported
@@ -100,7 +105,10 @@ def test_snapshot_carries_attribution_and_licence(tmp_path: Path):
     snap = _run(tmp_path)
     assert "California Department of Fish and Wildlife" in snap["attribution"]["text"]
     assert snap["licence"]["sources"]
-    assert all(s["commercial_reuse"] in ("permitted", "not-permitted", "unknown") for s in snap["licence"]["sources"])
+    assert all(
+        s["commercial_reuse"] in ("permitted", "not-permitted", "unknown")
+        for s in snap["licence"]["sources"]
+    )
 
 
 def test_stale_fixture_refuses_to_build_a_snapshot(tmp_path: Path):

@@ -16,7 +16,6 @@ import datetime as dt
 import hashlib
 import re
 import urllib.robotparser
-from urllib.parse import urljoin
 
 import httpx
 
@@ -220,7 +219,7 @@ def fetch_schedule(
     ``run_today`` defaults to the real UTC date; tests pass a fixed date so
     fixtures stay valid regardless of when the suite runs.
     """
-    run_today = run_today or dt.datetime.now(dt.timezone.utc).date()
+    run_today = run_today or dt.datetime.now(dt.UTC).date()
     user_agent = USER_AGENT_TEMPLATE.format(version=version)
     owns_client = client is None
     client = client or httpx.Client(follow_redirects=True)
@@ -240,7 +239,7 @@ def fetch_schedule(
             raise FetchError(f"fetch of {SCHEDULE_URL} failed: {exc}") from exc
 
         html = resp.text
-        fetched_at = dt.datetime.now(dt.timezone.utc)
+        fetched_at = dt.datetime.now(dt.UTC)
         stated_today = extract_stated_today(html)
         assert_fresh(stated_today, run_today)
         period_start, period_end = extract_stated_period(html)
@@ -266,7 +265,7 @@ def load_fixture(path: str, *, fetched_at: dt.datetime | None = None) -> Fetched
     period_start, period_end = extract_stated_period(html)
     return FetchedPage(
         html=html,
-        fetched_at=fetched_at or dt.datetime.now(dt.timezone.utc),
+        fetched_at=fetched_at or dt.datetime.now(dt.UTC),
         stated_today=extract_stated_today(html),
         stated_period_start=period_start,
         stated_period_end=period_end,

@@ -16,9 +16,14 @@ dependencies = [
 [project.scripts]
 cfpa = "cfpa.cli:main"
 
+# CODE-QUALITY-STANDARD §2 (CQ-10): hatchling. `make build` builds the wheel
+# in CI, so a template or package-data file that stops shipping fails there.
 [build-system]
-requires = ["uv_build>=0.12.9,<0.13.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cfpa"]
 
 [dependency-groups]
 dev = [
@@ -26,10 +31,54 @@ dev = [
     "pytest-cov>=6.0",
     "freezegun>=1.5",
     "respx>=0.21",
+    "ruff>=0.15.0",
+    "mypy>=1.18",
+    "types-jsonschema>=4.23",
+    "pip-audit>=2.7",
 ]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
+# --- CODE-QUALITY-STANDARD §2 single-source ruff/mypy/pytest config ---
+# This project is nested under pipeline/ (see docs/adr/, the repository-layout
+# ADR); the root Makefile delegates here, so `make verify` at the repository
+# root runs exactly these settings.
 
-[tool.uv_build]
-package = true
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "S", "C90", "RUF"]
+ignore = ["E501"]            # line length owned by the formatter
+[tool.ruff.lint.per-file-ignores]
+# S101: assert is expected in tests. S603: the analytics tests run node on a
+# fixed argv of temp-file paths (test_site_analytics.py), never a shell or
+# caller-supplied input, so the check is exempted here rather than inline.
+"tests/**" = ["S101", "S603"]
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+strict = true
+warn_return_any = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config --import-mode=importlib"
+markers = [
+    "slow: > 2s",
+    "integration: requires an external service",
+    "smoke: critical path",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+[tool.coverage.report]
+# Standard floor for an application is 85% branch (CQ-08). Measured 94% on
+# 2026-09-17, so the floor sits at 90 to hold most of that ground.
+fail_under = 90
+show_missing = true

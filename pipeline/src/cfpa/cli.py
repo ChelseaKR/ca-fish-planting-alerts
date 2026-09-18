@@ -13,9 +13,15 @@ import datetime as dt
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
-from . import VERSION, aliases as aliases_mod, fetch as fetch_mod, history as history_mod
-from . import parse as parse_mod, site as site_mod, snapshot as snapshot_mod
+from . import VERSION
+from . import aliases as aliases_mod
+from . import fetch as fetch_mod
+from . import history as history_mod
+from . import parse as parse_mod
+from . import site as site_mod
+from . import snapshot as snapshot_mod
 from . import species_aliases as species_aliases_mod
 
 PIPELINE_DIR = Path(__file__).resolve().parents[2]
@@ -47,7 +53,7 @@ def run(
     ga4_measurement_id: str | None = None,
     fixture_fetched_at: dt.datetime | None = None,
     run_today: dt.date | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Execute one full run. Returns the built snapshot dict. Raises on any
     of: fetch failure, stale page, parse error, history-integrity violation,
     schema violation -- and writes nothing to history/aliases/site/snapshot
@@ -63,19 +69,25 @@ def run(
         page = fetch_mod.load_fixture(fixture_path, fetched_at=fixture_fetched_at)
     else:
         page = fetch_mod.fetch_schedule(version=VERSION)
-    fetch_mod.assert_fresh(page.stated_today, run_today or dt.datetime.now(dt.timezone.utc).date())
+    fetch_mod.assert_fresh(
+        page.stated_today, run_today or dt.datetime.now(dt.UTC).date()
+    )
 
     rows = parse_mod.parse_schedule_table(page.html)
     water_options = parse_mod.parse_select_options(page.html, "Params_StockingWaterID")
     county_options = parse_mod.parse_select_options(page.html, "Params_Counties")
-    region_county_options = parse_mod.parse_select_options(page.html, "RegionCountyMappings")
+    region_county_options = parse_mod.parse_select_options(
+        page.html, "RegionCountyMappings"
+    )
 
     alias_table = aliases_mod.AliasTable.load(aliases_path)
     observed_names = [(r.cdfw_stock_id, r.water_name) for r in rows]
     match_report = aliases_mod.apply_all(alias_table, observed_names)
     match_report.print_report()
 
-    species_alias_table = species_aliases_mod.SpeciesAliasTable.load(species_aliases_path)
+    species_alias_table = species_aliases_mod.SpeciesAliasTable.load(
+        species_aliases_path
+    )
 
     existing_history = history_mod.HistoryStore.load(history_path)
 
@@ -83,7 +95,9 @@ def run(
     # record's identity (see species_aliases.py's module docstring): a
     # future inconsistent CDFW spelling must not fork one species into two
     # separate (and separately removed/relisted) history keys.
-    parsed_rows_by_key: dict[history_mod.RecordKey, tuple] = {}
+    parsed_rows_by_key: dict[
+        history_mod.RecordKey, tuple[int, dt.date, dt.date, str]
+    ] = {}
     observed_keys: set[history_mod.RecordKey] = set()
     for r in rows:
         species = species_alias_table.normalize(r.species)
@@ -107,7 +121,7 @@ def run(
     # file is written: a snapshot that cannot be built (e.g. a water with no
     # county anywhere on this fetch) or that fails the schema must leave
     # data/history.json and data/aliases.json exactly as they were.
-    generated_at = dt.datetime.now(dt.timezone.utc)
+    generated_at = dt.datetime.now(dt.UTC)
     snap = snapshot_mod.build_snapshot(
         page=page,
         rows=rows,
@@ -123,7 +137,9 @@ def run(
     )
     snapshot_mod.validate_snapshot(snap, schema_path)
 
-    new_history.save(history_path)  # raises HistoryIntegrityError; nothing written on failure
+    new_history.save(
+        history_path
+    )  # raises HistoryIntegrityError; nothing written on failure
     alias_table.save(aliases_path)
 
     if write_site:
@@ -163,7 +179,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--history", type=Path, default=DEFAULT_HISTORY_PATH)
     parser.add_argument("--aliases", type=Path, default=DEFAULT_ALIASES_PATH)
-    parser.add_argument("--species-aliases", type=Path, default=DEFAULT_SPECIES_ALIASES_PATH)
+    parser.add_argument(
+        "--species-aliases", type=Path, default=DEFAULT_SPECIES_ALIASES_PATH
+    )
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA_PATH)
     parser.add_argument("--site-out", type=Path, default=DEFAULT_SITE_OUT)
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
@@ -178,7 +196,11 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="contact address shown on the support and privacy pages (empty = unset)",
     )
-    parser.add_argument("--no-site", action="store_true", help="skip site generation (schema/history only)")
+    parser.add_argument(
+        "--no-site",
+        action="store_true",
+        help="skip site generation (schema/history only)",
+    )
     parser.add_argument(
         "--run-today",
         type=dt.date.fromisoformat,

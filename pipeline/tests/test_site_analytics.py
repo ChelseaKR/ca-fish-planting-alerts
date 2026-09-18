@@ -337,7 +337,7 @@ def _run_tag(
         json.dumps({"navigator": navigator or {}, "window": window or {}}),
         encoding="utf-8",
     )
-    result = subprocess.run(  # noqa: S603 -- fixed argv, no shell
+    result = subprocess.run(
         [node, str(harness), str(script), str(case)],
         capture_output=True,
         text=True,

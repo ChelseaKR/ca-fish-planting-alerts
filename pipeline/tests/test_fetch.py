@@ -119,27 +119,29 @@ def test_load_fixture_populates_all_fields():
 
 def test_robots_txt_permissive_allows_fetch(respx_mock):
     respx_mock.get(fetch.ROBOTS_URL).mock(
-        return_value=httpx.Response(200, text="Sitemap: http://nrm.dfg.ca.gov/sitemap.xml\n")
+        return_value=httpx.Response(
+            200, text="Sitemap: http://nrm.dfg.ca.gov/sitemap.xml\n"
+        )
     )
     with httpx.Client() as client:
-        fetch.check_robots("ca-fish-planting-alerts/0.1.0 (+test)", client)  # must not raise
+        fetch.check_robots(
+            "ca-fish-planting-alerts/0.1.0 (+test)", client
+        )  # must not raise
 
 
 def test_robots_txt_disallow_blocks_fetch(respx_mock):
     respx_mock.get(fetch.ROBOTS_URL).mock(
         return_value=httpx.Response(200, text="User-agent: *\nDisallow: /FishPlants/\n")
     )
-    with httpx.Client() as client:
-        with pytest.raises(fetch.RobotsDisallowedError):
-            fetch.check_robots("ca-fish-planting-alerts/0.1.0 (+test)", client)
+    with httpx.Client() as client, pytest.raises(fetch.RobotsDisallowedError):
+        fetch.check_robots("ca-fish-planting-alerts/0.1.0 (+test)", client)
 
 
 def test_fetch_schedule_raises_fetch_error_on_http_failure(respx_mock):
     respx_mock.get(fetch.ROBOTS_URL).mock(return_value=httpx.Response(200, text=""))
     respx_mock.get(fetch.SCHEDULE_URL).mock(return_value=httpx.Response(500))
-    with httpx.Client() as client:
-        with pytest.raises(fetch.FetchError):
-            fetch.fetch_schedule(version="0.1.0", client=client)
+    with httpx.Client() as client, pytest.raises(fetch.FetchError):
+        fetch.fetch_schedule(version="0.1.0", client=client)
 
 
 def test_fetch_schedule_raises_stale_on_live_stale_response(respx_mock):
@@ -147,9 +149,10 @@ def test_fetch_schedule_raises_stale_on_live_stale_response(respx_mock):
     respx_mock.get(fetch.SCHEDULE_URL).mock(
         return_value=httpx.Response(200, text=STALE.read_text(encoding="utf-8"))
     )
-    with httpx.Client() as client:
-        with pytest.raises(fetch.StalePageError):
-            fetch.fetch_schedule(version="0.1.0", run_today=dt.date(2026, 9, 13), client=client)
+    with httpx.Client() as client, pytest.raises(fetch.StalePageError):
+        fetch.fetch_schedule(
+            version="0.1.0", run_today=dt.date(2026, 9, 13), client=client
+        )
 
 
 def test_user_agent_names_the_repo():

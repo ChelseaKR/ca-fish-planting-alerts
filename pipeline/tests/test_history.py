@@ -6,8 +6,14 @@ import pytest
 from cfpa import history
 
 
-def _rec(stock_id=1116, week_start="2026-09-13", status="listed", species="Trout",
-         first="2026-09-13T12:00:00Z", last="2026-09-13T12:00:00Z"):
+def _rec(
+    stock_id=1116,
+    week_start="2026-09-13",
+    status="listed",
+    species="Trout",
+    first="2026-09-13T12:00:00Z",
+    last="2026-09-13T12:00:00Z",
+):
     ws = dt.date.fromisoformat(week_start)
     return history.PlantRecord(
         cdfw_stock_id=stock_id,
@@ -35,14 +41,18 @@ def test_append_only_allows_status_transition_to_removed():
 def test_append_only_rejects_a_dropped_record():
     old = [_rec(stock_id=1), _rec(stock_id=2)]
     new = [_rec(stock_id=1)]  # record for stock_id=2 silently dropped
-    with pytest.raises(history.HistoryIntegrityError, match="missing from the new write"):
+    with pytest.raises(
+        history.HistoryIntegrityError, match="missing from the new write"
+    ):
         history.assert_append_only(old, new)
 
 
 def test_append_only_rejects_a_mutated_immutable_field():
     old = [_rec(stock_id=1, first="2026-09-13T12:00:00Z")]
     new = [_rec(stock_id=1, first="2020-01-01T00:00:00Z")]  # provenance rewritten
-    with pytest.raises(history.HistoryIntegrityError, match="changed an immutable field"):
+    with pytest.raises(
+        history.HistoryIntegrityError, match="changed an immutable field"
+    ):
         history.assert_append_only(old, new)
 
 
@@ -76,7 +86,7 @@ def test_merge_observations_marks_a_dropped_listed_plant_as_removed():
         parsed_rows={},
         page_window_start=dt.date(2025, 9, 13),
         page_window_end=dt.date(2026, 9, 27),  # week is inside the page's window
-        fetched_at=dt.datetime(2026, 9, 20, tzinfo=dt.timezone.utc),
+        fetched_at=dt.datetime(2026, 9, 20, tzinfo=dt.UTC),
     )
     assert len(merged) == 1
     assert merged[0].status == "removed"
@@ -92,7 +102,7 @@ def test_merge_observations_leaves_out_of_window_history_alone():
         parsed_rows={},
         page_window_start=dt.date(2025, 9, 13),  # 2024-01-07 is before the window
         page_window_end=dt.date(2026, 9, 27),
-        fetched_at=dt.datetime(2026, 9, 20, tzinfo=dt.timezone.utc),
+        fetched_at=dt.datetime(2026, 9, 20, tzinfo=dt.UTC),
     )
     assert merged[0].status == "listed"
 
@@ -110,7 +120,7 @@ def test_merge_observations_does_not_mark_the_ageing_off_oldest_week_removed():
         parsed_rows={},
         page_window_start=dt.date(2025, 9, 13),
         page_window_end=dt.date(2026, 9, 27),
-        fetched_at=dt.datetime(2026, 9, 18, 3, 10, tzinfo=dt.timezone.utc),
+        fetched_at=dt.datetime(2026, 9, 18, 3, 10, tzinfo=dt.UTC),
     )
     assert merged[0].status == "listed"
 
@@ -123,7 +133,7 @@ def test_merge_observations_still_infers_removal_just_past_the_oldest_week():
         parsed_rows={},
         page_window_start=dt.date(2025, 9, 13),
         page_window_end=dt.date(2026, 9, 27),
-        fetched_at=dt.datetime(2026, 9, 18, tzinfo=dt.timezone.utc),
+        fetched_at=dt.datetime(2026, 9, 18, tzinfo=dt.UTC),
     )
     assert merged[0].status == "removed"
 
@@ -136,7 +146,7 @@ def test_merge_observations_adds_a_new_listed_record():
         parsed_rows={key: (1116, dt.date(2026, 9, 13), dt.date(2026, 9, 19), "Trout")},
         page_window_start=dt.date(2025, 9, 13),
         page_window_end=dt.date(2026, 9, 27),
-        fetched_at=dt.datetime(2026, 9, 13, tzinfo=dt.timezone.utc),
+        fetched_at=dt.datetime(2026, 9, 13, tzinfo=dt.UTC),
     )
     assert len(merged) == 1
     assert merged[0].status == "listed"
@@ -150,7 +160,7 @@ def test_merge_observations_relists_a_removed_plant_preserving_first_observed_at
     first_observed_at is provenance -- the original sighting date -- and must
     survive the removal untouched."""
     key = (1, "2026-09-13", "Trout")
-    original_first_observed = dt.datetime(2026, 9, 6, tzinfo=dt.timezone.utc)
+    original_first_observed = dt.datetime(2026, 9, 6, tzinfo=dt.UTC)
 
     removed = [
         _rec(
@@ -163,7 +173,7 @@ def test_merge_observations_relists_a_removed_plant_preserving_first_observed_at
     ]
     assert removed[0].first_observed_at == original_first_observed
 
-    relisted_at = dt.datetime(2026, 9, 27, tzinfo=dt.timezone.utc)
+    relisted_at = dt.datetime(2026, 9, 27, tzinfo=dt.UTC)
     merged = history.merge_observations(
         removed,
         observed_this_run={key},

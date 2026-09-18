@@ -33,6 +33,7 @@ import dataclasses
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
 _WS_RE = re.compile(r"\s+")
@@ -59,7 +60,7 @@ class SpeciesAlias:
     slug: str
     aliases: list[str]
 
-    def to_json(self) -> dict:
+    def to_json(self) -> dict[str, Any]:
         return {
             "canonical_name": self.canonical_name,
             "slug": self.slug,
@@ -67,7 +68,7 @@ class SpeciesAlias:
         }
 
     @classmethod
-    def from_json(cls, d: dict) -> "SpeciesAlias":
+    def from_json(cls, d: dict[str, Any]) -> SpeciesAlias:
         return cls(
             canonical_name=d["canonical_name"],
             slug=d["slug"],
@@ -80,7 +81,7 @@ class SpeciesAliasTable:
     entries: list[SpeciesAlias]
 
     @classmethod
-    def load(cls, path: Path) -> "SpeciesAliasTable":
+    def load(cls, path: Path) -> SpeciesAliasTable:
         if not path.exists():
             return cls(entries=[])
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -89,10 +90,14 @@ class SpeciesAliasTable:
     def save(self, path: Path) -> None:
         payload = {
             "schema": "cfpa-species-aliases-v1",
-            "species": [e.to_json() for e in sorted(self.entries, key=lambda e: e.slug)],
+            "species": [
+                e.to_json() for e in sorted(self.entries, key=lambda e: e.slug)
+            ],
         }
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
 
     def normalize(self, observed_name: str) -> str:
         """Return the canonical species name for one observed raw string.

@@ -9,14 +9,16 @@ import datetime as dt
 import json
 import re
 import statistics
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 import jsonschema
 
 from . import parse
 from .aliases import AliasTable
 from .fetch import FetchedPage
-from .history import HistoryStore, PlantRecord
+from .history import HistoryStore
 
 REGIONS = [
     {"code": "R1", "name": "Northern Region (R1)"},
@@ -61,24 +63,35 @@ LICENCE_SOURCES = [
 ]
 
 
-def week_of(d: dt.date) -> dict:
+def week_of(d: dt.date) -> dict[str, str]:
     # CDFW's own weeks run Sunday..Saturday; align any date to that week.
     start = d - dt.timedelta(days=(d.weekday() + 1) % 7)
     end = start + dt.timedelta(days=6)
-    return {"start": start.isoformat(), "end": end.isoformat(), "label": f"week of {start.isoformat()}"}
+    return {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "label": f"week of {start.isoformat()}",
+    }
 
 
 def _iso_z(d: dt.datetime) -> str:
-    return d.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return d.astimezone(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def build_counties(county_options, region_county_options) -> list[dict]:
-    region_by_county_id = {opt.value: opt.label for opt in region_county_options if opt.value}
+def build_counties(
+    county_options: Iterable[parse.SelectOption],
+    region_county_options: Iterable[parse.SelectOption],
+) -> list[dict[str, str]]:
+    region_by_county_id = {
+        opt.value: opt.label for opt in region_county_options if opt.value
+    }
     out = []
     for opt in county_options:
         region = region_by_county_id.get(opt.value)
         if not region:
-            raise ValueError(f"county {opt.label!r} (id {opt.value}) has no region mapping")
+            raise ValueError(
+                f"county {opt.label!r} (id {opt.value}) has no region mapping"
+            )
         out.append({"name": opt.label, "region": region})
     return out
 
@@ -88,7 +101,9 @@ def build_counties(county_options, region_county_options) -> list[dict]:
 _PICKER_LABEL_RE = re.compile(r"^(?P<name>.*) \((?P<counties>[^()]+)\)\s*$")
 
 
-def counties_from_water_picker(water_options) -> dict[int, list[str]]:
+def counties_from_water_picker(
+    water_options: Iterable[parse.SelectOption],
+) -> dict[int, list[str]]:
     """County list per stock id, from the same page's own water picker.
 
     Why this exists: the schedule table only shows about a year, and rows age
@@ -119,8 +134,8 @@ def build_waters(
     rows: list[parse.RawRow],
     source_week_start: dt.date,
     counties_by_name: dict[str, str],
-    water_options=(),
-) -> list[dict]:
+    water_options: Iterable[parse.SelectOption] = (),
+) -> list[dict[str, Any]]:
     by_water = history.by_water()
     picker_counties = counties_from_water_picker(water_options)
     # Most-recently-observed county list per water, from this run's rows.
@@ -131,7 +146,9 @@ def build_waters(
     map_url_latest: dict[int, str] = {}
     for r in rows:
         counties_latest[r.cdfw_stock_id] = list(r.counties)
-        map_url_latest[r.cdfw_stock_id] = f"https://apps.wildlife.ca.gov/fishing/?stockid={r.cdfw_stock_id}"
+        map_url_latest[r.cdfw_stock_id] = (
+            f"https://apps.wildlife.ca.gov/fishing/?stockid={r.cdfw_stock_id}"
+        )
 
     waters = []
     for stock_id in sorted(by_water):
@@ -152,12 +169,17 @@ def build_waters(
         if not region:
             raise ValueError(f"county {counties[0]!r} has no known region")
 
-        plants_sorted = sorted(by_water[stock_id], key=lambda r: (r.week_start, r.species))
+        plants_sorted = sorted(
+            by_water[stock_id], key=lambda r: (r.week_start, r.species)
+        )
         last_listed = None
         for rec in plants_sorted:
-            if rec.status == "listed" and rec.week_start <= source_week_start:
-                if last_listed is None or rec.week_start > last_listed.week_start:
-                    last_listed = rec
+            if (
+                rec.status == "listed"
+                and rec.week_start <= source_week_start
+                and (last_listed is None or rec.week_start > last_listed.week_start)
+            ):
+                last_listed = rec
 
         waters.append(
             {
@@ -170,10 +192,13 @@ def build_waters(
                 "counties": counties,
                 "region": region,
                 "cdfw_map_url": map_url_latest.get(
-                    stock_id, f"https://apps.wildlife.ca.gov/fishing/?stockid={stock_id}"
+                    stock_id,
+                    f"https://apps.wildlife.ca.gov/fishing/?stockid={stock_id}",
                 ),
                 "location": None,
-                "last_listed_week": week_of(last_listed.week_start) if last_listed else None,
+                "last_listed_week": week_of(last_listed.week_start)
+                if last_listed
+                else None,
                 "plants": [
                     {
                         "week": {
@@ -204,7 +229,7 @@ class Coverage:
     weeks_of_history_min: int
     weeks_of_history_median: float
 
-    def to_json(self) -> dict:
+    def to_json(self) -> dict[str, Any]:
         return dataclasses.asdict(self)
 
     def print_report(self) -> None:
@@ -220,16 +245,21 @@ class Coverage:
 
 def compute_coverage(
     *,
-    waters: list[dict],
+    waters: list[dict[str, Any]],
     waters_known: int,
     names_matched: int,
     names_seen: int,
     rows_parsed: int,
     source_week_start: str,
 ) -> Coverage:
-    this_week = [w for w in waters if any(
-        p["week"]["start"] == source_week_start and p["status"] == "listed" for p in w["plants"]
-    )]
+    this_week = [
+        w
+        for w in waters
+        if any(
+            p["week"]["start"] == source_week_start and p["status"] == "listed"
+            for p in w["plants"]
+        )
+    ]
     weeks_per_water = [len(w["plants"]) for w in waters] or [0]
     return Coverage(
         waters_this_week=len(this_week),
@@ -252,11 +282,11 @@ def build_snapshot(
     generated_at: dt.datetime,
     names_matched: int,
     names_seen: int,
-    counties_options,
-    region_county_options,
+    counties_options: Iterable[parse.SelectOption],
+    region_county_options: Iterable[parse.SelectOption],
     waters_known: int,
-    water_options=(),
-) -> dict:
+    water_options: Iterable[parse.SelectOption] = (),
+) -> dict[str, Any]:
     source_week = week_of(page.stated_today)
     source_week_start = dt.date.fromisoformat(source_week["start"])
 
@@ -311,6 +341,6 @@ def build_snapshot(
     return snapshot
 
 
-def validate_snapshot(snapshot: dict, schema_path: Path) -> None:
+def validate_snapshot(snapshot: dict[str, Any], schema_path: Path) -> None:
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     jsonschema.validate(instance=snapshot, schema=schema)

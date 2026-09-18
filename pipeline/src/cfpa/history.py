@@ -19,6 +19,7 @@ import dataclasses
 import datetime as dt
 import json
 from pathlib import Path
+from typing import Any
 
 RecordKey = tuple[int, str, str]  # (cdfw_stock_id, week_start ISO date, species)
 
@@ -57,7 +58,7 @@ class PlantRecord:
     def key(self) -> RecordKey:
         return (self.cdfw_stock_id, self.week_start.isoformat(), self.species)
 
-    def to_json(self) -> dict:
+    def to_json(self) -> dict[str, Any]:
         return {
             "cdfw_stock_id": self.cdfw_stock_id,
             "week_start": self.week_start.isoformat(),
@@ -69,7 +70,7 @@ class PlantRecord:
         }
 
     @classmethod
-    def from_json(cls, d: dict) -> "PlantRecord":
+    def from_json(cls, d: dict[str, Any]) -> PlantRecord:
         return cls(
             cdfw_stock_id=int(d["cdfw_stock_id"]),
             week_start=dt.date.fromisoformat(d["week_start"]),
@@ -86,10 +87,12 @@ def _parse_dt(s: str) -> dt.datetime:
 
 
 def _iso_z(d: dt.datetime) -> str:
-    return d.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return d.astimezone(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def assert_append_only(old_records: list[PlantRecord], new_records: list[PlantRecord]) -> None:
+def assert_append_only(
+    old_records: list[PlantRecord], new_records: list[PlantRecord]
+) -> None:
     """Raise HistoryIntegrityError if ``new_records`` would lose or alter any
     record already present in ``old_records``.
 
@@ -112,7 +115,10 @@ def assert_append_only(old_records: list[PlantRecord], new_records: list[PlantRe
 
     for key, old in old_by_key.items():
         new = new_by_key[key]
-        if old.week_end != new.week_end or old.first_observed_at != new.first_observed_at:
+        if (
+            old.week_end != new.week_end
+            or old.first_observed_at != new.first_observed_at
+        ):
             raise HistoryIntegrityError(
                 f"history record {key} changed an immutable field: "
                 f"old week_end/first_observed_at={old.week_end}/{old.first_observed_at} "
@@ -125,7 +131,7 @@ class HistoryStore:
     records: list[PlantRecord]
 
     @classmethod
-    def load(cls, path: Path) -> "HistoryStore":
+    def load(cls, path: Path) -> HistoryStore:
         if not path.exists():
             return cls(records=[])
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -138,9 +144,14 @@ class HistoryStore:
         old = HistoryStore.load(path)
         assert_append_only(old.records, self.records)
         ordered = sorted(self.records, key=lambda r: r.key())
-        payload = {"schema": "cfpa-history-v1", "plants": [r.to_json() for r in ordered]}
+        payload = {
+            "schema": "cfpa-history-v1",
+            "plants": [r.to_json() for r in ordered],
+        }
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
 
     def by_water(self) -> dict[int, list[PlantRecord]]:
         out: dict[int, list[PlantRecord]] = {}
@@ -179,7 +190,7 @@ def merge_observations(
     by_key = {r.key(): r for r in existing}
 
     for key in observed_this_run:
-        stock_id, week_start_iso, species = key
+        stock_id, _week_start_iso, species = key
         _, week_start, week_end, _species = parsed_rows[key]
         prior = by_key.get(key)
         first_observed = prior.first_observed_at if prior else fetched_at

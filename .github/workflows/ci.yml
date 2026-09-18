@@ -1,45 +1,109 @@
 name: ci
 
-# Pull-request gate for the iOS lane: `swift test` on the ios/PlantingCore
-# Swift package (the app's Foundation-only data layer -- see its
-# Package.swift for why it's a dynamic library). Deliberately NOT
-# `xcodebuild`: building/testing the full CAFishPlanting app target (and its
-# UI tests) needs simulator provisioning and a signing/scheme setup this
-# repo hasn't proven out headlessly in CI yet, and a flaky xcodebuild lane is
-# worse than none. Revisit xcodebuild once the scheme is confirmed to build
-# headlessly on a runner. (Same call made in
-# queer-tv-guide/.github/workflows/ci.yml -- see its comment for the
-# original reasoning; this job mirrors that repo's "guidecore" job shape.)
+# The merge-blocking pipeline (CI-CD-STANDARD §1). Two jobs:
 #
-# The pipeline's own pytest suite already has its own gate in test.yml, so
-# this workflow only carries the iOS lane. It checks whether ios/PlantingCore
-# is present before doing anything else, and no-ops (green, not skipped)
-# when it isn't. That guard is not hypothetical, just no longer live on
-# main: this workflow was written while pipeline/ (PR #1) and ios/
-# (PR #2) were still separate branches, each missing the other's directory
-# -- see git history for the two original PRs. Both are merged now, so
-# every PR off main carries both directories and this job runs for real;
-# the presence check stays as a cheap safeguard for any future branch that
-# again carries only one half of the tree.
+# - verify: stages 1-5 (format, lint, type, test, security) for the Python
+#   pipeline, by running `make verify` at the repository root and nothing
+#   else, so a green check here is the same claim as a green `make verify`
+#   on a laptop (CI-CD-STANDARD §9, CICD-27). This replaced test.yml, which
+#   ran pytest and the offline fixture build without the lint, type,
+#   coverage or security stages.
+#
+# - ios: `swift test` on the ios/PlantingCore Swift package (the app's
+#   Foundation-only data layer -- see its Package.swift for why it's a
+#   dynamic library). Deliberately NOT `xcodebuild`: building/testing the
+#   full CAFishPlanting app target (and its UI tests) needs simulator
+#   provisioning and a signing/scheme setup this repo hasn't proven out
+#   headlessly in CI yet, and a flaky xcodebuild lane is worse than none.
+#   Revisit xcodebuild once the scheme is confirmed to build headlessly on a
+#   runner. (Same call made in queer-tv-guide/.github/workflows/ci.yml -- see
+#   its comment for the original reasoning; this job mirrors that repo's
+#   "guidecore" job shape.) It checks whether ios/PlantingCore is present
+#   before doing anything else, and no-ops (green, not skipped) when it
+#   isn't. That guard is not hypothetical, just no longer live on main: this
+#   workflow was written while pipeline/ (PR #1) and ios/ (PR #2) were still
+#   separate branches, each missing the other's directory. Both are merged
+#   now, so every PR off main carries both directories and this job runs for
+#   real; the presence check stays as a cheap safeguard for any future branch
+#   that again carries only one half of the tree. It does not run on pushes
+#   to main (see the job's `if:`), which keeps its macOS minutes where they
+#   were before `push` was added for `verify`.
 
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
   workflow_dispatch: {}
 
+# One group per commit on a push, one per branch on a pull request
+# (CI-CD-STANDARD §11c). A ref-only key puts every push to main in one group,
+# and GitHub keeps exactly one PENDING run per group, so a third push evicts
+# the pending one with zero jobs and that commit lands with no verdict.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.sha }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    # Measured locally at ~30 s for the whole target; the margin covers a
+    # cold uv cache, the semgrep install and the ruleset download.
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          # Full history: `make secrets` runs `gitleaks git`, which scans
+          # every commit, and a shallow clone would scan one.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pipeline/uv.lock"
+
+      - name: install pinned gitleaks and osv-scanner
+        # Pinned release binaries checked against hashes committed here, not
+        # against a checksum file fetched from the same release. The versions
+        # match the ones `make verify` is documented against in the Makefile.
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+          OSV_SCANNER_VERSION: 2.6.0
+          OSV_SCANNER_SHA256: ca69b3d3cd08f889a49dc0a383122f71cc528b83803671df5fd874d97485b108
+        run: |
+          set -euo pipefail
+          bin="$RUNNER_TEMP/bin"
+          mkdir -p "$bin"
+          archive="$RUNNER_TEMP/gitleaks.tar.gz"
+          curl -sSfL -o "$archive" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$bin" gitleaks
+          curl -sSfL -o "$bin/osv-scanner" \
+            "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SCANNER_SHA256}  $bin/osv-scanner" | sha256sum --check --strict
+          chmod +x "$bin/osv-scanner"
+          echo "$bin" >> "$GITHUB_PATH"
+
+      - name: make verify
+        run: make verify
+
   ios:
+    if: github.event_name != 'push'
     runs-on: macos-14
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
 
       - name: check this lane is present on this branch
         id: present

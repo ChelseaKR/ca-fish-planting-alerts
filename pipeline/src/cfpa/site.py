@@ -15,6 +15,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlsplit
 
 import jinja2
@@ -68,6 +69,7 @@ def ga4_measurement_id_or_none(value: str | None) -> str | None:
         )
     return value
 
+
 REGION_NAME_BY_CODE = {
     "R1": "Northern Region",
     "R2": "North Central Region",
@@ -98,7 +100,12 @@ def _fmt_date_human(iso_date: str) -> str:
 
 
 def _ics_escape(text: str) -> str:
-    return text.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
+    return (
+        text.replace("\\", "\\\\")
+        .replace(",", "\\,")
+        .replace(";", "\\;")
+        .replace("\n", "\\n")
+    )
 
 
 def _ics_fold(line: str) -> str:
@@ -116,7 +123,7 @@ def _ics_fold(line: str) -> str:
     return "\r\n ".join(out)
 
 
-def build_water_ics(*, water: dict, base_url: str) -> str:
+def build_water_ics(*, water: dict[str, Any], base_url: str) -> str:
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
@@ -134,7 +141,9 @@ def build_water_ics(*, water: dict, base_url: str) -> str:
         uid = f"{water['id']}-{week['start']}-{re.sub(r'[^a-z0-9]+', '-', p['species'].lower())}@ca-fish-planting-alerts.invalid"
         # "scheduled", never "planted"/"stocked": CDFW's plants are subject
         # to change and this feed cannot confirm one happened.
-        summary = f"week of {week['start']}: {p['species']} scheduled at {water['name']}"
+        summary = (
+            f"week of {week['start']}: {p['species']} scheduled at {water['name']}"
+        )
         lines += [
             "BEGIN:VEVENT",
             f"UID:{uid}",
@@ -146,10 +155,10 @@ def build_water_ics(*, water: dict, base_url: str) -> str:
             "END:VEVENT",
         ]
     lines.append("END:VCALENDAR")
-    return "\r\n".join(_ics_fold(l) for l in lines) + "\r\n"
+    return "\r\n".join(_ics_fold(line) for line in lines) + "\r\n"
 
 
-def _water_view(w: dict, *, source_week_start: str) -> dict:
+def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
     plants_sorted = sorted(w["plants"], key=lambda p: p["week"]["start"], reverse=True)
     other_names = [n for n in w["aliases"] if n != w["name"]]
     counties = ", ".join(w["counties"])
@@ -175,7 +184,9 @@ def _water_view(w: dict, *, source_week_start: str) -> dict:
         "region_name": REGION_NAME_BY_CODE.get(w["region"], w["region"]),
         "cdfw_map_url": w["cdfw_map_url"],
         "other_names": ", ".join(other_names) if other_names else "",
-        "last_listed_label": w["last_listed_week"]["label"] if w["last_listed_week"] else "",
+        "last_listed_label": w["last_listed_week"]["label"]
+        if w["last_listed_week"]
+        else "",
         "next_listed_label": f"week of {upcoming[0]}" if upcoming else "",
         "listed_week_count": len(listed_weeks),
         "plants": [
@@ -189,7 +200,7 @@ def _water_view(w: dict, *, source_week_start: str) -> dict:
     }
 
 
-def _water_lastmod(w: dict, *, source_week_start: str) -> str:
+def _water_lastmod(w: dict[str, Any], *, source_week_start: str) -> str:
     """The date this water's page last changed in substance, for sitemap.xml.
 
     Not the build date: the site rebuilds every day, and a lastmod that
@@ -200,8 +211,10 @@ def _water_lastmod(w: dict, *, source_week_start: str) -> str:
     "next" wording can flip then). A removed-then-relisted plant is not
     detectable from the snapshot and is the one known under-report.
     """
-    dates = [p["first_observed_at"][:10] for p in w["plants"]]
-    dates += [p["last_observed_at"][:10] for p in w["plants"] if p["status"] == "removed"]
+    dates: list[str] = [p["first_observed_at"][:10] for p in w["plants"]]
+    dates += [
+        p["last_observed_at"][:10] for p in w["plants"] if p["status"] == "removed"
+    ]
     rollover_sensitive_from = (
         dt.date.fromisoformat(source_week_start) - dt.timedelta(days=7)
     ).isoformat()
@@ -214,7 +227,7 @@ def _water_lastmod(w: dict, *, source_week_start: str) -> str:
 
 
 def build_site(
-    snapshot: dict,
+    snapshot: dict[str, Any],
     out_dir: Path,
     *,
     base_url: str,
@@ -266,7 +279,7 @@ def build_site(
     waters_by_id = {w["id"]: w for w in snapshot["waters"]}
 
     # ---- index
-    this_week_by_region: dict[str, list[dict]] = {}
+    this_week_by_region: dict[str, list[dict[str, Any]]] = {}
     for entry in snapshot["this_week"]:
         w = waters_by_id[entry["water_id"]]
         this_week_by_region.setdefault(w["region"], []).append(
@@ -279,13 +292,21 @@ def build_site(
         )
     regions = []
     for region in snapshot["regions"]:
-        rows = sorted(this_week_by_region.get(region["code"], []), key=lambda r: r["name"])
+        rows = sorted(
+            this_week_by_region.get(region["code"], []), key=lambda r: r["name"]
+        )
         if rows:
-            regions.append({"code": region["code"], "name": region["name"], "rows": rows})
+            regions.append(
+                {"code": region["code"], "name": region["name"], "rows": rows}
+            )
 
     all_waters = sorted(
         (
-            {"slug": w["slug"], "name": w["name"], "county": w["counties"][0] if w["counties"] else ""}
+            {
+                "slug": w["slug"],
+                "name": w["name"],
+                "county": w["counties"][0] if w["counties"] else "",
+            }
             for w in snapshot["waters"]
         ),
         key=lambda w: w["name"],
@@ -393,7 +414,8 @@ def build_site(
     written.append(not_found_path)
 
     recorded_since = min(
-        (p["week"]["start"] for w in snapshot["waters"] for p in w["plants"]), default=""
+        (p["week"]["start"] for w in snapshot["waters"] for p in w["plants"]),
+        default="",
     )
     # ---- per-water pages + ics
     water_lastmods: dict[str, str] = {}
@@ -431,7 +453,9 @@ def build_site(
         (water_dir / "feed.ics").write_text(ics, encoding="utf-8")
         written.append(water_dir / "feed.ics")
 
-        water_lastmods[page_url] = _water_lastmod(w, source_week_start=source_week_start)
+        water_lastmods[page_url] = _water_lastmod(
+            w, source_week_start=source_week_start
+        )
 
     # ---- sitemap.xml -- lastmod is when a page's substance last changed
     # (see _water_lastmod), not the daily build date. The home page lists
@@ -446,7 +470,9 @@ def build_site(
         *water_lastmods.items(),
     ]
     sitemap_items = "\n".join(
-        f"  <url><loc>{u}</loc><lastmod>{m}</lastmod></url>" if m else f"  <url><loc>{u}</loc></url>"
+        f"  <url><loc>{u}</loc><lastmod>{m}</lastmod></url>"
+        if m
+        else f"  <url><loc>{u}</loc></url>"
         for u, m in sitemap_entries
     )
     sitemap_xml = (

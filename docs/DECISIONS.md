@@ -1,5 +1,10 @@
 # Decisions
 
+> **Closed to new entries (2026-09-17).** New decisions go in `docs/adr/`,
+> one file each; see `docs/adr/0000-record-architecture-decisions.md`.
+> The entries below stay as they are and remain the record of those
+> decisions. Numbers used here are never reused in `docs/adr/`.
+
 ## 0001 — Free static site + paid native app with local notifications (2026-09-13)
 
 The site is the discovery surface (per-water pages rank for "<water> trout

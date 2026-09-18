@@ -18,7 +18,7 @@ def _kwargs(tmp_path: Path) -> dict:
         schema_path=SCHEMA_PATH,
         site_out=tmp_path / "site",
         base_url="https://example.invalid/ca-fish-planting-alerts",
-        fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.timezone.utc),
+        fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.UTC),
         run_today=dt.date(2026, 9, 13),
     )
 
@@ -108,7 +108,9 @@ def test_species_without_curated_alias_passes_through_unchanged(tmp_path: Path):
     assert snap["species"] == ["Catfish", "Trout"]
 
 
-def test_main_cli_exits_nonzero_and_prints_reason_on_stale_fixture(tmp_path: Path, capsys):
+def test_main_cli_exits_nonzero_and_prints_reason_on_stale_fixture(
+    tmp_path: Path, capsys
+):
     stale = FIXTURES / "schedule-stale-2025-cache.html"
     code = cli.main(
         [
@@ -177,14 +179,18 @@ def test_midweek_run_after_a_sunday_run_updates_history_without_false_removals(
 
     kwargs.update(
         fixture_path=str(MIDWEEK),
-        fixture_fetched_at=dt.datetime(2026, 9, 18, 3, 10, 18, tzinfo=dt.timezone.utc),
+        fixture_fetched_at=dt.datetime(2026, 9, 18, 3, 10, 18, tzinfo=dt.UTC),
         run_today=dt.date(2026, 9, 18),  # the UTC date, as publish.yml sees it
     )
     snap = cli.run(**kwargs)
     second = json.loads((tmp_path / "history.json").read_text())
 
-    before = {(p["cdfw_stock_id"], p["week_start"], p["species"]): p for p in first["plants"]}
-    after = {(p["cdfw_stock_id"], p["week_start"], p["species"]): p for p in second["plants"]}
+    before = {
+        (p["cdfw_stock_id"], p["week_start"], p["species"]): p for p in first["plants"]
+    }
+    after = {
+        (p["cdfw_stock_id"], p["week_start"], p["species"]): p for p in second["plants"]
+    }
     assert set(before) <= set(after)  # append-only
     added = set(after) - set(before)
     assert len(added) == 29  # plants CDFW listed between the two fetches
@@ -219,7 +225,7 @@ def test_a_run_that_fails_schema_validation_writes_no_history_or_aliases(
     monkeypatch.setattr(snapshot_mod, "validate_snapshot", refuse)
     kwargs.update(
         fixture_path=str(MIDWEEK),
-        fixture_fetched_at=dt.datetime(2026, 9, 18, 3, 10, 18, tzinfo=dt.timezone.utc),
+        fixture_fetched_at=dt.datetime(2026, 9, 18, 3, 10, 18, tzinfo=dt.UTC),
         run_today=dt.date(2026, 9, 18),
     )
     try:
@@ -237,7 +243,8 @@ def test_a_water_whose_plants_all_aged_off_is_placed_from_cdfws_own_picker():
     """cdfw-500491 / cdfw-500492 were planted only the week of 2025-09-14;
     by 2026-09-17 they had no table row, and the run crashed on them. The
     same page's water picker still names their county."""
-    from cfpa import parse, snapshot as snapshot_mod
+    from cfpa import parse
+    from cfpa import snapshot as snapshot_mod
 
     html = MIDWEEK.read_text(encoding="utf-8")
     picker = snapshot_mod.counties_from_water_picker(

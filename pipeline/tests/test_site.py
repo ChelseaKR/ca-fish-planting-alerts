@@ -23,7 +23,7 @@ def _build_site(tmp_path: Path, **extra) -> Path:
         schema_path=SCHEMA_PATH,
         site_out=out,
         base_url="https://example.invalid/ca-fish-planting-alerts",
-        fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.timezone.utc),
+        fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.UTC),
         run_today=dt.date(2026, 9, 13),
         **extra,
     )
@@ -124,7 +124,7 @@ def test_ics_events_are_week_long_not_single_day(tmp_path: Path):
         ics = (d / "feed.ics").read_text(encoding="utf-8")
         starts = re.findall(r"DTSTART;VALUE=DATE:(\d{8})", ics)
         ends = re.findall(r"DTEND;VALUE=DATE:(\d{8})", ics)
-        for s, e in zip(starts, ends):
+        for s, e in zip(starts, ends, strict=True):
             sd = dt.datetime.strptime(s, "%Y%m%d").date()
             ed = dt.datetime.strptime(e, "%Y%m%d").date()
             assert (ed - sd).days == 7  # DTEND is exclusive -> a 7-day span
@@ -189,7 +189,10 @@ def test_water_page_says_when_the_schedule_was_last_checked(tmp_path: Path):
     for d in (out / "water").iterdir():
         html = (d / "index.html").read_text(encoding="utf-8")
         assert "schedule was last checked 2026-09-13 12:00 UTC" in html
-        assert "current\n  week was the week of 2026-09-13" in html or "week was the week of 2026-09-13" in html
+        assert (
+            "current\n  week was the week of 2026-09-13" in html
+            or "week was the week of 2026-09-13" in html
+        )
 
 
 def test_water_titles_are_unique_and_name_the_county(tmp_path: Path):
@@ -268,7 +271,8 @@ def test_no_uniqueness_claims_in_site_copy(tmp_path: Path):
     so the copy must not claim to be the only or first one."""
     out = _build_site(tmp_path)
     banned = re.compile(
-        r"\b(the only|only place|only app|first app|the first|no one else|nobody else|the app for)\b", re.I
+        r"\b(the only|only place|only app|first app|the first|no one else|nobody else|the app for)\b",
+        re.I,
     )
     for f in _all_html(out):
         text = re.sub(r"<[^>]+>", " ", f.read_text(encoding="utf-8"))
@@ -294,7 +298,9 @@ def test_every_page_carries_the_brand_and_the_search_terms(tmp_path: Path):
     for f in _all_html(out):
         html = f.read_text(encoding="utf-8")
         title = re.search(r"<title>([^<]+)</title>", html).group(1)
-        description = re.search(r'<meta name="description" content="([^"]+)">', html).group(1)
+        description = re.search(
+            r'<meta name="description" content="([^"]+)">', html
+        ).group(1)
         assert "Trout Truck" in title, f
         assert '<meta property="og:site_name" content="Trout Truck">' in html, f
         assert "CA Trout Planting Alerts" not in html, f

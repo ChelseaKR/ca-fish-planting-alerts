@@ -37,7 +37,9 @@ def test_stock_id_survives_name_collisions():
     html = FRESH.read_text(encoding="utf-8")
     rows = parse.parse_schedule_table(html)
     silver = {r.cdfw_stock_id for r in rows if r.water_name == "Silver Lake"}
-    assert len(silver) >= 2, "fixture should carry >1 distinct stock id spelled 'Silver Lake'"
+    assert len(silver) >= 2, (
+        "fixture should carry >1 distinct stock id spelled 'Silver Lake'"
+    )
 
 
 def test_multi_county_row_splits_on_comma():
@@ -69,7 +71,9 @@ def test_missing_stockid_link_raises_parse_error():
     """If CDFW ever drops the map link, our only stable id disappears --
     this must fail loudly, not silently fall back to name-only identity."""
     html = FRESH.read_text(encoding="utf-8")
-    assert html.count("stockid=1116") == 1, "test setup: expected exactly one occurrence"
+    assert html.count("stockid=1116") == 1, (
+        "test setup: expected exactly one occurrence"
+    )
     drifted = html.replace("stockid=1116", "waterid=1116", 1)
     assert "stockid=1116" not in drifted
     with pytest.raises(parse.ParseError, match="no stockid="):

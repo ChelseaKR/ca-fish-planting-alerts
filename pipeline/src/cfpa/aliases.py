@@ -21,6 +21,7 @@ import dataclasses
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
 
@@ -38,7 +39,7 @@ class WaterAlias:
     aliases: list[str]
     reviewed: bool = False
 
-    def to_json(self) -> dict:
+    def to_json(self) -> dict[str, Any]:
         return {
             "cdfw_stock_id": self.cdfw_stock_id,
             "canonical_name": self.canonical_name,
@@ -48,7 +49,7 @@ class WaterAlias:
         }
 
     @classmethod
-    def from_json(cls, d: dict) -> "WaterAlias":
+    def from_json(cls, d: dict[str, Any]) -> WaterAlias:
         return cls(
             cdfw_stock_id=int(d["cdfw_stock_id"]),
             canonical_name=d["canonical_name"],
@@ -63,7 +64,7 @@ class AliasTable:
     by_id: dict[int, WaterAlias]
 
     @classmethod
-    def load(cls, path: Path) -> "AliasTable":
+    def load(cls, path: Path) -> AliasTable:
         if not path.exists():
             return cls(by_id={})
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -77,7 +78,9 @@ class AliasTable:
         waters = [self.by_id[k].to_json() for k in sorted(self.by_id)]
         payload = {"schema": "cfpa-aliases-v1", "waters": waters}
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
 
     def used_slugs(self) -> set[str]:
         return {wa.slug for wa in self.by_id.values()}
@@ -130,8 +133,10 @@ class MatchReport:
         return len(self.unmatched)
 
     def print_report(self) -> None:
-        print(f"names seen: {self.names_seen}  names matched: {self.names_matched}  "
-              f"unmatched: {self.names_unmatched}")
+        print(
+            f"names seen: {self.names_seen}  names matched: {self.names_matched}  "
+            f"unmatched: {self.names_unmatched}"
+        )
         for stock_id, name in self.unmatched:
             print(f"  UNMATCHED cdfw-{stock_id}: {name!r}")
 
@@ -152,4 +157,6 @@ def apply_all(table: AliasTable, observed: list[tuple[int, str]]) -> MatchReport
             matched_count += 1
         else:
             unmatched.append((stock_id, name))
-    return MatchReport(names_seen=len(distinct), names_matched=matched_count, unmatched=unmatched)
+    return MatchReport(
+        names_seen=len(distinct), names_matched=matched_count, unmatched=unmatched
+    )

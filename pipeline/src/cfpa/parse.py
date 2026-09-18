@@ -99,16 +99,20 @@ def parse_schedule_table(html_doc: str) -> list[RawRow]:
         r'(?s)<table[^>]*id="fishPlantsExternal"[^>]*>(.*?)</table>', html_doc
     )
     if not table_m:
-        raise ParseError("no <table id=\"fishPlantsExternal\"> found in the page")
+        raise ParseError('no <table id="fishPlantsExternal"> found in the page')
     table_html = table_m.group(1)
 
     thead_m = re.search(r"(?s)<thead>(.*?)</thead>", table_html)
     if not thead_m:
         raise ParseError("schedule table has no <thead>")
-    headers = [_strip_tags(h) for h in re.findall(r"(?s)<th[^>]*>(.*?)</th>", thead_m.group(1))]
+    headers = [
+        _strip_tags(h) for h in re.findall(r"(?s)<th[^>]*>(.*?)</th>", thead_m.group(1))
+    ]
     expected_headers = ["Week of Plant", "Water Name", "Counties", "Species"]
     if headers != expected_headers:
-        raise ParseError(f"table headers changed: expected {expected_headers}, got {headers}")
+        raise ParseError(
+            f"table headers changed: expected {expected_headers}, got {headers}"
+        )
 
     tbody_m = re.search(r"(?s)<tbody>(.*?)</tbody>", table_html)
     if not tbody_m:
@@ -178,8 +182,10 @@ def parse_select_options(html_doc: str, select_id: str) -> list[SelectOption]:
         rf'(?s)<select[^>]*id="{re.escape(select_id)}"[^>]*>(.*?)</select>', html_doc
     )
     if not sel_m:
-        raise ParseError(f"no <select id=\"{select_id}\"> found in the page")
-    opts = re.findall(r'<option[^>]*value="([^"]*)"[^>]*>\s*([^<]*?)\s*</option>', sel_m.group(1))
+        raise ParseError(f'no <select id="{select_id}"> found in the page')
+    opts = re.findall(
+        r'<option[^>]*value="([^"]*)"[^>]*>\s*([^<]*?)\s*</option>', sel_m.group(1)
+    )
     options = [SelectOption(value=v, label=html.unescape(lbl)) for v, lbl in opts if v]
     if not options:
         raise ParseError(

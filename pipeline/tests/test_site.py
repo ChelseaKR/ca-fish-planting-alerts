@@ -50,8 +50,10 @@ def test_site_builds_expected_pages(tmp_path: Path):
 
 
 def test_no_script_tag_anywhere_in_the_built_site(tmp_path: Path):
-    """DECISIONS 0002: no analytics, no cookies, no third-party script.
-    The strongest, simplest check: there is no <script> element at all."""
+    """With no GA4 measurement ID (``_build_site`` passes none), the site has
+    no analytics, no cookies and no third-party script (DECISIONS 0011).
+    The strongest, simplest check: there is no <script> element at all.
+    The with-ID build is covered in test_site_analytics.py."""
     out = _build_site(tmp_path)
     for f in _all_html(out):
         html = f.read_text(encoding="utf-8")
@@ -83,6 +85,7 @@ def test_no_external_origin_referenced_in_the_built_site(tmp_path: Path):
 
 
 def test_about_page_privacy_claims_match_reality(tmp_path: Path):
+    # the no-analytics build; test_site_analytics.py covers the GA4 copy
     out = _build_site(tmp_path)
     about = (out / "about" / "index.html").read_text(encoding="utf-8")
     assert "No cookies" in about or "no cookies" in about.lower()

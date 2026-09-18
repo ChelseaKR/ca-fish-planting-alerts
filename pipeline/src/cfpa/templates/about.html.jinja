@@ -16,6 +16,32 @@
   any truck is right now.
 </p>
 
+{% if ga4_measurement_id %}
+<h2 id="privacy">Privacy: the website counts visits; the app collects nothing</h2>
+<p>This website uses Google Analytics 4 to count visits and see which pages are read. Specifically:</p>
+<ul>
+  <li>Google Analytics does not load at all if your browser sends Global
+      Privacy Control or Do Not Track. Nothing is then sent to Google and no
+      analytics cookie is set.</li>
+  <li>Otherwise, Google's analytics script records the pages you view, your
+      browser and device type, and your approximate location. Google signals
+      and ad personalisation are off, and there are no ads on this site.</li>
+  <li>In the EEA, the UK and Switzerland, analytics cookies are denied by
+      default, so Google Analytics sets no cookie there.</li>
+  <li>No account, no email address, no sign-up, anywhere on this site.</li>
+  <li>Calendar subscriptions (.ics) are plain files with no analytics; your
+      calendar app fetches them directly from this site on whatever schedule
+      it chooses. This site does not know who has subscribed.</li>
+</ul>
+<p>
+  GitHub Pages, which hosts this site, also keeps standard web server logs
+  (IP address, requested path, timestamp) &mdash; see GitHub's own
+  <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">privacy
+  statement</a>. The full details are in the
+  <a href="{{ root }}privacy/">privacy policy</a>. The iOS app has no
+  analytics of any kind.
+</p>
+{% else %}
 <h2 id="privacy">Privacy: literally nothing is collected</h2>
 <p>This is a plain static site. Specifically:</p>
 <ul>
@@ -36,6 +62,7 @@
   <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">privacy
   statement</a>. This site does not add any collection on top of that.
 </p>
+{% endif %}
 
 <h2 id="app">The iOS app</h2>
 <p>

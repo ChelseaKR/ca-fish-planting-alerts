@@ -1,0 +1,45 @@
+{#
+  Google Analytics 4, DECISIONS 0011. base.html.jinja includes this only
+  when a measurement ID is configured (site.py GA4_MEASUREMENT_ID).
+
+  gtag.js is added by script rather than by a <script src> tag, so a browser
+  that sends Global Privacy Control or Do Not Track gets nothing: no
+  dataLayer, no request to Google, no cookie. The guard runs first.
+
+  Consent Mode v2 defaults: the three ad signals are denied everywhere;
+  analytics_storage is denied in the EEA, the UK and Switzerland (the
+  region-specific default wins there) and granted elsewhere. Google signals
+  and ad personalisation are off in the config.
+#}
+<script>
+(function () {
+  var n = navigator, w = window;
+  if (n.globalPrivacyControl === true) return;
+  var dnt = n.doNotTrack || w.doNotTrack || n.msDoNotTrack;
+  if (dnt === "1" || dnt === "yes") return;
+  w.dataLayer = w.dataLayer || [];
+  function gtag() { w.dataLayer.push(arguments); }
+  gtag("consent", "default", {
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    analytics_storage: "granted"
+  });
+  gtag("consent", "default", {
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    analytics_storage: "denied",
+    region: {{ ga4_denied_regions|tojson }}
+  });
+  gtag("js", new Date());
+  gtag("config", {{ ga4_measurement_id|tojson }}, {
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false
+  });
+  var s = document.createElement("script");
+  s.async = true;
+  s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent({{ ga4_measurement_id|tojson }});
+  document.head.appendChild(s);
+})();
+</script>

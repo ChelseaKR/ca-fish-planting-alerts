@@ -56,4 +56,11 @@
 
 <h2 id="privacy">What does the app know about me?</h2>
 <p>Nothing leaves your phone. See the <a href="{{ root }}privacy/">privacy policy</a>.</p>
+{% if ga4_measurement_id %}
+<p>
+  The website is different: it uses Google Analytics to count visits, unless
+  your browser sends Global Privacy Control or Do Not Track. The app has no
+  analytics.
+</p>
+{% endif %}
 {% endblock %}

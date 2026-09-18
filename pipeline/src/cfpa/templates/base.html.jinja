@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{% if ga4_measurement_id %}
+{% include "_ga4.html.jinja" +%}
+{% endif %}
 <title>{{ title }}</title>
 <meta name="description" content="{{ description }}">
 {% if noindex %}

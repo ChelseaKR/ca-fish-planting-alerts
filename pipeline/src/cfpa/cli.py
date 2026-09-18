@@ -44,6 +44,7 @@ def run(
     write_site: bool = True,
     app_store_url: str | None = None,
     support_email: str | None = None,
+    ga4_measurement_id: str | None = None,
     fixture_fetched_at: dt.datetime | None = None,
     run_today: dt.date | None = None,
 ) -> dict:
@@ -138,6 +139,7 @@ def run(
             base_url=base_url,
             app_store_url=app_store_url,
             support_email=support_email,
+            ga4_measurement_id=ga4_measurement_id,
         )
 
     coverage = snapshot_mod.Coverage(**snap["coverage"])
@@ -187,6 +189,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    # The committed GA4 measurement ID (site.GA4_MEASUREMENT_ID, DECISIONS
+    # 0011), read and checked here, before anything is written: a malformed
+    # one refuses the run like any other failure instead of shipping a tag
+    # that records nothing. Empty = no analytics on any page.
+    try:
+        ga4_measurement_id = site_mod.ga4_measurement_id_or_none(
+            site_mod.GA4_MEASUREMENT_ID
+        )
+    except ValueError as exc:
+        print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
+        return 1
+
     try:
         run(
             fixture_path=args.fixture,
@@ -199,6 +213,7 @@ def main(argv: list[str] | None = None) -> int:
             write_site=not args.no_site,
             app_store_url=args.app_store_url or None,
             support_email=args.support_email or None,
+            ga4_measurement_id=ga4_measurement_id,
             run_today=args.run_today,
             fixture_fetched_at=args.fixture_fetched_at,
         )

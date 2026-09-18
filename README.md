@@ -2,8 +2,11 @@
 
 California trout planting schedule and stocking alerts, with per-water
 stocking history, built from the California Department of Fish and Wildlife's
-weekly planting schedule. A free website and a paid iOS app. No account, no
-tracking. Not affiliated with or endorsed by CDFW.
+weekly planting schedule. A free website and a paid iOS app, with no account
+for either. The website uses Google Analytics 4, which does not load when the
+browser sends Global Privacy Control or Do Not Track and has its advertising
+features turned off. The iOS app collects nothing: no analytics, no tracking
+(`docs/DECISIONS.md` 0011). Not affiliated with or endorsed by CDFW.
 
 The name is what anglers call the hatchery truck that delivers planted trout
 (`docs/DECISIONS.md` 0010). The repository keeps its original name,

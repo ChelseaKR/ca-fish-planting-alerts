@@ -1,9 +1,13 @@
 """Generate the static site from a built snapshot.
 
-No JavaScript, no cookies, no third-party requests: DECISIONS 0002 ("data
-posture: none"). The about page says this in plain language; this module is
-what has to stay true to it -- nothing here writes a <script> tag, an
-external stylesheet host, an analytics pixel, or an iframe.
+The one script this module can write is the Google Analytics 4 tag
+(DECISIONS 0011, which replaces 0002's "no tracking" for the website only).
+It is emitted only when a GA4 measurement ID is configured
+(``GA4_MEASUREMENT_ID`` below); with none, every page has no JavaScript, no
+cookies and no third-party request, exactly as before. The about, privacy
+and support pages describe whichever of those two states the build is in.
+Nothing here ever writes an external stylesheet host, a pixel or an iframe.
+The iOS app never carries analytics.
 """
 
 from __future__ import annotations
@@ -24,6 +28,45 @@ SITE_NAME = "Trout Truck"
 # Appended after the brand on pages whose own label carries no search terms
 # (about, privacy, support, 404).
 SITE_TAGLINE = "CA trout planting schedule"
+
+# The website's Google Analytics 4 measurement ID (DECISIONS 0011): the web
+# stream of GA4 property 554849409. It is public by design (it appears in
+# every page's HTML), so it is committed here rather than kept in a secret or
+# a repository variable; this line is the one place it lives. Setting it to
+# "" turns analytics off: the build then emits no <script> and no request to
+# Google on any page, and the privacy copy says nothing is collected.
+GA4_MEASUREMENT_ID = "G-ZYL3RMXCZF"
+
+_GA4_MEASUREMENT_ID_RE = re.compile(r"G-[A-Z0-9]+")
+
+# Consent Mode v2: analytics_storage defaults to denied in these regions (the
+# EEA, the UK and Switzerland) and to granted everywhere else. The three ad
+# signals are denied everywhere. ISO 3166-1 alpha-2 codes.
+GA4_ANALYTICS_DENIED_REGIONS = (
+    # the 27 EU member states
+    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR",
+    "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK",
+    "SI", "ES", "SE",
+    # the rest of the EEA
+    "IS", "LI", "NO",
+    # the UK and Switzerland
+    "GB", "CH",
+)  # fmt: skip
+
+
+def ga4_measurement_id_or_none(value: str | None) -> str | None:
+    """Return a usable GA4 measurement ID, or None when none is configured.
+
+    A malformed value raises instead of shipping a tag that silently records
+    nothing (a Universal Analytics "UA-" ID, a stray space or lowercase).
+    """
+    if value is None or value == "":
+        return None
+    if not _GA4_MEASUREMENT_ID_RE.fullmatch(value):
+        raise ValueError(
+            f"GA4 measurement ID {value!r} is not of the form 'G-XXXXXXXXXX'"
+        )
+    return value
 
 REGION_NAME_BY_CODE = {
     "R1": "Northern Region",
@@ -177,8 +220,16 @@ def build_site(
     base_url: str,
     app_store_url: str | None = None,
     support_email: str | None = None,
+    ga4_measurement_id: str | None = None,
 ) -> list[Path]:
-    """Render the full static site into ``out_dir``. Returns written paths."""
+    """Render the full static site into ``out_dir``. Returns written paths.
+
+    ``ga4_measurement_id`` defaults to None (no analytics) rather than to
+    ``GA4_MEASUREMENT_ID``, so a caller gets the tag only by asking for it;
+    ``cli.main`` is the caller that passes the committed value.
+    """
+    # Checked before anything is written: a bad ID must not half-build.
+    ga4_measurement_id = ga4_measurement_id_or_none(ga4_measurement_id)
     env = _env()
     written: list[Path] = []
     base_url = base_url.rstrip("/")
@@ -198,6 +249,11 @@ def build_site(
         "app_store_url": app_store_url,
         "support_email": support_email,
         "site_name": SITE_NAME,
+        # base.html.jinja includes the GA4 tag only when this is set, and the
+        # about/privacy/support copy switches on it too, so the pages never
+        # describe a state the build is not in.
+        "ga4_measurement_id": ga4_measurement_id,
+        "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
     }
 
     # ---- assets/style.css
@@ -254,10 +310,17 @@ def build_site(
     written.append(index_path)
 
     # ---- about
+    if ga4_measurement_id:
+        about_collects = (
+            "what its website measures (Google Analytics) and its app collects "
+            "(nothing)"
+        )
+    else:
+        about_collects = "what it collects (nothing)"
     about_html = env.get_template("about.html.jinja").render(
         title=f"About, attribution & privacy | {SITE_NAME}, {SITE_TAGLINE}",
         description=(
-            f"What {SITE_NAME} is, what it collects (nothing), and where its trout planting "
+            f"What {SITE_NAME} is, {about_collects}, and where its trout planting "
             "and stocking data and licence terms come from."
         ),
         canonical_url=f"{base_url}/about/",
@@ -274,13 +337,23 @@ def build_site(
     written.append(about_path)
 
     # ---- privacy + support: the URLs App Store Connect asks for
+    if ga4_measurement_id:
+        privacy_description = (
+            f"What the {SITE_NAME} trout planting site and iOS app collect: the "
+            "website uses Google Analytics; the app collects nothing. No account, "
+            "no ads."
+        )
+    else:
+        privacy_description = (
+            f"What the {SITE_NAME} trout planting site and iOS app collect: "
+            "nothing. No account, no analytics, no tracking."
+        )
     for slug, template, title, description in (
         (
             "privacy",
             "privacy.html.jinja",
             f"Privacy policy | {SITE_NAME}, {SITE_TAGLINE}",
-            f"What the {SITE_NAME} trout planting site and iOS app collect: nothing. "
-            "No account, no analytics, no tracking.",
+            privacy_description,
         ),
         (
             "support",

@@ -15,6 +15,48 @@ Per DATA-GOVERNANCE-STANDARD §4a: "none". No analytics, no cookies, no
 third-party script on the site; nothing collected by the app. Per-product
 choice; revisit only with data.
 
+**Superseded for the website by 0011** (2026-09-17): the site runs Google
+Analytics 4. The app keeps this posture: nothing collected.
+
+## 0011 — Website analytics: Google Analytics 4; the app still collects nothing (2026-09-17)
+
+On 2026-09-17 the owner decided to put Google Analytics 4 on every public
+site in the portfolio and to update each privacy page to match. She made
+that call knowing it reverses 0002's "no tracking" for this product. This
+entry replaces 0002 for the website only.
+
+- **Scope: the website yes, the app no.** Every page the pipeline
+  generates carries the GA4 tag. The iOS app is unchanged: no analytics, no
+  SDK, `PrivacyInfo.xcprivacy` declares no collected data, and the App Store
+  privacy label stays **Data Not Collected**. The app opens links to the
+  site in the system browser (SwiftUI `Link`), not in an in-app web view,
+  so the site's analytics are not data the app collects. An in-app web view
+  showing the site would change that, so revisit the label before adding
+  one.
+- **Property:** GA4 property `554849409`, web stream measurement ID
+  `G-ZYL3RMXCZF`. The ID appears in every page's HTML, so it is public and
+  is committed as `GA4_MEASUREMENT_ID` in `pipeline/src/cfpa/site.py`
+  rather than kept in a secret or a repository variable. Setting it to `""`
+  removes the tag from every page and switches the about, privacy and
+  support copy back to "nothing is collected".
+- **Global Privacy Control and Do Not Track are honoured.** When
+  `navigator.globalPrivacyControl === true` or Do Not Track is on, nothing
+  loads: no `dataLayer`, no request to Google, no cookie. The tag adds
+  gtag.js by script after that check, never with a static `<script src>`.
+- **Ads features are off.** The tag config sets
+  `allow_google_signals: false` and
+  `allow_ad_personalization_signals: false`, and Google signals are also
+  disabled in the property. Consent Mode v2 defaults deny `ad_storage`,
+  `ad_user_data` and `ad_personalization` everywhere, and deny
+  `analytics_storage` in the EEA, the UK and Switzerland (granted
+  elsewhere). There is no consent banner, so in those regions GA4 receives
+  only cookieless measurements.
+- **Retention:** 14 months, a property setting. The privacy page states it,
+  so a change to the setting means a change to the page.
+- **Copy:** the README and the about, privacy and support pages say the
+  website uses Google Analytics and the app collects nothing. The page copy
+  follows the configured ID, so neither state renders a false claim.
+
 ## 0003 — Paid up front, one price (2026-09-13, provisional)
 
 One-time purchase, no StoreKit, no subscription. The price is $9.99, one-time. [moved to private strategy notes]

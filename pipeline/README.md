@@ -50,8 +50,9 @@ Pages-artifact-upload, and deploy steps only run after a clean exit.
   change after a record is first written.
 - `src/cfpa/snapshot.py` — builds the schema-validated snapshot dict from
   history + aliases + the fetched page, plus the coverage report.
-- `src/cfpa/site.py` + `templates/` — the static site (Jinja2, no JS
-  anywhere in the output).
+- `src/cfpa/site.py` + `templates/` — the static site (Jinja2). Its only
+  JavaScript is the Google Analytics 4 tag (`templates/_ga4.html.jinja`),
+  and only when a measurement ID is configured; see "Site configuration".
 - `src/cfpa/cli.py` — orchestrates the above; `cfpa` console script.
 
 ## Data files (committed)
@@ -96,6 +97,16 @@ Secrets and variables -> Actions -> Variables) to `cfpa`:
   yet instead of linking to it.
 - `SUPPORT_EMAIL` -- the contact line on `/support/` and `/privacy/`. Unset
   renders no contact line (App Store Connect's Support URL needs one).
+
+The Google Analytics 4 measurement ID is not one of these variables. It is
+public, so it is committed: `GA4_MEASUREMENT_ID` in `src/cfpa/site.py`
+(currently `G-ZYL3RMXCZF`, property 554849409; DECISIONS 0011). `cfpa` reads
+it on every run and refuses the run, writing nothing, if it is not of the
+form `G-XXXXXXXXXX`. With an ID, every page gets the tag, which loads nothing
+when the browser sends Global Privacy Control or Do Not Track. With `""`,
+no page gets any script, and the about, privacy and support pages say
+nothing is collected. `build_site()` and `cli.run()` default to no analytics;
+only `cfpa`'s `main()` passes the committed ID.
 
 Pages built besides the per-water ones: `/` (this week), `/about/`,
 `/privacy/` and `/support/` (the Privacy Policy and Support URLs App Store

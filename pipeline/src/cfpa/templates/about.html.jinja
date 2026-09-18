@@ -7,11 +7,11 @@
   A free, static mirror of the California Department of Fish and Wildlife's
   weekly trout (and occasional catfish) planting schedule, organised by
   water, with the full planting history this site has observed &mdash; CDFW's
-  own page only ever shows a rolling window, so this is the only place
-  keeping every week.
+  own page shows a rolling window of about a year, and this site keeps every
+  week it has recorded after that window moves on.
 </p>
 
-<h2>Privacy: literally nothing is collected</h2>
+<h2 id="privacy">Privacy: literally nothing is collected</h2>
 <p>This is a plain static site. Specifically:</p>
 <ul>
   <li>No cookies are set by this site.</li>
@@ -34,14 +34,21 @@
 
 <h2 id="app">The iOS app</h2>
 <p>
-  A companion iOS app lets you favourite specific waters and get a local
-  notification when a favourite appears in a new week's schedule. The
-  notification is generated on your device from a snapshot the app
-  downloads periodically in the background &mdash; there is no push
-  service, no account, and no server that knows which waters you favourited.
-  It is a one-time paid purchase, not a subscription. The schedule updates
-  weekly, so alerts arrive on CDFW's schedule, not instantly.
+  A companion iOS app lets you favourite waters and browse the same planting
+  history as this site, free. A one-time in-app purchase &mdash; not a
+  subscription &mdash; adds a local notification when a favourite appears in
+  a new week's schedule. The notification is generated on your device from a
+  snapshot the app downloads periodically in the background &mdash; there is
+  no push service, no account, and no server that knows which waters you
+  favourited. The schedule updates weekly, so alerts arrive on CDFW's
+  schedule, not instantly.
 </p>
+{% if app_store_url %}
+<p><a href="{{ app_store_url }}">Get the app on the App Store</a>.</p>
+{% else %}
+<p>The app is not in the App Store yet; this page will link to it once it is.</p>
+{% endif %}
+<p>Details: <a href="{{ root }}privacy/">privacy policy</a> &middot; <a href="{{ root }}support/">support &amp; FAQ</a>.</p>
 
 <h2>Data, licence &amp; attribution</h2>
 <p>{{ attribution_text }}</p>

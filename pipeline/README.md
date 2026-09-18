@@ -84,6 +84,26 @@ the alias table), `rows parsed` (this run's table rows), and
 `weeks of history per water: min, median` (across every water this pipeline
 has ever recorded).
 
+## Site configuration
+
+`publish.yml` passes three optional repository variables (Settings ->
+Secrets and variables -> Actions -> Variables) to `cfpa`:
+
+- `SITE_BASE_URL` -- canonical URLs, `sitemap.xml`, `robots.txt`. Unset keeps
+  `https://chelseakr.github.io/ca-fish-planting-alerts`. Set it when a custom
+  domain is attached to Pages.
+- `APP_STORE_URL` -- until set, the site says the app is not in the App Store
+  yet instead of linking to it.
+- `SUPPORT_EMAIL` -- the contact line on `/support/` and `/privacy/`. Unset
+  renders no contact line (App Store Connect's Support URL needs one).
+
+Pages built besides the per-water ones: `/` (this week), `/about/`,
+`/privacy/` and `/support/` (the Privacy Policy and Support URLs App Store
+Connect asks for), and `/404.html`. Every water page's title and `<h1>` carry
+its county, because five CDFW names belong to two or three different waters
+each. `sitemap.xml`'s `<lastmod>` is when a page's data last changed, not the
+build date (`site.py::_water_lastmod`).
+
 ## Tests
 
 `uv run pytest` runs entirely offline against two committed fixtures in

@@ -50,7 +50,20 @@ jobs:
         # job stops: no commit, no artifact upload, no deploy. Nothing is
         # ever published from a run that didn't fully succeed.
         working-directory: pipeline
-        run: uv run cfpa --site-out ../site
+        # Owner-set repository variables (Settings -> Secrets and variables ->
+        # Actions -> Variables); all optional. Unset SITE_BASE_URL keeps the
+        # github.io default. Unset APP_STORE_URL keeps the site saying the app
+        # is not in the App Store yet. Passed through env, not interpolated
+        # into the script.
+        env:
+          SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
+          APP_STORE_URL: ${{ vars.APP_STORE_URL }}
+          SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
+        run: |
+          uv run cfpa --site-out ../site \
+            --base-url "$SITE_BASE_URL" \
+            --app-store-url "$APP_STORE_URL" \
+            --support-email "$SUPPORT_EMAIL"
 
       - name: commit updated history and alias table, if any
         run: |

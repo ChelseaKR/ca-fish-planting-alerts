@@ -5,12 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ title }}</title>
 <meta name="description" content="{{ description }}">
+{% if noindex %}
+<meta name="robots" content="noindex">
+{% endif %}
+{% if canonical_url %}
 <link rel="canonical" href="{{ canonical_url }}">
+{% endif %}
 <link rel="stylesheet" href="{{ root }}assets/style.css">
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ title }}">
 <meta property="og:description" content="{{ description }}">
+{% if canonical_url %}
 <meta property="og:url" content="{{ canonical_url }}">
+{% endif %}
 <meta property="og:site_name" content="CA Trout Planting Alerts">
 <meta name="twitter:card" content="summary">
 </head>
@@ -30,8 +37,8 @@
 </main>
 <footer class="site-footer">
   <div class="wrap">
-    <p>{{ attribution_text }}</p>
-    <p><a href="{{ attribution_url }}">{{ attribution_url }}</a> &middot; <a href="{{ root }}about/">about, attribution &amp; privacy</a></p>
+    <p>{{ attribution_text }} This site is independent and is not affiliated with or endorsed by CDFW.</p>
+    <p><a href="{{ attribution_url }}">{{ attribution_url }}</a> &middot; <a href="{{ root }}about/">about &amp; attribution</a> &middot; <a href="{{ root }}privacy/">privacy</a> &middot; <a href="{{ root }}support/">support</a></p>
   </div>
 </footer>
 </body>

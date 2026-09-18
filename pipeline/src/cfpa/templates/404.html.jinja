@@ -1,0 +1,10 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>Page not found</h1>
+<p class="lede">
+  There is no page at this address. Water pages live at
+  <code>water/&lt;name&gt;/</code>; a water that CDFW has never scheduled has
+  no page here.
+</p>
+<p><a href="{{ root }}">This week's planting schedule and every water, A&ndash;Z</a>.</p>
+{% endblock %}

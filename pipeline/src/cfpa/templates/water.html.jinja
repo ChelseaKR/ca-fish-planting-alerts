@@ -1,20 +1,33 @@
 {% extends "base.html.jinja" %}
 {% block content %}
 <p><a href="{{ root }}">&larr; This week, statewide</a></p>
-<h1>{{ water.name }} trout stocking schedule and history</h1>
+<h1>{{ water.qualified_name }} trout stocking schedule and history</h1>
 <p class="lede">
-  {{ water.name }} ({{ water.counties }}) is stocked by the California
-  Department of Fish and Wildlife.
+  {{ water.name }} ({{ water.counties }}) is on the California Department of
+  Fish and Wildlife's trout planting schedule.
   {% if water.last_listed_label %}
-  {{ water.name }} was last scheduled for planting the {{ water.last_listed_label }}.
-  {% else %}
-  No planting has been scheduled for {{ water.name }} in the period this site has observed.
+  It was most recently scheduled for planting the {{ water.last_listed_label }}.
   {% endif %}
+  {% if water.next_listed_label %}
+  Next scheduled: the {{ water.next_listed_label }}.
+  {% endif %}
+  {% if not water.last_listed_label and not water.next_listed_label %}
+  No planting is currently listed for {{ water.name }} in the weeks this site has recorded{% if recorded_since_label %} (since the {{ recorded_since_label }}){% endif %}.
+  {% endif %}
+</p>
+<p class="muted">
+  CDFW's schedule was last checked {{ source_fetched_label }}, when its current
+  week was the {{ source_week_label }}. Plants are subject to change: every
+  entry is scheduled, not confirmed.
 </p>
 
 <p>
   <a href="feed.ics">Subscribe to {{ water.name }}'s planting calendar (.ics)</a>
-  &middot; <a href="{{ root }}about/#app">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
+  {% if app_store_url %}
+  &middot; <a href="{{ app_store_url }}">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
+  {% else %}
+  &middot; an iOS app with a notification when {{ water.name }} appears in a new week is on its way (<a href="{{ root }}about/#app">how it will work</a>).
+  {% endif %}
 </p>
 
 <h2>Planting history</h2>

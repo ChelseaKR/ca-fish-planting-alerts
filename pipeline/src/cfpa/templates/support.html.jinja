@@ -1,0 +1,59 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>Support &amp; FAQ</h1>
+{% if support_email %}
+<p class="lede">
+  Questions, a wrong water name, or an alert that did not arrive: email
+  <a href="mailto:{{ support_email }}">{{ support_email }}</a>.
+</p>
+{% endif %}
+
+<h2 id="schedule">Where does the schedule come from?</h2>
+<p>
+  From the California Department of Fish and Wildlife's
+  <a href="https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch">Fish Planting
+  Schedule</a>, checked once a day. The schedule was last checked
+  {{ source_fetched_label }}. CDFW updates it weekly and lists plants by
+  <strong>week</strong>, never by day, on purpose. Plants are subject to
+  change, so everything here is scheduled, not confirmed.
+</p>
+
+<h2 id="history">Why does this site show more weeks than CDFW's page?</h2>
+<p>
+  CDFW's page only shows about a year. This site keeps every week it has
+  recorded, so a water's history keeps growing after CDFW's page has moved on.
+</p>
+
+<h2 id="calendar">How do I subscribe to a water's calendar?</h2>
+<p>
+  Every water page links to a calendar feed (.ics). Copy that link and add it
+  as a subscribed calendar: on iPhone, in the Calendar app's settings under
+  Add Account &rarr; Other &rarr; Add Subscribed Calendar; in Google
+  Calendar, under Other calendars &rarr; From URL. Each event spans the whole
+  week CDFW scheduled.
+</p>
+
+<h2 id="alerts">Why didn't the app alert me?</h2>
+<ul>
+  <li>Alerts are part of the one-time in-app purchase; favouriting and
+      browsing are free.</li>
+  <li>Notifications must be allowed for the app (Settings &rarr;
+      Notifications).</li>
+  <li>The app checks for a new schedule in the background, and iOS decides
+      when that happens. Background App Refresh must be on for the app, Low
+      Power Mode pauses it, and swiping the app away can stop it until you
+      open it again.</li>
+  <li>CDFW updates weekly, so an alert arrives within the week a water is
+      added, not the minute it is.</li>
+</ul>
+
+<h2 id="restore">How do I restore my purchase on a new phone?</h2>
+<p>
+  In the app, open About &rarr; Unlock full access &rarr; Restore purchases.
+  Use the same Apple Account you bought it with. There is no account with
+  this app to sign in to.
+</p>
+
+<h2 id="privacy">What does the app know about me?</h2>
+<p>Nothing leaves your phone. See the <a href="{{ root }}privacy/">privacy policy</a>.</p>
+{% endblock %}

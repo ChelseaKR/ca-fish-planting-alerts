@@ -14,7 +14,7 @@ DATE_ONLY_PHRASES = [
 ]
 
 
-def _build_site(tmp_path: Path) -> Path:
+def _build_site(tmp_path: Path, **extra) -> Path:
     out = tmp_path / "site"
     cli.run(
         fixture_path=str(FRESH),
@@ -25,6 +25,7 @@ def _build_site(tmp_path: Path) -> Path:
         base_url="https://example.invalid/ca-fish-planting-alerts",
         fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.timezone.utc),
         run_today=dt.date(2026, 9, 13),
+        **extra,
     )
     return out
 
@@ -127,12 +128,18 @@ def test_ics_events_are_week_long_not_single_day(tmp_path: Path):
             any_checked = True
         for summary in re.findall(r"SUMMARY:(.+)", ics):
             assert summary.startswith("week of ")
+            # a feed cannot confirm a plant happened: "scheduled", never
+            # "planted"/"stocked"
+            assert " scheduled at " in summary
+            assert "planted" not in summary.lower() and "stocked" not in summary.lower()
     assert any_checked
 
 
 def test_canonical_and_og_tags_present(tmp_path: Path):
     out = _build_site(tmp_path)
     for f in _all_html(out):
+        if f.name == "404.html":
+            continue  # see test_404_page_is_noindex_and_links_root_relative
         html = f.read_text(encoding="utf-8")
         assert '<link rel="canonical" href="https://example.invalid' in html
         assert 'property="og:title"' in html
@@ -152,3 +159,122 @@ def test_no_bare_click_here_links(tmp_path: Path):
     for f in _all_html(out):
         html = f.read_text(encoding="utf-8")
         assert "click here" not in html.lower()
+
+
+def _water_html(out: Path, slug: str) -> str:
+    return (out / "water" / slug / "index.html").read_text(encoding="utf-8")
+
+
+def test_water_listed_only_for_next_week_is_not_described_as_having_nothing_scheduled(
+    tmp_path: Path,
+):
+    """Real case from the 2026-09-13 page: Halsey Forebay's only listing is
+    the week of 2026-09-20 (after the page's current week). The page used to
+    say "No planting has been scheduled ... in the period this site has
+    observed" directly above a table listing that week."""
+    out = _build_site(tmp_path)
+    html = _water_html(out, "halsey-forebay")
+    assert "week of 2026-09-20" in html
+    assert "Next scheduled: the week of 2026-09-20." in html
+    assert "No planting" not in html
+
+
+def test_water_page_says_when_the_schedule_was_last_checked(tmp_path: Path):
+    """A static page can't know it has gone stale; saying when the data was
+    fetched is what keeps an old build from reading as current."""
+    out = _build_site(tmp_path)
+    for d in (out / "water").iterdir():
+        html = (d / "index.html").read_text(encoding="utf-8")
+        assert "schedule was last checked 2026-09-13 12:00 UTC" in html
+        assert "current\n  week was the week of 2026-09-13" in html or "week was the week of 2026-09-13" in html
+
+
+def test_water_titles_are_unique_and_name_the_county(tmp_path: Path):
+    """Five CDFW names are shared by 2-3 waters each (e.g. three Silver
+    Lakes); without the county their pages would have identical titles."""
+    import json
+
+    out = _build_site(tmp_path)
+    snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    titles = []
+    for w in snap["waters"]:
+        html = _water_html(out, w["slug"])
+        title = re.search(r"<title>([^<]+)</title>", html).group(1)
+        assert f"({', '.join(w['counties'])})" in title
+        titles.append(title)
+    assert len(titles) == len(set(titles))
+
+
+def test_sitemap_lastmod_is_when_data_changed_not_the_build_date(tmp_path: Path):
+    """The fixture was fetched 2026-09-13 but the build runs today; a
+    lastmod of the build date on every URL is one search engines ignore."""
+    out = _build_site(tmp_path)
+    sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")
+    lastmods = re.findall(r"<lastmod>([^<]+)</lastmod>", sitemap)
+    assert lastmods
+    assert set(lastmods) == {"2026-09-13"}
+    for page in ("privacy", "support", "about"):
+        assert f"/{page}/</loc>" in sitemap
+    assert "404" not in sitemap
+
+
+def test_app_is_not_linked_until_it_has_an_app_store_url(tmp_path: Path):
+    out = _build_site(tmp_path)
+    for f in _all_html(out):
+        html = f.read_text(encoding="utf-8")
+        assert "apps.apple.com" not in html
+        assert "Get the iOS app" not in html
+    about = (out / "about" / "index.html").read_text(encoding="utf-8")
+    assert "not in the App Store yet" in about
+
+
+def test_app_store_url_and_support_email_render_when_configured(tmp_path: Path):
+    url = "https://apps.apple.com/us/app/id0000000000"  # shape only; not a real listing
+    out = _build_site(tmp_path, app_store_url=url, support_email="help@example.invalid")
+    index = (out / "index.html").read_text(encoding="utf-8")
+    assert f'<a href="{url}">Get the iOS app</a>' in index
+    assert "not in the App Store yet" not in (out / "about" / "index.html").read_text(
+        encoding="utf-8"
+    )
+    for page in ("support", "privacy"):
+        html = (out / page / "index.html").read_text(encoding="utf-8")
+        assert 'href="mailto:help@example.invalid"' in html
+
+
+def test_privacy_page_covers_the_site_and_the_app(tmp_path: Path):
+    out = _build_site(tmp_path)
+    html = (out / "privacy" / "index.html").read_text(encoding="utf-8")
+    assert "Data Not Collected" in html
+    assert "no push service" in html.lower()
+    assert "handled\n      entirely by Apple" in html or "entirely by Apple" in html
+    assert "GitHub Pages" in html
+
+
+def test_404_page_is_noindex_and_links_root_relative(tmp_path: Path):
+    out = _build_site(tmp_path)
+    html = (out / "404.html").read_text(encoding="utf-8")
+    assert '<meta name="robots" content="noindex">' in html
+    assert 'rel="canonical"' not in html
+    # served at any depth, so no ./ or ../ links; same origin, so no scheme
+    assert 'href="/ca-fish-planting-alerts/assets/style.css"' in html
+    assert 'href="./' not in html and 'href="../' not in html
+
+
+def test_no_uniqueness_claims_in_site_copy(tmp_path: Path):
+    """Other California stocking-alert products exist (checked 2026-09-17),
+    so the copy must not claim to be the only or first one."""
+    out = _build_site(tmp_path)
+    banned = re.compile(r"\b(the only|only place|only app|first app|the first|no one else|nobody else)\b", re.I)
+    for f in _all_html(out):
+        text = re.sub(r"<[^>]+>", " ", f.read_text(encoding="utf-8"))
+        m = banned.search(text)
+        assert not m, f"uniqueness claim {m.group(0)!r} in {f}"
+
+
+def test_every_page_says_it_is_not_affiliated_with_cdfw(tmp_path: Path):
+    """The site republishes a state agency's schedule; it must not read as
+    CDFW's own page."""
+    out = _build_site(tmp_path)
+    for f in _all_html(out):
+        html = f.read_text(encoding="utf-8")
+        assert "not affiliated with or endorsed by CDFW" in html, f

@@ -42,6 +42,8 @@ def run(
     site_out: Path,
     base_url: str,
     write_site: bool = True,
+    app_store_url: str | None = None,
+    support_email: str | None = None,
     fixture_fetched_at: dt.datetime | None = None,
     run_today: dt.date | None = None,
 ) -> dict:
@@ -130,7 +132,13 @@ def run(
         (snap_dir / "v1.json").write_text(
             json.dumps(snap, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
-        site_mod.build_site(snap, site_out, base_url=base_url)
+        site_mod.build_site(
+            snap,
+            site_out,
+            base_url=base_url,
+            app_store_url=app_store_url,
+            support_email=support_email,
+        )
 
     coverage = snapshot_mod.Coverage(**snap["coverage"])
     coverage.print_report()
@@ -157,6 +165,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA_PATH)
     parser.add_argument("--site-out", type=Path, default=DEFAULT_SITE_OUT)
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
+    parser.add_argument(
+        "--app-store-url",
+        default=None,
+        help="the app's App Store URL; until one is given the site says the app "
+        "is not in the App Store yet rather than linking to it (empty = unset)",
+    )
+    parser.add_argument(
+        "--support-email",
+        default=None,
+        help="contact address shown on the support and privacy pages (empty = unset)",
+    )
     parser.add_argument("--no-site", action="store_true", help="skip site generation (schema/history only)")
     parser.add_argument(
         "--run-today",
@@ -176,8 +195,10 @@ def main(argv: list[str] | None = None) -> int:
             species_aliases_path=args.species_aliases,
             schema_path=args.schema,
             site_out=args.site_out,
-            base_url=args.base_url,
+            base_url=args.base_url or DEFAULT_BASE_URL,
             write_site=not args.no_site,
+            app_store_url=args.app_store_url or None,
+            support_email=args.support_email or None,
             run_today=args.run_today,
             fixture_fetched_at=args.fixture_fetched_at,
         )

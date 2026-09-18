@@ -1,0 +1,60 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>Privacy policy</h1>
+<p class="lede">
+  Neither this website nor its iOS app collects personal data. There is no
+  account, no analytics, no advertising, no tracking, and no third-party
+  script or SDK in either.
+</p>
+<p class="muted">Last updated 2026-09-17. Covers this website and the iOS app.</p>
+
+<h2 id="site">The website</h2>
+<ul>
+  <li>Every page is a plain static file. No cookies are set and no JavaScript
+      runs.</li>
+  <li>No page makes a request to any server other than the one serving it.</li>
+  <li>Calendar feeds (.ics) are plain files; your calendar app downloads them
+      directly. This site does not know who has subscribed.</li>
+  <li>The site is hosted on GitHub Pages. Like any web host, GitHub receives
+      standard request information (IP address, the page requested, time,
+      browser type) to serve pages &mdash; see GitHub's
+      <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">privacy
+      statement</a>. This site adds no collection on top of that.</li>
+</ul>
+
+<h2 id="app">The iOS app</h2>
+<ul>
+  <li><strong>What stays on your phone:</strong> the waters you favourite, the
+      latest copy of the planting schedule, and a record of which listings the
+      app has already alerted you about. These live only in the app's own
+      storage on your device (and in your device backups, if you back up your
+      phone). Deleting the app deletes them. They are never sent to the
+      developer or anyone else.</li>
+  <li><strong>The one network request:</strong> the app downloads the public
+      planting-schedule file this website publishes, from GitHub Pages. The
+      request carries no identifier and nothing about you or your favourites;
+      as with any web request, the host sees the IP address it came from.
+      Links to CDFW's map or to this site open in your browser.</li>
+  <li><strong>Notifications:</strong> alerts are local notifications that iOS
+      schedules on your device. There is no push service and no device
+      token.</li>
+  <li><strong>Purchases:</strong> the one-time in-app purchase is handled
+      entirely by Apple. The developer does not receive your name, email
+      address or payment details; Apple's privacy policy applies to the
+      transaction.</li>
+  <li><strong>App Store privacy label:</strong> Data Not Collected.</li>
+</ul>
+
+<h2 id="children">Children</h2>
+<p>Nothing is collected from anyone, including children.</p>
+
+<h2 id="changes">Changes</h2>
+<p>If this policy changes, this page changes, and the date above with it.</p>
+
+<h2 id="contact">Questions</h2>
+{% if support_email %}
+<p>Email <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+{% else %}
+<p>See <a href="{{ root }}support/">support &amp; FAQ</a>.</p>
+{% endif %}
+{% endblock %}

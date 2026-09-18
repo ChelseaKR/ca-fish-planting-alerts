@@ -1,0 +1,61 @@
+name: site-checks
+
+# CI-CD-STANDARD §1 stages 6 (a11y) and 7 (perf), run over the site the
+# pipeline builds. The job runs tools/site-checks/run.sh, the same script a
+# contributor runs locally, so both give the same result. What it checks:
+# axe-core and pa11y-ci on every page (A11Y-01, A11Y-03), a reflow check at
+# 320px (A11Y-09), Lighthouse CI accessibility, performance, script and
+# lab Core Web Vitals budgets (A11Y-02, PERF-02, OBS-23/25), and the
+# regression check against perf/baseline.json (PERF-03). Google Analytics is
+# blocked in every browser the script starts. See perf/README.md.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  site-checks:
+    runs-on: ubuntu-latest
+    # Measured locally at about 1.5 minutes: 42 pages through axe and
+    # pa11y-ci, then 9 Lighthouse runs. The margin covers a cold npm and
+    # Chrome download.
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pipeline/uv.lock"
+
+      - name: install node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: tools/site-checks/.nvmrc
+          cache: npm
+          cache-dependency-path: tools/site-checks/package-lock.json
+
+      - name: install the checkers and their Chrome
+        working-directory: tools/site-checks
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npx --no-install puppeteer browsers install chrome
+
+      - name: build the site and run every gate
+        run: tools/site-checks/run.sh

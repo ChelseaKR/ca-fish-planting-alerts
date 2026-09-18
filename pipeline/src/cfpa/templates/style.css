@@ -37,6 +37,10 @@ body {
   color: var(--fg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.55;
+  /* The CDFW source URL appears as plain text and as link text in every
+     footer. Without this it cannot break, and the page scrolls sideways on
+     a 320px screen (SC 1.4.10). It only breaks where nothing else would. */
+  overflow-wrap: anywhere;
 }
 
 .wrap {
@@ -134,4 +138,8 @@ ul.water-index li { break-inside: avoid; }
 
 @media (max-width: 30rem) {
   ul.water-index { columns: 1; }
+  /* Header labels such as "Attribution required" wrap on a narrow screen
+     instead of making the table, and so the page, scroll sideways at 320px
+     (SC 1.4.10). */
+  thead th { white-space: normal; }
 }

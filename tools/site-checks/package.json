@@ -1,0 +1,18 @@
+{
+  "name": "trout-truck-site-checks",
+  "private": true,
+  "description": "Accessibility and performance gates over the built site (ACCESSIBILITY-STANDARD 1, PERFORMANCE-STANDARD 3). Run through ./run.sh. The overrides move @puppeteer/browsers and tmp past their HIGH advisories; see perf/README.md.",
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@axe-core/puppeteer": "4.13.0",
+    "@lhci/cli": "0.15.1",
+    "pa11y-ci": "4.1.1",
+    "puppeteer": "24.43.1"
+  },
+  "overrides": {
+    "@puppeteer/browsers": "3.2.2",
+    "tmp": "0.2.7"
+  }
+}

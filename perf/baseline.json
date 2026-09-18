@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "commit": "14cd404",
+    "date": "2026-09-17",
+    "environment": "fixture site (schedule-fresh-2026-09-13.html) served by python -m http.server; Lighthouse default mobile emulation, 3 runs per page over /, /about/ and one water page; Google Analytics blocked",
+    "tools": {
+      "lighthouse": "12.6.1",
+      "lhci": "0.15.1",
+      "chrome": "Chrome for Testing 148.0.7778.97 (puppeteer 24.43.1)"
+    }
+  },
+  "metrics": {
+    "p95_ms": null,
+    "llm_first_token_ms": null,
+    "llm_full_response_ms": null,
+    "lighthouse_performance": 1.0,
+    "js_kb_gzip": 0.0
+  },
+  "direction": {
+    "p95_ms": "lower_is_better",
+    "llm_first_token_ms": "lower_is_better",
+    "llm_full_response_ms": "lower_is_better",
+    "lighthouse_performance": "higher_is_better",
+    "js_kb_gzip": "lower_is_better"
+  }
+}

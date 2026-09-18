@@ -13,3 +13,6 @@ pipeline/htmlcov/
 /site/
 
 .DS_Store
+
+# tools/site-checks: npm-installed checkers (package-lock.json IS committed)
+tools/site-checks/node_modules/

@@ -78,7 +78,7 @@
          </TestableReference>
       </Testables>
       <StoreKitConfigurationFileReference
-         identifier = "CAFishPlanting/Configuration.storekit">
+         identifier = "../../CAFishPlanting/Configuration.storekit">
       </StoreKitConfigurationFileReference>
    </TestAction>
    <LaunchAction
@@ -102,7 +102,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "CAFishPlanting/Configuration.storekit">
+         identifier = "../../CAFishPlanting/Configuration.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

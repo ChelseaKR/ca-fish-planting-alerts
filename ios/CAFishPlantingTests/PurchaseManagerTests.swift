@@ -158,7 +158,7 @@ final class PurchaseManagerTests: XCTestCase {
         while manager.product == nil && Date() < deadline {
             try await Task.sleep(for: .milliseconds(50))
         }
-        XCTAssertNotNil(manager.product, "the local .storekit configuration should have loaded \(PurchaseManager.productID)")
+        XCTAssertNotNil(manager.product, "the local .storekit configuration should have loaded \(PurchaseManager.productID). If the log also shows [SKTestSession] ... SKInternalErrorDomain Code=3, this is the iOS 26.5 simulator StoreKit bug. See ios/README.md, \"StoreKit tests can't pass on the iOS 26.5 simulator\".")
     }
 
     private static func configurationURL() throws -> URL {

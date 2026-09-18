@@ -95,7 +95,7 @@ struct NotificationPrimingView: View {
                     }
                     Text(copy.footnote)
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -142,7 +142,7 @@ struct SnapshotUnavailableView: View {
                 .font(.headline)
             Text(message)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
         }

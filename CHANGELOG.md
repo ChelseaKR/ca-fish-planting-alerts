@@ -100,11 +100,16 @@ This repository was republished with a new history on 2026-09-18
   4.5:1 contrast (the tag, "Schedule changed" in orange, "Unlocked" in
   green, a purchase error in red, the purchase sheet's gray body text over
   its see-through half-height background) now uses the label colors on an
-  opaque sheet, with the color kept on the symbol. An automated
-  accessibility audit (`AccessibilityAuditUITests`) covers every main
-  screen and the purchase sheet at the default size in light and dark
-  mode and at the largest size. The smoke test no longer taps the Region
-  row by mistake.
+  opaque sheet, with the color kept on the symbol. Gray text (county
+  names, species, captions, footnotes, section headers) is darker: iOS's
+  own gray measured 3.3:1 to 3.4:1 in light mode, and the app's grays now
+  meet 4.5:1 on every background in light and dark mode without Increase
+  Contrast, keeping primary, secondary and tertiary as distinct steps. An
+  automated accessibility audit (`AccessibilityAuditUITests`) covers every
+  main screen and the purchase sheet at the default size in light and
+  dark mode and at the largest size, and fails on any contrast finding in
+  the app's own text, "nearly passed" included. The smoke test no longer
+  taps the Region row by mistake.
 - App: it checks for a newer schedule on launch and on return to the
   foreground, at most every 6 hours (30 minutes after a failed check).
   Before, a fresh install showed the schedule bundled at build time until

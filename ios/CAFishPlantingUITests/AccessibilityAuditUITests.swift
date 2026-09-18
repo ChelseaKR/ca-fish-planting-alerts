@@ -8,8 +8,10 @@ import XCTest
 /// An audit is not a VoiceOver pass by a person (#5). It catches the
 /// mechanical failures so that pass can spend its time on meaning.
 ///
-/// What fails the test (`Verdict.fail`): a contrast failure in the app's own
-/// content, text clipped at AX5, and a missing description, hit region or
+/// What fails the test (`Verdict.fail`): any contrast finding in the app's
+/// own content, "nearly passed" included (the app's grays meet 4.5:1, see
+/// `TextColorContrastTests`, so a regression to iOS's lighter grays fails
+/// here), text clipped at AX5, and a missing description, hit region or
 /// trait on the app's own elements. What is recorded but doesn't fail is
 /// listed in `verdict(for:)`, each with its reason. Every run attaches the
 /// full list for each screen, failures and recorded issues alike.
@@ -154,7 +156,7 @@ final class AccessibilityAuditUITests: XCTestCase {
         try app.performAccessibilityAudit(for: .all) { issue in
             let element = issue.element.map { "\($0.elementType.rawValue) '\($0.label)' \($0.frame)" } ?? "no element"
             let description = "\(issue.auditType.name): \(issue.compactDescription) — \(element)"
-            switch Self.verdict(for: issue, chrome: chrome, isAX5: context.isAX5) {
+            switch Self.verdict(for: issue, chrome: chrome, screen: app.frame, isAX5: context.isAX5) {
             case .fail:
                 lines.append("FAILED \(description)")
                 return false
@@ -167,15 +169,24 @@ final class AccessibilityAuditUITests: XCTestCase {
         attachment.name = "\(screen) audit (\(context.label))"
         attachment.lifetime = .keepAlways
         add(attachment)
+        // What was audited, so a recorded issue with no element can still
+        // be checked by eye.
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "\(screen) screen (\(context.label))"
+        shot.lifetime = .keepAlways
+        add(shot)
     }
 
-    private static func verdict(for issue: XCUIAccessibilityAuditIssue, chrome: [CGRect], isAX5: Bool) -> Verdict {
+    private static func verdict(for issue: XCUIAccessibilityAuditIssue, chrome: [CGRect], screen: CGRect, isAX5: Bool) -> Verdict {
         guard let element = issue.element else {
             return .record("no element: the audit couldn't say what it saw")
         }
         let frame = element.frame
         if element.elementType == .searchField {
             return .record("iOS's own search field")
+        }
+        if !screen.contains(frame) {
+            return .record("off screen, or partly: the audit samples pixels it can't see")
         }
         if chrome.contains(where: { $0.intersects(frame) }) {
             return .record("under the tab bar, its scroll-edge fade or the keyboard: the audit samples the system chrome, not the app's content")
@@ -190,8 +201,6 @@ final class AccessibilityAuditUITests: XCTestCase {
             return .record("a disabled control; WCAG 1.4.3 exempts inactive components")
         }
         switch issue.auditType {
-        case .contrast where issue.compactDescription.localizedCaseInsensitiveContains("nearly"):
-            return .record("nearly passed: iOS's secondary label and section-header colors, which Increase Contrast darkens")
         case .dynamicType:
             return .record("standard SwiftUI text styles, which scale; the AX5 pass audits the same screens at that size")
         case .textClipped where !isAX5:

@@ -101,7 +101,7 @@ struct WaterRow: View {
                 Text(water.name).font(.body)
                 Text(water.countyLabel)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
             }
             if !dynamicTypeSize.isAccessibilitySize {
                 Spacer(minLength: 8)
@@ -150,12 +150,12 @@ struct FreshnessRow: View {
                 Text(freshness.detail)
             }
             .font(.caption2)
-            .foregroundStyle(freshness.needsAttention ? HierarchicalShapeStyle.primary : .secondary)
+            .foregroundStyle(freshness.needsAttention ? Color.primary : Color.secondaryText)
             if let checked = freshness.lastSuccessfulCheck {
                 let label = freshness.checkFailed ? "Last successful check" : "Last checked"
                 Text("\(label) \(checked.formatted(.relative(presentation: .named)))")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
             }
         }
         .accessibilityElement(children: .combine)

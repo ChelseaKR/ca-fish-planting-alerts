@@ -4,7 +4,10 @@ import PlantingCore
 
 struct AboutView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showingPurchaseSheet = false
+    @State private var showingNotificationPriming = false
 
     var body: some View {
         List {
@@ -31,6 +34,7 @@ struct AboutView: View {
                 Text("Notification status: \(authorizationDescription)")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+                notificationAction
             }
 
             Section("Privacy") {
@@ -69,13 +73,50 @@ struct AboutView: View {
         .sheet(isPresented: $showingPurchaseSheet) {
             PurchaseView()
         }
+        .sheet(isPresented: $showingNotificationPriming) {
+            NotificationPrimingView(copy: NotificationPrimingCopy(waterName: nil, isEntitled: environment.purchases.isEntitled)) {
+                await environment.requestNotificationAuthorization()
+                showingNotificationPriming = false
+            } notNow: {
+                showingNotificationPriming = false
+            }
+        }
+        // The setting can change in Settings while the app is away.
+        .task { await environment.refreshNotificationAuthorization() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                Task { await environment.refreshNotificationAuthorization() }
+            }
+        }
+    }
+
+    /// A way forward from each state: ask (with the priming screen first)
+    /// while iOS hasn't asked, or go to Settings once notifications are off.
+    /// Once they're off, the system prompt never shows again, so a button
+    /// that asked would do nothing.
+    @ViewBuilder
+    private var notificationAction: some View {
+        switch environment.notificationAuthorization {
+        case .notDetermined:
+            Button("Turn on notifications") { showingNotificationPriming = true }
+                .accessibilityHint("Explains alerts, then shows the system permission prompt")
+        case .denied:
+            Button("Open notification settings") {
+                if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                    openURL(url)
+                }
+            }
+            .accessibilityHint("Opens this app's notification settings")
+        default:
+            EmptyView()
+        }
     }
 
     private var authorizationDescription: String {
         switch environment.notificationAuthorization {
         case .authorized, .provisional, .ephemeral: return "on"
         case .denied: return "off (change in Settings to receive alerts)"
-        case .notDetermined: return "not yet asked — favourite a water to enable"
+        case .notDetermined: return "not yet asked"
         @unknown default: return "unknown"
         }
     }

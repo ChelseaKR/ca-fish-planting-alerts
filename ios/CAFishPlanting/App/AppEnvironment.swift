@@ -7,17 +7,55 @@ import PlantingCore
 /// deliverable #3's "a sentence that says what will and won't happen".
 /// Shown on the first-ever favourite regardless of purchase status, so
 /// permission is already granted by the moment someone unlocks full access
-/// (see `FreeTier`) — `isEntitled` is carried through only so the sentence
+/// (see `FreeTier`) — `isEntitled` is carried through only so the copy
 /// can say so accurately, rather than implying alerts start immediately
-/// for a non-purchaser.
+/// for a non-purchaser. The words are `NotificationPrimingCopy`.
 struct FirstFavouriteExplainer: Identifiable {
     let water: Water
     let isEntitled: Bool
     var id: Water.ID { water.id }
-    var sentence: String {
-        let when = isEntitled ? "" : " — once you unlock full access —"
-        return "If you allow notifications, this app will alert you on this device\(when) only when \(water.name) or another favourite you add appears in CDFW's new weekly schedule; it will not send any other notification, and nothing about you or your favourites ever leaves this device."
+    var copy: NotificationPrimingCopy { NotificationPrimingCopy(waterName: water.name, isEntitled: isEntitled) }
+}
+
+/// The words on the screen shown before the system notification prompt,
+/// from a first favorite or from About. Kept apart from the view so a test
+/// can read them: they say what an alert is, how often one comes, that it
+/// is made on this device, and (for a non-purchaser) that alerts need full
+/// access. They never name a price and never promise a day or a plant.
+struct NotificationPrimingCopy: Equatable {
+    struct Point: Equatable, Identifiable {
+        let systemImage: String
+        let text: String
+        var id: String { systemImage }
     }
+
+    /// The water just favorited, or `nil` when asked from About.
+    let waterName: String?
+    let isEntitled: Bool
+
+    var headline: String {
+        if let waterName { return "Get an alert when \(waterName) is on the schedule" }
+        return "Get an alert when a favorite is on the schedule"
+    }
+
+    var points: [Point] {
+        let which = waterName.map { "\($0) or another favorite" } ?? "one of your favorites"
+        var points = [
+            Point(systemImage: "calendar",
+                  text: "When CDFW's weekly schedule adds a week for \(which), this iPhone shows one alert. It names the week, never a day, and CDFW says plans can change."),
+            Point(systemImage: "iphone",
+                  text: "Alerts are made on this iPhone from the schedule it downloads. There is no account and no server, and nothing about you or your favorites leaves the device."),
+            Point(systemImage: "bell.slash",
+                  text: "No other notifications: no marketing, no reminders, no badges."),
+        ]
+        if !isEntitled {
+            points.append(Point(systemImage: "lock",
+                                text: "Alerts are part of full access, a one-time purchase in About. If you allow notifications now, alerts start as soon as you unlock it."))
+        }
+        return points
+    }
+
+    var footnote: String { "Next, iOS asks for permission. You can change it any time in Settings." }
 }
 
 /// The app's one shared piece of state. Owns the on-disk snapshot, the
@@ -57,7 +95,7 @@ final class AppEnvironment {
     private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
 
     /// Set when a water is favourited for the first time ever. The view
-    /// layer presents `sentence`, then calls `confirmNotificationExplainer()`
+    /// layer presents `copy`, then calls `confirmNotificationExplainer()`
     /// or `dismissNotificationExplainer()`.
     var pendingNotificationExplainer: FirstFavouriteExplainer?
 
@@ -144,7 +182,7 @@ final class AppEnvironment {
         if nowFavourited, let snapshot {
             alertState = AlertPlanner.seeding(alertState, favouriting: water.id, snapshot: snapshot)
             try? alertStateStore?.save(alertState)
-            if wasEmpty {
+            if Self.shouldPrimeNotifications(favouritesWereEmpty: wasEmpty, authorization: notificationAuthorization) {
                 pendingNotificationExplainer = FirstFavouriteExplainer(water: water, isEntitled: purchases.isEntitled)
             }
         } else if !nowFavourited {
@@ -153,11 +191,31 @@ final class AppEnvironment {
         }
     }
 
+    /// The priming screen shows on the first favorite, and only while iOS
+    /// hasn't asked yet. Once the person has allowed or declined, the system
+    /// prompt never shows again, so the screen would promise a prompt that
+    /// doesn't come (About offers Settings instead).
+    nonisolated static func shouldPrimeNotifications(favouritesWereEmpty: Bool, authorization: UNAuthorizationStatus) -> Bool {
+        favouritesWereEmpty && authorization == .notDetermined
+    }
+
     func confirmNotificationExplainer() async {
         guard pendingNotificationExplainer != nil else { return }
         pendingNotificationExplainer = nil
+        await requestNotificationAuthorization()
+    }
+
+    /// Shows the system prompt. Call only from the priming screen, after the
+    /// app has said in its own words what alerts are (`NotificationPrimingCopy`).
+    func requestNotificationAuthorization() async {
         let granted = await notifications.requestAuthorization()
         notificationAuthorization = granted ? .authorized : await notifications.authorizationStatus()
+    }
+
+    /// Re-reads the setting, which the person can change in Settings while
+    /// the app is in the background.
+    func refreshNotificationAuthorization() async {
+        notificationAuthorization = await notifications.authorizationStatus()
     }
 
     func dismissNotificationExplainer() {

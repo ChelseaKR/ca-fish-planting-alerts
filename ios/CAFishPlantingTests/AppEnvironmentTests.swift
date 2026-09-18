@@ -63,6 +63,48 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertEqual(env.pendingNotificationExplainer?.water.id, water.id)
     }
 
+    // MARK: - Notification priming
+
+    /// The priming screen promises a system prompt, so it shows only while
+    /// iOS hasn't asked. After allow or decline the prompt never returns.
+    func testPrimingShowsOnlyOnAFirstFavoriteBeforeIOSHasAsked() {
+        XCTAssertTrue(AppEnvironment.shouldPrimeNotifications(favouritesWereEmpty: true, authorization: .notDetermined))
+        XCTAssertFalse(AppEnvironment.shouldPrimeNotifications(favouritesWereEmpty: false, authorization: .notDetermined))
+        for decided: UNAuthorizationStatus in [.authorized, .denied, .provisional, .ephemeral] {
+            XCTAssertFalse(AppEnvironment.shouldPrimeNotifications(favouritesWereEmpty: true, authorization: decided),
+                           "status \(decided.rawValue): the system prompt won't show again")
+        }
+    }
+
+    func testPrimingCopySaysWhatAnAlertIsAndNeverPromisesADayOrAPrice() {
+        for entitled in [false, true] {
+            for name in ["Lake Siskiyou", nil] as [String?] {
+                let copy = NotificationPrimingCopy(waterName: name, isEntitled: entitled)
+                let all = ([copy.headline, copy.footnote] + copy.points.map(\.text)).joined(separator: " ")
+                if let name { XCTAssertTrue(copy.headline.contains(name), "a first favorite is named") }
+                XCTAssertTrue(all.contains("week, never a day"), "CDFW gives the week, not the day")
+                XCTAssertTrue(all.contains("nothing about you"), "say that nothing leaves the device")
+                XCTAssertTrue(all.contains("No other notifications"))
+                XCTAssertFalse(all.contains("$"), "the priming screen never names a price")
+                for word in ["stocked", "planted", "confirmed"] {
+                    XCTAssertFalse(all.localizedCaseInsensitiveContains(word), "schema/README.md wording rule: \(word)")
+                }
+                XCTAssertEqual(all.contains("full access"), !entitled,
+                               "a non-purchaser is told alerts need full access; a purchaser isn't")
+                XCTAssertEqual(Set(copy.points.map(\.id)).count, copy.points.count, "point IDs must be unique for ForEach")
+            }
+        }
+    }
+
+    func testTheFirstFavoriteExplainerNamesThatWater() throws {
+        let env = AppEnvironment()
+        let water = try XCTUnwrap(env.snapshot?.waters.first)
+        env.toggleFavourite(water)
+        let explainer = try XCTUnwrap(env.pendingNotificationExplainer, "a fresh install hasn't been asked, so the first favorite primes")
+        XCTAssertEqual(explainer.copy.waterName, water.name)
+        XCTAssertEqual(explainer.copy.isEntitled, env.purchases.isEntitled)
+    }
+
     /// Favouriting is never gated (see `FreeTier`, PlantingCore, and the
     /// DECISIONS entry that resolves 0007's "owner follow-up"): a default
     /// `AppEnvironment()` has made no purchase, so this exercises the real

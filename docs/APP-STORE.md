@@ -22,11 +22,11 @@ analysis, or owner steps needed correction.
 | Field | Value | Notes |
 |---|---|---|
 | Name | **TBD** — `docs/DECISIONS.md` 0006 ("Name and domain: undecided") | Working placeholder in code/Info.plist: "CA Fish Planting" (`CFBundleDisplayName`, `ios/CAFishPlanting/Resources/Info.plist`) — the one place that string appears. |
-| Subtitle | "Trout stocking alerts for California" | 29/30 chars — fits the 30-char subtitle limit. |
+| Subtitle | See `docs/APP-STORE-LISTING.md` | The earlier draft, "Trout stocking alerts for California", is **36** characters, over the 30-character limit (it was miscounted as 29). The paste-ready replacement, with measured counts, is in `APP-STORE-LISTING.md`. |
 | Description | See draft below. | States the weekly cadence and local-only alerts in the first two sentences, per the task's plain-statement requirement. |
-| Keywords | `trout,fishing,stocking,fish planting,CDFW,angler,California,lake,creek,hatchery` | No brand terms beyond CDFW's own program name (factual reference, not a trademark claim). |
+| Keywords | See `docs/APP-STORE-LISTING.md` | The earlier list repeated subtitle words, which Apple already indexes. The replacement is 96/100 characters. No brand terms beyond CDFW's own program name (a factual reference, not a trademark claim). |
 | Category (primary) | **Sports** | See justification below. |
-| Category (secondary) | Weather | The alert mechanism (scheduled, local, "check back") reads closer to a weather-alert app than a game/score app; Sports is still primary since the audience and the underlying activity (angling) are sport, not meteorology. |
+| Category (secondary) | Reference (was: Weather) | The app has no weather content, and guideline 2.3.5 asks for the most appropriate category. A schedule-and-history lookup is Reference. See `APP-STORE-LISTING.md`. |
 | Age rating | **4+** | No objectionable content categories apply (no UGC, no gambling, no mature themes, no web browser). Apple's questionnaire should be answered "None" throughout. |
 | Price | **Free to download; $9.99 one-time in-app purchase, no subscription** | `docs/DECISIONS.md` 0003/0007: the app itself is free (App Store Connect price tier "Free"); the $9.99 is the one-time non-consumable in-app purchase implemented in `ios/` (`PurchaseManager.swift`). See "In-App Purchase to create in App Store Connect" below for the exact product to configure. |
 | Privacy label | **Data Not Collected** | Matches `ios/CAFishPlanting/Resources/PrivacyInfo.xcprivacy` (`NSPrivacyCollectedDataTypes` is empty) and `docs/DECISIONS.md` 0002 ("posture: none"). Fill in the App Store Connect privacy questionnaire identically: every category "Data Not Collected." |

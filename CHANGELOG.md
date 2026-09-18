@@ -34,6 +34,10 @@ once releases exist. No release has been tagged yet (#23).
   nothing (#20). An "Opt out of analytics" control in the footer is
   remembered on the device (#31).
 - App: the About screen says the app is not affiliated with CDFW (#19).
+- App: tapping an alert opens that water's screen, under Favorites, even
+  when the tap launches the app. An alert that arrives while the app is
+  open shows as a banner. A `trouttruck://water/<id>` link opens a water
+  the same way, for the Home Screen widget. It makes no network request.
 - Site: a page for every county with a water on the schedule, and an index
   of them by CDFW region. Water pages link their county pages and the other
   waters in them. Pages carry schema.org structured data: breadcrumbs, the

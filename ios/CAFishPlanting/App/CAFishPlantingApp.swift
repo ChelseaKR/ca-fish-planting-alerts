@@ -10,12 +10,17 @@ struct CAFishPlantingApp: App {
         // Must run before applicationDidFinishLaunching returns, so this
         // happens in the App's init rather than in a view's onAppear.
         BackgroundRefresh.register { await AppEnvironment.shared?.performBackgroundRefresh() ?? .failed("no environment") }
+        // Also before launch finishes, so the tap on an alert that launched
+        // the app is delivered and opens its water.
+        NotificationResponder.shared.install()
     }
 
     var body: some Scene {
         WindowGroup {
             RootTabView()
                 .environment(environment)
+                .environment(AppRouter.shared)
+                .onOpenURL { AppRouter.shared.handle($0) }
                 .task {
                     AppEnvironment.shared = environment
                     await refreshOnOpen()

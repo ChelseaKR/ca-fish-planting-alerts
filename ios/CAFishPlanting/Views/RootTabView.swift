@@ -2,18 +2,29 @@ import SwiftUI
 
 struct RootTabView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(AppRouter.self) private var router
 
     var body: some View {
         if let error = environment.loadError {
             SnapshotUnavailableView(message: error)
         } else {
-            TabView {
-                NavigationStack { BrowseView() }
+            @Bindable var router = router
+            TabView(selection: $router.selectedTab) {
+                NavigationStack(path: $router.browsePath) { BrowseView() }
                     .tabItem { Label("Browse", systemImage: "map") }
-                NavigationStack { FavoritesView() }
+                    .tag(AppRouter.Tab.browse)
+                NavigationStack(path: $router.favoritesPath) { FavoritesView() }
                     .tabItem { Label("Favourites", systemImage: "star") }
+                    .tag(AppRouter.Tab.favorites)
                 NavigationStack { AboutView() }
                     .tabItem { Label("About", systemImage: "info.circle") }
+                    .tag(AppRouter.Tab.about)
+            }
+            // A tapped alert or a widget link: open that water. `initial`
+            // covers a request that arrived before this view existed (a
+            // tap that launched the app).
+            .onChange(of: router.pendingWaterID, initial: true) {
+                router.openPending(in: environment.snapshot, isFavorite: environment.isFavourite)
             }
             .sheet(item: notificationExplainerBinding) { explainer in
                 FirstFavouriteExplainerSheet(explainer: explainer)

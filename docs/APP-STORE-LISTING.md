@@ -31,12 +31,12 @@ description.
 | Field | Limit | Value | Chars |
 |---|---|---|---|
 | Name | 30 | `Trout Truck` | 11 |
-| Subtitle | 30 | `CA trout stocking alerts` | 24 |
-| Keywords | 100 | `California,fish planting,stocked,catfish,lake,reservoir,creek,river,hatchery,angler,fishing,CDFW` | 96 |
-| Promotional text | 170 | `Know when your lake is on California's trout planting schedule. Week-by-week history, local alerts, no account, nothing tracked.` | 128 |
-| Description | 4000 | See [Description](#description) below. | 1,647 |
+| Subtitle | 30 | `CA stocking schedule & alerts` | 29 |
+| Keywords | 100 | `california,fish,fishing,planting,plant,cdfw,stocked,lake,river,creek,reservoir,pond,wildlife,angler` | 99 |
+| Promotional text | 170 | `This week's California trout planting schedule and each water's week-by-week history, free to browse. A one-time purchase adds alerts. No account, no tracking.` | 159 |
+| Description | 4000 | See [Description](#description) below. | 1,807 |
 | Primary category | — | Sports. | — |
-| Secondary category | — | **Reference**, not the Weather that `APP-STORE.md` suggests. The app is a schedule-and-history lookup with no weather content, and guideline 2.3.5 asks for the most appropriate category. | — |
+| Secondary category | — | **Reference**, not the Weather an earlier draft suggested. The app is a schedule-and-history lookup with no weather content, and guideline 2.3.5 asks for the most appropriate category. | — |
 | Age rating | — | Answer "None" to every content question in the questionnaire, which should come out at the lowest tier. There is no user-generated content, no web browsing, no gambling and no messaging. | — |
 | Price | — | Free app, plus one non-consumable in-app purchase at $9.99. See `APP-STORE.md` for the product ID. | — |
 | Support URL | — | `[SITE]/support/` | — |
@@ -71,7 +71,7 @@ submit. It was 385 on 2026-09-17.
 
 ---
 
-Get a notification when a California lake, reservoir or creek you fish appears on the Department of Fish and Wildlife's trout planting schedule.
+See which California lakes, reservoirs, rivers and creeks are on the Department of Fish and Wildlife's trout planting schedule, and each water's week-by-week history. Browsing, search and favourites are free. A one-time purchase adds an alert on your phone when a water you've favourited is newly listed.
 
 CDFW updates its schedule weekly and lists each plant by the week, never the day. Trout Truck checks the schedule in the background, and when a water you've favourited is newly listed, it schedules an alert on your phone. The source changes weekly and iOS decides when background checks run, so an alert arrives within days of a new listing, not the minute it's posted.
 

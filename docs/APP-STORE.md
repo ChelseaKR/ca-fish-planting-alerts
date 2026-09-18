@@ -117,10 +117,11 @@ in `code` are exact; paste them as they are.
 
 ### Fill in the record
 
-9. **App Information:** Subtitle `CA trout stocking alerts`; Category
-   Primary **Sports**, Secondary **Reference**. Content Rights: **Yes**,
-   the app shows third-party content (CDFW's schedule), and you have the
-   rights to use it. CDFW's Conditions of Use put it in the public domain
+9. **App Information:** Subtitle `CA stocking schedule & alerts`; Category
+   Primary **Sports**, Secondary **Reference** (see
+   `APP-STORE-LISTING.md`). Content Rights: **Yes**, the app shows
+   third-party content (CDFW's schedule), and you have the rights to use
+   it. CDFW's Conditions of Use put it in the public domain
    (`docs/LICENSES-AND-ATTRIBUTION.md`). The app uses no CDFW seals or
    logos, which those terms reserve. Age Rating: answer **None** / **No**
    to every question (no user-generated content, no web browsing, no
@@ -379,9 +380,9 @@ Collected" answer needs revisiting.
 | Field | Value | Notes |
 |---|---|---|
 | Name | **Trout Truck** — `docs/DECISIONS.md` 0010 (settles 0006) | `CFBundleDisplayName` in `ios/CAFishPlanting/Resources/Info.plist` is "Trout Truck". The bundle ID, product ID, scheme and target names keep `CAFishPlanting`. No trademark search has been run yet. |
-| Subtitle | See `docs/APP-STORE-LISTING.md` | The earlier draft, "Trout stocking alerts for California", is **36** characters, over the 30-character limit (it was miscounted as 29). The paste-ready replacement, with measured counts, is in `APP-STORE-LISTING.md`. |
+| Subtitle | `CA stocking schedule & alerts` (29 of 30), 2026-09-18 | The earlier drafts were "Trout stocking alerts for California" (**36** characters, over the limit; it was miscounted as 29) and then `CA trout stocking alerts` (24). |
 | Description | See draft below. | States the weekly cadence and local-only alerts in the first two sentences, per the task's plain-statement requirement. |
-| Keywords | See `docs/APP-STORE-LISTING.md` | The earlier list repeated subtitle words, which Apple already indexes. The replacement is 96/100 characters. No brand terms beyond CDFW's own program name (a factual reference, not a trademark claim). |
+| Keywords | 99 of 100, 2026-09-18 | Paste from `APP-STORE-LISTING.md`. |
 | Category (primary) | **Sports** | See justification below. |
 | Category (secondary) | Reference (was: Weather) | The app has no weather content, and guideline 2.3.5 asks for the most appropriate category. A schedule-and-history lookup is Reference. See `APP-STORE-LISTING.md`. |
 | Age rating | **4+** | No objectionable content categories apply (no UGC, no gambling, no mature themes, no web browser). Apple's questionnaire should be answered "None" throughout. |

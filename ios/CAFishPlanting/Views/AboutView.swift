@@ -39,6 +39,7 @@ struct AboutView: View {
             if let snapshot = environment.snapshot {
                 Section("Data source and licence") {
                     Text(snapshot.attribution.text)
+                    Text("This app is independent. It is not affiliated with or endorsed by the California Department of Fish and Wildlife.")
                     Link("CDFW Fish Planting Schedule", destination: snapshot.attribution.url)
                     Text(snapshot.licence.summary)
                         .font(.footnote)

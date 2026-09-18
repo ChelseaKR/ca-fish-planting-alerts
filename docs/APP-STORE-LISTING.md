@@ -47,9 +47,10 @@ description.
 `[SITE]` means `https://chelseakr.github.io/ca-fish-planting-alerts`.
 DECISIONS 0010 keeps the site on `github.io` for now. If a custom domain is
 set later, it means that domain (repository variable `SITE_BASE_URL`). The
-`/support/` and `/privacy/` pages come from PR #14 and go live on the first
-successful `publish` run, which needs PR #13. The Support URL also needs the owner to set `SUPPORT_EMAIL`,
-because without it the page has no contact line.
+`/support/` and `/privacy/` pages are live (both returned 200 on
+2026-09-18). The Support URL still needs the owner to set `SUPPORT_EMAIL`,
+because without it the page has no contact line. See step 2 of the owner
+checklist in `APP-STORE.md`.
 
 ## In-app purchase localization
 
@@ -106,37 +107,49 @@ Data: California Department of Fish and Wildlife, Fish Planting Schedule. Trout 
     collected data types.
   - GitHub Pages, the static host, sees the request's IP address in the
     ordinary course of serving it. The developer never receives it.
+  - The full check, with file references, is in `APP-STORE.md` under
+    "Privacy answers, verified in code" (2026-09-18).
 - **Tracking (App Tracking Transparency):** none, so no ATT prompt is needed.
 
 ## App Review notes
 
-Paste this into App Review Information → Notes. No demo account is needed.
+Paste this into App Review Information → Notes. The limit is 4,000
+characters, and this block is 2,407, measured with Python's `len()`. No
+demo account is needed. Revised 2026-09-18 to add the week-of granularity,
+the sandbox steps and the notification detail.
 
 ---
 
-This app has no accounts and no sign-in (5.1.1).
+No account or sign-in exists in this app (5.1.1), so no demo account is needed.
 
-What it is: Trout Truck is a schedule-and-history app for California's public trout planting schedule, published weekly by the Department of Fish and Wildlife (CDFW). Each water keeps its week-by-week history beyond CDFW's own one-year window, which is the main content. Open any water from Browse to see it.
+WHAT IT DOES
+Trout Truck shows California's public trout planting schedule and keeps each water's week-by-week history, which CDFW's own page does not keep past its one-year window. That history is the main content (4.2). To see it: Browse, search "Kings River", open "Kings River, Below Pine Flat Dam", then tap a year under Stocking history.
 
-Network: the app's only request is a GET of one public JSON file, https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json, rebuilt daily from CDFW's schedule. A copy ships in the app, so it works offline on first launch.
+WHERE THE DATA COMES FROM
+The California Department of Fish and Wildlife (CDFW) Fish Planting Schedule, nrm.dfg.ca.gov/FishPlants/PublicPlantSearch. CDFW lists each plant by week, never by day, and says all plants are subject to change, so the app always shows "week of <date>" and never a stocking day. Our pipeline reads the schedule once a day and publishes one public JSON file: https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json. A copy ships inside the app, so it works offline on first launch; About, "This snapshot", shows which copy is on screen. The app is independent and not affiliated with or endorsed by CDFW; the attribution is on the About screen.
 
-Background modes (2.5.4): "fetch" and "processing" are declared only to run one BGAppRefreshTask. It downloads that file and, for purchasers, schedules a local notification when a favourited water is newly listed. There is no push service, no APNs, no location and no audio.
+IN-APP PURCHASE (SANDBOX)
+One non-consumable product, Full Access (com.chelseakr.cafishplanting.fullaccess). To test: About tab, "Unlock full access", then the purchase button, which shows the price. Nothing else in the app opens this sheet. After a sandbox purchase, the About tab's "Full access" section reads "Unlocked". "Restore purchases" is on the same sheet. Browsing, history and favourites are free and unlimited; the purchase unlocks notifications only.
 
-In-app purchase: About → "Unlock full access" (one-time, non-consumable). It unlocks local notifications. Browsing, history and favourites are free. "Restore purchases" is on the same screen.
+NOTIFICATIONS ARE LOCAL
+There is no push service, no APNs and no device token. Favouriting a water (the star on its page) first shows a short explanation, and the system permission prompt appears only if you choose "Allow notifications". The "fetch" and "processing" background modes (2.5.4) exist only for one BGAppRefreshTask: when iOS runs it, the app downloads the JSON file above and, for purchasers only, schedules a local notification if a favourited water is newly listed. CDFW updates weekly and iOS decides when background refresh runs, so a notification may not fire during review; the entitlement state is visible in About.
 
-Alerts depend on CDFW listing a new week, so one may not fire during review. The history view is visible immediately.
-
-The app is independent and not affiliated with CDFW. Data attribution is shown in the app's About screen and on the website.
+PRIVACY
+No accounts, analytics, ads or third-party SDKs. The only network request the app makes is the GET of the JSON file above. Favourites stay on the device. Privacy label: Data Not Collected.
 
 ---
 
 ## Before pasting: open items
 
-| Item | Blocks | Owner step |
+Updated 2026-09-18. The ordered steps are the owner checklist in
+`APP-STORE.md`.
+
+| Item | Blocks | Status |
 |---|---|---|
-| Trademark search | Name field | The name is decided (Trout Truck, DECISIONS 0010), but no trademark search has been run. Run one before submitting. |
-| Live `/support/` and `/privacy/` | Support and Privacy Policy URLs | Merge #13 and #14, let `publish` run, and set `SUPPORT_EMAIL` |
-| Free/paid split | Description and IAP text | Merge or reject #12 |
-| "Not affiliated with CDFW" line inside the app | Parity with this description and the review notes | The app shows attribution in About but has no non-affiliation line. That is an `ios/` change, which is outside this PR's scope. |
-| Screenshots | Submission | See the plan in `APP-STORE.md` |
-| Bundled snapshot | First-launch content and the screenshots | `ios/CAFishPlanting/Resources/snapshot.json` is the 2026-09-14 seed. Refresh it from the live `snapshot/v1.json` before archiving, once `publish` has run. This is an `ios/` change. |
+| Trademark search | Name field | **Open (owner).** The name is decided (Trout Truck, DECISIONS 0010), but no trademark search has been run. Checklist step 1. |
+| Support contact | Support URL (guideline 1.5) | **Open (owner).** `/support/` and `/privacy/` are live, but no support address is recorded anywhere in this repo, so `SUPPORT_EMAIL` is unset and the pages have no contact line. Checklist step 2. |
+| Live site predates #16 and #20 | Privacy Policy URL | **Done.** The 03:50 UTC build predated the rename and the GA4 copy; the 06:10 UTC `publish` run on 2026-09-18 brought `/privacy/` up to date (checked). Checklist step 3. |
+| Free/paid split | Description and IAP text | **Done.** #12 merged. |
+| "Not affiliated with CDFW" line inside the app | Parity with this description and the review notes | **Done.** #19 merged. It shows in About (screenshot `05-about.png`). |
+| Screenshots | Submission | **Done.** Five 1320x2868 PNGs in `docs/app-store/screenshots/`. See `APP-STORE.md`. |
+| Bundled snapshot | First-launch content and the screenshots | **Done, then repeat before archiving.** Refreshed on 2026-09-18 to the live snapshot built at 03:50:44 UTC (week of 2026-09-13, 26 waters this week). Run `ios/scripts/sync-bundled-snapshot.sh` again just before archiving. |

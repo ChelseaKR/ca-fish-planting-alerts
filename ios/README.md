@@ -190,6 +190,14 @@ has the live URL from `schema/README.md`
 (`https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json`,
 following redirects once a custom domain is set).
 
+Refreshed 2026-09-18 to the live snapshot built at 03:50:44 UTC (week of
+2026-09-13, 26 waters listed that week). `scripts/sync-bundled-snapshot.sh`
+downloads the live file, checks it against `schema/snapshot.v1.json`,
+refuses one older than the bundled copy, and copies it in. Run it just
+before archiving. `scripts/app-store-screenshots.sh` regenerates the App
+Store screenshots from whatever is bundled (see `docs/APP-STORE.md`,
+"Screenshots").
+
 One assumption flagged for the pipeline/site lane: `schema/snapshot.v1.json`
 has no per-water site-page URL field, so `SnapshotEndpoint.siteWaterURL(slug:)`
 derives it from the snapshot's own host + `/water/<slug>/` (matching the path

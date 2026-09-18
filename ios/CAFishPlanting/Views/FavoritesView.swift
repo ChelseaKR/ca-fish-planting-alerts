@@ -19,7 +19,7 @@ struct FavoritesView: View {
                         }
                     }
                     .navigationDestination(for: Water.ID.self) { id in
-                        if let water = snapshot.water(id: id) { WaterDetailView(water: water) }
+                        if let water = snapshot.water(id: id) { WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek) }
                     }
                 }
             } else {

@@ -50,7 +50,7 @@ struct BrowseView: View {
         }
         .navigationDestination(for: Water.ID.self) { id in
             if let water = snapshot.water(id: id) {
-                WaterDetailView(water: water)
+                WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek)
             }
         }
     }

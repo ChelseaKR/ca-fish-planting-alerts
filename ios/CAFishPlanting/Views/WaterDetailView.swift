@@ -5,6 +5,7 @@ struct WaterDetailView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let water: Water
+    let sourceWeek: Week
 
     private var isFavourite: Bool { environment.isFavourite(water.id) }
 
@@ -76,14 +77,14 @@ struct WaterDetailView: View {
     /// The real, grounded share message — see `ShareContent` in
     /// `PlantingCore` for what it does and doesn't claim.
     private var shareText: String {
-        ShareContent.message(for: water, siteURL: SnapshotEndpoint.siteWaterURL(slug: water.slug))
+        ShareContent.message(for: water, siteURL: SnapshotEndpoint.siteWaterURL(slug: water.slug), sourceWeek: sourceWeek)
     }
 
     /// "Last scheduled for the week of …": CDFW publishes scheduled plants
     /// at week-of granularity, never a confirmed plant or a day
     /// (`ScheduleWording`, shared with the share sheet).
     private var lastScheduledLine: some View {
-        Text(ScheduleWording.lastScheduledLine(for: water))
+        Text(ScheduleWording.lastScheduledLine(for: water, sourceWeek: sourceWeek))
             .font(.headline)
             .foregroundStyle(water.lastListedWeek == nil ? HierarchicalShapeStyle.secondary : .primary)
     }

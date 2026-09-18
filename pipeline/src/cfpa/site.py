@@ -173,13 +173,13 @@ def _ics_fold(line: str) -> str:
     return "\r\n ".join(out)
 
 
-def build_water_ics(*, water: dict[str, Any], base_url: str) -> str:
+def build_water_ics(*, water: dict[str, Any], base_url: str, species: str) -> str:
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
         "PRODID:-//ca-fish-planting-alerts//snapshot v1//EN",
         "CALSCALE:GREGORIAN",
-        f"X-WR-CALNAME:{_ics_escape(water['name'])} trout planting schedule",
+        f"X-WR-CALNAME:{_ics_escape(water['name'])} {species} planting schedule",
         f"X-WR-CALDESC:{_ics_escape('CDFW-scheduled plants at ' + water['name'] + '. Subject to change.')}",
     ]
     for p in water["plants"]:
@@ -283,6 +283,7 @@ def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
         "nothing_current": not this_week and not upcoming,
         "latest_listed_start": max(listed_weeks) if listed_weeks else "",
         "listed_week_count": len(listed_weeks),
+        "has_removed_weeks": any(p["status"] == "removed" for p in w["plants"]),
         "plants": [
             {
                 "label": p["week"]["label"],
@@ -662,7 +663,10 @@ def _render_water_page(
     _write_page(ctx.out_dir, f"water/{w['slug']}", html, ctx.written)
 
     ics_path = ctx.out_dir / "water" / w["slug"] / "feed.ics"
-    ics_path.write_text(build_water_ics(water=w, base_url=page_url), encoding="utf-8")
+    ics_path.write_text(
+        build_water_ics(water=w, base_url=page_url, species=view["species"]),
+        encoding="utf-8",
+    )
     ctx.written.append(ics_path)
 
     return _water_lastmod(

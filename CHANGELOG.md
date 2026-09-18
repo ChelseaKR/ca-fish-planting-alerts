@@ -45,6 +45,14 @@ once releases exist. No release has been tagged yet (#23).
   week instead of failing the run (#4).
 - App: the one-time purchase unlocks local notifications. Favourites and
   browsing are free, and there is no longer a cap on favourites (#12).
+- App: the screen before the notification permission prompt says, point
+  by point, what an alert is (one per new week for a favorite, naming the
+  week, never a day), that it is made on the device, that no other
+  notifications come, and, before purchase, that alerts need full access.
+  It scrolls at the largest text sizes. It shows only while iOS hasn't
+  asked yet. About offers "Turn on notifications" while iOS hasn't asked,
+  and "Open notification settings" once they're off, and re-reads the
+  setting on return from Settings.
 - Site: water page titles read "<water> (<county> County) <species> planting
   schedule", with the species from the data, so the catfish-only park lakes
   are no longer called trout waters. A water with nothing listed this week

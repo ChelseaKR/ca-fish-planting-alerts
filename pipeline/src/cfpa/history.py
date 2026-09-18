@@ -22,6 +22,19 @@ from pathlib import Path
 
 RecordKey = tuple[int, str, str]  # (cdfw_stock_id, week_start ISO date, species)
 
+# CDFW's stated "All Plants (<start> - <end>)" window moves once a week (its
+# start is the current week's Sunday minus one year), but the rows the page
+# actually shows age off one DAY at a time. Measured on a real fetch,
+# Thursday 2026-09-17: the page still stated "All Plants (9/13/2025 -
+# 9/27/2026)" but no longer listed a single plant for the week of
+# 2025-09-14 -- 23 plants the 2026-09-13 fetch had listed. So the oldest
+# week inside the stated window is partly or wholly aged off on most days,
+# and a plant's absence there is NOT evidence that CDFW removed it. Removal
+# is inferred only for weeks starting at least this far past the stated
+# start: within any CDFW week the run date is at most start + 6 days, so a
+# one-year age-off by date never reaches a week starting start + 7 or later.
+AGE_OFF_MARGIN = dt.timedelta(days=7)
+
 
 class HistoryIntegrityError(RuntimeError):
     """Raised when a write would drop or mutate an existing history record.
@@ -155,9 +168,13 @@ def merge_observations(
     - A key that existed with status "listed", whose week falls inside this
       run's page window (so CDFW *could* have shown it), but was NOT parsed
       this run, flips to "removed" (CDFW dropped a scheduled plant -- see
-      DECISIONS 0005 / the source's own "subject to change" notice).
-    - Every other existing key (outside the page's window, or already
-      "removed") passes through unchanged. Nothing is ever deleted.
+      DECISIONS 0005 / the source's own "subject to change" notice). The
+      window's oldest week is excluded (``AGE_OFF_MARGIN``): the page drops
+      those rows day by day while still stating the same window, so absence
+      there means "aged off", not "removed".
+    - Every other existing key (outside the page's window, in its oldest
+      week, or already "removed") passes through unchanged. Nothing is ever
+      deleted.
     """
     by_key = {r.key(): r for r in existing}
 
@@ -181,7 +198,7 @@ def merge_observations(
             continue
         if rec.status != "listed":
             continue
-        if page_window_start <= rec.week_start <= page_window_end:
+        if page_window_start + AGE_OFF_MARGIN <= rec.week_start <= page_window_end:
             by_key[key] = dataclasses.replace(
                 rec, status="removed", last_observed_at=fetched_at
             )

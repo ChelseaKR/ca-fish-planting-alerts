@@ -9,6 +9,8 @@ from cfpa import fetch
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
 STALE = FIXTURES / "schedule-stale-2025-cache.html"
+EMPTY_WEEK_MONDAY = FIXTURES / "schedule-empty-week-2026-09-14.html"
+MIDWEEK = FIXTURES / "schedule-midweek-2026-09-17.html"
 
 
 def test_extract_stated_today_reads_the_pages_own_date():
@@ -20,6 +22,66 @@ def test_extract_stated_period():
     html = FRESH.read_text(encoding="utf-8")
     start, end = fetch.extract_stated_period(html)
     assert (start, end) == (dt.date(2025, 9, 13), dt.date(2026, 9, 27))
+
+
+def test_stated_date_is_cdfws_week_start_not_the_fetch_day():
+    """Real responses fetched on a Monday (2026-09-14) and a Thursday
+    (2026-09-17, 03:10 UTC 09-18) both state 9/13/2026 -- the Sunday that
+    begins CDFW's week. The widget states the current WEEK, not "today"."""
+    for fixture in (FRESH, EMPTY_WEEK_MONDAY, MIDWEEK):
+        stated = fetch.extract_stated_today(fixture.read_text(encoding="utf-8"))
+        assert stated == dt.date(2026, 9, 13)
+        assert stated.weekday() == 6  # Sunday
+
+
+@pytest.mark.parametrize("day", range(13, 20))  # Sun 2026-09-13 .. Sat 2026-09-19
+def test_page_for_this_week_is_fresh_on_every_day_of_the_week(day):
+    """Regression: the old check read the week start as "today" and refused
+    every scheduled run from Tuesday on ("2/3/4 day(s) stale") while the
+    page was live -- publish.yml failed 2026-09-15, -16 and -17."""
+    html = MIDWEEK.read_text(encoding="utf-8")
+    stated = fetch.extract_stated_today(html)
+    fetch.assert_fresh(stated, run_today=dt.date(2026, 9, day))  # must not raise
+
+
+def test_last_weeks_page_is_refused_midweek():
+    with pytest.raises(fetch.StalePageError) as excinfo:
+        fetch.assert_fresh(dt.date(2026, 9, 6), run_today=dt.date(2026, 9, 17))
+    assert "2026-09-06" in str(excinfo.value)
+    assert "2026-09-13" in str(excinfo.value)
+
+
+def test_last_weeks_page_is_allowed_on_sunday_only_as_rollover_skew():
+    # Sunday run, CDFW's server not yet rolled over: one day of skew.
+    fetch.assert_fresh(dt.date(2026, 9, 6), run_today=dt.date(2026, 9, 13))
+    # Monday run: that is a cache, not skew.
+    with pytest.raises(fetch.StalePageError):
+        fetch.assert_fresh(dt.date(2026, 9, 6), run_today=dt.date(2026, 9, 14))
+
+
+def test_next_weeks_page_is_allowed_on_saturday_only_as_rollover_skew():
+    fetch.assert_fresh(dt.date(2026, 9, 20), run_today=dt.date(2026, 9, 19))
+    with pytest.raises(fetch.StalePageError):
+        fetch.assert_fresh(dt.date(2026, 9, 20), run_today=dt.date(2026, 9, 18))
+
+
+def test_a_stated_date_that_is_not_a_sunday_is_format_drift_not_fresh_data():
+    """If CDFW's widget ever starts stating the real day, the week-start
+    comparison would silently accept it on Sundays only; refuse loudly."""
+    html = FRESH.read_text(encoding="utf-8").replace(
+        'text="Current-Future Plants (9/13/2026 - 9/27/2026)"',
+        'text="Current-Future Plants (9/17/2026 - 10/1/2026)"',
+    )
+    assert "9/17/2026 - 10/1/2026" in html  # the mutation really landed
+    with pytest.raises(fetch.PageFormatError, match="Thursday"):
+        fetch.extract_stated_today(html)
+
+
+def test_week_start_containing():
+    assert fetch.week_start_containing(dt.date(2026, 9, 13)) == dt.date(2026, 9, 13)
+    assert fetch.week_start_containing(dt.date(2026, 9, 17)) == dt.date(2026, 9, 13)
+    assert fetch.week_start_containing(dt.date(2026, 9, 19)) == dt.date(2026, 9, 13)
+    assert fetch.week_start_containing(dt.date(2026, 9, 20)) == dt.date(2026, 9, 20)
 
 
 def test_fresh_fixture_passes_freshness_check():

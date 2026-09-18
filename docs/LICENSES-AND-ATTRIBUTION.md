@@ -53,7 +53,12 @@ before every fetch regardless (see `pipeline/src/cfpa/fetch.py`).
 - `robots.txt` is fetched and parsed before every run; the schedule path is
   not fetched if it becomes disallowed.
 - Cache headers are honoured (no query-string busting, no cache-defeating
-  headers sent). A stale page is detected from its own content (the newest
-  "today" date the page itself states, compared with the run's actual date)
-  and refused; it is never treated as "no plants this week" — see
-  `pipeline/src/cfpa/fetch.py::assert_fresh`.
+  headers sent). A stale page is detected from its own content (the current
+  week the page itself states — the Sunday that starts it — compared with
+  the run date's week) and refused; it is never treated as "no plants this
+  week" — see `pipeline/src/cfpa/fetch.py::assert_fresh`.
+- 2026-09-17: **one** extra diagnostic fetch of the schedule page (plus
+  `robots.txt`, unchanged), by hand, ≥ 5 s apart, to find out why every
+  scheduled run since 2026-09-15 had been refused as stale. It showed the
+  page states its week, not its day (see `fetch.py`), and is the source of
+  `pipeline/tests/fixtures/schedule-midweek-2026-09-17.html`.

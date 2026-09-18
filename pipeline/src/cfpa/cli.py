@@ -97,9 +97,13 @@ def run(
         fetched_at=page.fetched_at,
     )
     new_history = history_mod.HistoryStore(records=merged_records)
-    new_history.save(history_path)  # raises HistoryIntegrityError; nothing written on failure
-    alias_table.save(aliases_path)
+    # Refuse an overwrite before anything else is built from it.
+    history_mod.assert_append_only(existing_history.records, new_history.records)
 
+    # Build and validate the snapshot from the in-memory history BEFORE any
+    # file is written: a snapshot that cannot be built (e.g. a water with no
+    # county anywhere on this fetch) or that fails the schema must leave
+    # data/history.json and data/aliases.json exactly as they were.
     generated_at = dt.datetime.now(dt.timezone.utc)
     snap = snapshot_mod.build_snapshot(
         page=page,
@@ -112,8 +116,12 @@ def run(
         counties_options=county_options,
         region_county_options=region_county_options,
         waters_known=len(water_options),
+        water_options=water_options,
     )
     snapshot_mod.validate_snapshot(snap, schema_path)
+
+    new_history.save(history_path)  # raises HistoryIntegrityError; nothing written on failure
+    alias_table.save(aliases_path)
 
     if write_site:
         site_out.mkdir(parents=True, exist_ok=True)
@@ -176,6 +184,7 @@ def main(argv: list[str] | None = None) -> int:
     except (
         fetch_mod.FetchError,
         fetch_mod.StalePageError,
+        fetch_mod.PageFormatError,
         fetch_mod.RobotsDisallowedError,
         parse_mod.ParseError,
         history_mod.HistoryIntegrityError,

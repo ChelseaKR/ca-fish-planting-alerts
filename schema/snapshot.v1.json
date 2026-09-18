@@ -20,7 +20,7 @@
         "name": { "const": "CDFW Fish Planting Schedule" },
         "url": { "const": "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch" },
         "fetched_at": { "$ref": "#/$defs/datetime", "description": "When the source page was fetched (UTC). The page is fetched at most once per run." },
-        "stated_today": { "$ref": "#/$defs/date", "description": "The date the page itself says is 'today' (the end of its 'Past Plants' period). Freshness is judged from this, not from HTTP headers; a page whose stated_today is more than 7 days behind the run date is refused and no snapshot is built." },
+        "stated_today": { "$ref": "#/$defs/date", "description": "Despite the name, the start (a Sunday) of CDFW's current week as the page itself states it -- the first date of its 'Current-Future Plants' range, which stays the same all week (a page fetched on Thursday 2026-09-17 states 2026-09-13). It is not the fetch day; see fetched_at for that. Freshness is judged from this, not from HTTP headers: unless it is the week of the run date (+/- 1 day of clock skew at the week boundary), the page is refused and no snapshot is built." },
         "stated_period": { "$ref": "#/$defs/week_like", "description": "The page's own 'All Plants (start - end)' window. Rows outside it are impossible; weeks that fall out of it age out of the page but never out of this file." },
         "content_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the fetched HTML, for reproducibility." }
       }
@@ -161,7 +161,7 @@
         "species": { "type": "string", "minLength": 1 },
         "status": {
           "enum": ["listed", "removed"],
-          "description": "'listed': present on the most recent fresh page that covered this week. 'removed': CDFW listed it, then dropped it while the week was still inside the page's stated period (plants are 'subject to change'). Never inferred from a stale or failed fetch."
+          "description": "'listed': present on the most recent fresh page that covered this week. 'removed': CDFW listed it, then dropped it while the week was still inside the page's stated period (plants are 'subject to change'). Never inferred from a stale or failed fetch, and never for the period's oldest week, which the page ages off day by day while still stating the same period."
         },
         "first_observed_at": { "$ref": "#/$defs/datetime" },
         "last_observed_at": { "$ref": "#/$defs/datetime" }

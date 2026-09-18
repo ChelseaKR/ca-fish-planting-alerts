@@ -37,8 +37,9 @@ The domain is undecided (DECISIONS 0006). When a custom domain is set, the
 - **Never say "stocked".** CDFW: "all fish plants are subject to change
   depending on road, water, weather and operational conditions." Say
   "scheduled" / "listed for the week of …".
-- `source_week` is the week containing the date the CDFW page itself said was
-  "today" when fetched. "This week" in the app should mean `source_week`, not
+- `source_week` is the week CDFW's page itself stated as current when fetched
+  (`source.stated_today` is that week's Sunday, not the fetch day -- the
+  field name predates finding that out). "This week" in the app should mean `source_week`, not
   the device's clock — they differ only when the snapshot is old, and then the
   honest thing is to show the snapshot's own week.
 - `this_week[]` is a convenience index of `{water_id, species}` for

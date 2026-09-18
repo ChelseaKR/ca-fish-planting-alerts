@@ -97,6 +97,37 @@ def test_merge_observations_leaves_out_of_window_history_alone():
     assert merged[0].status == "listed"
 
 
+def test_merge_observations_does_not_mark_the_ageing_off_oldest_week_removed():
+    """Real case, 2026-09-17: the page still stated "All Plants (9/13/2025 -
+    9/27/2026)" but had already dropped every plant for the week of
+    2025-09-14 (rows age off by the day; the stated window moves by the
+    week). Those plants aged off -- CDFW did not cancel them -- so they must
+    stay 'listed', or the permanent history would record 23 false removals."""
+    existing = [_rec(stock_id=689, week_start="2025-09-14", status="listed")]
+    merged = history.merge_observations(
+        existing,
+        observed_this_run=set(),
+        parsed_rows={},
+        page_window_start=dt.date(2025, 9, 13),
+        page_window_end=dt.date(2026, 9, 27),
+        fetched_at=dt.datetime(2026, 9, 18, 3, 10, tzinfo=dt.timezone.utc),
+    )
+    assert merged[0].status == "listed"
+
+
+def test_merge_observations_still_infers_removal_just_past_the_oldest_week():
+    existing = [_rec(stock_id=1, week_start="2025-09-21", status="listed")]
+    merged = history.merge_observations(
+        existing,
+        observed_this_run=set(),
+        parsed_rows={},
+        page_window_start=dt.date(2025, 9, 13),
+        page_window_end=dt.date(2026, 9, 27),
+        fetched_at=dt.datetime(2026, 9, 18, tzinfo=dt.timezone.utc),
+    )
+    assert merged[0].status == "removed"
+
+
 def test_merge_observations_adds_a_new_listed_record():
     key = (1116, "2026-09-13", "Trout")
     merged = history.merge_observations(

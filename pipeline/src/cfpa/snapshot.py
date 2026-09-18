@@ -7,6 +7,7 @@ from __future__ import annotations
 import dataclasses
 import datetime as dt
 import json
+import re
 import statistics
 from pathlib import Path
 
@@ -82,23 +83,50 @@ def build_counties(county_options, region_county_options) -> list[dict]:
     return out
 
 
+# CDFW's water picker labels every water "<name> (<County>[, <County>...])",
+# e.g. "Feather River Middle Fork, Graeagle (Plumas)".
+_PICKER_LABEL_RE = re.compile(r"^(?P<name>.*) \((?P<counties>[^()]+)\)\s*$")
+
+
+def counties_from_water_picker(water_options) -> dict[int, list[str]]:
+    """County list per stock id, from the same page's own water picker.
+
+    Why this exists: the schedule table only shows about a year, and rows age
+    off day by day, so a water whose every plant has aged off has no row in
+    this run -- but it still has history, and its page still has to say where
+    it is. Measured 2026-09-17: two real waters (cdfw-500491, cdfw-500492,
+    both planted only the week of 2025-09-14) had aged off, and the run
+    crashed on them. The picker lists all ~895 waters on every fetch, and on
+    that fetch its county list matched the table's for all 383 waters that
+    had rows (0 mismatches), so it is the same source, not a guess.
+    """
+    out: dict[int, list[str]] = {}
+    for opt in water_options:
+        if not opt.value:
+            continue
+        m = _PICKER_LABEL_RE.match(opt.label)
+        if not m:
+            continue
+        counties = [c.strip() for c in m.group("counties").split(",") if c.strip()]
+        if counties:
+            out[int(opt.value)] = counties
+    return out
+
+
 def build_waters(
     history: HistoryStore,
     aliases: AliasTable,
     rows: list[parse.RawRow],
     source_week_start: dt.date,
     counties_by_name: dict[str, str],
+    water_options=(),
 ) -> list[dict]:
     by_water = history.by_water()
-    # Most-recently-observed county list per water, from this run's rows
-    # (falls back to nothing for waters with no rows this run, which is fine
-    # -- their county list was already fixed by an earlier run's rows and
-    # isn't re-derivable from this run alone, so we carry it via aliases'
-    # first-seen data... in practice every water in `by_water` has at least
-    # one PlantRecord and we recover counties from the rows of the run(s)
-    # that produced it. Since history doesn't store counties directly, we
-    # require the caller to have seen at least one row per known water across
-    # all runs; for a fresh run that's this run's `rows`.
+    picker_counties = counties_from_water_picker(water_options)
+    # Most-recently-observed county list per water, from this run's rows.
+    # History doesn't store counties, so a water with no row this run (every
+    # plant aged off the page's rolling window) falls back to this run's own
+    # water picker -- see ``counties_from_water_picker``.
     counties_latest: dict[int, list[str]] = {}
     map_url_latest: dict[int, str] = {}
     for r in rows:
@@ -110,11 +138,15 @@ def build_waters(
         alias = aliases.by_id.get(stock_id)
         if alias is None:
             raise ValueError(f"cdfw-{stock_id} has history but no alias table entry")
-        counties = counties_latest.get(stock_id)
+        # This run's table rows first; then this run's own water picker for
+        # a water whose rows have all aged off. Never guessed: if neither
+        # this fetch's table nor its picker places the water, fail loudly.
+        counties = counties_latest.get(stock_id) or picker_counties.get(stock_id)
         if not counties:
             raise ValueError(
                 f"cdfw-{stock_id} ({alias.canonical_name}) has history but no county "
-                f"data from this run -- county is only ever sourced from a live row"
+                f"data from this run -- neither a table row nor CDFW's water picker "
+                f"on this fetch names its county"
             )
         region = counties_by_name.get(counties[0])
         if not region:
@@ -223,6 +255,7 @@ def build_snapshot(
     counties_options,
     region_county_options,
     waters_known: int,
+    water_options=(),
 ) -> dict:
     source_week = week_of(page.stated_today)
     source_week_start = dt.date.fromisoformat(source_week["start"])
@@ -230,7 +263,9 @@ def build_snapshot(
     counties = build_counties(counties_options, region_county_options)
     counties_by_name = {c["name"]: c["region"] for c in counties}
 
-    waters = build_waters(history, aliases, rows, source_week_start, counties_by_name)
+    waters = build_waters(
+        history, aliases, rows, source_week_start, counties_by_name, water_options
+    )
     species = sorted({p["species"] for w in waters for p in w["plants"]})
 
     this_week = [

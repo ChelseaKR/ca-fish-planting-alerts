@@ -29,8 +29,9 @@ Pages-artifact-upload, and deploy steps only run after a clean exit.
 
 - `src/cfpa/fetch.py` — one HTTP GET of CDFW's schedule page, robots.txt
   check, and freshness detection (`assert_fresh`): the page states its own
-  "today" in a Time Period widget, and a page whose stated date is more than
-  a day off the run date is refused rather than treated as "no plants this
+  current week in a Time Period widget (the Sunday that starts it -- not the
+  fetch day), and a page whose week is not the run date's week (+/- 1 day of
+  skew at the boundary) is refused rather than treated as "no plants this
   week".
 - `src/cfpa/parse.py` — turns the table into rows. Fails loudly (`ParseError`)
   on any structural surprise (missing table, changed headers, wrong cell
@@ -39,7 +40,10 @@ Pages-artifact-upload, and deploy steps only run after a clean exit.
   is the stable identity; this keeps every spelling ever seen per id, a
   curated canonical name, and a slug that never changes once assigned.
   Prints every newly-seen (id, spelling) pair as `UNMATCHED` on every run.
-- `src/cfpa/history.py` — `data/history.json`: append-only. `HistoryStore.save`
+- `src/cfpa/history.py` — `data/history.json`: append-only. A listed plant
+  missing from a later page flips to `removed` only if its week is past the
+  page window's oldest week: CDFW ages rows off day by day while still
+  stating the same window, so absence in that week means "aged off". `HistoryStore.save`
   loads whatever is on disk first and raises `HistoryIntegrityError` (writing
   nothing) if the new write would drop or mutate an already-recorded
   observation. Only `status` (listed/removed) and `last_observed_at` may
@@ -87,5 +91,11 @@ has ever recorded).
 41 of the 2,039 rows CDFW served on 2026-09-13, plus its full ~895-water
 picker) and a synthetic stale-cache reproduction of the exact bug class
 the 2026-09-13 research notes hit on first fetch
-(`schedule-stale-2025-cache.html` -- same page, only its stated "today"
-rewritten back a year).
+(`schedule-stale-2025-cache.html` -- same page, only its stated week
+rewritten back a year), plus a real Monday response
+(`schedule-empty-week-2026-09-14.html`) and a real Thursday response
+(`schedule-midweek-2026-09-17.html`, trimmed to the 2026-09-13 fixture's
+waters plus the 29 plants CDFW added in between). Run in sequence, the
+2026-09-13 and 2026-09-17 fixtures pin the mid-week freshness check, the
+no-false-removal rule for the ageing-off oldest week, and the county
+fallback for a water whose rows have all aged off.

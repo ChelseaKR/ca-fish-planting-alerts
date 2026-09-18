@@ -9,6 +9,8 @@ name: publish
 # against a UTC midnight rollover in either direction, well after CDFW
 # hatchery staff would plausibly have updated the page overnight, and a
 # non-zero minute avoids GitHub Actions' busiest top-of-hour scheduling slot.
+# (The check compares CDFW's stated current WEEK with the run date's week,
+# +/- 1 day at the Sunday boundary; the page states a week, not a day.)
 on:
   schedule:
     - cron: "17 13 * * *"

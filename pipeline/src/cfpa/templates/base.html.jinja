@@ -23,6 +23,17 @@
 {% endif %}
 <meta property="og:site_name" content="{{ site_name }}">
 <meta name="twitter:card" content="summary">
+{% if google_site_verification %}
+{# Search Console's URL-prefix ownership check (site.py
+   GOOGLE_SITE_VERIFICATION, docs/SEARCH-CONSOLE.md). Home page only. #}
+<meta name="google-site-verification" content="{{ google_site_verification }}">
+{% endif %}
+{% if structured_data %}
+{# schema.org data for search engines (docs/adr/0013). Not JavaScript: the
+   browser never runs it and it fetches nothing. tojson escapes <, > and &,
+   so no water name can close this element. #}
+<script type="application/ld+json">{{ structured_data|tojson }}</script>
+{% endif %}
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -31,11 +42,26 @@
     <p class="site-name"><a href="{{ root }}">{{ site_name }}</a> <span class="site-tagline">California trout planting &amp; stocking schedule</span></p>
     <nav aria-label="Primary">
       <a href="{{ root }}">This week</a>
+      <a href="{{ root }}county/">By county</a>
       <a href="{{ root }}about/">About &amp; privacy</a>
     </nav>
   </div>
 </header>
 <main id="main" class="wrap">
+{% if breadcrumb %}
+{# Mirrors the BreadcrumbList in the structured data, name for name. #}
+<nav aria-label="Breadcrumb" class="breadcrumb">
+  <ol>
+    {% for name, url in breadcrumb %}
+    {% if loop.last %}
+    <li><a href="{{ url }}" aria-current="page">{{ name }}</a></li>
+    {% else %}
+    <li><a href="{{ url }}">{{ name }}</a></li>
+    {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+{% endif %}
 {% block content %}{% endblock %}
 </main>
 <footer class="site-footer">

@@ -27,8 +27,9 @@ jobs:
   site-checks:
     runs-on: ubuntu-latest
     # Measured locally at about 1.5 minutes: 42 pages through axe and
-    # pa11y-ci, then 9 Lighthouse runs. The margin covers a cold npm and
-    # Chrome download.
+    # pa11y-ci, then 9 Lighthouse runs. The county pages (ADR 0013) take
+    # the fixture build to 61 pages and 12 Lighthouse runs. The margin
+    # covers that and a cold npm and Chrome download.
     timeout-minutes: 20
     permissions:
       contents: read

@@ -111,6 +111,24 @@ def _pages(out: Path) -> dict[str, str]:
 # counted as visible page text in the copy checks below, and was not seen by
 # _scripts(). CodeQL flagged both uses as py/bad-tag-filter.
 _SCRIPT = re.compile(r"<script\b[^>]*>(.*?)</script\b[^>]*>", re.IGNORECASE | re.DOTALL)
+# The same, minus schema.org JSON-LD data blocks (docs/adr/0013). A browser
+# never runs those and they fetch nothing, so they are neither analytics nor
+# a script in the privacy copy's sense; test_site_seo.py checks that they
+# only ever hold JSON. Everything else counts, attributes or not.
+_LD_JSON_OPEN = re.compile(
+    r'<script\b[^>]*\btype="application/ld\+json"[^>]*>', re.IGNORECASE
+)
+_EXEC_SCRIPT = re.compile(
+    r'<script\b(?![^>]*\btype="application/ld\+json")[^>]*>(.*?)</script\b[^>]*>',
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _exec_script_openings(html: str) -> int:
+    """Every <script opening that is not a JSON-LD block, closed or not."""
+    return len(re.findall(r"<script\b", html, re.IGNORECASE)) - len(
+        _LD_JSON_OPEN.findall(html)
+    )
 
 
 def _text(html: str) -> str:
@@ -127,20 +145,21 @@ def _text(html: str) -> str:
 def _ga_markers(html: str) -> list[str]:
     """Anything that would mean analytics reached the page."""
     lowered = html.lower()
-    markers = ["<script", "googletagmanager", "google-analytics", "gtag", "datalayer"]
-    found = [m for m in markers if m in lowered]
+    markers = ["googletagmanager", "google-analytics", "gtag", "datalayer"]
+    found = ["<script"] if _exec_script_openings(html) else []
+    found += [m for m in markers if m in lowered]
     found += [i for i in (TEST_ID, site.GA4_MEASUREMENT_ID) if i and i in html]
     return found
 
 
 def _scripts(html: str) -> list[str]:
-    return _SCRIPT.findall(html)
+    return _EXEC_SCRIPT.findall(html)
 
 
 def _guard_problems(html: str, measurement_id: str) -> list[str]:
     """String-level checks of the one inline script on a page."""
     scripts = _scripts(html)
-    if html.lower().count("<script") != 1 or len(scripts) != 1:
+    if _exec_script_openings(html) != 1 or len(scripts) != 1:
         return [f"expected exactly one inline <script>, found {len(scripts)}"]
     js = scripts[0]
     problems = []
@@ -218,9 +237,17 @@ def test_no_analytics_detector_is_not_vacuous(no_id_pages, id_pages):
     for name, html in id_pages.items():
         assert _ga_markers(html), name
     original = no_id_pages["index.html"]
+    # The page carries a JSON-LD block, so the exemption is exercised, not
+    # vacuous, when the clean page passes.
+    assert _LD_JSON_OPEN.search(original)
+    assert _ga_markers(original) == []
     sabotaged = original.replace("</head>", "<script></script></head>", 1)
     assert sabotaged != original  # the sabotage landed
     assert _ga_markers(sabotaged) == ["<script"]
+    # A script that merely carries some other type attribute still counts.
+    typed = original.replace("</head>", '<script type="module"></script></head>', 1)
+    assert typed != original  # the sabotage landed
+    assert _ga_markers(typed) == ["<script"]
 
 
 def test_no_id_copy_still_says_the_site_collects_nothing(no_id_pages):
@@ -236,7 +263,9 @@ def test_no_id_copy_still_says_the_site_collects_nothing(no_id_pages):
 def test_build_with_id_emits_the_guarded_tag_on_every_page(id_pages):
     for name, html in id_pages.items():
         assert _guard_problems(html, TEST_ID) == [], name
-        assert "<head>" in html and html.index("<script") < html.index("</head>"), name
+        first = _EXEC_SCRIPT.search(html)
+        assert first is not None, name
+        assert "<head>" in html and first.start() < html.index("</head>"), name
 
 
 def test_guard_checker_catches_a_missing_or_late_guard(id_pages):

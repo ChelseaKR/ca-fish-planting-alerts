@@ -1,0 +1,22 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>California {{ species }} planting schedule by county</h1>
+<p class="lede">
+  The {{ county_count }} California counties with a water on the California
+  Department of Fish and Wildlife's planting schedule in the time this site
+  has recorded, grouped by CDFW region. Each county page shows what is
+  scheduled this week and the latest scheduled week at every one of its
+  waters.
+</p>
+
+{% for region in regions %}
+<section aria-labelledby="region-{{ region.code }}">
+  <h2 id="region-{{ region.code }}">{{ region.name }}</h2>
+  <ul class="water-index">
+    {% for c in region.counties %}
+    <li><a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County</a> <span class="muted">({{ c.count }} {{ "water" if c.count == 1 else "waters" }})</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endfor %}
+{% endblock %}

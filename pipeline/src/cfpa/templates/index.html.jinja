@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
 {% block content %}
-<h1>This week's trout planting schedule: {{ source_week_label }}</h1>
+<h1>This week's California trout planting schedule: {{ source_week_label }}</h1>
 <p class="lede">
   California Department of Fish and Wildlife scheduled these waters for
   planting the {{ source_week_label }}. Plants are <strong>subject to
@@ -25,7 +25,7 @@
       {% for row in region.rows %}
       <tr>
         <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
-        <td>{{ row.counties }}</td>
+        <td>{% for c in row.county_links %}<a href="{{ root }}county/{{ c.slug }}/">{{ c.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</td>
         <td>{{ row.species }}</td>
       </tr>
       {% endfor %}
@@ -36,6 +36,14 @@
 {% else %}
 <p>No plants are listed for the {{ source_week_label }} on CDFW's schedule. This is CDFW's own page saying so &mdash; not a failed or stale fetch, which this site refuses to publish (see <a href="{{ root }}about/">about &amp; attribution</a>).</p>
 {% endif %}
+
+<h2>Browse by county</h2>
+<p>Each county page shows this week's plants there and the latest scheduled week at every water. <a href="{{ root }}county/">Every county, by CDFW region</a>.</p>
+<ul class="water-index">
+  {% for c in county_counts %}
+  <li><a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County</a> <span class="muted">({{ c.count }} {{ "water" if c.count == 1 else "waters" }})</span></li>
+  {% endfor %}
+</ul>
 
 <h2>Browse by water</h2>
 {% if app_store_url %}

@@ -80,8 +80,12 @@ def no_id_pages(tmp_path_factory: pytest.TempPathFactory) -> dict[str, str]:
 
 @pytest.fixture(scope="module")
 def tag_js(id_pages: dict[str, str]) -> str:
+    # Executable scripts only: the page's JSON-LD block (docs/adr/0013) is
+    # data, and test_site_seo.py covers it.
     scripts = re.findall(
-        r"<script\b[^>]*>(.*?)</script\b[^>]*>", id_pages["index.html"], re.S | re.I
+        r'<script\b(?![^>]*\btype="application/ld\+json")[^>]*>(.*?)</script\b[^>]*>',
+        id_pages["index.html"],
+        re.S | re.I,
     )
     assert len(scripts) == 1
     js: str = scripts[0]

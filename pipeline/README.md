@@ -110,12 +110,27 @@ loads). With `""`, no page gets any script, and the about, privacy and
 support pages say nothing is collected. `build_site()` and `cli.run()` default to no analytics;
 only `cfpa`'s `main()` passes the committed ID.
 
-Pages built besides the per-water ones: `/` (this week), `/about/`,
-`/privacy/` and `/support/` (the Privacy Policy and Support URLs App Store
-Connect asks for), and `/404.html`. Every water page's title and `<h1>` carry
-its county, because five CDFW names belong to two or three different waters
-each. `sitemap.xml`'s `<lastmod>` is when a page's data last changed, not the
-build date (`site.py::_water_lastmod`).
+Two more values are committed in `src/cfpa/site.py`, both empty today
+(`docs/adr/0013-search-pages-and-truthful-structured-data.md`):
+
+- `GOOGLE_SITE_VERIFICATION` -- the `content` value of Search Console's HTML
+  tag. When set, the home page (only) gets
+  `<meta name="google-site-verification">`. `cfpa` refuses the run if it is
+  not a bare token. The owner's steps are in `docs/SEARCH-CONSOLE.md`.
+- `DATASET_LICENSE_URL` -- the licence for the compiled history, stated in the
+  Dataset structured data on `/about/`. Empty means no licence is claimed.
+
+Pages built besides the per-water ones: `/` (this week), `/county/` and a
+page per county at `/county/<county>/`, `/about/`, `/privacy/` and
+`/support/` (the Privacy Policy and Support URLs App Store Connect asks for),
+and `/404.html`. Every water page's title and `<h1>` carry its county,
+because five CDFW names belong to two or three different waters each. Each
+water page links its county pages and every other water in those counties.
+Pages carry one schema.org JSON-LD block (ADR 0013): data for search engines,
+never executed. `sitemap.xml`'s `<lastmod>` is when a page's data last
+changed, not the build date (`site.py::_water_lastmod`, ADR 0013).
+`robots.txt` is written, but crawlers only read it at a host's root, so on
+the `github.io` URL the sitemap is submitted in Search Console instead.
 
 ## Tests
 

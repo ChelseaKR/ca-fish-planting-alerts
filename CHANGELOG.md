@@ -28,6 +28,13 @@ once releases exist. No release has been tagged yet (#23).
   nothing (#20). An "Opt out of analytics" control in the footer is
   remembered on the device (#31).
 - App: the About screen says the app is not affiliated with CDFW (#19).
+- Site: a page for every county with a water on the schedule, and an index
+  of them by CDFW region. Water pages link their county pages and the other
+  waters in them. Pages carry schema.org structured data: breadcrumbs, the
+  water as a place, and the schedule history as a dataset, but no events,
+  because a plant is a scheduled week. There is a place for the Search
+  Console verification tag, and the owner steps are in
+  `docs/SEARCH-CONSOLE.md` (ADR 0013).
 - A root `make verify` that runs every lint, type, test and security gate,
   and runs in CI (#18). CodeQL, workflow scanning, and a weekly scan of the
   full history for secrets (#21).
@@ -38,6 +45,11 @@ once releases exist. No release has been tagged yet (#23).
   week instead of failing the run (#4).
 - App: the one-time purchase unlocks local notifications. Favourites and
   browsing are free, and there is no longer a cap on favourites (#12).
+- Site: water page titles read "<water> (<county> County) <species> planting
+  schedule", with the species from the data, so the catfish-only park lakes
+  are no longer called trout waters. A water with nothing listed this week
+  or later says so plainly, and says that this does not mean there are no
+  fish (ADR 0013).
 
 ### Fixed
 

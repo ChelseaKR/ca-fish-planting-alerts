@@ -1,8 +1,9 @@
 import datetime as dt
+import json
 import re
 from pathlib import Path
 
-from cfpa import cli
+from cfpa import cli, site
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
@@ -49,15 +50,23 @@ def test_site_builds_expected_pages(tmp_path: Path):
         assert (d / "feed.ics").exists()
 
 
-def test_no_script_tag_anywhere_in_the_built_site(tmp_path: Path):
+def test_no_executable_script_anywhere_in_the_built_site(tmp_path: Path):
     """With no GA4 measurement ID (``_build_site`` passes none), the site has
     no analytics, no cookies and no third-party script (DECISIONS 0011).
-    The strongest, simplest check: there is no <script> element at all.
-    The with-ID build is covered in test_site_analytics.py."""
+    The only <script> element allowed is one schema.org JSON-LD block per
+    page (docs/adr/0013), which a browser never executes, and which must
+    parse as JSON. The with-ID build is covered in test_site_analytics.py."""
     out = _build_site(tmp_path)
+    ld_open = re.compile(r'<script type="application/ld\+json">', re.I)
     for f in _all_html(out):
         html = f.read_text(encoding="utf-8")
-        assert "<script" not in html.lower(), f"found <script> in {f}"
+        openings = len(re.findall(r"<script\b", html, re.I))
+        data_blocks = ld_open.findall(html)
+        assert openings == len(data_blocks) <= 1, f"executable <script> in {f}"
+        for body in re.findall(
+            r'<script type="application/ld\+json">(.*?)</script>', html, re.S
+        ):
+            json.loads(body)
 
 
 def test_no_external_origin_referenced_in_the_built_site(tmp_path: Path):
@@ -106,15 +115,27 @@ def test_no_plant_rendered_as_a_single_day_on_any_page(tmp_path: Path):
 
 
 def test_water_page_titles_and_first_paragraph_answer_the_query(tmp_path: Path):
-    """The per-water page should answer '<water> trout stocking' from the
-    title and first paragraph, from data -- the free discovery surface."""
+    """The per-water page should answer '<water> trout stocking' and
+    '<water> trout planting schedule' from the title, h1 and description,
+    from data -- the free discovery surface. The title says "planting
+    schedule", the h1 "stocking schedule", so both wordings are on the page."""
     out = _build_site(tmp_path)
-    for d in (out / "water").iterdir():
-        html = (d / "index.html").read_text(encoding="utf-8")
+    snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    for w in snap["waters"]:
+        html = _water_html(out, w["slug"])
         title = re.search(r"<title>([^<]+)</title>", html).group(1)
         h1 = re.search(r"<h1>([^<]+)</h1>", html).group(1)
-        assert "stocking" in title.lower()
-        assert "trout stocking" in h1.lower() or "stocking" in h1.lower()
+        description = re.search(
+            r'<meta name="description" content="([^"]+)">', html
+        ).group(1)
+        species = site.species_phrase({p["species"] for p in w["plants"]})
+        where = site.county_phrase(w["counties"])
+        assert f"{species} planting schedule" in title
+        assert f"{species} stocking schedule" in h1
+        for text in (title, h1, description):
+            assert w["name"].replace("'", "&#39;") in text, (w["slug"], text)
+            assert where in text, (w["slug"], text)
+        assert "stocking" in description and "planting schedule" in description
 
 
 def test_ics_events_are_week_long_not_single_day(tmp_path: Path):
@@ -206,7 +227,7 @@ def test_water_titles_are_unique_and_name_the_county(tmp_path: Path):
     for w in snap["waters"]:
         html = _water_html(out, w["slug"])
         title = re.search(r"<title>([^<]+)</title>", html).group(1)
-        assert f"({', '.join(w['counties'])})" in title
+        assert f"({site.county_phrase(w['counties'])})" in title
         titles.append(title)
     assert len(titles) == len(set(titles))
 
@@ -294,7 +315,10 @@ def test_every_page_carries_the_brand_and_the_search_terms(tmp_path: Path):
     it, so every title and meta description keeps "trout planting" or
     "stocking" next to it, and every page still credits CDFW as the source."""
     out = _build_site(tmp_path)
-    search_terms = re.compile(r"trout planting|stocking", re.I)
+    # "planting schedule" rather than "trout planting": the three
+    # catfish-only park lakes say "catfish planting schedule" (their pages
+    # must not claim trout), and every description still says "stocking".
+    search_terms = re.compile(r"trout planting|planting schedule|stocking", re.I)
     for f in _all_html(out):
         html = f.read_text(encoding="utf-8")
         title = re.search(r"<title>([^<]+)</title>", html).group(1)

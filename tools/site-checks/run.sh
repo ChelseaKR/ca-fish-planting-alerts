@@ -9,7 +9,8 @@
 #   3. axe-core on every page, which covers A11Y-01 and the A11Y-09 reflow
 #      check (axe.mjs).
 #   4. pa11y-ci with the axe runner, WCAG2AA, on every page (A11Y-03).
-#   5. Lighthouse CI on three representative pages, run three times each:
+#   5. Lighthouse CI on four representative pages (home, about, a water
+#      page, a county page), run three times each:
 #      accessibility >= 0.90 (A11Y-02); performance >= 0.90, script and
 #      Core Web Vitals lab budgets (PERF-02, OBS-23/25, TBT as the lab
 #      stand-in for INP). Then the >10% regression check against
@@ -117,10 +118,11 @@ npx --no-install pa11y-ci --config "$work/pa11yci.json"
 
 echo "== Lighthouse CI (A11Y-02, PERF-02, OBS-23/25)"
 water="$(grep -m1 '^water/' "$pages_file")"
+county="$(grep -m1 '^county/[^/]*/$' "$pages_file")"
 mkdir -p "$work/lhci"
 (cd "$work/lhci" && CHROME_PATH="$chrome" npx --prefix "$tools" --no-install lhci collect \
   --config="$root/perf/lighthouserc.json" \
-  --url="$base" --url="${base}about/" --url="$base$water")
+  --url="$base" --url="${base}about/" --url="$base$water" --url="$base$county")
 (cd "$work/lhci" && npx --prefix "$tools" --no-install lhci assert --config="$root/perf/lighthouserc.json")
 
 echo "== baseline regression (PERF-03)"

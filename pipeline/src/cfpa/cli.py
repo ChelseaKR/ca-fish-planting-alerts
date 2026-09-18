@@ -51,6 +51,7 @@ def run(
     app_store_url: str | None = None,
     support_email: str | None = None,
     ga4_measurement_id: str | None = None,
+    google_site_verification: str | None = None,
     fixture_fetched_at: dt.datetime | None = None,
     run_today: dt.date | None = None,
 ) -> dict[str, Any]:
@@ -156,6 +157,7 @@ def run(
             app_store_url=app_store_url,
             support_email=support_email,
             ga4_measurement_id=ga4_measurement_id,
+            google_site_verification=google_site_verification,
         )
 
     coverage = snapshot_mod.Coverage(**snap["coverage"])
@@ -219,6 +221,11 @@ def main(argv: list[str] | None = None) -> int:
         ga4_measurement_id = site_mod.ga4_measurement_id_or_none(
             site_mod.GA4_MEASUREMENT_ID
         )
+        # The committed Search Console token (site.GOOGLE_SITE_VERIFICATION,
+        # docs/adr/0013), checked the same way. Empty = no tag.
+        google_site_verification = site_mod.google_site_verification_or_none(
+            site_mod.GOOGLE_SITE_VERIFICATION
+        )
     except ValueError as exc:
         print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
         return 1
@@ -236,6 +243,7 @@ def main(argv: list[str] | None = None) -> int:
             app_store_url=args.app_store_url or None,
             support_email=args.support_email or None,
             ga4_measurement_id=ga4_measurement_id,
+            google_site_verification=google_site_verification,
             run_today=args.run_today,
             fixture_fetched_at=args.fixture_fetched_at,
         )

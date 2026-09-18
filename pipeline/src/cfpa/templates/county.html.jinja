@@ -1,0 +1,63 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>{{ county }} County {{ species }} planting schedule</h1>
+<p class="lede">
+  {{ water_count }} {{ "water" if water_count == 1 else "waters" }} in {{ county }}
+  County {{ "has" if water_count == 1 else "have" }} been on the California
+  Department of Fish and Wildlife's {{ species }} planting schedule in the time
+  this site has recorded{% if region_name %}. CDFW region: {{ region_name }}{% endif %}.
+  Each links to its own page with every scheduled week and a calendar feed.
+</p>
+<p class="muted">
+  CDFW's schedule was last checked {{ source_fetched_label }}, when its current
+  week was the {{ source_week_label }}. Plants are subject to change: every
+  entry is scheduled, not confirmed.
+</p>
+
+<h2>Scheduled this week</h2>
+{% if this_week_rows %}
+<table>
+  <caption class="visually-hidden">{{ county }} County waters on CDFW's schedule for the {{ source_week_label }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">Species</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in this_week_rows %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{{ row.species }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No {{ county }} County water is on CDFW's schedule for this week. That means no plant is scheduled here this week, not that there are no fish.</p>
+{% endif %}
+
+<h2>Every {{ county }} County water on the schedule</h2>
+<p>Most recently scheduled first. A week after the current one is marked upcoming.</p>
+<table>
+  <caption class="visually-hidden">Every {{ county }} County water CDFW has scheduled, with its latest scheduled week</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">Latest scheduled week</th>
+      <th scope="col">Weeks on record</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{% if row.latest_start %}week of {{ row.latest_start }}{% if row.upcoming %} (upcoming){% endif %}{% else %}none listed now{% endif %}</td>
+      <td>{{ row.weeks }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p><a href="{{ root }}county/">Every county</a> &middot; <a href="{{ root }}">this week, statewide</a></p>
+{% endblock %}

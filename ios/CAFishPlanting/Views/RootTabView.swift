@@ -39,41 +39,84 @@ private struct FirstFavouriteExplainerSheet: View {
     let explainer: FirstFavouriteExplainer
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
-                Image(systemName: "bell.badge")
-                    .font(.largeTitle)
-                    .foregroundStyle(.tint)
-                    .accessibilityHidden(true)
-                Text(explainer.sentence)
-                    .font(.body)
-                Text("You can change this any time in Settings.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Button {
-                    Task {
-                        await environment.confirmNotificationExplainer()
-                        dismiss()
-                    }
-                } label: {
-                    Text("Allow notifications").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .accessibilityHint("Shows the system permission prompt")
+        NotificationPrimingView(copy: explainer.copy) {
+            await environment.confirmNotificationExplainer()
+            dismiss()
+        } notNow: {
+            environment.dismissNotificationExplainer()
+            dismiss()
+        }
+    }
+}
 
-                Button("Not now") {
-                    environment.dismissNotificationExplainer()
-                    dismiss()
+/// The screen before the system notification prompt: what an alert is, how
+/// often one comes, and that it is made on this iPhone. It scrolls, so at
+/// the largest text sizes nothing is cut off, and the buttons stay at the
+/// bottom.
+struct NotificationPrimingView: View {
+    let copy: NotificationPrimingCopy
+    let allow: () async -> Void
+    let notNow: () -> Void
+    @State private var isAsking = false
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Image(systemName: "bell.badge")
+                        .font(.largeTitle)
+                        .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
+                    Text(copy.headline)
+                        .font(.title2.bold())
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
+                    ForEach(copy.points) { point in
+                        Label {
+                            Text(point.text)
+                                .fixedSize(horizontal: false, vertical: true)
+                        } icon: {
+                            Image(systemName: point.systemImage)
+                                .foregroundStyle(.tint)
+                                .accessibilityHidden(true)
+                        }
+                        .font(.body)
+                    }
+                    Text(copy.footnote)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .buttonStyle(.plain)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
             }
-            .padding()
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 12) {
+                    Button {
+                        isAsking = true
+                        Task {
+                            await allow()
+                            isAsking = false
+                        }
+                    } label: {
+                        Text("Allow notifications").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(isAsking)
+                    .accessibilityHint("Shows the system permission prompt")
+
+                    Button("Not now", action: notNow)
+                        .frame(maxWidth: .infinity)
+                        .disabled(isAsking)
+                }
+                .padding()
+                .background(.bar)
+            }
             .navigationTitle("Stay in the loop")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.large])
     }
 }
 

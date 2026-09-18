@@ -85,6 +85,25 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertEqual(env.favourites.count, 9)
     }
 
+    /// A favorite the snapshot no longer has can still be removed, by ID,
+    /// and removing it forgets its alert baseline too.
+    func testAFavoriteTheSnapshotNoLongerHasCanBeRemoved() throws {
+        let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: Bundle.main.bundleIdentifier ?? "com.chelseakr.cafishplanting")
+        let first = try XCTUnwrap(AppEnvironment().snapshot?.waters.first)
+        try FavouritesStore(layout: layout).save(Favourites(ids: ["cdfw-gone", first.id]))
+
+        let env = AppEnvironment()
+        XCTAssertEqual(env.favourites.ids, ["cdfw-gone", first.id])
+        XCTAssertNil(env.snapshot?.water(id: "cdfw-gone"), "sanity check: the snapshot must not have it")
+
+        env.removeFavorite("cdfw-gone")
+        XCTAssertEqual(env.favourites.ids, [first.id])
+        XCTAssertEqual(FavouritesStore(layout: layout).load().ids, [first.id], "the removal is saved")
+
+        env.removeFavorite("cdfw-never-a-favorite")
+        XCTAssertEqual(env.favourites.ids, [first.id], "removing something that isn't a favorite changes nothing")
+    }
+
     func testBackgroundTaskIdentifierMatchesInfoPlistDeclaration() throws {
         let infoPlistURL = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent() // CAFishPlantingTests

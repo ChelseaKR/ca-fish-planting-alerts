@@ -118,6 +118,18 @@ final class AppEnvironment {
 
     func isFavourite(_ id: Water.ID) -> Bool { favourites.contains(id) }
 
+    /// Removes a favorite by its ID alone. For a favorite the snapshot no
+    /// longer has, so there is no `Water` to toggle.
+    func removeFavorite(_ id: Water.ID) {
+        guard favourites.contains(id) else { return }
+        var updated = favourites
+        updated.remove(id)
+        favourites = updated
+        try? favouritesStore?.save(updated)
+        alertState = AlertPlanner.pruning(alertState, unfavouriting: id)
+        try? alertStateStore?.save(alertState)
+    }
+
     /// Favouriting is never gated — every water may be favourited by
     /// anyone, purchaser or not (see `FreeTier`). What the one-time
     /// purchase unlocks is local notifications, not this.

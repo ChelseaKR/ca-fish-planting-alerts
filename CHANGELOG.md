@@ -64,6 +64,12 @@ once releases exist. No release has been tagged yet (#23).
   are no longer called trout waters. A water with nothing listed this week
   or later says so plainly, and says that this does not mean there are no
   fish (ADR 0013).
+- App: the accent color is the icon's green (a lighter green in dark mode),
+  instead of the default blue, and keeps 4.5:1 contrast in both. Adding
+  or removing a favorite gives a haptic tap. Pull down on Browse to check
+  for a newer schedule now. Launch no longer decodes the bundled 1 MB
+  snapshot when the downloaded one is at least as new, which halves the
+  decoding at launch once a schedule has been downloaded.
 
 ### Fixed
 

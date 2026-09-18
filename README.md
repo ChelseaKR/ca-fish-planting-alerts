@@ -14,7 +14,29 @@ The name is what anglers call the hatchery truck that delivers planted trout
 `ca-fish-planting-alerts`. The site is live at
 <https://chelseakr.github.io/ca-fish-planting-alerts/>.
 
-[moved to private strategy notes]
+Status: **Beta.** The website is live and is republished every day. The iOS
+app is in build and has not been submitted to the App Store yet.
+
+## Quickstart
+
+```sh
+make verify                          # every lint, type, test and security gate
+cd ios/PlantingCore && swift test    # the app's data layer
+```
+
+Build the whole site offline from a committed CDFW fixture. This writes
+nothing inside the checkout:
+
+```sh
+cd pipeline && uv sync
+uv run cfpa --fixture tests/fixtures/schedule-fresh-2026-09-13.html \
+  --fixture-fetched-at 2026-09-13T12:00:00Z --run-today 2026-09-13 \
+  --history /tmp/cfpa/history.json --aliases /tmp/cfpa/aliases.json \
+  --site-out /tmp/cfpa/site
+```
+
+`make verify` needs `uv`, `gitleaks` and `osv-scanner`. See `CONTRIBUTING.md`
+for the full gate and `pipeline/README.md` for the pipeline's own commands.
 
 ## Shape
 
@@ -34,3 +56,32 @@ The name is what anglers call the hatchery truck that delivers planted trout
 
 Trout Truck, decided 2026-09-17 (`docs/DECISIONS.md` 0010). The site stays on
 `github.io` for now, with no custom domain. Trademarks have not been searched.
+
+## Background
+
+[moved to private strategy notes]
+
+## Standards Conformance
+
+This repository follows the portfolio standards, vendored unedited in
+`docs/standards/` (v2.0.0). The table says which standards apply here, and
+where each one has an open gap. Metrics, CI stages and the observability
+tier are in `docs/ROADMAP.md`.
+
+| Standard | State |
+|----------|-------|
+| Responsible-Tech Framework | Applies — gap tracked in #30 (audit sign-offs pending the owner; `docs/RESPONSIBLE-TECH-AUDITS.md`) |
+| Code Quality | Applies — `make verify`: ruff, mypy --strict, pytest with ≥ 90% branch coverage; nested `pipeline/` and `ios/` layout declared in ADR 0012 |
+| Security & Supply-Chain | Applies — gap tracked in #25 (no branch ruleset, Dependabot alerts off, Scorecard not run on a private repo) |
+| CI/CD | Applies — gap tracked in #25 (ruleset and `github-pages` environment) and #17 (macOS runner on every PR) |
+| Release & Versioning | Applies — gap tracked in #23 (no release pipeline, tags or deployed-version stamp) |
+| Observability | Applies — gap tracked in #28 (Tier B site, Tier C pipeline and app; no field Core Web Vitals, no JSON log mode) |
+| Performance | Applies — Lighthouse CI budgets and a committed baseline over the built site (`perf/`); k6 N/A: static hosting, no server route of ours |
+| Accessibility | Applies — gap tracked in #26 (automated gates on every page; screen-reader walkthrough, statement and a VoiceOver pass on the app still open) |
+| Internationalization | Applies — gap tracked in #27 (English-only; declared in `docs/I18N.md`) |
+| AI Evaluation | N/A — no model, prompt or retrieval surface in the pipeline, the site or the app |
+| Documentation | Applies — gap tracked in #22 (LICENSE, CITATION.cff and a security reporting address need owner decisions) |
+| Quality & Metrics | Applies — `DEFINITION_OF_DONE.md` and the metrics ledger in `docs/ROADMAP.md` |
+| AI Development Measurement | Applies — delivery metrics are mined from this repository's history by the standards repository's `automation/delivery_metrics.py`; observe-only, never a gate here |
+| Incident Response | Applies — gap tracked in #25 (`incident` and `sevN` labels not created yet) |
+| Data Governance | Applies — gap tracked in #29 (data card in `docs/data/`; dataset versioning and the site's analytics data not yet classified) |

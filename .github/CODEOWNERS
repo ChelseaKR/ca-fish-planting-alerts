@@ -1,0 +1,36 @@
+# Code owners (CI-CD-STANDARD §6, CICD-17; CODE-QUALITY-STANDARD §7, CQ-39).
+# One maintainer today, so every path routes to the same owner. The entries
+# below name the paths that must never merge without the owner's decision
+# even if a second maintainer joins: the pipeline that deploys, the gates,
+# the data contract, the committed history, and privacy-bearing files.
+
+*                                   @ChelseaKR
+
+# CI, deploy and the gates themselves
+/.github/workflows/                 @ChelseaKR
+/.github/CODEOWNERS                 @ChelseaKR
+/.github/rulesets/                  @ChelseaKR
+/Makefile                           @ChelseaKR
+/scripts/                           @ChelseaKR
+/.pre-commit-config.yaml            @ChelseaKR
+/renovate.json                      @ChelseaKR
+/pipeline/pyproject.toml            @ChelseaKR
+/pipeline/uv.lock                   @ChelseaKR
+/SECURITY.md                        @ChelseaKR
+/DEFINITION_OF_DONE.md              @ChelseaKR
+
+# Standards pin (vendored, never hand-edited) and the decision log
+/docs/standards/                    @ChelseaKR
+/docs/adr/                          @ChelseaKR
+
+# The data contract the app decodes, and the history that is the asset
+/schema/                            @ChelseaKR
+/pipeline/data/                     @ChelseaKR
+
+# Privacy-bearing: the site's analytics tag and the app's privacy manifest
+/pipeline/src/cfpa/site.py          @ChelseaKR
+/pipeline/src/cfpa/templates/       @ChelseaKR
+/ios/CAFishPlanting/Resources/PrivacyInfo.xcprivacy  @ChelseaKR
+
+# Performance baseline (PERFORMANCE-STANDARD §2: regressions need sign-off)
+/perf/                              @ChelseaKR

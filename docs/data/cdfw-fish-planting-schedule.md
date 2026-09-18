@@ -44,7 +44,7 @@ were read (2026-09-13) are in `docs/LICENSES-AND-ATTRIBUTION.md`.
   within a day.
 - What readers see: every site page says when the schedule was last checked.
   The app shows the snapshot's build time on its About screen only. Showing
-  staleness on the app's main screens is part of #29.
+  staleness on the app's main screens is part of #8.
 
 ## Fetch timestamp
 
@@ -92,7 +92,7 @@ git keeps every prior version.
 ## Dataset version
 
 The snapshot carries `schema_version: 1` and its timestamps, but no dataset
-version of its own. Whether it should have one (DG-17/18) is open in #29.
+version of its own. Whether it should have one (DG-17/18) is open in #8.
 
 ---
 

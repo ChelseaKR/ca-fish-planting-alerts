@@ -17,7 +17,7 @@ interactive Apple ID sign-in — and submits and registers nothing (per
 the task boundary). Everything below is prepared for Chelsea to execute.
 
 **2026-09-14 follow-up pass.** Re-verified against `origin/main` after
-PR #1 (pipeline/site) and PR #2 (iOS app) merged: the app icon gap this
+PR 1 (pipeline/site) and PR 2 (iOS app) merged: the app icon gap this
 doc originally flagged is closed (`0be59fd`, before this pass started —
 see "App icon" under Known gaps), `xcodebuild ... -destination
 'generic/platform=iOS Simulator' build` still succeeds clean (zero
@@ -76,7 +76,7 @@ in `code` are exact; paste them as they are.
    Guideline 1.5 asks for a Support URL that gives an easy way to contact
    you, and the page has no contact line until this is set.
 3. **Live privacy page: done 2026-09-18.** The 03:50 UTC build predated
-   #16 (the name) and #20 (GA4), but the `publish` run at 06:10 UTC
+   PR 16 (the name) and PR 20 (GA4), but the `publish` run at 06:10 UTC
    redeployed the site. Checked after it: `/privacy/` names Trout Truck,
    describes the website's Google Analytics 4, says the app collects
    nothing and that the host sees the requesting IP, and its app section

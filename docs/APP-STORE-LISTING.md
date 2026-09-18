@@ -12,8 +12,8 @@ line breaks counted), re-measured after the rename, and the limits are
 Apple's.
 
 **What this copy assumes about the product.** It follows the free/paid split
-in PR #12 (DECISIONS 0009 there): browsing, history and favourites are free,
-and a one-time $9.99 in-app purchase unlocks local notifications. If #12 does
+in PR 12 (DECISIONS 0009 there): browsing, history and favourites are free,
+and a one-time $9.99 in-app purchase unlocks local notifications. If PR 12 does
 not merge, rewrite the "Free / one-time purchase" paragraph and the IAP
 description.
 
@@ -59,8 +59,8 @@ checklist in `APP-STORE.md`.
 | Display name | 30 | `Full Access` | 11 |
 | Description | 45 | `Alerts when a favourite water is listed` | 39 |
 
-PR #12 first proposed a 156-character IAP description, well over App Store
-Connect's 45-character limit. #12 now uses the line above in both
+PR 12 first proposed a 156-character IAP description, well over App Store
+Connect's 45-character limit. PR 12 now uses the line above in both
 `APP-STORE.md` and `ios/CAFishPlanting/Configuration.storekit`.
 
 ## Description
@@ -148,8 +148,8 @@ Updated 2026-09-18. The ordered steps are the owner checklist in
 |---|---|---|
 | Trademark search | Name field | **Open (owner).** The name is decided (Trout Truck, DECISIONS 0010), but no trademark search has been run. Checklist step 1. |
 | Support contact | Support URL (guideline 1.5) | **Open (owner).** `/support/` and `/privacy/` are live, but no support address is recorded anywhere in this repo, so `SUPPORT_EMAIL` is unset and the pages have no contact line. Checklist step 2. |
-| Live site predates #16 and #20 | Privacy Policy URL | **Done.** The 03:50 UTC build predated the rename and the GA4 copy; the 06:10 UTC `publish` run on 2026-09-18 brought `/privacy/` up to date (checked). Checklist step 3. |
-| Free/paid split | Description and IAP text | **Done.** #12 merged. |
-| "Not affiliated with CDFW" line inside the app | Parity with this description and the review notes | **Done.** #19 merged. It shows in About (screenshot `05-about.png`). |
+| Live site predates PR 16 and PR 20 | Privacy Policy URL | **Done.** The 03:50 UTC build predated the rename and the GA4 copy; the 06:10 UTC `publish` run on 2026-09-18 brought `/privacy/` up to date (checked). Checklist step 3. |
+| Free/paid split | Description and IAP text | **Done.** PR 12 merged. |
+| "Not affiliated with CDFW" line inside the app | Parity with this description and the review notes | **Done.** PR 19 merged. It shows in About (screenshot `05-about.png`). |
 | Screenshots | Submission | **Done.** Five 1320x2868 PNGs in `docs/app-store/screenshots/`. See `APP-STORE.md`. |
 | Bundled snapshot | First-launch content and the screenshots | **Done, then repeat before archiving.** Refreshed on 2026-09-18 to the live snapshot built at 03:50:44 UTC (week of 2026-09-13, 26 waters this week). Run `ios/scripts/sync-bundled-snapshot.sh` again just before archiving. |

@@ -66,21 +66,21 @@ tier are in `docs/ROADMAP.md`.
 
 | Standard | State |
 |----------|-------|
-| Responsible-Tech Framework | Applies — gap tracked in #30 (audit sign-offs pending the owner; `docs/RESPONSIBLE-TECH-AUDITS.md`) |
+| Responsible-Tech Framework | Applies — gap tracked in #9 (audit sign-offs pending the owner; `docs/RESPONSIBLE-TECH-AUDITS.md`) |
 | Code Quality | Applies — `make verify`: ruff, mypy --strict, pytest with ≥ 90% branch coverage; nested `pipeline/` and `ios/` layout declared in ADR 0012 |
-| Security & Supply-Chain | Applies — gap tracked in #25 (no branch ruleset, Dependabot alerts off, Scorecard not run on a private repo) |
-| CI/CD | Applies — gap tracked in #25 (ruleset and `github-pages` environment) and #17 (macOS runner on every PR) |
-| Release & Versioning | Applies — gap tracked in #23 (no release pipeline, tags or deployed-version stamp) |
-| Observability | Applies — gap tracked in #28 (Tier B site, Tier C pipeline and app; no field Core Web Vitals, no JSON log mode) |
+| Security & Supply-Chain | Applies — gap tracked in #4 (no branch ruleset; OpenSSF Scorecard not run yet) |
+| CI/CD | Applies — gap tracked in #4 (ruleset and `github-pages` environment) and #1 (macOS runner on every PR) |
+| Release & Versioning | Applies — gap tracked in #3 (no release pipeline, tags or deployed-version stamp) |
+| Observability | Applies — gap tracked in #7 (Tier B site, Tier C pipeline and app; no field Core Web Vitals, no JSON log mode) |
 | Performance | Applies — Lighthouse CI budgets and a committed baseline over the built site (`perf/`); k6 N/A: static hosting, no server route of ours |
-| Accessibility | Applies — gap tracked in #26 (automated gates on every page; screen-reader walkthrough, statement and a VoiceOver pass on the app still open) |
-| Internationalization | Applies — gap tracked in #27 (English-only; declared in `docs/I18N.md`) |
+| Accessibility | Applies — gap tracked in #5 (automated gates on every page; screen-reader walkthrough, statement and a VoiceOver pass on the app still open) |
+| Internationalization | Applies — gap tracked in #6 (English-only; declared in `docs/I18N.md`) |
 | AI Evaluation | N/A — no model, prompt or retrieval surface in the pipeline, the site or the app |
-| Documentation | Applies — gap tracked in #22 (CITATION.cff and a security reporting address need owner decisions) |
+| Documentation | Applies — gap tracked in #2 (CITATION.cff and a security reporting address need owner decisions) |
 | Quality & Metrics | Applies — `DEFINITION_OF_DONE.md` and the metrics ledger in `docs/ROADMAP.md` |
 | AI Development Measurement | Applies — delivery metrics are mined from this repository's history by the standards repository's `automation/delivery_metrics.py`; observe-only, never a gate here |
-| Incident Response | Applies — gap tracked in #25 (`incident` and `sevN` labels not created yet) |
-| Data Governance | Applies — gap tracked in #29 (data card in `docs/data/`; dataset versioning and the site's analytics data not yet classified) |
+| Incident Response | Applies — gap tracked in #4 (`incident` and `sevN` labels not created yet) |
+| Data Governance | Applies — gap tracked in #8 (data card in `docs/data/`; dataset versioning and the site's analytics data not yet classified) |
 
 ## License
 

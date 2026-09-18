@@ -21,7 +21,7 @@ name: ci
 #   "guidecore" job shape.) It checks whether ios/PlantingCore is present
 #   before doing anything else, and no-ops (green, not skipped) when it
 #   isn't. That guard is not hypothetical, just no longer live on main: this
-#   workflow was written while pipeline/ (PR #1) and ios/ (PR #2) were still
+#   workflow was written while pipeline/ (PR 1) and ios/ (PR 2) were still
 #   separate branches, each missing the other's directory. Both are merged
 #   now, so every PR off main carries both directories and this job runs for
 #   real; the presence check stays as a cheap safeguard for any future branch

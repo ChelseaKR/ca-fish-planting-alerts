@@ -127,8 +127,8 @@ Chelsea can repeat).
 
 ## StoreKit tests can't pass on the iOS 26.5 simulator
 
-`PurchaseManagerTests` has never passed on this machine. PR #7 merged it
-unverified, and origin/main and PR #12 fail the same way (measured
+`PurchaseManagerTests` has never passed on this machine. PR 7 merged it
+unverified, and origin/main and PR 12 fail the same way (measured
 2026-09-17 on fresh simulators). This is an Apple bug in the simulator
 runtime. It is not a problem with this repo's code, the product ID, or the
 `.storekit` file.

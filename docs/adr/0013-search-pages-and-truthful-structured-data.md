@@ -8,7 +8,7 @@ Deciders: Chelsea Kelly-Reif
 
 The website is how people find Trout Truck (`docs/DECISIONS.md` 0001).
 Anglers search for things like "<lake> trout stocking", "<county> fish
-plants this week" and "CDFW planting schedule". PR #14 added titles with the
+plants this week" and "CDFW planting schedule". PR 14 added titles with the
 county, canonical URLs and a sitemap whose `<lastmod>` comes from the data.
 An audit of the live site on 2026-09-18
 (`https://chelseakr.github.io/ca-fish-planting-alerts/`, 385 water pages)

@@ -20,7 +20,7 @@ by a comment, a `|| true`, or `continue-on-error`.
 | 4 | pip-audit and osv-scanner (0 known vulnerabilities), semgrep, gitleaks; CodeQL (python, actions) with no `error` or security-severity ≥ 7.0 result | `make verify`; `codeql.yml` | SECURITY |
 | 5 | zizmor, 0 high or critical findings; every `uses:` SHA-pinned | `zizmor.yml` | CI-CD |
 | 6 | axe 0 critical/serious/moderate and pa11y-ci 0 errors on every built page; no sideways scroll at 320px; Lighthouse accessibility ≥ 0.90 | `site-checks.yml` | ACCESSIBILITY |
-| 7 | i18n | N/A until Spanish is in scope (`docs/I18N.md`, #27) | I18N |
+| 7 | i18n | N/A until Spanish is in scope (`docs/I18N.md`, #6) | I18N |
 | 8 | ai-eval | N/A: no model, prompt or retrieval surface | AI-EVALUATION |
 | 9 | observability: the publish run prints its coverage line; a failed or timed-out run opens an issue | `publish.yml` | OBSERVABILITY |
 | 10 | Lighthouse performance ≥ 0.90, lab Core Web Vitals and script budgets, ≤ 10% regression against `perf/baseline.json` | `site-checks.yml` | PERFORMANCE |
@@ -48,12 +48,12 @@ by a comment, a `|| true`, or `continue-on-error`.
 
 ## RELEASE-GATE: an App Store build or a release tag
 
-Release machinery does not exist yet (#23). Until it does, an App Store
+Release machinery does not exist yet (#3). Until it does, an App Store
 submission needs, at minimum:
 
 - a green `main` at the commit the build is made from, recorded with the
   build number;
-- the app's accessibility walkthrough (#26) done or explicitly accepted as
+- the app's accessibility walkthrough (#5) done or explicitly accepted as
   open;
 - the App Store privacy label matching `PrivacyInfo.xcprivacy`;
 - a CHANGELOG entry for what users will see.
@@ -63,4 +63,4 @@ submission needs, at minimum:
 There is one maintainer. A pull request merges when every required check
 is green and the owner decides to merge it. That decision is the review
 (`docs/standards/CODE-QUALITY-STANDARD.md` §7.1). Branch protection that
-makes this mechanical is open in #25.
+makes this mechanical is open in #4.

@@ -27,7 +27,7 @@ struct FavoritesView: View {
             ContentUnavailableView {
                 Label("No favorite waters yet", systemImage: "star")
             } description: {
-                Text(emptyDescription)
+                Text(emptyDescription).foregroundStyle(.secondaryText)
             }
         } else {
             list(snapshot: snapshot, present: present, missing: missing)
@@ -74,6 +74,7 @@ struct FavoritesView: View {
             } header: {
                 if activeSearch.county != nil || !activeSearch.text.isEmpty {
                     Text(shown.count == 1 ? "1 of \(present.count) favorites" : "\(shown.count) of \(present.count) favorites")
+                        .foregroundStyle(.secondaryText)
                 }
             }
             if !missing.isEmpty && activeSearch.isEmpty {
@@ -89,9 +90,10 @@ struct FavoritesView: View {
                             }
                     }
                 } header: {
-                    Text("Not in this schedule")
+                    SectionHeader("Not in this schedule")
                 } footer: {
                     Text("This schedule no longer lists these favorites. CDFW may have renamed or dropped the water. Swipe to remove one.")
+                        .foregroundStyle(.secondaryText)
                 }
             }
         }
@@ -127,7 +129,7 @@ struct FavoritesView: View {
     private func noMatches(_ activeSearch: WaterSearch) -> some View {
         if activeSearch.text.trimmingCharacters(in: .whitespaces).isEmpty, let county = activeSearch.county {
             ContentUnavailableView("No favorites in \(county)", systemImage: "line.3.horizontal.decrease.circle",
-                                   description: Text("Choose All counties to see every favorite."))
+                                   description: Text("Choose All counties to see every favorite.").foregroundStyle(.secondaryText))
         } else {
             ContentUnavailableView.search(text: activeSearch.text)
         }
@@ -144,7 +146,7 @@ private struct MissingFavoriteRow: View {
             Text(title)
             Text("No longer in the schedule data")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
         }
         .accessibilityElement(children: .combine)
     }

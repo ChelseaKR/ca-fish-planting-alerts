@@ -83,6 +83,7 @@ struct BrowseView: View {
 }
 
 struct WaterRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let water: Water
     /// Set when the water is listed in the snapshot's week. The tag reads
     /// "This week" only while that week is current; once it has ended, it
@@ -90,20 +91,30 @@ struct WaterRow: View {
     let listed: SnapshotFreshness?
 
     var body: some View {
-        HStack {
+        // At the accessibility text sizes the tag goes under the name, so
+        // neither is squeezed into a sliver or cut off.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
+            : AnyLayout(HStackLayout())
+        layout {
             VStack(alignment: .leading, spacing: 2) {
                 Text(water.name).font(.body)
                 Text(water.countyLabel)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
             }
-            Spacer()
+            if !dynamicTypeSize.isAccessibilitySize {
+                Spacer(minLength: 8)
+            }
             if let listed {
+                // Primary text on a tinted capsule: the tint alone is below
+                // 4.5:1 on its own pale background at this size.
                 Text(listed.listedBadge)
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(.tint.opacity(0.15), in: Capsule())
-                    .foregroundStyle(.tint)
+                    .background(.tint.opacity(0.18), in: Capsule())
+                    .foregroundStyle(.primary)
+                    .fixedSize()
                     .accessibilityHidden(true)
             }
         }
@@ -139,12 +150,12 @@ struct FreshnessRow: View {
                 Text(freshness.detail)
             }
             .font(.caption2)
-            .foregroundStyle(freshness.needsAttention ? HierarchicalShapeStyle.primary : .secondary)
+            .foregroundStyle(freshness.needsAttention ? Color.primary : Color.secondaryText)
             if let checked = freshness.lastSuccessfulCheck {
                 let label = freshness.checkFailed ? "Last successful check" : "Last checked"
                 Text("\(label) \(checked.formatted(.relative(presentation: .named)))")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
             }
         }
         .accessibilityElement(children: .combine)

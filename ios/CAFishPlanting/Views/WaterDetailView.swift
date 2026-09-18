@@ -14,7 +14,7 @@ struct WaterDetailView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(water.countyLabel)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                     lastScheduledLine
                     if !water.speciesSeen.isEmpty {
                         Text("Species seen: \(water.speciesSeen.joined(separator: ", "))")
@@ -23,7 +23,7 @@ struct WaterDetailView: View {
                 }
             }
 
-            Section("Links") {
+            Section {
                 Link(destination: water.cdfwMapURL) {
                     Label("CDFW schedule for this water", systemImage: "link")
                 }
@@ -32,12 +32,14 @@ struct WaterDetailView: View {
                         Label("Full history on the site", systemImage: "safari")
                     }
                 }
+            } header: {
+                SectionHeader("Links")
             }
 
-            Section("Schedule history") {
+            Section {
                 if water.plants.isEmpty {
                     Text("No plants observed yet for this water.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                 } else {
                     ForEach(water.years, id: \.self) { year in
                         DisclosureGroup("\(String(year))") {
@@ -47,6 +49,8 @@ struct WaterDetailView: View {
                         }
                     }
                 }
+            } header: {
+                SectionHeader("Schedule history")
             }
         }
         .navigationTitle(water.name)
@@ -90,7 +94,7 @@ struct WaterDetailView: View {
     private var lastScheduledLine: some View {
         Text(ScheduleWording.lastScheduledLine(for: water))
             .font(.headline)
-            .foregroundStyle(water.lastListedWeek == nil ? HierarchicalShapeStyle.secondary : .primary)
+            .foregroundStyle(water.lastListedWeek == nil ? Color.secondaryText : Color.primary)
     }
 }
 
@@ -102,13 +106,16 @@ private struct PlantRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 // Never a day — the pipeline's own label, verbatim.
                 Text(plant.week.label)
-                Text(plant.species).font(.caption).foregroundStyle(.secondary)
+                Text(plant.species).font(.caption).foregroundStyle(.secondaryText)
             }
             Spacer()
             if plant.status == .removed {
-                Text("Schedule changed")
+                // Words plus a symbol, in a color that keeps 4.5:1 in light
+                // and dark mode; orange text on white doesn't.
+                Label("Schedule changed", systemImage: "arrow.uturn.backward.circle")
                     .font(.caption2)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.secondaryText)
+                    .labelStyle(.titleAndIcon)
             }
         }
         .accessibilityElement(children: .combine)

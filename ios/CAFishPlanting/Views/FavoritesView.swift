@@ -12,9 +12,10 @@ struct FavoritesView: View {
                     ContentUnavailableView("No favourites yet", systemImage: "star",
                         description: Text("Star a water in Browse to get a local alert when it appears in a new week's schedule."))
                 } else {
+                    let freshness = environment.freshness()
                     List(waters) { water in
                         NavigationLink(value: water.id) {
-                            WaterRow(water: water, scheduledThisWeek: snapshot.thisWeek.contains { $0.waterID == water.id })
+                            WaterRow(water: water, listed: snapshot.thisWeek.contains { $0.waterID == water.id } ? freshness : nil)
                         }
                     }
                     .navigationDestination(for: Water.ID.self) { id in

@@ -15,7 +15,7 @@ struct WaterDetailView: View {
                     Text(water.countyLabel)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    lastPlantedLine
+                    lastScheduledLine
                     if !water.speciesSeen.isEmpty {
                         Text("Species seen: \(water.speciesSeen.joined(separator: ", "))")
                             .font(.subheadline)
@@ -34,7 +34,7 @@ struct WaterDetailView: View {
                 }
             }
 
-            Section("Stocking history") {
+            Section("Schedule history") {
                 if water.plants.isEmpty {
                     Text("No plants observed yet for this water.")
                         .foregroundStyle(.secondary)
@@ -79,16 +79,13 @@ struct WaterDetailView: View {
         ShareContent.message(for: water, siteURL: SnapshotEndpoint.siteWaterURL(slug: water.slug))
     }
 
-    @ViewBuilder
-    private var lastPlantedLine: some View {
-        if let last = water.lastListedWeek {
-            Text("Last planted \(last.label)")
-                .font(.headline)
-        } else {
-            Text("Not yet planted in the schedule this app has observed")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-        }
+    /// "Last scheduled for the week of …": CDFW publishes scheduled plants
+    /// at week-of granularity, never a confirmed plant or a day
+    /// (`ScheduleWording`, shared with the share sheet).
+    private var lastScheduledLine: some View {
+        Text(ScheduleWording.lastScheduledLine(for: water))
+            .font(.headline)
+            .foregroundStyle(water.lastListedWeek == nil ? HierarchicalShapeStyle.secondary : .primary)
     }
 }
 

@@ -8,7 +8,7 @@ import Foundation
 ///
 /// Every word is grounded in the real `Water`/`Snapshot` the share was
 /// invoked from:
-/// - the status line only claims a planting when `water.lastListedWeek` is
+/// - the status line only names a scheduled week when `water.lastListedWeek` is
 ///   non-`nil`, and only names species `water.lastListedSpecies` actually
 ///   lists for that week (never `speciesSeen`, which can include other
 ///   weeks or `removed` plants);
@@ -18,11 +18,10 @@ import Foundation
 ///   stable per-water URL — and is simply omitted (not replaced with a
 ///   placeholder) if that can't be formed.
 ///
-/// Per `schema/README.md` ("Never say 'stocked'.") this never uses the verb
-/// "stocked". `lastListedWeek` is by construction not in the future, so
-/// "planted" is the sanctioned term here (the same one `WaterDetailView`
-/// already uses for this exact field) — as opposed to a future/current-week
-/// plant, which the app calls "scheduled" and this type never describes.
+/// The status line is `ScheduleWording`'s, the same words `WaterDetailView`
+/// shows: "scheduled", never "planted" or "stocked", and a week, never a
+/// day. CDFW publishes scheduled plants, which are subject to change, so
+/// even a past week is only ever "scheduled" (`schema/README.md`).
 public enum ShareContent {
     /// The product name the message is signed with (DECISIONS 0010). Same
     /// string as the app's `CFBundleDisplayName` in `Info.plist`; repeated
@@ -33,25 +32,23 @@ public enum ShareContent {
     public static func message(for water: Water, siteURL: URL?) -> String {
         var parts = ["\(water.name) — \(productName), CA fish planting alerts.", statusLine(for: water)]
         if let siteURL {
-            parts.append("Stocking history and schedule: \(siteURL.absoluteString)")
+            parts.append("Schedule history: \(siteURL.absoluteString)")
         }
         return parts.joined(separator: " ")
     }
 
-    /// The one sentence stating what, if anything, this water's real history
-    /// says happened most recently. Exposed separately so it's easy to test
+    /// The one sentence stating which week, if any, this water's real history
+    /// says it was most recently scheduled for. Exposed separately so it's easy to test
     /// in isolation from message framing/links.
     public static func statusLine(for water: Water) -> String {
-        guard let lastListedWeek = water.lastListedWeek else {
-            return "Not yet planted in the schedule this app has observed."
-        }
+        let line = ScheduleWording.lastScheduledLine(for: water)
         let species = water.lastListedSpecies
-        guard !species.isEmpty else {
-            // Defensive only: lastListedWeek is derived from a listed plant
-            // in the real snapshot, so this shouldn't occur — but never
-            // silently invent a species name if it somehow does.
-            return "Last planted \(lastListedWeek.label)."
+        guard water.lastListedWeek != nil, !species.isEmpty else {
+            // No listed week, or (defensive only: lastListedWeek is derived
+            // from a listed plant, so this shouldn't occur) a week with no
+            // species. Never invent a species name.
+            return "\(line)."
         }
-        return "Last planted with \(species.joined(separator: ", ")), \(lastListedWeek.label)."
+        return "\(line): \(species.joined(separator: ", "))."
     }
 }

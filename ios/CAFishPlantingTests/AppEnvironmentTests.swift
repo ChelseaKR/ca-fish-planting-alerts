@@ -125,6 +125,84 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertTrue(pending.isEmpty, "a non-purchaser must never have a local notification scheduled")
         center.removeAllPendingNotificationRequests()
     }
+
+    // MARK: - Refresh on open (launch and return to the foreground)
+
+    private let opened = Date(timeIntervalSince1970: 1_790_000_000) // 2026-09-21
+
+    /// Launch fetches once; a return to the foreground inside the throttle
+    /// window doesn't fetch again; one after it does.
+    func testOpeningTheAppFetchesOnceThenThrottles() async throws {
+        let env = AppEnvironment(refresher: makeMockedSnapshotRefresher())
+        MockSnapshotURLProtocol.responseData = try bundledSnapshotData()
+        MockSnapshotURLProtocol.requestCount = 0
+        defer { MockSnapshotURLProtocol.responseData = nil }
+
+        let first = await env.refreshIfDue(now: opened)
+        XCTAssertNotNil(first, "a fresh install must check on first open")
+        XCTAssertEqual(MockSnapshotURLProtocol.requestCount, 1)
+        XCTAssertEqual(env.snapshotOrigin, .stored, "the fetched snapshot must replace the bundled one")
+
+        let soon = await env.refreshIfDue(now: opened.addingTimeInterval(60 * 60))
+        XCTAssertNil(soon, "an hour later is inside the throttle window")
+        XCTAssertEqual(MockSnapshotURLProtocol.requestCount, 1, "a throttled open must not touch the network")
+
+        let later = await env.refreshIfDue(now: opened.addingTimeInterval(6 * 60 * 60))
+        XCTAssertNotNil(later)
+        XCTAssertEqual(MockSnapshotURLProtocol.requestCount, 2)
+    }
+
+    /// Launch fires both the root view's `.task` and the `.active` scene
+    /// phase: two asks, one GET.
+    func testTwoOpensAtOnceShareOneFetch() async throws {
+        let env = AppEnvironment(refresher: makeMockedSnapshotRefresher())
+        MockSnapshotURLProtocol.responseData = try bundledSnapshotData()
+        MockSnapshotURLProtocol.requestCount = 0
+        defer { MockSnapshotURLProtocol.responseData = nil }
+
+        async let a = env.refreshIfDue(now: opened)
+        async let b = env.refreshIfDue(now: opened)
+        let outcomes = await [a, b]
+
+        XCTAssertTrue(outcomes.contains { $0 != nil }, "one of the two opens must fetch: \(outcomes)")
+        XCTAssertEqual(MockSnapshotURLProtocol.requestCount, 1, "two opens at once must cost one GET")
+        XCTAssertFalse(env.isRefreshing)
+    }
+
+    /// Offline at launch: the app says it couldn't check and keeps the
+    /// bundled week, labelled with that week. It never shows the week as
+    /// empty.
+    func testAFailedFetchOnOpenKeepsTheBundledWeekAndSaysSo() async throws {
+        let env = AppEnvironment(refresher: makeMockedSnapshotRefresher())
+        MockSnapshotURLProtocol.responseData = nil
+        MockSnapshotURLProtocol.requestCount = 0
+        let before = try XCTUnwrap(env.snapshot)
+        XCTAssertFalse(before.thisWeek.isEmpty, "the bundled fixture must list waters for this test to mean anything")
+
+        let outcome = await env.refreshIfDue(now: opened)
+
+        guard case .failed = outcome else { return XCTFail("expected a failed refresh, got \(String(describing: outcome))") }
+        XCTAssertEqual(MockSnapshotURLProtocol.requestCount, 1, "sanity check: the fetch really ran and failed")
+        XCTAssertEqual(env.snapshot, before, "a failed fetch must keep the last good snapshot")
+        XCTAssertEqual(env.snapshotOrigin, .bundled)
+        let freshness = try XCTUnwrap(env.freshness(now: opened))
+        XCTAssertTrue(freshness.checkFailed)
+        XCTAssertEqual(freshness.watersListed, Set(before.thisWeek.map(\.waterID)).count)
+        XCTAssertEqual(freshness.headline, "Schedule for the \(before.sourceWeek.label)")
+        XCTAssertTrue(freshness.detail.hasPrefix("Couldn't check for a newer schedule, so this is the one that came with the app."), freshness.detail)
+        XCTAssertFalse(freshness.summary.localizedCaseInsensitiveContains("no waters"))
+
+        let retry = await env.refreshIfDue(now: opened.addingTimeInterval(10 * 60))
+        XCTAssertNil(retry, "a failure is retried after the short interval, not on every open")
+        XCTAssertEqual(MockSnapshotURLProtocol.requestCount, 1)
+    }
+}
+
+private func bundledSnapshotData() throws -> Data {
+    guard let url = Bundle.main.url(forResource: "snapshot", withExtension: "json") else {
+        throw NotificationGatingFixtureError.bundledSnapshotMissing
+    }
+    return try Data(contentsOf: url)
 }
 
 // MARK: - Notification-gating test support (shared with PurchaseManagerTests)
@@ -145,8 +223,11 @@ enum NotificationGatingFixtureError: Error { case bundledSnapshotMissing, waterN
 
 final class MockSnapshotURLProtocol: URLProtocol {
     /// Set by a test immediately before calling `performBackgroundRefresh()`;
-    /// reset to `nil` in a `defer` once that test is done with it.
+    /// reset to `nil` in a `defer` once that test is done with it. `nil`
+    /// fails the request, like a device with no connection.
     static var responseData: Data?
+    /// Snapshot GETs that reached this stub. Reset by the tests that count.
+    static var requestCount = 0
 
     override class func canInit(with request: URLRequest) -> Bool {
         request.url?.host == SnapshotEndpoint.host
@@ -155,6 +236,7 @@ final class MockSnapshotURLProtocol: URLProtocol {
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
+        Self.requestCount += 1
         guard let url = request.url, let data = Self.responseData else {
             client?.urlProtocol(self, didFailWithError: URLError(.unknown))
             return

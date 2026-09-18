@@ -21,12 +21,13 @@ struct AboutView: View {
             }
 
             Section("What this app does") {
-                Text("Favourite any California water for free and browse its full stocking history. With full access, also get a notification on this device when a favourite appears in the California Department of Fish and Wildlife's weekly stocking schedule.")
+                Text("Favourite any California water for free and browse its full schedule history. With full access, also get a notification on this device when a favourite appears in the California Department of Fish and Wildlife's weekly stocking schedule.")
                 Text("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
             }
 
             Section("How alerts work") {
                 Text("Alerts are local notifications this app schedules on this device for full-access purchasers only — there is no server, no push service, and no account. iOS decides when the app is allowed to refresh in the background, and the schedule itself is weekly, so an alert arrives within the week a water is added, not the minute it is.")
+                Text("The app also checks for a newer schedule when you open it, at most every few hours. If it can't, it says so and keeps showing the last schedule it has, with that schedule's week.")
                 Text("Notification status: \(authorizationDescription)")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -51,10 +52,15 @@ struct AboutView: View {
                 }
 
                 Section("This snapshot") {
-                    LabeledContent("Current schedule week", value: snapshot.sourceWeek.label)
+                    LabeledContent("Schedule week", value: snapshot.sourceWeek.label)
                     LabeledContent("Built", value: snapshot.generatedAt.formatted(date: .abbreviated, time: .shortened))
                     if let originLabel {
                         LabeledContent("Source", value: originLabel)
+                    }
+                    if let freshness = environment.freshness() {
+                        Text(freshness.detail)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -77,7 +83,7 @@ struct AboutView: View {
     private var originLabel: String? {
         switch environment.snapshotOrigin {
         case .bundled: return "Bundled with the app"
-        case .stored: return "Refreshed on this device"
+        case .stored: return "Downloaded on this device"
         case nil: return nil
         }
     }

@@ -122,9 +122,12 @@ public final class SnapshotStore {
         try? metaFile.save(meta)
     }
 
+    /// `meta.lastOutcome` after a failed check (see `SnapshotMeta.lastAttemptFailed`).
+    public static let failedOutcome = "failed"
+
     public func recordFailure(_ message: String, now: Date = Date()) {
         meta.lastAttemptAt = now
-        meta.lastOutcome = "failed"
+        meta.lastOutcome = Self.failedOutcome
         meta.lastError = message
         try? metaFile.save(meta)
     }

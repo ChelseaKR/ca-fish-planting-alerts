@@ -48,6 +48,16 @@ once releases exist. No release has been tagged yet (#23).
   all aged off (#13).
 - App: the shared Xcode scheme points at the right StoreKit configuration
   file (#24).
+- App: it checks for a newer schedule on launch and on return to the
+  foreground, at most every 6 hours (30 minutes after a failed check).
+  Before, a fresh install showed the schedule bundled at build time until
+  iOS ran the background task. Browse now says which week the schedule is
+  for and how the last check went. A failed check or an ended week is said
+  plainly, and the last good schedule stays on screen, labelled with its
+  week (#37).
+- App: the water screen and the share text say "Last scheduled for the week
+  of …", not "Last planted …". CDFW publishes scheduled plants, which are
+  subject to change, not confirmed ones (#37).
 
 ### Security
 

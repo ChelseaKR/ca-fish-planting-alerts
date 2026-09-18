@@ -11,7 +11,7 @@ final class ShareContentTests: XCTestCase {
         message.replacingOccurrences(of: ShareContent.productName, with: "")
     }
 
-    func testMessageNamesTheWaterAndTheRealLastPlantedSpeciesAndWeek() {
+    func testMessageNamesTheWaterAndTheRealLastScheduledSpeciesAndWeek() {
         let water = TS.water(id: "cdfw-1", name: "Test Lake", plants: [
             TS.plant("2026-08-30", species: "Catfish"),
             TS.plant("2026-09-06", species: "Trout"),
@@ -22,12 +22,14 @@ final class ShareContentTests: XCTestCase {
 
         XCTAssertTrue(message.contains("Test Lake"), "should name the water")
         XCTAssertTrue(message.contains("Trout Truck"), "should name the product (DECISIONS 0010)")
-        XCTAssertTrue(message.contains("Last planted with Trout, week of 2026-09-06."),
+        XCTAssertTrue(message.contains("Last scheduled for the week of 2026-09-06: Trout."),
                        "should state the real species and week for the real last-listed plant, not the earlier catfish week")
         XCTAssertFalse(message.contains("Catfish"), "must not surface an older week's species as the current status")
         XCTAssertTrue(message.contains(siteURL.absoluteString), "should include the real per-water site URL")
         XCTAssertFalse(message.localizedCaseInsensitiveContains("stocked"),
                         "schema/README.md: never say \"stocked\"")
+        XCTAssertFalse(message.localizedCaseInsensitiveContains("planted"),
+                        "CDFW publishes scheduled plants: never claim one was planted")
     }
 
     func testMessageJoinsMultipleSpeciesListedTheSameWeek() {
@@ -38,7 +40,7 @@ final class ShareContentTests: XCTestCase {
 
         let message = ShareContent.message(for: water, siteURL: siteURL)
 
-        XCTAssertTrue(message.contains("Last planted with Trout, Catfish, week of 2026-09-06."))
+        XCTAssertTrue(message.contains("Last scheduled for the week of 2026-09-06: Trout, Catfish."))
     }
 
     func testMessageForAWaterWithNoHistoryNeverClaimsAPlanting() {
@@ -47,8 +49,8 @@ final class ShareContentTests: XCTestCase {
 
         let message = ShareContent.message(for: water, siteURL: siteURL)
 
-        XCTAssertTrue(message.contains("Not yet planted in the schedule this app has observed."))
-        XCTAssertFalse(message.contains("Last planted"), "no real last-planted date exists — must not invent one")
+        XCTAssertTrue(message.contains("Not on the schedule for any week so far in this app's history."))
+        XCTAssertFalse(message.contains("Last scheduled"), "no real last-scheduled week exists — must not invent one")
         XCTAssertFalse(withoutBrand(message).localizedCaseInsensitiveContains("trout"),
                         "must not name a species with nothing in the real history to back it")
     }
@@ -63,7 +65,7 @@ final class ShareContentTests: XCTestCase {
 
         let message = ShareContent.message(for: water, siteURL: siteURL)
 
-        XCTAssertTrue(message.contains("Not yet planted in the schedule this app has observed."))
+        XCTAssertTrue(message.contains("Not on the schedule for any week so far in this app's history."))
         XCTAssertFalse(withoutBrand(message).contains("Trout"), "a removed/cancelled plant is not a real planting")
     }
 

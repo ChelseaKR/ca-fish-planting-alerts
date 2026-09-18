@@ -16,12 +16,33 @@ struct CAFishPlantingApp: App {
         WindowGroup {
             RootTabView()
                 .environment(environment)
-                .task { AppEnvironment.shared = environment }
+                .task {
+                    AppEnvironment.shared = environment
+                    await refreshOnOpen()
+                }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .background {
+            switch phase {
+            case .active:
+                Task { await refreshOnOpen() }
+            case .background:
                 BackgroundRefresh.scheduleNextRefresh()
+            default:
+                break
             }
         }
     }
+
+    /// Launch and each return to the foreground. `refreshIfDue` throttles
+    /// it and joins a fetch already running, so launch firing both `.task`
+    /// and `.active` costs one GET at most.
+    private func refreshOnOpen() async {
+        // App-hosted unit tests run inside this app. A live fetch here would
+        // race them for the same Application Support directory, so they
+        // drive `refreshIfDue` themselves against a mocked session.
+        guard !Self.isHostingUnitTests else { return }
+        await environment.refreshIfDue()
+    }
+
+    private static let isHostingUnitTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 }

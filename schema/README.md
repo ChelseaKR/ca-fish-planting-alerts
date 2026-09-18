@@ -68,7 +68,8 @@ in place.
 - `waters[].location` is `null` unless it came from a licensed source named in
   `location.source`. Coordinates are never guessed.
 - `waters[].last_listed_week` is the newest listed week that is not in the
-  future — "last planted week of …" for the water page.
+  future — "last scheduled for the week of …" for the water page. It is
+  still only a scheduled week, so never label it "planted" or "stocked".
 - Dates are America/Los_Angeles civil dates; timestamps are UTC `Z`.
 
 ## Versioning

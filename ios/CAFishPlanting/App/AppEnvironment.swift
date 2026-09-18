@@ -41,6 +41,11 @@ final class AppEnvironment {
     private var alertStateStore: AlertStateStore?
     private let refresher: SnapshotRefresher
     private let notifications: NotificationScheduler
+    private let openThrottle: RefreshThrottle
+    /// The one refresh running now, if any. Launch, return to the
+    /// foreground and the background task can all ask at once; they share
+    /// this task rather than racing two GETs into one `SnapshotStore`.
+    private var inFlightRefresh: Task<RefreshOutcome, Never>?
 
     /// The one-time purchase. `let`, not injected-per-call: it owns its
     /// own StoreKit listeners for the app's lifetime. Tests may inject a
@@ -56,16 +61,30 @@ final class AppEnvironment {
     /// or `dismissNotificationExplainer()`.
     var pendingNotificationExplainer: FirstFavouriteExplainer?
 
-    var snapshot: Snapshot? { store?.snapshot }
-    var snapshotOrigin: SnapshotOrigin? { store?.origin }
-    var refreshMeta: SnapshotMeta? { store?.meta }
+    // Copies of the store's state, so SwiftUI sees a refresh land.
+    // `SnapshotStore` is a plain class that Observation can't watch; these
+    // are set from it after init and after every refresh (`syncFromStore`).
+    private(set) var snapshot: Snapshot?
+    private(set) var snapshotOrigin: SnapshotOrigin?
+    private(set) var refreshMeta: SnapshotMeta?
+
+    var isRefreshing: Bool { inFlightRefresh != nil }
+
+    /// What to say about the schedule on screen: its week, whether that week
+    /// is over, and how the last check went. `nil` only when no snapshot
+    /// loaded at all (then `loadError` says why).
+    func freshness(now: Date = Date()) -> SnapshotFreshness? {
+        guard let snapshot, let snapshotOrigin, let refreshMeta else { return nil }
+        return SnapshotFreshness(snapshot: snapshot, origin: snapshotOrigin, meta: refreshMeta, isChecking: isRefreshing, now: now)
+    }
 
     /// Tests may inject a pre-built refresher (e.g. one wired to a mocked
     /// `URLSession` via `SnapshotRefresher.makeSession(protocolClasses:)`)
     /// to exercise `performBackgroundRefresh()` without a live network call.
-    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil) {
+    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil, openThrottle: RefreshThrottle = .foreground) {
         self.notifications = NotificationScheduler(center: notificationCenter)
         self.refresher = refresher ?? SnapshotRefresher(session: SnapshotRefresher.makeSession())
+        self.openThrottle = openThrottle
         var entitlementStore: EntitlementStore?
         do {
             let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: bundleIdentifier)
@@ -85,7 +104,14 @@ final class AppEnvironment {
             loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
         self.purchases = purchases ?? PurchaseManager(entitlementStore: entitlementStore)
+        syncFromStore()
         Task { notificationAuthorization = await notifications.authorizationStatus() }
+    }
+
+    private func syncFromStore() {
+        snapshot = store?.snapshot
+        snapshotOrigin = store?.origin
+        refreshMeta = store?.meta
     }
 
     // MARK: Favourites
@@ -128,11 +154,26 @@ final class AppEnvironment {
 
     // MARK: Refresh
 
-    /// Foreground refresh (e.g. pull-to-refresh). Same path as the
+    /// Launch and return to the foreground. Fetches the snapshot unless one
+    /// is already being fetched or `openThrottle` says a check ran too
+    /// recently (the background task's checks count too: they share
+    /// `SnapshotMeta`). Returns `nil` when it skipped.
+    ///
+    /// Without this, a fresh install (and App Review) sees only the snapshot
+    /// bundled at build time until iOS chooses to run the background task.
+    /// It is the same single GET to the same host as the background task:
+    /// no new destination and nothing sent about the device.
+    @discardableResult
+    func refreshIfDue(now: Date = Date()) async -> RefreshOutcome? {
+        guard let store, inFlightRefresh == nil, openThrottle.isDue(meta: store.meta, now: now) else { return nil }
+        return await refresh(now: now)
+    }
+
+    /// An unthrottled refresh (e.g. pull-to-refresh). Same path as the
     /// background task; the only difference is who called it.
     @discardableResult
     func refreshNow() async -> RefreshOutcome {
-        await performBackgroundRefresh()
+        await refresh(now: Date())
     }
 
     /// Entry point for `BGAppRefreshTask`. Refreshes the snapshot, replans
@@ -146,9 +187,37 @@ final class AppEnvironment {
     /// or not: it is bookkeeping ("what's already been seen"), not a
     /// notification, and keeping it current means a later purchase doesn't
     /// suddenly announce every listing change that happened while locked.
-    func performBackgroundRefresh() async -> RefreshOutcome {
+    func performBackgroundRefresh(now: Date = Date()) async -> RefreshOutcome {
+        await refresh(now: now)
+    }
+
+    /// Joins the refresh already running, or starts one. Cancelling the
+    /// caller (the background task's expiration handler) cancels the fetch.
+    private func refresh(now: Date) async -> RefreshOutcome {
+        let task: Task<RefreshOutcome, Never>
+        if let inFlightRefresh {
+            task = inFlightRefresh
+        } else {
+            task = Task { @MainActor in
+                let outcome = await self.runRefresh(now: now)
+                self.inFlightRefresh = nil
+                return outcome
+            }
+            inFlightRefresh = task
+        }
+        return await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
+    }
+
+    private func runRefresh(now: Date) async -> RefreshOutcome {
         guard let store else { return .failed("no snapshot store") }
-        let outcome = await refresher.refresh(into: store, now: Date())
+        let outcome = await refresher.refresh(into: store, now: now)
+        // Whatever the outcome. A failure changes only the meta (the store
+        // keeps the last good snapshot), and the screen must say so.
+        syncFromStore()
         if case .updated = outcome, !favourites.isEmpty {
             let plan = AlertPlanner.plan(snapshot: store.snapshot, favourites: favourites.ids, state: alertState)
             alertState = plan.state

@@ -22,6 +22,7 @@ struct BrowseView: View {
     private func content(for snapshot: Snapshot) -> some View {
         let thisWeekIDs = Set(snapshot.thisWeek.map(\.waterID))
         let waters = filtered(snapshot.waters, thisWeekIDs: thisWeekIDs)
+        let freshness = environment.freshness()
         List {
             Section {
                 Picker("Region", selection: $selectedRegion) {
@@ -31,7 +32,9 @@ struct BrowseView: View {
                     }
                 }
                 .pickerStyle(.menu)
-                FreshnessRow(snapshot: snapshot, meta: environment.refreshMeta)
+                if let freshness {
+                    FreshnessRow(freshness: freshness)
+                }
             }
             Section {
                 if waters.isEmpty {
@@ -39,7 +42,7 @@ struct BrowseView: View {
                 } else {
                     ForEach(waters) { water in
                         NavigationLink(value: water.id) {
-                            WaterRow(water: water, scheduledThisWeek: thisWeekIDs.contains(water.id))
+                            WaterRow(water: water, listed: thisWeekIDs.contains(water.id) ? freshness : nil)
                         }
                     }
                 }
@@ -68,7 +71,10 @@ struct BrowseView: View {
 
 struct WaterRow: View {
     let water: Water
-    let scheduledThisWeek: Bool
+    /// Set when the water is listed in the snapshot's week. The tag reads
+    /// "This week" only while that week is current; once it has ended, it
+    /// shows the week instead (`SnapshotFreshness.listedBadge`).
+    let listed: SnapshotFreshness?
 
     var body: some View {
         HStack {
@@ -79,8 +85,8 @@ struct WaterRow: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            if scheduledThisWeek {
-                Text("This week")
+            if let listed {
+                Text(listed.listedBadge)
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(.tint.opacity(0.15), in: Capsule())
@@ -89,26 +95,41 @@ struct WaterRow: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(scheduledThisWeek ? "\(water.name), \(water.countyLabel), scheduled this week" : "\(water.name), \(water.countyLabel)")
+        .accessibilityLabel(listed.map { "\(water.name), \(water.countyLabel), \($0.listedPhrase)" } ?? "\(water.name), \(water.countyLabel)")
     }
 }
 
-/// The offline-first promise made visible: which snapshot the app is
-/// showing and how the last refresh went, never hidden behind "loading".
+/// The offline-first promise made visible: which week's schedule the app
+/// is showing, whether that week is over, and how the last check for a newer
+/// one went. A failed or stale check is said plainly and the last good
+/// schedule stays on screen, labelled with its week; it is never replaced by
+/// "nothing listed".
 struct FreshnessRow: View {
-    let snapshot: Snapshot
-    let meta: SnapshotMeta?
+    let freshness: SnapshotFreshness
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("Current schedule: \(snapshot.sourceWeek.label)")
-                .font(.footnote.weight(.medium))
-            if let outcome = meta?.lastOutcome, let attempt = meta?.lastAttemptAt {
-                Text("Last refresh: \(outcome) — \(attempt.formatted(date: .abbreviated, time: .shortened))")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            } else {
-                Text("Not refreshed on this device yet — showing the schedule bundled with the app.")
+        VStack(alignment: .leading, spacing: 3) {
+            Text(freshness.headline)
+                .font(.footnote.weight(.semibold))
+            Text(freshness.summary)
+                .font(.caption)
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                if freshness.isChecking {
+                    ProgressView()
+                        .controlSize(.mini)
+                        .accessibilityHidden(true)
+                } else if freshness.needsAttention {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .accessibilityHidden(true)
+                }
+                Text(freshness.detail)
+            }
+            .font(.caption2)
+            .foregroundStyle(freshness.needsAttention ? HierarchicalShapeStyle.primary : .secondary)
+            if let checked = freshness.lastSuccessfulCheck {
+                let label = freshness.checkFailed ? "Last successful check" : "Last checked"
+                Text("\(label) \(checked.formatted(.relative(presentation: .named)))")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }

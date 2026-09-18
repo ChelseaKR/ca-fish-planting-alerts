@@ -31,6 +31,31 @@ Chelsea has to create there before a real purchase can happen outside this
 local configuration, and `docs/DECISIONS.md` 0007 for why this replaced
 0003's original "no StoreKit, App-Store-price-tier" plan.
 
+## When the app fetches the snapshot
+
+The app makes one kind of network request: a GET of the snapshot
+(`PlantingCore/Sources/PlantingCore/SnapshotRefresher.swift`). It runs:
+
+- from the `BGAppRefreshTask`, when iOS chooses (`App/BackgroundRefresh.swift`);
+- on launch and on each return to the foreground
+  (`AppEnvironment.refreshIfDue`), at most once every 6 hours, or 30 minutes
+  after a failed check (`RefreshThrottle.foreground`). Background checks
+  count toward that, because both read the same `SnapshotMeta`. When launch
+  asks twice, both share one fetch.
+
+Browse shows which week the schedule is for, how many waters that week
+lists, and how the last check went (`SnapshotFreshness`). A failed check is
+said plainly, and the last good snapshot stays on screen, labelled with its
+week. Once that week has ended the app says so, and the tag on a listed
+water shows the week instead of "This week". A failed fetch never becomes
+"nothing listed": `SnapshotStore` keeps the last good snapshot, and
+`FailedFetchNeverRendersAbsenceTests` checks each kind of failure.
+
+App-hosted unit tests run inside the app, so the launch refresh is skipped
+when `XCTestConfigurationFilePath` is set. `AppEnvironmentTests` calls
+`refreshIfDue` itself against a mocked session. UI tests launch the app
+normally, so they fetch the live snapshot.
+
 ## Commands
 
 ```sh

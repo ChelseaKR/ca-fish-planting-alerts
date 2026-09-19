@@ -6,7 +6,7 @@ struct WaterDetailView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let water: Water
 
-    private var isFavourite: Bool { environment.isFavourite(water.id) }
+    private var isFavorite: Bool { environment.isFavorite(water.id) }
 
     var body: some View {
         List {
@@ -59,19 +59,19 @@ struct WaterDetailView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     if reduceMotion {
-                        environment.toggleFavourite(water)
+                        environment.toggleFavorite(water)
                     } else {
-                        withAnimation(.snappy) { environment.toggleFavourite(water) }
+                        withAnimation(.snappy) { environment.toggleFavorite(water) }
                     }
                 } label: {
-                    Image(systemName: isFavourite ? "star.fill" : "star")
+                    Image(systemName: isFavorite ? "star.fill" : "star")
                 }
                 // A firmer tap for adding a favorite than for removing one.
                 // iOS skips it when system haptics are off.
-                .sensoryFeedback(trigger: isFavourite) { _, nowFavorite in
+                .sensoryFeedback(trigger: isFavorite) { _, nowFavorite in
                     nowFavorite ? .success : .selection
                 }
-                .accessibilityLabel(isFavourite ? "Remove \(water.name) from favourites" : "Add \(water.name) to favourites")
+                .accessibilityLabel(isFavorite ? "Remove \(water.name) from favorites" : "Add \(water.name) to favorites")
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 ShareLink(item: shareText, subject: Text(water.name)) {

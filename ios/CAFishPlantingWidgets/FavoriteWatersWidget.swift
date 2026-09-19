@@ -8,7 +8,7 @@ import PlantingCore
 /// It reads only the digest the app writes to the App Group container
 /// (`WidgetDigestStore`). It never fetches anything: the app's snapshot GET
 /// stays the only network request, and the widget shows what the app last
-/// downloaded, labelled with its week.
+/// downloaded, labeled with its week.
 struct FavoriteWatersWidget: Widget {
     /// Also in the app (`WidgetBridge`), which reloads this widget's
     /// timeline when the digest changes.

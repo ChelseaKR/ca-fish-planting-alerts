@@ -1,15 +1,15 @@
 import XCTest
 
 /// One smoke path: launch, see the Browse list populated from the bundled
-/// snapshot, open a water's detail, favourite it, see the first-favourite
-/// notification explainer, dismiss it, switch to Favourites and see the
+/// snapshot, open a water's detail, favorite it, see the first-favorite
+/// notification explainer, dismiss it, switch to Favorites and see the
 /// water listed there.
 final class SmokeUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
     }
 
-    func testBrowseToFavouriteFlow() throws {
+    func testBrowseToFavoriteFlow() throws {
         let app = XCUIApplication()
         app.launch()
 
@@ -17,7 +17,7 @@ final class SmokeUITests: XCTestCase {
         XCTAssertTrue(browseList.waitForExistence(timeout: 30), "Browse list should appear")
 
         // The first cells are the Region picker and the schedule's week, not
-        // waters. Water rows are buttons labelled "<name>, <county>…";
+        // waters. Water rows are buttons labeled "<name>, <county>…";
         // search for one so the test doesn't depend on list order.
         let search = app.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 10))
@@ -33,8 +33,8 @@ final class SmokeUITests: XCTestCase {
         firstWater.tap()
 
         // Favorite it unless an earlier run on this simulator already did.
-        let add = app.buttons["Add Annie Lake to favourites"]
-        XCTAssertTrue(add.waitForExistence(timeout: 5) || app.buttons["Remove Annie Lake from favourites"].exists)
+        let add = app.buttons["Add Annie Lake to favorites"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5) || app.buttons["Remove Annie Lake from favorites"].exists)
         if add.exists { add.tap() }
 
         let explainerTitle = app.staticTexts["Stay in the loop"]
@@ -43,9 +43,9 @@ final class SmokeUITests: XCTestCase {
         }
 
         app.navigationBars.buttons["Waters"].firstMatch.tap()
-        app.tabBars.buttons["Favourites"].tap()
+        app.tabBars.buttons["Favorites"].tap()
         let favorite = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Annie Lake,")).firstMatch
-        XCTAssertTrue(favorite.waitForExistence(timeout: 5), "the favourited water should appear under Favourites")
+        XCTAssertTrue(favorite.waitForExistence(timeout: 5), "the favorited water should appear under Favorites")
     }
 
     /// The link the widget uses (`WaterLink`) opens that water's screen from
@@ -62,9 +62,9 @@ final class SmokeUITests: XCTestCase {
         app.open(URL(string: "trouttruck://water/cdfw-125")!)
 
         XCTAssertTrue(app.navigationBars["Annie Lake"].waitForExistence(timeout: 15), "the link should open Annie Lake:\n\(app.debugDescription)")
-        let isFavorite = app.buttons["Remove Annie Lake from favourites"].exists
+        let isFavorite = app.buttons["Remove Annie Lake from favorites"].exists
         // Back is titled after the list the water opened from.
-        let listTitle = isFavorite ? "Favourites" : "Waters"
+        let listTitle = isFavorite ? "Favorites" : "Waters"
         let back = app.navigationBars.buttons[listTitle].firstMatch
         XCTAssertTrue(back.waitForExistence(timeout: 5), "the water should open under \(listTitle):\n\(app.debugDescription)")
         back.tap()

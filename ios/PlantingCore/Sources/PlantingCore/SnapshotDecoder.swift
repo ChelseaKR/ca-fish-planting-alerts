@@ -35,7 +35,7 @@ public struct SnapshotDecoder: Sendable {
         let source = try Self.source(dto.source)
         let sourceWeek = try Self.week(dto.sourceWeek, field: "source_week")
         let attribution = try Self.attribution(dto.attribution)
-        let licence = try Self.licence(dto.licence)
+        let license = try Self.license(dto.license)
         let regions = try dto.regions.map(Self.region)
         let counties = try dto.counties.map(Self.county)
         let species = Self.clean(dto.species)
@@ -67,7 +67,7 @@ public struct SnapshotDecoder: Sendable {
         )
 
         return Snapshot(schemaVersion: dto.schemaVersion, generatedAt: generatedAt, source: source,
-                        sourceWeek: sourceWeek, attribution: attribution, licence: licence,
+                        sourceWeek: sourceWeek, attribution: attribution, license: license,
                         regions: regions, counties: counties, species: species, waters: waters,
                         thisWeek: thisWeek, coverage: coverage)
     }
@@ -90,29 +90,29 @@ public struct SnapshotDecoder: Sendable {
         Attribution(text: dto.text, url: try url(dto.url, field: "attribution.url"))
     }
 
-    static func licence(_ dto: LicenceDTO) throws -> Licence {
-        let sources = try dto.sources.map { s -> LicenceSource in
+    static func license(_ dto: LicenseDTO) throws -> License {
+        let sources = try dto.sources.map { s -> LicenseSource in
             guard let reuse = CommercialReuse(rawValue: s.commercialReuse) else {
-                throw SnapshotDecodingError.malformed("licence source \(s.name) has an unrecognised commercial_reuse: \(s.commercialReuse)")
+                throw SnapshotDecodingError.malformed("license source \(s.name) has an unrecognized commercial_reuse: \(s.commercialReuse)")
             }
-            return LicenceSource(name: s.name, url: try url(s.url, field: "licence.sources[\(s.name)].url"),
+            return LicenseSource(name: s.name, url: try url(s.url, field: "licence.sources[\(s.name)].url"),
                                   termsURL: try url(s.termsURL, field: "licence.sources[\(s.name)].terms_url"),
                                   termsReadOn: try date(s.termsReadOn, field: "licence.sources[\(s.name)].terms_read_on"),
                                   commercialReuse: reuse, attributionRequired: s.attributionRequired)
         }
-        return Licence(summary: dto.summary, sources: sources)
+        return License(summary: dto.summary, sources: sources)
     }
 
     static func region(_ dto: RegionDTO) throws -> Region {
         guard Self.regionCodes.contains(dto.code) else {
-            throw SnapshotDecodingError.malformed("region has an unrecognised code: \(dto.code)")
+            throw SnapshotDecodingError.malformed("region has an unrecognized code: \(dto.code)")
         }
         return Region(code: dto.code, name: dto.name)
     }
 
     static func county(_ dto: CountyDTO) throws -> County {
         guard Self.regionCodes.contains(dto.region) else {
-            throw SnapshotDecodingError.malformed("county \(dto.name) has an unrecognised region: \(dto.region)")
+            throw SnapshotDecodingError.malformed("county \(dto.name) has an unrecognized region: \(dto.region)")
         }
         return County(name: dto.name, region: dto.region)
     }
@@ -130,7 +130,7 @@ public struct SnapshotDecoder: Sendable {
         let lastListedWeek = try w.lastListedWeek.map { try week($0, field: "waters[\(id)].last_listed_week") }
         let plants = try w.plants.map { p -> Plant in
             guard let status = PlantStatus(rawValue: p.status) else {
-                throw SnapshotDecodingError.malformed("waters[\(id)].plants has an unrecognised status: \(p.status)")
+                throw SnapshotDecodingError.malformed("waters[\(id)].plants has an unrecognized status: \(p.status)")
             }
             let sp = p.species.trimmingCharacters(in: .whitespaces)
             guard !sp.isEmpty else { throw SnapshotDecodingError.malformed("waters[\(id)] has a plant with an empty species") }
@@ -213,7 +213,7 @@ struct SnapshotDTO: Decodable {
     let source: SourceDTO
     let sourceWeek: WeekDTO
     let attribution: AttributionDTO
-    let licence: LicenceDTO
+    let license: LicenseDTO
     let regions: [RegionDTO]
     let counties: [CountyDTO]
     let species: [String]
@@ -223,7 +223,9 @@ struct SnapshotDTO: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion = "schema_version", generatedAt = "generated_at", source
-        case sourceWeek = "source_week", attribution, licence, regions, counties, species, waters
+        case sourceWeek = "source_week", attribution, regions, counties, species, waters
+        // Published snapshot field name: spelling kept so every v1 file still decodes.
+        case license = "licence"
         case thisWeek = "this_week", coverage
     }
 }
@@ -248,9 +250,9 @@ struct WeekDTO: Decodable { let start: String; let end: String; let label: Strin
 
 struct AttributionDTO: Decodable { let text: String; let url: String }
 
-struct LicenceDTO: Decodable { let summary: String; let sources: [LicenceSourceDTO] }
+struct LicenseDTO: Decodable { let summary: String; let sources: [LicenseSourceDTO] }
 
-struct LicenceSourceDTO: Decodable {
+struct LicenseSourceDTO: Decodable {
     let name: String
     let url: String
     let termsURL: String

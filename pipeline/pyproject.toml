@@ -1,7 +1,7 @@
 [project]
 name = "cfpa"
 version = "0.1.0"
-description = "CDFW fish-planting schedule pipeline: fetch, normalise, append-only history, snapshot, static site."
+description = "CDFW fish-planting schedule pipeline: fetch, normalize, append-only history, snapshot, static site."
 readme = "README.md"
 authors = [
     { name = "Chelsea Kelly-Reif (she/her)", email = "3114598+ChelseaKR@users.noreply.github.com" }

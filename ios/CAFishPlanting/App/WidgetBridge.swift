@@ -34,7 +34,7 @@ final class WidgetBridge {
         do {
             try store.save(digest)
         } catch {
-            // The widget keeps the last digest it could read, labelled with
+            // The widget keeps the last digest it could read, labeled with
             // its week. Nothing here may pretend the write worked.
             return false
         }

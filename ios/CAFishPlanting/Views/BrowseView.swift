@@ -126,7 +126,7 @@ struct WaterRow: View {
 /// The offline-first promise made visible: which week's schedule the app
 /// is showing, whether that week is over, and how the last check for a newer
 /// one went. A failed or stale check is said plainly and the last good
-/// schedule stays on screen, labelled with its week; it is never replaced by
+/// schedule stays on screen, labeled with its week; it is never replaced by
 /// "nothing listed".
 struct FreshnessRow: View {
     let freshness: SnapshotFreshness

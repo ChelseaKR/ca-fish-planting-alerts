@@ -57,8 +57,8 @@ final class ShareContentTests: XCTestCase {
 
     func testMessageForAWaterWhoseOnlyPlantsAreFutureOrRemovedNeverClaimsAPlanting() {
         // lastListedWeek is nil whenever there is no *listed*, non-future
-        // plant — a removed (cancelled) plant must not read as a real one.
-        let water = TS.water(id: "cdfw-4", name: "Cancelled Water", plants: [
+        // plant — a removed (canceled) plant must not read as a real one.
+        let water = TS.water(id: "cdfw-4", name: "Canceled Water", plants: [
             TS.plant("2026-09-20", species: "Trout", status: .removed),
         ])
         XCTAssertNil(water.lastListedWeek)
@@ -66,7 +66,7 @@ final class ShareContentTests: XCTestCase {
         let message = ShareContent.message(for: water, siteURL: siteURL)
 
         XCTAssertTrue(message.contains("Not on the schedule for any week so far in this app's history."))
-        XCTAssertFalse(withoutBrand(message).contains("Trout"), "a removed/cancelled plant is not a real planting")
+        XCTAssertFalse(withoutBrand(message).contains("Trout"), "a removed/canceled plant is not a real planting")
     }
 
     func testMessageOmitsTheLinkSentenceRatherThanFabricatingAURLWhenNoneIsAvailable() {

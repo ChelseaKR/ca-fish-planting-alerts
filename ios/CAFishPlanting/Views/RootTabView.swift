@@ -14,7 +14,7 @@ struct RootTabView: View {
                     .tabItem { Label("Browse", systemImage: "map") }
                     .tag(AppRouter.Tab.browse)
                 NavigationStack(path: $router.favoritesPath) { FavoritesView() }
-                    .tabItem { Label("Favourites", systemImage: "star") }
+                    .tabItem { Label("Favorites", systemImage: "star") }
                     .tag(AppRouter.Tab.favorites)
                 NavigationStack { AboutView() }
                     .tabItem { Label("About", systemImage: "info.circle") }
@@ -24,10 +24,10 @@ struct RootTabView: View {
             // covers a request that arrived before this view existed (a
             // tap that launched the app).
             .onChange(of: router.pendingWaterID, initial: true) {
-                router.openPending(in: environment.snapshot, isFavorite: environment.isFavourite)
+                router.openPending(in: environment.snapshot, isFavorite: environment.isFavorite)
             }
             .sheet(item: notificationExplainerBinding) { explainer in
-                FirstFavouriteExplainerSheet(explainer: explainer)
+                FirstFavoriteExplainerSheet(explainer: explainer)
             }
             // The locked widget's link. The same sheet About opens.
             .sheet(isPresented: $router.showingPurchase) {
@@ -38,7 +38,7 @@ struct RootTabView: View {
 
     /// `@Observable` doesn't expose `Binding` the way `@Published` did;
     /// this adapts `pendingNotificationExplainer` for `.sheet(item:)`.
-    private var notificationExplainerBinding: Binding<FirstFavouriteExplainer?> {
+    private var notificationExplainerBinding: Binding<FirstFavoriteExplainer?> {
         Binding(
             get: { environment.pendingNotificationExplainer },
             set: { if $0 == nil { environment.dismissNotificationExplainer() } }
@@ -46,12 +46,12 @@ struct RootTabView: View {
     }
 }
 
-/// Shown once, the moment someone favourites their first water — before any
+/// Shown once, the moment someone favorites their first water — before any
 /// system permission prompt — stating plainly what will and won't happen.
-private struct FirstFavouriteExplainerSheet: View {
+private struct FirstFavoriteExplainerSheet: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(\.dismiss) private var dismiss
-    let explainer: FirstFavouriteExplainer
+    let explainer: FirstFavoriteExplainer
 
     var body: some View {
         NotificationPrimingView(copy: explainer.copy) {

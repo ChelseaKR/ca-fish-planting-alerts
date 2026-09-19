@@ -41,7 +41,7 @@ final class WidgetBridgeTests: XCTestCase {
         let snapshot = try XCTUnwrap(env.snapshot)
         let listedID = try XCTUnwrap(snapshot.thisWeek.first?.waterID, "the bundled snapshot must list a water this week")
         let listed = try XCTUnwrap(snapshot.water(id: listedID))
-        env.toggleFavourite(listed)
+        env.toggleFavorite(listed)
         env.dismissNotificationExplainer()
         XCTAssertEqual(store.load()?.favorites, [], "a locked widget shows nobody's favorites")
         XCTAssertEqual(reloads, 1, "so favoriting doesn't redraw it")
@@ -57,12 +57,12 @@ final class WidgetBridgeTests: XCTestCase {
         env.publishWidgetDigest()
         XCTAssertEqual(reloads, 2, "an unchanged digest doesn't spend the widget's reload budget")
 
-        env.toggleFavourite(listed)
+        env.toggleFavorite(listed)
         XCTAssertEqual(store.load()?.favorites, [])
         XCTAssertEqual(reloads, 3)
 
         // A refund.
-        env.toggleFavourite(listed)
+        env.toggleFavorite(listed)
         env.purchases.setEntitled(false)
         let relocked = try XCTUnwrap(store.load())
         XCTAssertTrue(relocked.locked)

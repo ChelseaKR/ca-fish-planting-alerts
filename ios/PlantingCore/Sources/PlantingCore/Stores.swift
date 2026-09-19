@@ -8,7 +8,8 @@ public struct AppStorageLayout: Sendable {
 
     public var snapshotFile: URL { directory.appendingPathComponent("snapshot.json") }
     public var snapshotMetaFile: URL { directory.appendingPathComponent("snapshot.meta.json") }
-    public var favouritesFile: URL { directory.appendingPathComponent("favourites.json") }
+    // On-disk file name: never rename it, or saved favorites vanish on update.
+    public var favoritesFile: URL { directory.appendingPathComponent("favourites.json") }
     public var alertStateFile: URL { directory.appendingPathComponent("alert-state.json") }
     public var entitlementFile: URL { directory.appendingPathComponent("entitlement.json") }
 
@@ -55,8 +56,8 @@ public struct JSONFileStore<Value: Codable>: Sendable {
     }
 }
 
-/// Ordered, unique. Order is the order the user favourited in.
-public struct Favourites: Codable, Equatable, Sendable {
+/// Ordered, unique. Order is the order the user favorited in.
+public struct Favorites: Codable, Equatable, Sendable {
     public private(set) var ids: [Water.ID]
 
     public init(ids: [Water.ID] = []) {
@@ -74,7 +75,7 @@ public struct Favourites: Codable, Equatable, Sendable {
         ids.removeAll { $0 == id }
     }
 
-    /// Returns `true` if the id is now a favourite.
+    /// Returns `true` if the id is now a favorite.
     @discardableResult
     public mutating func toggle(_ id: Water.ID) -> Bool {
         if contains(id) { remove(id); return false }
@@ -85,18 +86,18 @@ public struct Favourites: Codable, Equatable, Sendable {
     public var count: Int { ids.count }
 }
 
-/// Persistence for favourites. A corrupt file reads as empty and is left in
+/// Persistence for favorites. A corrupt file reads as empty and is left in
 /// place until the next successful save overwrites it.
-public struct FavouritesStore: Sendable {
-    let file: JSONFileStore<Favourites>
-    public init(layout: AppStorageLayout) { file = JSONFileStore(url: layout.favouritesFile) }
+public struct FavoritesStore: Sendable {
+    let file: JSONFileStore<Favorites>
+    public init(layout: AppStorageLayout) { file = JSONFileStore(url: layout.favoritesFile) }
 
-    public func load() -> Favourites {
-        (try? file.load()) ?? Favourites()
+    public func load() -> Favorites {
+        (try? file.load()) ?? Favorites()
     }
 
-    public func save(_ favourites: Favourites) throws {
-        try file.save(favourites)
+    public func save(_ favorites: Favorites) throws {
+        try file.save(favorites)
     }
 }
 

@@ -7,7 +7,7 @@ import Foundation
 // ignored by design (`schema/README.md`: "readers must ignore unknown
 // fields"), so an additive schema change never breaks decoding.
 //
-// Absence is modelled, never defaulted: `location` is `nil` unless a
+// Absence is modeled, never defaulted: `location` is `nil` unless a
 // licensed source supplied it; `last_listed_week` is `nil` when every
 // observed plant is in the future. Never rendered as zero or "none planted".
 //
@@ -25,7 +25,7 @@ public struct Snapshot: Equatable, Sendable {
     /// in the app means this, not the device's clock.
     public let sourceWeek: Week
     public let attribution: Attribution
-    public let licence: Licence
+    public let license: License
     public let regions: [Region]
     public let counties: [County]
     /// Every species string ever observed, verbatim from CDFW.
@@ -36,13 +36,13 @@ public struct Snapshot: Equatable, Sendable {
     public let thisWeek: [ThisWeekEntry]
     public let coverage: Coverage
 
-    public init(schemaVersion: Int, generatedAt: Date, source: SourceInfo, sourceWeek: Week, attribution: Attribution, licence: Licence, regions: [Region], counties: [County], species: [String], waters: [Water], thisWeek: [ThisWeekEntry], coverage: Coverage) {
+    public init(schemaVersion: Int, generatedAt: Date, source: SourceInfo, sourceWeek: Week, attribution: Attribution, license: License, regions: [Region], counties: [County], species: [String], waters: [Water], thisWeek: [ThisWeekEntry], coverage: Coverage) {
         self.schemaVersion = schemaVersion
         self.generatedAt = generatedAt
         self.source = source
         self.sourceWeek = sourceWeek
         self.attribution = attribution
-        self.licence = licence
+        self.license = license
         self.regions = regions
         self.counties = counties
         self.species = species
@@ -92,7 +92,7 @@ public struct Attribution: Equatable, Sendable {
 
 public enum CommercialReuse: String, Sendable, Equatable { case permitted, notPermitted = "not-permitted", unknown }
 
-public struct LicenceSource: Equatable, Sendable, Identifiable {
+public struct LicenseSource: Equatable, Sendable, Identifiable {
     public var id: String { name + url.absoluteString }
     public let name: String
     public let url: URL
@@ -106,10 +106,10 @@ public struct LicenceSource: Equatable, Sendable, Identifiable {
     }
 }
 
-public struct Licence: Equatable, Sendable {
+public struct License: Equatable, Sendable {
     public let summary: String
-    public let sources: [LicenceSource]
-    public init(summary: String, sources: [LicenceSource]) { self.summary = summary; self.sources = sources }
+    public let sources: [LicenseSource]
+    public init(summary: String, sources: [LicenseSource]) { self.summary = summary; self.sources = sources }
 }
 
 public struct Region: Equatable, Sendable, Identifiable {

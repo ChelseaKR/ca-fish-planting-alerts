@@ -1,9 +1,9 @@
 import XCTest
 @testable import PlantingCore
 
-final class FavouritesTests: XCTestCase {
+final class FavoritesTests: XCTestCase {
     func testAddRemoveToggleDeduplicates() {
-        var f = Favourites()
+        var f = Favorites()
         f.add("cdfw-1")
         f.add("cdfw-1")
         XCTAssertEqual(f.ids, ["cdfw-1"], "adding twice must not duplicate")
@@ -15,7 +15,7 @@ final class FavouritesTests: XCTestCase {
     }
 
     func testInitDeduplicatesPreservingFirstOccurrenceOrder() {
-        let f = Favourites(ids: ["a", "b", "a", "c", "b"])
+        let f = Favorites(ids: ["a", "b", "a", "c", "b"])
         XCTAssertEqual(f.ids, ["a", "b", "c"])
     }
 }
@@ -32,9 +32,9 @@ final class PersistenceTests: XCTestCase {
         try? FileManager.default.removeItem(at: tempDir)
     }
 
-    func testFavouritesRoundTripThroughDisk() throws {
+    func testFavoritesRoundTripThroughDisk() throws {
         let layout = AppStorageLayout(directory: tempDir)
-        let store = FavouritesStore(layout: layout)
+        let store = FavoritesStore(layout: layout)
         XCTAssertTrue(store.load().isEmpty, "no file yet = empty, not a crash")
 
         var f = store.load()
@@ -45,11 +45,11 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(reloaded.ids, ["cdfw-1", "cdfw-2"])
     }
 
-    func testFavouritesCorruptFileReadsAsEmptyNotCrash() throws {
+    func testFavoritesCorruptFileReadsAsEmptyNotCrash() throws {
         let layout = AppStorageLayout(directory: tempDir)
-        try "not json at all {{{".write(to: layout.favouritesFile, atomically: true, encoding: .utf8)
-        let store = FavouritesStore(layout: layout)
-        XCTAssertTrue(store.load().isEmpty, "a corrupt favourites file must read as empty, never crash the app")
+        try "not json at all {{{".write(to: layout.favoritesFile, atomically: true, encoding: .utf8)
+        let store = FavoritesStore(layout: layout)
+        XCTAssertTrue(store.load().isEmpty, "a corrupt favorites file must read as empty, never crash the app")
     }
 
     func testAlertStateRoundTripThroughDisk() throws {

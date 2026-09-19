@@ -13,12 +13,12 @@ struct FavoritesView: View {
                 SnapshotUnavailableView(message: "No stocking schedule is available yet.")
             }
         }
-        .navigationTitle("Favourites")
+        .navigationTitle("Favorites")
     }
 
     @ViewBuilder
     private func content(for snapshot: Snapshot) -> some View {
-        let ids = environment.favourites.ids
+        let ids = environment.favorites.ids
         let present = ids.compactMap(snapshot.water(id:))
         // Favorites the snapshot no longer has (a water CDFW dropped). Said
         // plainly, never folded into "no favorites".
@@ -64,7 +64,7 @@ struct FavoritesView: View {
                         }
                         .swipeActions {
                             Button(role: .destructive) {
-                                environment.toggleFavourite(water)
+                                environment.toggleFavorite(water)
                             } label: {
                                 Label("Remove", systemImage: "star.slash")
                             }

@@ -40,9 +40,9 @@ Last regenerated: 2026-09-17
   hiding one that is. Mitigations: plants are shown only as "the week of
   <date>" and "scheduled, not confirmed". A stale or failed fetch is
   refused, not published as "no plants this week". A plant that ages off
-  CDFW's page is not recorded as cancelled.
+  CDFW's page is not recorded as canceled.
 - **Non-goals.** This is not CDFW, not a source of fishing regulations or
-  licences, not a day-level prediction, not a claim that every plant is
+  licenses, not a day-level prediction, not a claim that every plant is
   listed, and it has no accounts.
 - **Kill switch.** Disable `publish.yml` to stop publishing. The site and
   the app then keep the last published snapshot, and each shows the date it
@@ -71,7 +71,7 @@ Last regenerated: 2026-09-17
 | Data | Where it lives | Retention | Who can access |
 |---|---|---|---|
 | CDFW schedule, history, aliases (L1 public) | `pipeline/data/`, the published snapshot | indefinite (DG-06) | public |
-| Favourites, purchase entitlement, notification schedule | the user's device only | until the app is deleted | the user |
+| Favorites, purchase entitlement, notification schedule | the user's device only | until the app is deleted | the user |
 | Website page views (GA4) | Google Analytics property `554849409` | 14 months (property setting) | the owner |
 
 - **The app collects nothing.** `PrivacyInfo.xcprivacy` declares no
@@ -85,7 +85,7 @@ Last regenerated: 2026-09-17
   all of this and the retention period.
 - **Open:** classify the GA4 data under DATA-GOVERNANCE-STANDARD §0 (#8).
 - AUTO: gitleaks in pre-commit, in `make verify`, and on the staged diff
-  before the daily data commit. The GA4 guard behaviour (GPC, DNT, opt-out)
+  before the daily data commit. The GA4 guard behavior (GPC, DNT, opt-out)
   is executed in node by `test_site_analytics*.py`.
 - REVIEW: DPIA sign-off. **Pending (#9).** GA4 reopened it.
 
@@ -120,7 +120,7 @@ AUTO-GATEs below.
 
 | Flow | Threat | Control | Residual risk |
 |---|---|---|---|
-| CDFW page → pipeline | Tampered or stale content; format drift | HTTPS; `robots.txt` honoured; the stated-week freshness check; the parser refuses any structural surprise; the snapshot is schema-validated before anything is written | CDFW itself publishes a wrong row. That is shown as "scheduled, not confirmed". |
+| CDFW page → pipeline | Tampered or stale content; format drift | HTTPS; `robots.txt` honored; the stated-week freshness check; the parser refuses any structural surprise; the snapshot is schema-validated before anything is written | CDFW itself publishes a wrong row. That is shown as "scheduled, not confirmed". |
 | CDFW text → HTML and `.ics` | Injection (XSS) through a water or species name | Jinja autoescape on every `.html.jinja`; `.ics` escaping in `site.py`; no `|safe` anywhere | Low |
 | Pipeline → `main` (daily bot commit) | A secret or a wrong file committed unattended | Explicit paths, never a wildcard `git add` (checked by `make verify`); gitleaks on the staged diff; history integrity check | Low |
 | Workflows → Pages | Supply-chain compromise of an action | Every `uses:` pinned to a SHA; zizmor; no cache in the deploy job; least-privilege tokens | A compromised pinned SHA. Renovate cooldown is 72 hours. |

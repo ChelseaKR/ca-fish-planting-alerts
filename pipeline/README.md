@@ -49,7 +49,10 @@ Pages-artifact-upload, and deploy steps only run after a clean exit.
   observation. Only `status` (listed/removed) and `last_observed_at` may
   change after a record is first written.
 - `src/cfpa/snapshot.py` — builds the schema-validated snapshot dict from
-  history + aliases + the fetched page, plus the coverage report.
+  history + aliases + the fetched page, plus the coverage report. A water with
+  history that neither the table nor the picker names has no county, so it is
+  left out of that run's snapshot (never dropped from history) and the run
+  warns; see DECISIONS 0017.
 - `src/cfpa/site.py` + `templates/` — the static site (Jinja2). Its only
   JavaScript is the Google Analytics 4 tag (`templates/_ga4.html.jinja`),
   and only when a measurement ID is configured; see "Site configuration".

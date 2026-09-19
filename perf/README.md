@@ -40,15 +40,31 @@ deliberate: a script file on this site is a decision.
 
 `tools/site-checks/package.json` pins pa11y-ci 4.1.1, @lhci/cli 0.15.1,
 puppeteer 24.43.1 and @axe-core/puppeteer 4.13.0, and `package-lock.json`
-locks the rest. As published, that tree carries HIGH advisories in two
+locks the rest. As published, that tree carries advisories in three
 places. One is `extract-zip`, reached through `@puppeteer/browsers` 2.x,
-which unzips the Chrome download. The other is `tmp`, reached through
-`@lhci/cli`'s interactive wizard. `overrides` moves `@puppeteer/browsers`
-to 3.2.2, which no longer uses `extract-zip`, and `tmp` to 0.2.7. The full
-gate was re-run on the overridden tree and passes. `run.sh` starts with
+which unzips the Chrome download (HIGH). Another is `tmp`, reached through
+`@lhci/cli`'s interactive wizard (HIGH). The third is `uuid`, which
+`@lhci/cli` 0.15.1 asks for as `^8.3.1` (medium, GHSA-w5hq-g745-h8pq, "missing
+buffer bounds check in v3/v5/v6 when buf is provided"; fixed in 14.0.0).
+`overrides` moves `@puppeteer/browsers` to 3.2.2, which no longer uses
+`extract-zip`, `tmp` to 0.2.7 and `uuid` to 14.0.2. The full gate was re-run
+on the overridden tree and passes. `run.sh` starts with
 `npm audit --audit-level=high`, so a HIGH or CRITICAL with a fix fails the
-run. Two moderate advisories remain, and they have no fix that these
-versions accept.
+run.
+
+About the `uuid` override. Dependabot could not raise `uuid` on its own,
+because `@lhci/cli` 0.15.1 declares `uuid@^8.3.1`, so its security update
+failed on every run (`security_update_not_possible`). The override forces
+14.0.2 for the whole tree. The advisory concerns `v3()`, `v5()` and `v6()`
+when a caller passes an output buffer. The only caller in this tree is
+`@lhci/cli/src/collect/node-runner.js`, which calls `uuid.v4()` with no
+arguments, so this tool never reached the affected code. The override is for
+the alert and the failing update, not for a live exposure. `uuid` 14 is an
+ES module and `@lhci/cli` loads it with `require()`, which Node 22.12 and later
+allow. `tools/site-checks/.nvmrc` pins Node 22, and the full gate (`run.sh`:
+axe, pa11y-ci and Lighthouse CI, whose `collect` step is the code that loads
+`uuid`) passed on Node 22.23.2 with the override in place. Drop the override
+when an `@lhci/cli` release asks for `uuid` 14 or later.
 
 Overriding `puppeteer` itself to 25.x was tried first and rejected. With it,
 `lighthouse` 12.6.1 did not finish its first run.

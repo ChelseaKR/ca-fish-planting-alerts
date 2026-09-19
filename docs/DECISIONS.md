@@ -177,6 +177,35 @@ This does not weaken decision 0005: a stale page is still caught
 independently and earlier, in `fetch.py`'s own freshness check, before
 `parse_schedule_table` ever sees the HTML.
 
+## 0016 — Refuse a page that is not showing the full window (2026-09-19)
+
+CDFW's Time Period control has three options: All Plants, Current-Future
+Plants and Past Plants. Each is a different query with a different table.
+`history.merge_observations` flips a listed plant to `removed` when its week
+is inside the stated window and the plant is missing from the table, which is
+only sound when the table is the whole window. The pipeline used to read the
+window from the "All Plants (...)" label whichever option was checked, so a
+"Current-Future Plants" response, like the real 2026-09-14 capture with zero
+rows, would have flipped almost every earlier listed plant to `removed`, and
+the site and the snapshot would have said nothing was scheduled. That has not
+happened in production: the daily run asks for the default view, which has no
+option checked and carries the whole year, and the 2026-09-14 response came
+from a probe (decision 0008).
+
+Now `fetch.extract_time_period_view` reads which option is checked, and
+`cli.run` refuses the page unless it is "All Plants" or has no option checked
+(what a plain GET returns today), before anything is parsed, merged or
+written. A refusal is a non-zero exit with one `cfpa: run refused -- nothing
+published:` line that names the checked option; history, aliases, the
+snapshot and the site are untouched. A checked option this code does not
+recognize, or more than one, is refused the same way.
+
+Conservative default, not the last word. The owner may prefer the run to
+continue and skip removal inference instead, or to accept the Current-Future
+range for removals; that is a separate decision. Not built here: a
+sanity check on how many removals one run may make, or on a zero-row table
+with no option checked. Both need a threshold.
+
 ## 0009 — Free/paid split: notifications are the paid unlock, not favoriting (2026-09-17)
 
 Resolves 0007's "owner follow-up" (decide the real free/paid split and

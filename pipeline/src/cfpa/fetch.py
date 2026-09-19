@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import enum
 import hashlib
 import re
 import urllib.robotparser
@@ -57,6 +58,54 @@ _TIME_PERIOD_RE = re.compile(
 _ALL_PLANTS_RE = re.compile(
     r'text="All Plants \((\d{1,2}/\d{1,2}/\d{4}) - (\d{1,2}/\d{1,2}/\d{4})\)"'
 )
+
+# The page's Time Period control has three radio options: "All Plants",
+# "Current-Future Plants" and "Past Plants". They are three different queries
+# with three different tables, and only the first covers the whole window the
+# page states. ``history.merge_observations`` infers "CDFW dropped this plant"
+# from a plant's absence inside the stated window, which is only sound when the
+# table is the whole window. So the pipeline reads which option the response
+# is showing and refuses one that is not the full window (DECISIONS 0016).
+#
+# What real responses look like, all captured from nrm.dfg.ca.gov:
+#   - a plain GET (the daily run) has NO radio checked and carries the whole
+#     year (2,039 rows on 2026-09-13; the 2026-09-17 capture is likewise
+#     unchecked);
+#   - the 2026-09-14 capture was a probe that asked for Params.PlantTimeFrame=2
+#     with a water that matched nothing: "Current-Future Plants" is checked
+#     and the table has zero rows (see DECISIONS 0008).
+_TIME_FRAME_INPUT_NAME = "Params.PlantTimeFrame"
+_INPUT_TAG_RE = re.compile(r"<input\b[^>]*>", re.IGNORECASE)
+_ATTRIBUTE_RE = re.compile(
+    r"""([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?"""
+)
+_VIEW_LABEL_PREFIXES: tuple[tuple[str, str], ...] = (
+    ("All Plants", "all"),
+    ("Current-Future Plants", "current-future"),
+    ("Past Plants", "past"),
+)
+
+
+class TimePeriodView(enum.StrEnum):
+    """Which Time Period option a fetched page is showing."""
+
+    # "All Plants" is checked: the whole stated window.
+    ALL = "all"
+    # No option checked: what a plain GET returns today, and it carries the
+    # whole window. Treated as ALL, on the evidence of the 2026-09-13 and
+    # 2026-09-17 captures; a test pins it against those fixtures.
+    NONE_CHECKED = "none-checked"
+    CURRENT_FUTURE = "current-future"
+    PAST = "past"
+    # A checked option whose label is none of the three above, or more than
+    # one option checked. Not a view this code has seen, so not trusted.
+    UNRECOGNIZED = "unrecognized"
+    AMBIGUOUS = "ambiguous"
+
+    @property
+    def covers_full_window(self) -> bool:
+        return self in (TimePeriodView.ALL, TimePeriodView.NONE_CHECKED)
+
 
 # Allow a little slack at the week boundary: CDFW's server may compute its
 # date a few hours off from ours around midnight, and a scheduled run may lag
@@ -113,6 +162,46 @@ class PageFormatError(ValueError):
     """
 
 
+class WrongViewError(RuntimeError):
+    """The page is showing a Time Period view that is not the full window.
+
+    A table from the "Current-Future Plants" or "Past Plants" view does not
+    list every plant in the window the page states, so a plant missing from it
+    says nothing about whether CDFW dropped it. Refused before anything is
+    parsed or merged, so history and the last published snapshot stay as they
+    were.
+    """
+
+    def __init__(self, view: TimePeriodView, checked_labels: tuple[str, ...]):
+        self.view = view
+        self.checked_labels = checked_labels
+        shown = ", ".join(repr(label) for label in checked_labels) or "none"
+        if view is TimePeriodView.CURRENT_FUTURE or view is TimePeriodView.PAST:
+            cause = (
+                f"the schedule page is showing its {shown} Time Period view, "
+                "not the full 'All Plants' window"
+            )
+        elif view is TimePeriodView.AMBIGUOUS:
+            cause = (
+                "the schedule page has more than one Time Period option "
+                f"checked ({shown}), so which table it holds is unknown"
+            )
+        else:
+            cause = (
+                f"the schedule page has a Time Period option checked ({shown}) "
+                "that this pipeline does not recognize, so which table it holds "
+                "is unknown"
+            )
+        super().__init__(
+            f"{cause}. A plant missing from a partial table is not evidence "
+            "that CDFW dropped it, so no removals can be worked out from this "
+            "page -- refusing to use it. History and the last published "
+            "snapshot are unchanged. The daily run asks for the default view, "
+            "which has no option checked; if this keeps happening, CDFW may "
+            "have changed what the page shows by default"
+        )
+
+
 class RobotsDisallowedError(RuntimeError):
     """robots.txt disallows the schedule path for our user agent."""
 
@@ -126,6 +215,11 @@ class FetchedPage:
     stated_period_end: dt.date
     content_sha256: str
     url: str
+    # Which Time Period option the response is showing, and the label of each
+    # checked option. Required, with no default, so a new way of building a
+    # FetchedPage cannot forget to read it.
+    view: TimePeriodView
+    view_labels: tuple[str, ...]
 
 
 def check_robots(user_agent: str, client: httpx.Client) -> None:
@@ -194,6 +288,51 @@ def extract_stated_period(html: str) -> tuple[dt.date, dt.date]:
     return dt.date(y1, m1, d1), dt.date(y2, m2, d2)
 
 
+def extract_time_period_view(html: str) -> tuple[TimePeriodView, tuple[str, ...]]:
+    """Read which Time Period option the page has checked.
+
+    Returns the view and the label text of every checked option (empty when
+    none is checked). Raises PageFormatError when the page has no Time Period
+    options at all, which is the same drift ``extract_stated_period`` reports.
+    """
+    options = 0
+    checked: list[str] = []
+    for tag in _INPUT_TAG_RE.findall(html):
+        attrs: dict[str, str] = {}
+        for m in _ATTRIBUTE_RE.finditer(tag[len("<input") : -1]):
+            value = next((g for g in m.groups()[1:] if g is not None), "")
+            attrs.setdefault(m.group(1).lower(), value)
+        if attrs.get("name", "").lower() != _TIME_FRAME_INPUT_NAME.lower():
+            continue
+        options += 1
+        if "checked" in attrs:
+            checked.append(attrs.get("text", ""))
+    if not options:
+        raise PageFormatError(
+            f"could not find the '{_TIME_FRAME_INPUT_NAME}' Time Period options "
+            "in the schedule page -- page format may have changed"
+        )
+    if not checked:
+        return TimePeriodView.NONE_CHECKED, ()
+    if len(checked) > 1:
+        return TimePeriodView.AMBIGUOUS, tuple(checked)
+    label = checked[0]
+    for prefix, name in _VIEW_LABEL_PREFIXES:
+        if label.startswith(prefix):
+            return TimePeriodView(name), (label,)
+    return TimePeriodView.UNRECOGNIZED, (label,)
+
+
+def assert_full_window_view(page: FetchedPage) -> None:
+    """Refuse a page that is not showing the full window. Never silently pass.
+
+    Called uniformly by ``cli.run`` for the live and ``--fixture`` paths, and
+    again inside ``fetch_schedule``, like ``assert_fresh``.
+    """
+    if not page.view.covers_full_window:
+        raise WrongViewError(page.view, page.view_labels)
+
+
 def assert_fresh(stated_today: dt.date, run_today: dt.date) -> None:
     """Refuse a page whose own current week is not the run's week. Never
     silently pass.
@@ -243,8 +382,9 @@ def fetch_schedule(
         stated_today = extract_stated_today(html)
         assert_fresh(stated_today, run_today)
         period_start, period_end = extract_stated_period(html)
+        view, view_labels = extract_time_period_view(html)
 
-        return FetchedPage(
+        page = FetchedPage(
             html=html,
             fetched_at=fetched_at,
             stated_today=stated_today,
@@ -252,7 +392,11 @@ def fetch_schedule(
             stated_period_end=period_end,
             content_sha256=hashlib.sha256(html.encode("utf-8")).hexdigest(),
             url=str(resp.url),
+            view=view,
+            view_labels=view_labels,
         )
+        assert_full_window_view(page)
+        return page
     finally:
         if owns_client:
             client.close()
@@ -263,6 +407,7 @@ def load_fixture(path: str, *, fetched_at: dt.datetime | None = None) -> Fetched
     with open(path, encoding="utf-8") as fh:
         html = fh.read()
     period_start, period_end = extract_stated_period(html)
+    view, view_labels = extract_time_period_view(html)
     return FetchedPage(
         html=html,
         fetched_at=fetched_at or dt.datetime.now(dt.UTC),
@@ -271,4 +416,6 @@ def load_fixture(path: str, *, fetched_at: dt.datetime | None = None) -> Fetched
         stated_period_end=period_end,
         content_sha256=hashlib.sha256(html.encode("utf-8")).hexdigest(),
         url=SCHEDULE_URL,
+        view=view,
+        view_labels=view_labels,
     )

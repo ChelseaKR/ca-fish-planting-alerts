@@ -39,7 +39,7 @@
 
 <h2>Planting history</h2>
 {% if water.plants %}
-<table>
+<table{% if water.has_changed_week %} aria-describedby="status-note"{% endif %}>
   <caption class="visually-hidden">Every week CDFW has scheduled a plant at {{ water.name }}, most recent first</caption>
   <thead>
     <tr>
@@ -53,11 +53,17 @@
     <tr>
       <td>{{ p.label }}</td>
       <td>{{ p.species }}</td>
-      <td>{{ p.status }}</td>
+      <td>{{ p.status_label }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+{% if water.has_changed_week %}
+<p class="muted" id="status-note">
+  <strong>Schedule changed</strong> means CDFW listed that week earlier and
+  later removed it from its schedule. CDFW's plans can change.
+</p>
+{% endif %}
 {% else %}
 <p>No plants observed yet for {{ water.name }}.</p>
 {% endif %}

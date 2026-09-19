@@ -96,6 +96,10 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- App: Product > Archive works. The shared scheme built both test targets
+  for archiving, and in the Release configuration their `@testable` imports
+  can't resolve, so every archive failed before signing was reached. The
+  test targets are still built for testing, running and analysis.
 - The daily publish run had never succeeded, because the freshness check
   read CDFW's stated week start as "today". It now compares weeks. The same
   change stops a plant that ages off the page from being recorded as

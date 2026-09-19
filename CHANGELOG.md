@@ -17,8 +17,8 @@ This repository was republished with a new history on 2026-09-18
   append-only history per water, publishes a schema-validated snapshot
   (`schema/snapshot.v1.json`) for the app, and builds a static site with a
   page and a subscribable `.ics` calendar for every water (PR 1).
-- An iOS app (SwiftUI) over the same snapshot: favourite waters, background
-  refresh, and a local notification when a favourite appears in a new week
+- An iOS app (SwiftUI) over the same snapshot: favorite waters, background
+  refresh, and a local notification when a favorite appears in a new week
   (PR 2). It also has a one-time StoreKit 2 purchase (PR 7), a first-run welcome
   screen (PR 8), and a way to share a water (PR 9). The app is not yet in the
   App Store.
@@ -72,8 +72,8 @@ This repository was republished with a new history on 2026-09-18
 
 - The pipeline records a well-formed schedule table with no rows as an empty
   week instead of failing the run (PR 4).
-- App: the one-time purchase unlocks local notifications. Favourites and
-  browsing are free, and there is no longer a cap on favourites (PR 12).
+- App: the one-time purchase unlocks local notifications. Favorites and
+  browsing are free, and there is no longer a cap on favorites (PR 12).
 - App: the screen before the notification permission prompt says, point
   by point, what an alert is (one per new week for a favorite, naming the
   week, never a day), that it is made on the device, that no other
@@ -93,6 +93,12 @@ This repository was republished with a new history on 2026-09-18
   for a newer schedule now. Launch no longer decodes the bundled 1 MB
   snapshot when the downloaded one is at least as new, which halves the
   decoding at launch once a schedule has been downloaded.
+- App, site and docs use American English throughout: the tab and its
+  buttons say "Favorites", About says "Data source and license", and the
+  site's privacy and about pages use American spellings too. Saved favorites
+  and the published snapshot are unaffected: the on-disk file
+  (`favourites.json`) and the snapshot's `licence` field keep their original
+  spelling. The screenshot `03-favourites.png` is now `03-favorites.png`.
 
 ### Fixed
 
@@ -103,7 +109,7 @@ This repository was republished with a new history on 2026-09-18
 - The daily publish run had never succeeded, because the freshness check
   read CDFW's stated week start as "today". It now compares weeks. The same
   change stops a plant that ages off the page from being recorded as
-  cancelled, and stops the run from crashing on a water whose rows have
+  canceled, and stops the run from crashing on a water whose rows have
   all aged off (PR 13).
 - App: the shared Xcode scheme points at the right StoreKit configuration
   file (PR 24).
@@ -128,7 +134,7 @@ This repository was republished with a new history on 2026-09-18
   Before, a fresh install showed the schedule bundled at build time until
   iOS ran the background task. Browse now says which week the schedule is
   for and how the last check went. A failed check or an ended week is said
-  plainly, and the last good schedule stays on screen, labelled with its
+  plainly, and the last good schedule stays on screen, labeled with its
   week (PR 37).
 - App: the water screen and the share text say "Last scheduled for the week
   of …", not "Last planted …". CDFW publishes scheduled plants, which are

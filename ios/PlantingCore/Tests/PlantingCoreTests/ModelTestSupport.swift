@@ -35,7 +35,7 @@ enum TS {
                                 statedPeriodStart: date(sourceWeek), statedPeriodEnd: date(sourceWeek), contentSHA256: String(repeating: "a", count: 64)),
             sourceWeek: week(sourceWeek),
             attribution: Attribution(text: "CDFW", url: URL(string: "https://nrm.dfg.ca.gov/FishPlants/")!),
-            licence: Licence(summary: "test", sources: []),
+            license: License(summary: "test", sources: []),
             regions: [Region(code: "R1", name: "Northern")],
             counties: [County(name: "Siskiyou", region: "R1")],
             species: ["Trout"],

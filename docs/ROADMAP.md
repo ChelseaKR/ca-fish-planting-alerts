@@ -40,7 +40,7 @@ standard.
 |-------|-------|
 | 6 a11y | Applies. `site-checks.yml` runs axe, pa11y-ci and Lighthouse over every page the pipeline builds from the fixture. The review gates are open in #5. |
 | 7 perf | Applies. Lighthouse CI budgets and the baseline in `perf/`. k6 (PERF-01) is N/A: GitHub Pages serves static files, and this repository runs no server route whose latency it controls. |
-| 8 responsible | Applies. The product's honesty rules are unit tests in `make verify`. A stale or failed fetch is refused and never published as "no plants this week". The history never loses or rewrites a recorded plant. A plant that ages off the page is not recorded as cancelled. The site shows the date CDFW's schedule was last checked. There is no AI component, so there are no eval gates. |
+| 8 responsible | Applies. The product's honesty rules are unit tests in `make verify`. A stale or failed fetch is refused and never published as "no plants this week". The history never loses or rewrites a recorded plant. A plant that ages off the page is not recorded as canceled. The site shows the date CDFW's schedule was last checked. There is no AI component, so there are no eval gates. |
 
 ## Observability
 

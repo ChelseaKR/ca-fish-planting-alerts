@@ -82,7 +82,7 @@ The app makes one kind of network request: a GET of the snapshot
 
 Browse shows which week the schedule is for, how many waters that week
 lists, and how the last check went (`SnapshotFreshness`). A failed check is
-said plainly, and the last good snapshot stays on screen, labelled with its
+said plainly, and the last good snapshot stays on screen, labeled with its
 week. Once that week has ended the app says so, and the tag on a listed
 water shows the week instead of "This week". A failed fetch never becomes
 "nothing listed": `SnapshotStore` keeps the last good snapshot, and
@@ -141,8 +141,8 @@ xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
 All of the above ran clean in this environment: `swift test` — 38/38;
 `xcodebuild build` — BUILD SUCCEEDED, zero warnings besides the expected
 "no AppIntents.framework dependency" note; `CAFishPlantingTests` — 5/5;
-`CAFishPlantingUITests` — the browse → favourite → explainer-sheet →
-Favourites-tab smoke path (see `docs/APP-STORE.md` for the exact run
+`CAFishPlantingUITests` — the browse → favorite → explainer-sheet →
+Favorites-tab smoke path (see `docs/APP-STORE.md` for the exact run
 Chelsea can repeat).
 
 ## Two things worth knowing before re-running these

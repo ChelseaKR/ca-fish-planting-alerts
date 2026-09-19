@@ -91,7 +91,7 @@ What was ruled out:
   `startDate`. Google shows event dates in results, so an event on the
   Sunday of the week would state a day CDFW never gave, and imply a
   confirmed occasion. The `.ics` feeds already give each week as an
-  all-day, week-long span labelled "scheduled". A test forbids `Event`,
+  all-day, week-long span labeled "scheduled". A test forbids `Event`,
   and forbids `startDate`, `endDate`, `doorTime` and `eventStatus`,
   anywhere in the structured data.
 - **`TouristAttraction`.** It is a claim about the place that the data does
@@ -100,14 +100,14 @@ What was ruled out:
 - **`geo` coordinates.** The snapshot's `location` is null for every water.
   Geocoding a name like "Deer Creek" could put a pin on the wrong one of
   the two (in Tehama and Tulare counties).
-- **A CC-BY `license` on the Dataset.** CC-BY is the licence of a
+- **A CC-BY `license` on the Dataset.** CC-BY is the license of a
   different CDFW product, the Fishing Guide dataset on data.ca.gov
   (`docs/LICENSES-AND-ATTRIBUTION.md`). The planting schedule falls under
   CDFW's Conditions of Use, and the Dataset cites that through
-  `isBasedOn.license`. The licence for Trout Truck's own compilation is
+  `isBasedOn.license`. The license for Trout Truck's own compilation is
   the owner's choice. It stays unset until she makes it:
   `DATASET_LICENSE_URL` in `pipeline/src/cfpa/site.py`, where `""` means
-  the markup states no licence. Google lists `license` as recommended, not
+  the markup states no license. Google lists `license` as recommended, not
   required, so Search Console may show a warning for it until then.
 
 A test holds the set of types to exactly the list above, so adding a type

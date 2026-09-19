@@ -17,7 +17,7 @@ struct NotificationScheduler {
 
     /// Shows the system permission prompt. Call only after the app has
     /// already told the person, in its own words, what will and will not
-    /// happen (see `FirstFavouriteExplainer` in `AppEnvironment`).
+    /// happen (see `FirstFavoriteExplainer` in `AppEnvironment`).
     @discardableResult
     func requestAuthorization() async -> Bool {
         (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false

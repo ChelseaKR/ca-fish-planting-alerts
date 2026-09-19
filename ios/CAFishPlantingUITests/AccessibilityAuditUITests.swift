@@ -82,7 +82,7 @@ final class AccessibilityAuditUITests: XCTestCase {
             try audit("Water detail, a year expanded", app: app, context: context)
         }
 
-        select(tab: "Favourites", in: app)
+        select(tab: "Favorites", in: app)
         try audit("Favorites", app: app, context: context)
 
         select(tab: "About", in: app)

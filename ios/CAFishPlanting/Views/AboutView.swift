@@ -48,7 +48,7 @@ struct AboutView: View {
             }
 
             Section {
-                Text("Data collected by this app: none. No analytics, no crash reporting, no third-party SDKs, no accounts. Favourites and alert history stay on this device. The only network request this app ever makes is a plain, cookie-free fetch of the published stocking snapshot.")
+                Text("Data collected by this app: none. No analytics, no crash reporting, no third-party SDKs, no accounts. Favorites and alert history stay on this device. The only network request this app ever makes is a plain, cookie-free fetch of the published stocking snapshot.")
             } header: {
                 SectionHeader("Privacy")
             }
@@ -58,15 +58,15 @@ struct AboutView: View {
                     Text(snapshot.attribution.text)
                     Text("This app is independent. It is not affiliated with or endorsed by the California Department of Fish and Wildlife.")
                     Link("CDFW Fish Planting Schedule", destination: snapshot.attribution.url)
-                    Text(snapshot.licence.summary)
+                    Text(snapshot.license.summary)
                         .font(.footnote)
                         .foregroundStyle(.secondaryText)
-                    ForEach(snapshot.licence.sources) { source in
+                    ForEach(snapshot.license.sources) { source in
                         Link(source.name, destination: source.termsURL)
                             .font(.footnote)
                     }
                 } header: {
-                    SectionHeader("Data source and licence")
+                    SectionHeader("Data source and license")
                 }
 
                 Section {

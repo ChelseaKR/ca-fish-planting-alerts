@@ -128,12 +128,12 @@ final class PurchaseManagerTests: XCTestCase {
 
     // MARK: - Free tier, unlocked
 
-    /// The mirror of `AppEnvironmentTests.testNonPurchaserFavouritesAreUnconstrained`:
+    /// The mirror of `AppEnvironmentTests.testNonPurchaserFavoritesAreUnconstrained`:
     /// an actual purchaser (a real purchase through this SKTestSession, not
-    /// a stubbed flag) has exactly the same unconstrained favouriting a
-    /// non-purchaser has — favouriting was never part of what this purchase
+    /// a stubbed flag) has exactly the same unconstrained favoriting a
+    /// non-purchaser has — favoriting was never part of what this purchase
     /// unlocks (see `FreeTier`, PlantingCore).
-    func testPurchaserFavouritesAreAlsoUnconstrained() async throws {
+    func testPurchaserFavoritesAreAlsoUnconstrained() async throws {
         let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: Bundle.main.bundleIdentifier ?? "com.chelseakr.cafishplanting")
         try? FileManager.default.removeItem(at: layout.directory)
 
@@ -147,20 +147,20 @@ final class PurchaseManagerTests: XCTestCase {
         XCTAssertGreaterThan(waters.count, 10, "fixture needs enough waters for this test to mean anything")
 
         for water in waters.prefix(10) {
-            env.toggleFavourite(water)
+            env.toggleFavorite(water)
         }
 
-        XCTAssertEqual(env.favourites.count, 10, "an entitled purchaser must have no favourites cap")
+        XCTAssertEqual(env.favorites.count, 10, "an entitled purchaser must have no favorites cap")
     }
 
     /// The other half of
-    /// `AppEnvironmentTests.testNonPurchaserGetsNoScheduledNotificationEvenWhenAFavouritesScheduleChanges`:
-    /// the exact same favourite-schedule change that produces zero
+    /// `AppEnvironmentTests.testNonPurchaserGetsNoScheduledNotificationEvenWhenAFavoritesScheduleChanges`:
+    /// the exact same favorite-schedule change that produces zero
     /// notifications for a non-purchaser must produce exactly one for a
     /// real purchaser (a real purchase through this `SKTestSession`, not a
     /// stubbed `isEntitled` flag), through the real `performBackgroundRefresh()`
     /// path.
-    func testPurchaserGetsAScheduledNotificationWhenAFavouritesScheduleChanges() async throws {
+    func testPurchaserGetsAScheduledNotificationWhenAFavoritesScheduleChanges() async throws {
         let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: Bundle.main.bundleIdentifier ?? "com.chelseakr.cafishplanting")
         try? FileManager.default.removeItem(at: layout.directory)
 
@@ -172,7 +172,7 @@ final class PurchaseManagerTests: XCTestCase {
         let env = AppEnvironment(purchases: manager, refresher: makeMockedSnapshotRefresher())
         let snapshot = try XCTUnwrap(env.snapshot)
         let target = try XCTUnwrap(waterWithNoCurrentOrFutureListing(in: snapshot), "fixture needs a water with nothing listed at/after source_week yet")
-        env.toggleFavourite(target)
+        env.toggleFavorite(target)
 
         let (data, newWeekStartISO) = try updatedSnapshotFixture(addingListingTo: target.id, after: snapshot.sourceWeek)
         MockSnapshotURLProtocol.responseData = data

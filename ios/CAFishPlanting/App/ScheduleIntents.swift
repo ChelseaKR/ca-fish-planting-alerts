@@ -21,9 +21,9 @@ enum IntentData {
     }
 
     static func favoriteIDs() -> [Water.ID] {
-        if let environment = AppEnvironment.shared { return environment.favourites.ids }
+        if let environment = AppEnvironment.shared { return environment.favorites.ids }
         guard let layout = layout() else { return [] }
-        return FavouritesStore(layout: layout).load().ids
+        return FavoritesStore(layout: layout).load().ids
     }
 
     private static func layout() -> AppStorageLayout? {

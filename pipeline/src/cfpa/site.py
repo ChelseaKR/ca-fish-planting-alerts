@@ -107,12 +107,12 @@ def google_site_verification_or_none(value: str | None) -> str | None:
     return value
 
 
-# The licence the compiled schedule history is offered under, as a URL, for
+# The license the compiled schedule history is offered under, as a URL, for
 # the Dataset structured data on /about/ (docs/adr/0013). Unset on purpose:
-# the CC-BY licence in docs/LICENSES-AND-ATTRIBUTION.md belongs to a
+# the CC-BY license in docs/LICENSES-AND-ATTRIBUTION.md belongs to a
 # different CDFW dataset (the Fishing Guide on data.ca.gov), and the schedule
 # itself falls under CDFW's Conditions of Use, which the Dataset already
-# cites through `isBasedOn`. Choosing a licence for Trout Truck's own
+# cites through `isBasedOn`. Choosing a license for Trout Truck's own
 # compilation is the owner's call; until then the markup states none rather
 # than one nobody chose.
 DATASET_LICENSE_URL = ""
@@ -965,7 +965,7 @@ def build_site(
         title=f"About, attribution & privacy | {SITE_NAME}, {SITE_TAGLINE}",
         description=(
             f"What {SITE_NAME} is, {about_collects}, and where its trout planting "
-            "and stocking data and licence terms come from."
+            "and stocking data and license terms come from."
         ),
         canonical_url=f"{base_url}/about/",
         root="../",
@@ -978,8 +978,8 @@ def build_site(
                 license_url=dataset_license_url or None,
             )
         ),
-        licence_summary=snapshot["licence"]["summary"],
-        licence_sources=snapshot["licence"]["sources"],
+        license_summary=snapshot["licence"]["summary"],
+        license_sources=snapshot["licence"]["sources"],
         generated_at_label=generated_at_label,
         source_fetched_label=source_fetched_label,
     )

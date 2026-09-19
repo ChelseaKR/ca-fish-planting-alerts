@@ -4,7 +4,7 @@ Fetches CDFW's Fish Planting Schedule, keeps an append-only per-water
 history, and builds `schema/snapshot.v1.json` + the static `site/`. Python
 3.12, [uv](https://docs.astral.sh/uv/), pytest.
 
-Read `docs/LICENSES-AND-ATTRIBUTION.md` (crawl budget, licence terms) and
+Read `docs/LICENSES-AND-ATTRIBUTION.md` (crawl budget, license terms) and
 `schema/README.md` (the published snapshot contract) before touching this.
 
 ## Run it
@@ -117,8 +117,8 @@ Two more values are committed in `src/cfpa/site.py`, both empty today
   tag. When set, the home page (only) gets
   `<meta name="google-site-verification">`. `cfpa` refuses the run if it is
   not a bare token. The owner's steps are in `docs/SEARCH-CONSOLE.md`.
-- `DATASET_LICENSE_URL` -- the licence for the compiled history, stated in the
-  Dataset structured data on `/about/`. Empty means no licence is claimed.
+- `DATASET_LICENSE_URL` -- the license for the compiled history, stated in the
+  Dataset structured data on `/about/`. Empty means no license is claimed.
 
 Pages built besides the per-water ones: `/` (this week), `/county/` and a
 page per county at `/county/<county>/`, `/about/`, `/privacy/` and
@@ -145,5 +145,5 @@ rewritten back a year), plus a real Monday response
 (`schedule-midweek-2026-09-17.html`, trimmed to the 2026-09-13 fixture's
 waters plus the 29 plants CDFW added in between). Run in sequence, the
 2026-09-13 and 2026-09-17 fixtures pin the mid-week freshness check, the
-no-false-removal rule for the ageing-off oldest week, and the county
+no-false-removal rule for the aging-off oldest week, and the county
 fallback for a water whose rows have all aged off.

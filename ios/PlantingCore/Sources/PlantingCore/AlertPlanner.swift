@@ -1,6 +1,6 @@
 import Foundation
 
-/// One (week, species) a favourited water had listed, as of the last time
+/// One (week, species) a favorited water had listed, as of the last time
 /// the alert planner evaluated a snapshot. This is a baseline, not a
 /// cumulative "ever notified" set: a plant that goes `removed` then
 /// `listed` again is newsworthy again, exactly as `schema/README.md`
@@ -13,7 +13,7 @@ public struct PlantKey: Hashable, Sendable, Codable {
     public init(_ plant: Plant) { self.weekStart = plant.week.start; self.species = plant.species }
 }
 
-/// Per favourited water, the listed-plant baseline as of the last
+/// Per favorited water, the listed-plant baseline as of the last
 /// evaluation. Persisted so a cold app launch does not re-diff against
 /// nothing (which would treat everything on screen as "new").
 public struct AlertState: Codable, Equatable, Sendable {
@@ -69,11 +69,11 @@ public struct AlertPlan: Equatable, Sendable {
     }
 }
 
-/// Pure. No clock, no I/O, no notification centre — this is the function
+/// Pure. No clock, no I/O, no notification center — this is the function
 /// `docs/APP-STORE.md` and the deliverable list call out to test without the
 /// simulator. Implements the diff rule from `schema/README.md` exactly:
 ///
-/// * For each favourited water, take its listed plants at or after
+/// * For each favorited water, take its listed plants at or after
 ///   `snapshot.sourceWeek` (current and future weeks — never past ones).
 /// * Any `(week, species)` in that set that is **not** in the water's stored
 ///   baseline is new → one notification per water, naming every new
@@ -88,11 +88,11 @@ public struct AlertPlan: Equatable, Sendable {
 /// * A water with no plants at or after `sourceWeek` gets an empty baseline
 ///   and no notification — correct, not an error.
 public enum AlertPlanner {
-    public static func plan(snapshot: Snapshot, favourites: [Water.ID], state: AlertState) -> AlertPlan {
+    public static func plan(snapshot: Snapshot, favorites: [Water.ID], state: AlertState) -> AlertPlan {
         var nextBaseline: [Water.ID: Set<PlantKey>] = [:]
         var notifications: [PlannedNotification] = []
 
-        for id in favourites {
+        for id in favorites {
             guard let water = snapshot.water(id: id) else {
                 // The water dropped out of the snapshot entirely: carry the
                 // last known baseline through untouched rather than losing it.
@@ -110,16 +110,16 @@ public enum AlertPlanner {
         return AlertPlan(notifications: notifications, state: AlertState(lastListed: nextBaseline))
     }
 
-    /// Call when a water is favourited: seed its baseline at what is
+    /// Call when a water is favorited: seed its baseline at what is
     /// currently visible so the plants already on screen are not announced.
-    public static func seeding(_ state: AlertState, favouriting id: Water.ID, snapshot: Snapshot) -> AlertState {
+    public static func seeding(_ state: AlertState, favoriting id: Water.ID, snapshot: Snapshot) -> AlertState {
         guard let water = snapshot.water(id: id) else { return state }
         var next = state
         next.lastListed[id] = Set(water.listedPlants(onOrAfter: snapshot.sourceWeek).map(PlantKey.init))
         return next
     }
 
-    public static func pruning(_ state: AlertState, unfavouriting id: Water.ID) -> AlertState {
+    public static func pruning(_ state: AlertState, unfavoriting id: Water.ID) -> AlertState {
         var next = state
         next.lastListed.removeValue(forKey: id)
         return next

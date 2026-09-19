@@ -26,7 +26,7 @@ Please report security problems privately. Do not open a public issue.
 `SUPPORT_EMAIL` repository variable is set (#2). Until then, use GitHub's
 private vulnerability reporting.
 
-**Response:** acknowledgement within 72 hours, then a fix or a written
+**Response:** acknowledgment within 72 hours, then a fix or a written
 assessment. For a leaked credential, the steps in
 `docs/standards/INCIDENT-RESPONSE-STANDARD.md` §4 apply: rotate, revoke,
 check for use, and record the history decision.

@@ -50,7 +50,7 @@ in place.
   built then.
 - Future weeks exist: CDFW lists about two weeks ahead. A plant with
   `week.start > source_week.start` is scheduled, not current. The app's alert
-  ("a favourite appears in the new week") should fire when a
+  ("a favorite appears in the new week") should fire when a
   `(water_id, week, species)` with `status == "listed"` appears in a refreshed
   snapshot that was not in the previous one, for any week
   `>= source_week` — that is the diff the app owns.
@@ -71,6 +71,9 @@ in place.
   future — "last scheduled for the week of …" for the water page. It is
   still only a scheduled week, so never label it "planted" or "stocked".
 - Dates are America/Los_Angeles civil dates; timestamps are UTC `Z`.
+- The top-level `licence` field keeps its British spelling on purpose. It is
+  part of the published v1 contract, and renaming it would break every reader
+  of an existing file.
 
 ## Versioning
 

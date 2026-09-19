@@ -1,7 +1,7 @@
 """The alias table: CDFW's own numeric stock id is the stable identifier,
 but the *display* name and its spellings still need curation.
 
-CDFW spells waters inconsistently across the calendar (capitalisation,
+CDFW spells waters inconsistently across the calendar (capitalization,
 "Upper"/"upper", punctuation) even though the ``stockid`` in the map link
 stays the same. On 2026-09-13, five published names each covered two or
 three *different* stock ids ("Silver Lake", "Bass Lake", "Deer Creek",

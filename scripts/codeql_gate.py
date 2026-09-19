@@ -3,7 +3,7 @@
 
 Code scanning was not available while this repository was private (GitHub
 answered `GET /code-scanning/alerts` with 403 "not enabled"), so a SARIF
-upload would have failed. The workflow analyses with `upload: never` and this
+upload would have failed. The workflow analyzes with `upload: never` and this
 script is the gate instead. The repository is public now, and the gate stays
 until uploading is switched on.
 

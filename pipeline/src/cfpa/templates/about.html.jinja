@@ -6,7 +6,7 @@
 <p>
   {{ site_name }} is a free, static mirror of the California Department of
   Fish and Wildlife's weekly trout (and occasional catfish) planting schedule,
-  organised by water, with the full planting history this site has observed
+  organized by water, with the full planting history this site has observed
   &mdash; CDFW's own page shows a rolling window of about a year, and this
   site keeps every week it has recorded after that window moves on.
 </p>
@@ -27,7 +27,7 @@
       set.</li>
   <li>Otherwise, Google's analytics script records the pages you view, your
       browser and device type, and your approximate location. Google signals
-      and ad personalisation are off, and there are no ads on this site.</li>
+      and ad personalization are off, and there are no ads on this site.</li>
   <li>In the EEA, the UK and Switzerland, analytics cookies are denied by
       default, so Google Analytics sets no cookie there.</li>
   <li>No account, no email address, no sign-up, anywhere on this site.</li>
@@ -68,13 +68,13 @@
 
 <h2 id="app">The iOS app</h2>
 <p>
-  A companion iOS app lets you favourite waters and browse the same planting
+  A companion iOS app lets you favorite waters and browse the same planting
   history as this site, free. A one-time in-app purchase &mdash; not a
-  subscription &mdash; adds a local notification when a favourite appears in
+  subscription &mdash; adds a local notification when a favorite appears in
   a new week's schedule. The notification is generated on your device from a
   snapshot the app downloads periodically in the background &mdash; there is
   no push service, no account, and no server that knows which waters you
-  favourited. The schedule updates weekly, so alerts arrive on CDFW's
+  favorited. The schedule updates weekly, so alerts arrive on CDFW's
   schedule, not instantly.
 </p>
 {% if app_store_url %}
@@ -84,11 +84,11 @@
 {% endif %}
 <p>Details: <a href="{{ root }}privacy/">privacy policy</a> &middot; <a href="{{ root }}support/">support &amp; FAQ</a>.</p>
 
-<h2 id="data">Data, licence &amp; attribution</h2>
+<h2 id="data">Data, license &amp; attribution</h2>
 <p>{{ attribution_text }}</p>
-<p>{{ licence_summary }}</p>
+<p>{{ license_summary }}</p>
 <table>
-  <caption class="visually-hidden">Sources this site is built from, with licence terms</caption>
+  <caption class="visually-hidden">Sources this site is built from, with license terms</caption>
   <thead>
     <tr>
       <th scope="col">Source</th>
@@ -98,7 +98,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for s in licence_sources %}
+    {% for s in license_sources %}
     <tr>
       <td><a href="{{ s.url }}">{{ s.name }}</a></td>
       <td>{{ s.terms_read_on }}</td>

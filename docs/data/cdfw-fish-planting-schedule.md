@@ -26,7 +26,7 @@ Public domain under CDFW's and California's Conditions of Use ("information
 presented on this web site, unless otherwise indicated, is considered in the
 public domain"), with no commercial-use restriction. No SPDX identifier fits
 a state's public-domain policy, so this is the plain-language statement.
-The related CDFW Fishing Guide dataset on data.ca.gov gives its licence as
+The related CDFW Fishing Guide dataset on data.ca.gov gives its license as
 "Creative Commons Attribution", without a version. The stricter of the two
 readings is taken, so every page and the snapshot attribute CDFW
 unconditionally. Verbatim terms, links and the date they

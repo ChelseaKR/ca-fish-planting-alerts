@@ -9,7 +9,7 @@ import datetime as dt
 import json
 import re
 import statistics
-from collections.abc import Iterable
+from collections.abc import Collection, Iterable
 from pathlib import Path
 from typing import Any
 
@@ -78,6 +78,35 @@ def _iso_z(d: dt.datetime) -> str:
     return d.astimezone(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+class SnapshotBuildError(ValueError):
+    """The snapshot cannot be built from this run's data. Nothing is written.
+
+    A ValueError subclass so callers that already expected ValueError keep
+    working; ``cli.main`` reports it as one refused-run line, not a traceback.
+    """
+
+
+# How many waters with history may be left out of one run's snapshot because
+# neither the table nor the picker names them (see ``find_unlisted_waters``).
+# One or two is what a retired water looks like. A larger number looks like a
+# truncated or reshaped page, and leaving that many waters out would empty
+# their site pages and app screens for a run, so past this the run is refused
+# instead. A provisional number, not a measured one: CDFW has never been seen
+# to drop a water (DECISIONS 0017).
+MAX_UNLISTED_WATERS = 5
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class UnlistedWater:
+    """A water with history that this run's table and picker both leave out."""
+
+    cdfw_stock_id: int
+    name: str
+    records: int  # every (week, species) on file, any status
+    listed_records: int  # of those, how many are still "listed"
+    newest_week_start: str  # ISO date of its newest record
+
+
 def build_counties(
     county_options: Iterable[parse.SelectOption],
     region_county_options: Iterable[parse.SelectOption],
@@ -89,7 +118,7 @@ def build_counties(
     for opt in county_options:
         region = region_by_county_id.get(opt.value)
         if not region:
-            raise ValueError(
+            raise SnapshotBuildError(
                 f"county {opt.label!r} (id {opt.value}) has no region mapping"
             )
         out.append({"name": opt.label, "region": region})
@@ -128,6 +157,59 @@ def counties_from_water_picker(
     return out
 
 
+def _table_counties(rows: Iterable[parse.RawRow]) -> dict[int, list[str]]:
+    """Most-recently-observed county list per water, from this run's rows."""
+    return {r.cdfw_stock_id: list(r.counties) for r in rows}
+
+
+def find_unlisted_waters(
+    history: HistoryStore,
+    aliases: AliasTable,
+    rows: list[parse.RawRow],
+    water_options: Iterable[parse.SelectOption],
+) -> list[UnlistedWater]:
+    """Waters with history that neither this run's table rows nor its water
+    picker name, so the snapshot has no county to give them.
+
+    History does not store counties, and a snapshot entry needs one, so such a
+    water cannot be placed. It is not guessed and not dropped from history:
+    the caller leaves it out of this run's snapshot and says so. It is sorted
+    by id, and empty in every run seen so far -- the picker lists every water
+    CDFW tracks, ~895 on every fetch, and 385 have history.
+    """
+    placed = (
+        _table_counties(rows).keys() | counties_from_water_picker(water_options).keys()
+    )
+    out = []
+    for stock_id, records in sorted(history.by_water().items()):
+        if stock_id in placed:
+            continue
+        alias = aliases.by_id.get(stock_id)
+        out.append(
+            UnlistedWater(
+                cdfw_stock_id=stock_id,
+                name=alias.canonical_name if alias else f"cdfw-{stock_id}",
+                records=len(records),
+                listed_records=sum(1 for r in records if r.status == "listed"),
+                newest_week_start=max(r.week_start for r in records).isoformat(),
+            )
+        )
+    return out
+
+
+def assert_unlisted_within_limit(unlisted: list[UnlistedWater]) -> None:
+    """Refuse a run that would leave more than ``MAX_UNLISTED_WATERS`` waters out."""
+    if len(unlisted) > MAX_UNLISTED_WATERS:
+        sample = ", ".join(f"cdfw-{u.cdfw_stock_id}" for u in unlisted[:5])
+        raise SnapshotBuildError(
+            f"{len(unlisted)} waters with history are in neither this fetch's "
+            f"table nor its water picker (for example {sample}); more than "
+            f"{MAX_UNLISTED_WATERS} looks like a truncated or reshaped page, "
+            "not waters CDFW retired -- refusing to leave them out of the "
+            "snapshot. History is unchanged"
+        )
+
+
 def build_waters(
     history: HistoryStore,
     aliases: AliasTable,
@@ -135,39 +217,49 @@ def build_waters(
     source_week_start: dt.date,
     counties_by_name: dict[str, str],
     water_options: Iterable[parse.SelectOption] = (),
+    leave_out: Collection[int] = (),
 ) -> list[dict[str, Any]]:
+    """The snapshot's ``waters``: every water with history, oldest id first.
+
+    ``leave_out`` names waters (from ``find_unlisted_waters``) to leave out
+    because no county can be found for them. Any other water with no county
+    still raises ``SnapshotBuildError``: nothing is guessed.
+    """
     by_water = history.by_water()
     picker_counties = counties_from_water_picker(water_options)
     # Most-recently-observed county list per water, from this run's rows.
     # History doesn't store counties, so a water with no row this run (every
     # plant aged off the page's rolling window) falls back to this run's own
     # water picker -- see ``counties_from_water_picker``.
-    counties_latest: dict[int, list[str]] = {}
-    map_url_latest: dict[int, str] = {}
-    for r in rows:
-        counties_latest[r.cdfw_stock_id] = list(r.counties)
-        map_url_latest[r.cdfw_stock_id] = (
-            f"https://apps.wildlife.ca.gov/fishing/?stockid={r.cdfw_stock_id}"
-        )
+    counties_latest = _table_counties(rows)
+    map_url_latest: dict[int, str] = {
+        r.cdfw_stock_id: f"https://apps.wildlife.ca.gov/fishing/?stockid={r.cdfw_stock_id}"
+        for r in rows
+    }
 
     waters = []
     for stock_id in sorted(by_water):
         alias = aliases.by_id.get(stock_id)
         if alias is None:
-            raise ValueError(f"cdfw-{stock_id} has history but no alias table entry")
+            raise SnapshotBuildError(
+                f"cdfw-{stock_id} has history but no alias table entry"
+            )
         # This run's table rows first; then this run's own water picker for
         # a water whose rows have all aged off. Never guessed: if neither
-        # this fetch's table nor its picker places the water, fail loudly.
+        # this fetch's table nor its picker places the water, it is left out
+        # (when the caller named it in ``leave_out``) or the run fails.
         counties = counties_latest.get(stock_id) or picker_counties.get(stock_id)
+        if not counties and stock_id in leave_out:
+            continue
         if not counties:
-            raise ValueError(
+            raise SnapshotBuildError(
                 f"cdfw-{stock_id} ({alias.canonical_name}) has history but no county "
                 f"data from this run -- neither a table row nor CDFW's water picker "
                 f"on this fetch names its county"
             )
         region = counties_by_name.get(counties[0])
         if not region:
-            raise ValueError(f"county {counties[0]!r} has no known region")
+            raise SnapshotBuildError(f"county {counties[0]!r} has no known region")
 
         plants_sorted = sorted(
             by_water[stock_id], key=lambda r: (r.week_start, r.species)
@@ -286,6 +378,7 @@ def build_snapshot(
     region_county_options: Iterable[parse.SelectOption],
     waters_known: int,
     water_options: Iterable[parse.SelectOption] = (),
+    leave_out: Collection[int] = (),
 ) -> dict[str, Any]:
     source_week = week_of(page.stated_today)
     source_week_start = dt.date.fromisoformat(source_week["start"])
@@ -294,7 +387,13 @@ def build_snapshot(
     counties_by_name = {c["name"]: c["region"] for c in counties}
 
     waters = build_waters(
-        history, aliases, rows, source_week_start, counties_by_name, water_options
+        history,
+        aliases,
+        rows,
+        source_week_start,
+        counties_by_name,
+        water_options,
+        leave_out,
     )
     species = sorted({p["species"] for w in waters for p in w["plants"]})
 

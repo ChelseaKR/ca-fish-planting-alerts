@@ -111,6 +111,14 @@ This repository was republished with a new history on 2026-09-18
   change stops a plant that ages off the page from being recorded as
   canceled, and stops the run from crashing on a water whose rows have
   all aged off (PR 13).
+- The daily run refuses a CDFW page that is showing its "Current-Future
+  Plants" or "Past Plants" view instead of the full window. Before, a
+  Current-Future response (the real 2026-09-14 capture has zero rows) would
+  have marked almost every earlier listed plant `removed` and published a
+  snapshot saying nothing is scheduled. The run now stops with a
+  `run refused -- nothing published` line that names the view, and history,
+  the snapshot and the site are untouched. The daily run's own request is
+  unaffected. Not seen in production.
 - App: the shared Xcode scheme points at the right StoreKit configuration
   file (PR 24).
 - App accessibility: at the largest text sizes a water's "This week" tag

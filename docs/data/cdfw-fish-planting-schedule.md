@@ -43,8 +43,10 @@ were read (2026-09-13) are in `docs/LICENSES-AND-ATTRIBUTION.md`.
   opens an issue (`publish.yml` `alert-on-failure`), so the operator is told
   within a day.
 - What readers see: every site page says when the schedule was last checked.
-  The app shows the snapshot's build time on its About screen only. Showing
-  staleness on the app's main screens is part of #8.
+  The app's Browse and Favorites screens say which week the schedule is for,
+  whether that week has ended, and how the last check for a newer schedule
+  went, and a failed check keeps the last good schedule on screen with its
+  week. The app's About screen also shows the snapshot's build time.
 
 ## Fetch timestamp
 

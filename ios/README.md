@@ -138,35 +138,50 @@ xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
   -destination 'platform=iOS Simulator,name=iPhone 17' clean build test
 ```
 
-All of the above ran clean in this environment: `swift test` — 38/38;
-`xcodebuild build` — BUILD SUCCEEDED, zero warnings besides the expected
-"no AppIntents.framework dependency" note; `CAFishPlantingTests` — 5/5;
-`CAFishPlantingUITests` — the browse → favorite → explainer-sheet →
-Favorites-tab smoke path (see `docs/APP-STORE.md` for the exact run
-Chelsea can repeat).
+What each command covers:
 
-## Two things worth knowing before re-running these
+- `swift test` runs the `PlantingCore` unit tests: the strict snapshot
+  decoder (which also decodes the bundled snapshot), `AlertPlanner`, the
+  stores, the refresher and the freshness rules. CI runs this one on every
+  pull request (the `ios` job in `.github/workflows/ci.yml`).
+- `xcodebuild ... build` builds the app and its widget extension for a
+  simulator.
+- `-only-testing:CAFishPlantingTests` runs the app-hosted unit tests.
+  `PurchaseManagerTests` in that target cannot pass on an iOS 26.5
+  simulator; see "StoreKit tests can't pass on the iOS 26.5 simulator"
+  below.
+- `-only-testing:CAFishPlantingUITests` runs the UI tests: the
+  browse, favorite, explainer-sheet and Favorites-tab smoke path
+  (`SmokeUITests`, and see `docs/APP-STORE.md` for a run to repeat by hand)
+  and the automated accessibility audit (`AccessibilityAuditUITests`).
+
+CI does not run the Xcode builds or tests (the comment on the `ios` job in
+`ci.yml` says why), so run them by hand before a release. Pass and fail
+counts are not recorded here, because they go stale as tests are added. The
+commands print them.
+
+## Three things worth knowing before re-running these
 
 1. **Pick (or create) a simulator device explicitly** rather than relying
-   on Xcode's default. A device that is mid-boot or shared with another
-   concurrently-running `xcodebuild` (this session hit exactly that: a
-   sibling session's `queer-tv-guide` test run was using the same "iPhone
-   17 Pro" simulator, which stalled both) will look "hung" for minutes.
-   `xcrun simctl list devices` shows what's booted/booting; prefer `-destination
-   'platform=iOS Simulator,id=<UDID>'` with a device nothing else is using.
-2. **First-launch content.** If `xcodebuild`/the simulator fails with
-   something like "failed to load IDESimulatorFoundation" or a device
-   permanently stuck "Booting", the fix is an interactive owner step:
-   `sudo xcodebuild -runFirstLaunch`. Not needed in this session — noted
-   here because the task brief anticipated it.
+   on Xcode's default. A device that is mid-boot, or shared with another
+   `xcodebuild` run at the same time, will look "hung" for minutes. Two test
+   runs from different checkouts on the same "iPhone 17 Pro" simulator have
+   stalled each other this way. `xcrun simctl list devices` shows what's
+   booted or booting; prefer `-destination 'platform=iOS Simulator,id=<UDID>'`
+   with a device nothing else is using.
+2. **First-launch content.** If `xcodebuild` or the simulator fails with
+   something like "failed to load IDESimulatorFoundation", or a device stays
+   in "Booting", the fix is an interactive owner step:
+   `sudo xcodebuild -runFirstLaunch`.
 3. **StoreKit tests can't pass on the iOS 26.5 simulator.** See the next
    section.
 
 ## StoreKit tests can't pass on the iOS 26.5 simulator
 
-`PurchaseManagerTests` has never passed on this machine. PR 7 merged it
-unverified, and origin/main and PR 12 fail the same way (measured
-2026-09-17 on fresh simulators). This is an Apple bug in the simulator
+`PurchaseManagerTests` has not passed on an iOS 26.5 simulator in any run
+made so far. The tests were merged without a passing simulator run, and the
+copy on `main` at the time failed the same way (measured 2026-09-17 on
+fresh simulators; not re-run since). This is an Apple bug in the simulator
 runtime. It is not a problem with this repo's code, the product ID, or the
 `.storekit` file.
 
@@ -220,24 +235,18 @@ even with the corrected scheme path.
 
 ## The bundled snapshot: real pipeline output, not the hand-made fixture
 
-`ios/` started against a hand-built fixture (schema-valid, real water
-names, invented plants) while the pipeline lane was still in flight. That
-lane finished within the session — `schema/snapshot.v1.json` +
-`schema/README.md` landed as commit `1b1d0eb` on
-`origin/feat/pipeline-schema-site`, and a real generated snapshot later
-appeared at `site/snapshot/v1.json` (385 waters, `source_week` "week of
-2026-09-13", 7 waters listed that week) — so
-`CAFishPlanting/Resources/snapshot.json` is now **that real output**,
-copied in and verified: valid against `schema/snapshot.v1.json` (checked
-with the `jsonschema` Python package) and decodes cleanly through
-`SnapshotDecoder`, including the `this_week`-agrees-with-`waters[].plants`
-self-consistency check. The synthetic version this replaced is gone; if
-the pipeline lane's committed output ever diverges from this copy,
-re-sync `CAFishPlanting/Resources/snapshot.json` from whatever it
-publishes at the URL below (same filename, same location — nothing in
-`ios/` treats "real vs. fixture" specially, any schema-valid file drops
-in cleanly). `PlantingCore/Sources/PlantingCore/SnapshotEndpoint.swift`
-has the live URL from `schema/README.md`
+`CAFishPlanting/Resources/snapshot.json` is real pipeline output: a copy of
+the snapshot the site publishes, not a hand-made fixture. It is valid
+against `schema/snapshot.v1.json` (`scripts/sync-bundled-snapshot.sh` checks
+that with the `jsonschema` Python package before it copies a file in) and it
+decodes cleanly through `SnapshotDecoder`, including the check that
+`this_week` agrees with `waters[].plants` (the `PlantingCore` tests decode
+it). Nothing in `ios/` treats "real
+versus fixture" specially, so any schema-valid file drops in at the same
+filename and location. If the pipeline's published output diverges from this
+copy, re-sync it from the live URL.
+`PlantingCore/Sources/PlantingCore/SnapshotEndpoint.swift` has that URL, from
+`schema/README.md`
 (`https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json`,
 following redirects once a custom domain is set).
 
@@ -249,10 +258,9 @@ before archiving. `scripts/app-store-screenshots.sh` regenerates the App
 Store screenshots from whatever is bundled (see `docs/APP-STORE.md`,
 "Screenshots").
 
-One assumption flagged for the pipeline/site lane: `schema/snapshot.v1.json`
-has no per-water site-page URL field, so `SnapshotEndpoint.siteWaterURL(slug:)`
-derives it from the snapshot's own host + `/water/<slug>/` (matching the path
-convention `schema/README.md` documents). If the real site ends up on a
-different host than the snapshot, that derivation breaks — the clean fix is
-an explicit `site_url` per water in a future schema revision, which is a
-`schema/` change outside this task's boundary.
+One assumption to know about: `schema/snapshot.v1.json` has no per-water
+site-page URL field, so `SnapshotEndpoint.siteWaterURL(slug:)` derives it from
+the snapshot's own host + `/water/<slug>/` (matching the path convention
+`schema/README.md` documents). If the site ever moves to a different host
+than the snapshot, that derivation breaks. The clean fix is an explicit
+`site_url` per water in a future schema revision.

@@ -70,6 +70,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Site: a water page's planting history says "Scheduled" and "Schedule
+  changed" where it printed the raw values "listed" and "removed", the words
+  the app uses. A page that shows a changed week explains it in a sentence:
+  CDFW listed that week earlier and later removed it from its schedule. The
+  snapshot and the history keep their values.
 - The pipeline records a well-formed schedule table with no rows as an empty
   week instead of failing the run (PR 4).
 - App: the one-time purchase unlocks local notifications. Favorites and
@@ -102,6 +107,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Site: a catfish-only water's calendar feed is named "<water> catfish
+  planting schedule", and a water with both species "trout and catfish
+  planting schedule", to match its page. It said "trout" for every water.
+  Only the calendar's display name changes: each feed's address and every
+  event's ID stay the same, so nothing duplicates in a subscribed calendar.
 - App: Product > Archive works. The shared scheme built both test targets
   for archiving, and in the Release configuration their `@testable` imports
   can't resolve, so every archive failed before signing was reached. The

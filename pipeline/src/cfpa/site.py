@@ -174,12 +174,18 @@ def _ics_fold(line: str) -> str:
 
 
 def build_water_ics(*, water: dict[str, Any], base_url: str) -> str:
+    # The calendar's display name says what the water's own page says
+    # (species_phrase over the same plants), so a catfish-only water is
+    # never subscribed to as a "trout planting schedule". Only this name
+    # depends on the species: PRODID, every UID and the feed URL do not, so
+    # a subscriber's existing events are not duplicated.
+    species = species_phrase({p["species"] for p in water["plants"]})
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
         "PRODID:-//ca-fish-planting-alerts//snapshot v1//EN",
         "CALSCALE:GREGORIAN",
-        f"X-WR-CALNAME:{_ics_escape(water['name'])} trout planting schedule",
+        f"X-WR-CALNAME:{_ics_escape(water['name'])} {species} planting schedule",
         f"X-WR-CALDESC:{_ics_escape('CDFW-scheduled plants at ' + water['name'] + '. Subject to change.')}",
     ]
     for p in water["plants"]:
@@ -236,6 +242,15 @@ def species_phrase(species: set[str]) -> str:
     return "fish"
 
 
+# What the planting-history table says for each snapshot status. The snapshot
+# and history keep the raw values (`listed`, `removed`); readers get words that
+# match the iOS app ("Schedule changed"), because a bare "removed" reads as
+# fish taken out of the water. Both stay "scheduled" wording, never "planted".
+# A status this table lacks raises KeyError, so a new value fails the build
+# instead of printing a raw or blank cell.
+PLANT_STATUS_LABEL = {"listed": "Scheduled", "removed": "Schedule changed"}
+
+
 def _plural(n: int, one: str, many: str) -> str:
     return f"{n} {one if n == 1 else many}"
 
@@ -288,9 +303,12 @@ def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
                 "label": p["week"]["label"],
                 "species": p["species"],
                 "status": p["status"],
+                "status_label": PLANT_STATUS_LABEL[p["status"]],
             }
             for p in plants_sorted
         ],
+        # The page explains "Schedule changed" only when it shows one.
+        "has_changed_week": any(p["status"] == "removed" for p in w["plants"]),
     }
 
 

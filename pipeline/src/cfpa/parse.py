@@ -15,6 +15,13 @@ below has passed (table found, headers match exactly, tbody found), a
 tbody with zero rows is CDFW's real "nothing matched" shape, not a broken
 fetch -- a broken fetch fails one of the *earlier* checks instead. See
 ``parse_schedule_table``.
+
+Zero rows is also not proof of an empty week. It says only that the query the
+page ran matched nothing; which query that was is stated by the page's Time
+Period option (``fetch.extract_time_period_view``). The 2026-09-14 capture is
+the "Current-Future Plants" view answering nothing for a probe, which says
+nothing about the rest of the year. ``cli.run`` refuses a page that is not
+showing the full window before this parser's output is used for anything.
 """
 
 from __future__ import annotations

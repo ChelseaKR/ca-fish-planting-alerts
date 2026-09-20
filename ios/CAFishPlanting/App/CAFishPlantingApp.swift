@@ -9,6 +9,11 @@ struct CAFishPlantingApp: App {
     init() {
         // Must run before applicationDidFinishLaunching returns, so this
         // happens in the App's init rather than in a view's onAppear.
+        //
+        // Set shared here (not in the WindowGroup's .task) so the
+        // background-refresh handler can reach it even if iOS launches the
+        // app in the background without connecting a window scene.
+        AppEnvironment.shared = environment
         BackgroundRefresh.register { await AppEnvironment.shared?.performBackgroundRefresh() ?? .failed("no environment") }
         // Also before launch finishes, so the tap on an alert that launched
         // the app is delivered and opens its water.
@@ -22,7 +27,6 @@ struct CAFishPlantingApp: App {
                 .environment(AppRouter.shared)
                 .onOpenURL { AppRouter.shared.handle($0) }
                 .task {
-                    AppEnvironment.shared = environment
                     await refreshOnOpen()
                 }
         }

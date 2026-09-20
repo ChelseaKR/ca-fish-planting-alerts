@@ -32,7 +32,10 @@ Pages-artifact-upload, and deploy steps only run after a clean exit.
   current week in a Time Period widget (the Sunday that starts it -- not the
   fetch day), and a page whose week is not the run date's week (+/- 1 day of
   skew at the boundary) is refused rather than treated as "no plants this
-  week".
+  week". It also reads which Time Period option the page is showing
+  (`extract_time_period_view`) and refuses "Current-Future Plants" and "Past
+  Plants": a partial table cannot show that CDFW dropped a plant
+  (DECISIONS 0016).
 - `src/cfpa/parse.py` — turns the table into rows. Fails loudly (`ParseError`)
   on any structural surprise (missing table, changed headers, wrong cell
   count, missing `stockid=` map link) rather than emitting a partial table.
@@ -49,7 +52,10 @@ Pages-artifact-upload, and deploy steps only run after a clean exit.
   observation. Only `status` (listed/removed) and `last_observed_at` may
   change after a record is first written.
 - `src/cfpa/snapshot.py` — builds the schema-validated snapshot dict from
-  history + aliases + the fetched page, plus the coverage report.
+  history + aliases + the fetched page, plus the coverage report. A water with
+  history that neither the table nor the picker names has no county, so it is
+  left out of that run's snapshot (never dropped from history) and the run
+  warns; see DECISIONS 0017.
 - `src/cfpa/site.py` + `templates/` — the static site (Jinja2). Its only
   JavaScript is the Google Analytics 4 tag (`templates/_ga4.html.jinja`),
   and only when a measurement ID is configured; see "Site configuration".

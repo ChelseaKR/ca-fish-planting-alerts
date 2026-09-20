@@ -44,7 +44,7 @@ entry replaces 0002 for the website only.
   rather than kept in a secret or a repository variable. Setting it to `""`
   removes the tag from every page and switches the about, privacy and
   support copy back to "nothing is collected".
-- **Global Privacy Control and Do Not Track are honoured.** When
+- **Global Privacy Control and Do Not Track are honored.** When
   `navigator.globalPrivacyControl === true` or Do Not Track is on, nothing
   loads: no `dataLayer`, no request to Google, no cookie. The tag adds
   gtag.js by script after that check, never with a static `<script src>`.
@@ -79,7 +79,7 @@ the paywall. It never got built either way, so as of tonight's review the
 app has **no purchase mechanism of any kind**: it can be downloaded and used
 in full for free. That is the blocker this decision closes.
 
-The paid-app-price-tier route is dropped in favour of **StoreKit 2**: a
+The paid-app-price-tier route is dropped in favor of **StoreKit 2**: a
 single non-consumable in-app purchase, `com.chelseakr.cafishplanting.fullaccess`,
 still $9.99, still one-time, still no subscription. Reasons:
 
@@ -97,17 +97,17 @@ still $9.99, still one-time, still no subscription. Reasons:
 What ships free vs. paid was never decided (see the "Not yet decided"
 line in the top-level README and `docs/APP-STORE.md`'s "Known gaps").
 Rather than guess at that scope, `PlantingCore/Sources/PlantingCore/FreeTier.swift`
-gates a clearly-labelled placeholder — a cap on how many waters a
-non-purchaser may favourite — so the StoreKit mechanism itself is complete
+gates a clearly-labeled placeholder — a cap on how many waters a
+non-purchaser may favorite — so the StoreKit mechanism itself is complete
 and real without inventing product scope that is Chelsea's call. Owner
 follow-up: decide the real free/paid split and repoint `FreeTier` (or
-delete it in favour of whatever the real gate turns out to be).
+delete it in favor of whatever the real gate turns out to be).
 
-**Owner follow-up resolved by 0009** — favouriting is free and
+**Owner follow-up resolved by 0009** — favoriting is free and
 unconstrained for everyone; the paid unlock is local notifications, not a
-favourites cap. `FreeTier` is repointed accordingly, not deleted.
+favorites cap. `FreeTier` is repointed accordingly, not deleted.
 
-## 0004 — Licence before bytes (2026-09-13)
+## 0004 — License before bytes (2026-09-13)
 
 CDFW's terms are quoted verbatim in `docs/LICENSES-AND-ATTRIBUTION.md` before
 any fetch, with the attribution the app and site must show. Unknown = not used.
@@ -177,26 +177,26 @@ This does not weaken decision 0005: a stale page is still caught
 independently and earlier, in `fetch.py`'s own freshness check, before
 `parse_schedule_table` ever sees the HTML.
 
-## 0009 — Free/paid split: notifications are the paid unlock, not favouriting (2026-09-17)
+## 0009 — Free/paid split: notifications are the paid unlock, not favoriting (2026-09-17)
 
 Resolves 0007's "owner follow-up" (decide the real free/paid split and
 repoint `FreeTier` or delete it). The placeholder gate 0007 shipped — a cap
-of 3 favourited waters for non-purchasers — is removed entirely.
+of 3 favorited waters for non-purchasers — is removed entirely.
 
-- **Free, for everyone, no purchase required:** favouriting and browsing
+- **Free, for everyone, no purchase required:** favoriting and browsing
   any water, with the same full lookup capability as the free website
   (0001) already gives anyone. This app's free tier must never be worse
   than the free site.
 - **Paid (`com.chelseakr.cafishplanting.fullaccess`, still $9.99, still
   one-time — 0003/0007 unchanged on price and mechanism):** local push
-  notifications when a favourited water's planting schedule changes.
-  Without the purchase, favouriting still works fully; no local
-  notification is ever scheduled or delivered for any favourited water.
+  notifications when a favorited water's planting schedule changes.
+  Without the purchase, favoriting still works fully; no local
+  notification is ever scheduled or delivered for any favorited water.
 
 Rationale: a website cannot push a native notification to someone's
 phone — that is the one piece of value this app has that the free site
 structurally cannot replicate, so it is the coherent thing to gate,
-rather than gating a capability (favouriting) the free site already gives
+rather than gating a capability (favoriting) the free site already gives
 away for nothing.
 
 Implementation: `AlertPlanner` (the diff logic) and `NotificationScheduler`
@@ -209,7 +209,26 @@ needed there was one entitlement check
 replanned and saved for non-purchasers too, so a later purchase doesn't
 suddenly announce every listing change that happened while locked.
 `PlantingCore/Sources/PlantingCore/FreeTier.swift` is repointed at this
-gate (`notificationsAllowed(isEntitled:)`) rather than a favourites cap;
-`toggleFavourite` in `AppEnvironment` is no longer gated at all, and the
-paywall sheet that used to interrupt the favourite action is removed —
+gate (`notificationsAllowed(isEntitled:)`) rather than a favorites cap;
+`toggleFavorite` in `AppEnvironment` is no longer gated at all, and the
+paywall sheet that used to interrupt the favorite action is removed —
 `PurchaseView` is reachable only from About > "Unlock full access".
+
+## 0015 — The widget is part of full access (2026-09-18)
+
+The owner decided that the Home Screen and Lock Screen widget ("Favorite
+waters") is part of full access, the same one-time purchase
+(`com.chelseakr.cafishplanting.fullaccess`) that unlocks local
+notifications (0009). Browsing, history and favoriting stay free for
+everyone.
+
+- Before the purchase the widget is honest about it: it says the widget is
+  part of full access, shows the published schedule's week and how many
+  waters it lists, shows no favorites and no made-up data, and a tap opens
+  the purchase screen (`trouttruck://unlock`).
+- After a purchase, a restore, or a purchase on another device, the widget
+  lists the favorites at once. A refund locks it again.
+- One flag carries the decision: `FreeTier.widgetsRequireFullAccess`.
+- Everything that says what full access unlocks now names both alerts and
+  the widget: the purchase screen, About, `docs/APP-STORE.md`,
+  `docs/APP-STORE-LISTING.md` and the local StoreKit configuration.

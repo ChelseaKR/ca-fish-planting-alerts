@@ -8,10 +8,10 @@ import UserNotifications
 final class AppEnvironmentTests: XCTestCase {
     /// `AppEnvironment` persists to the app's real Application Support
     /// directory (by design — that's what makes it offline-first). Without
-    /// this, test methods leak favourites/alert-state across each other
+    /// this, test methods leak favorites/alert-state across each other
     /// through that shared, real, on-disk directory (found by running on
-    /// the simulator: `testUnfavouritingDoesNotReTriggerExplainer` failed
-    /// only when run after another test had already favourited something).
+    /// the simulator: `testUnfavoritingDoesNotReTriggerExplainer` failed
+    /// only when run after another test had already favorited something).
     override func setUpWithError() throws {
         let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: Bundle.main.bundleIdentifier ?? "com.chelseakr.cafishplanting")
         try? FileManager.default.removeItem(at: layout.directory)
@@ -25,37 +25,37 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertEqual(env.snapshotOrigin, .bundled, "a freshly-installed app has only the bundled snapshot")
     }
 
-    func testNotificationExplainerShownOnlyOnFirstEverFavourite() throws {
+    func testNotificationExplainerShownOnlyOnFirstEverFavorite() throws {
         let env = AppEnvironment()
         let waters = try XCTUnwrap(env.snapshot?.waters)
         let first = try XCTUnwrap(waters.first)
         let second = try XCTUnwrap(waters.dropFirst().first)
 
         XCTAssertNil(env.pendingNotificationExplainer)
-        env.toggleFavourite(first)
-        XCTAssertEqual(env.pendingNotificationExplainer?.water.id, first.id, "the first-ever favourite must trigger the explainer")
+        env.toggleFavorite(first)
+        XCTAssertEqual(env.pendingNotificationExplainer?.water.id, first.id, "the first-ever favorite must trigger the explainer")
 
         env.dismissNotificationExplainer()
         XCTAssertNil(env.pendingNotificationExplainer)
 
-        env.toggleFavourite(second)
-        XCTAssertNil(env.pendingNotificationExplainer, "a second favourite must never re-trigger the explainer")
+        env.toggleFavorite(second)
+        XCTAssertNil(env.pendingNotificationExplainer, "a second favorite must never re-trigger the explainer")
     }
 
-    func testUnfavouritingDoesNotReTriggerExplainer() throws {
+    func testUnfavoritingDoesNotReTriggerExplainer() throws {
         let env = AppEnvironment()
         let water = try XCTUnwrap(env.snapshot?.waters.first)
 
-        env.toggleFavourite(water) // favourite: triggers
+        env.toggleFavorite(water) // favorite: triggers
         env.dismissNotificationExplainer()
-        env.toggleFavourite(water) // unfavourite
-        XCTAssertFalse(env.isFavourite(water.id))
+        env.toggleFavorite(water) // unfavorite
+        XCTAssertFalse(env.isFavorite(water.id))
         XCTAssertNil(env.pendingNotificationExplainer)
 
-        env.toggleFavourite(water) // favourite again: still not the "first ever" moment... 
+        env.toggleFavorite(water) // favorite again: still not the "first ever" moment... 
         // ...but this app instance has no persisted memory of "already asked" beyond
-        // favourites.isEmpty, so re-favouriting after removing every favourite is
-        // indistinguishable from a first favourite. That is intentional: the app
+        // favorites.isEmpty, so re-favoriting after removing every favorite is
+        // indistinguishable from a first favorite. That is intentional: the app
         // only ever asks once *per empty->non-empty transition*, and there is no
         // system API to ask "have I already shown my own explainer sheet before"
         // separate from "is notifications permission already decided" — which
@@ -63,11 +63,53 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertEqual(env.pendingNotificationExplainer?.water.id, water.id)
     }
 
-    /// Favouriting is never gated (see `FreeTier`, PlantingCore, and the
+    // MARK: - Notification priming
+
+    /// The priming screen promises a system prompt, so it shows only while
+    /// iOS hasn't asked. After allow or decline the prompt never returns.
+    func testPrimingShowsOnlyOnAFirstFavoriteBeforeIOSHasAsked() {
+        XCTAssertTrue(AppEnvironment.shouldPrimeNotifications(favoritesWereEmpty: true, authorization: .notDetermined))
+        XCTAssertFalse(AppEnvironment.shouldPrimeNotifications(favoritesWereEmpty: false, authorization: .notDetermined))
+        for decided: UNAuthorizationStatus in [.authorized, .denied, .provisional, .ephemeral] {
+            XCTAssertFalse(AppEnvironment.shouldPrimeNotifications(favoritesWereEmpty: true, authorization: decided),
+                           "status \(decided.rawValue): the system prompt won't show again")
+        }
+    }
+
+    func testPrimingCopySaysWhatAnAlertIsAndNeverPromisesADayOrAPrice() {
+        for entitled in [false, true] {
+            for name in ["Lake Siskiyou", nil] as [String?] {
+                let copy = NotificationPrimingCopy(waterName: name, isEntitled: entitled)
+                let all = ([copy.headline, copy.footnote] + copy.points.map(\.text)).joined(separator: " ")
+                if let name { XCTAssertTrue(copy.headline.contains(name), "a first favorite is named") }
+                XCTAssertTrue(all.contains("week, never a day"), "CDFW gives the week, not the day")
+                XCTAssertTrue(all.contains("nothing about you"), "say that nothing leaves the device")
+                XCTAssertTrue(all.contains("No other notifications"))
+                XCTAssertFalse(all.contains("$"), "the priming screen never names a price")
+                for word in ["stocked", "planted", "confirmed"] {
+                    XCTAssertFalse(all.localizedCaseInsensitiveContains(word), "schema/README.md wording rule: \(word)")
+                }
+                XCTAssertEqual(all.contains("full access"), !entitled,
+                               "a non-purchaser is told alerts need full access; a purchaser isn't")
+                XCTAssertEqual(Set(copy.points.map(\.id)).count, copy.points.count, "point IDs must be unique for ForEach")
+            }
+        }
+    }
+
+    func testTheFirstFavoriteExplainerNamesThatWater() throws {
+        let env = AppEnvironment()
+        let water = try XCTUnwrap(env.snapshot?.waters.first)
+        env.toggleFavorite(water)
+        let explainer = try XCTUnwrap(env.pendingNotificationExplainer, "a fresh install hasn't been asked, so the first favorite primes")
+        XCTAssertEqual(explainer.copy.waterName, water.name)
+        XCTAssertEqual(explainer.copy.isEntitled, env.purchases.isEntitled)
+    }
+
+    /// Favoriting is never gated (see `FreeTier`, PlantingCore, and the
     /// DECISIONS entry that resolves 0007's "owner follow-up"): a default
     /// `AppEnvironment()` has made no purchase, so this exercises the real
     /// default non-purchaser path, not an injected fake.
-    func testNonPurchaserFavouritesAreUnconstrained() throws {
+    func testNonPurchaserFavoritesAreUnconstrained() throws {
         let env = AppEnvironment()
         XCTAssertFalse(env.purchases.isEntitled, "sanity check: a fresh environment must not already be entitled")
         let waters = try XCTUnwrap(env.snapshot?.waters)
@@ -75,14 +117,33 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertGreaterThan(waters.count, 10, "fixture needs enough waters for this test to mean anything")
 
         for water in waters.prefix(10) {
-            env.toggleFavourite(water)
+            env.toggleFavorite(water)
         }
-        XCTAssertEqual(env.favourites.count, 10, "a non-purchaser must be able to favourite as many waters as a purchaser")
+        XCTAssertEqual(env.favorites.count, 10, "a non-purchaser must be able to favorite as many waters as a purchaser")
 
-        // Unfavouriting still works normally.
-        let firstFavourite = waters[0]
-        env.toggleFavourite(firstFavourite)
-        XCTAssertEqual(env.favourites.count, 9)
+        // Unfavoriting still works normally.
+        let firstFavorite = waters[0]
+        env.toggleFavorite(firstFavorite)
+        XCTAssertEqual(env.favorites.count, 9)
+    }
+
+    /// A favorite the snapshot no longer has can still be removed, by ID,
+    /// and removing it forgets its alert baseline too.
+    func testAFavoriteTheSnapshotNoLongerHasCanBeRemoved() throws {
+        let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: Bundle.main.bundleIdentifier ?? "com.chelseakr.cafishplanting")
+        let first = try XCTUnwrap(AppEnvironment().snapshot?.waters.first)
+        try FavoritesStore(layout: layout).save(Favorites(ids: ["cdfw-gone", first.id]))
+
+        let env = AppEnvironment()
+        XCTAssertEqual(env.favorites.ids, ["cdfw-gone", first.id])
+        XCTAssertNil(env.snapshot?.water(id: "cdfw-gone"), "sanity check: the snapshot must not have it")
+
+        env.removeFavorite("cdfw-gone")
+        XCTAssertEqual(env.favorites.ids, [first.id])
+        XCTAssertEqual(FavoritesStore(layout: layout).load().ids, [first.id], "the removal is saved")
+
+        env.removeFavorite("cdfw-never-a-favorite")
+        XCTAssertEqual(env.favorites.ids, [first.id], "removing something that isn't a favorite changes nothing")
     }
 
     func testBackgroundTaskIdentifierMatchesInfoPlistDeclaration() throws {
@@ -96,22 +157,22 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertEqual(declared, [BackgroundRefresh.taskIdentifier], "Info.plist must permit exactly the identifier the code registers")
     }
 
-    // MARK: - Notification gating (DECISIONS: local notifications are the paid unlock, not favouriting)
+    // MARK: - Notification gating (DECISIONS: local notifications are the paid unlock, not favoriting)
 
-    /// The other half of `PurchaseManagerTests.testPurchaserGetsAScheduledNotificationWhenAFavouritesScheduleChanges`:
+    /// The other half of `PurchaseManagerTests.testPurchaserGetsAScheduledNotificationWhenAFavoritesScheduleChanges`:
     /// exercises the real `performBackgroundRefresh()` path (not just the
     /// pure `FreeTier.notificationsAllowed` predicate) via a mocked network
     /// response, and confirms a non-purchaser never gets a local
     /// notification scheduled even though the exact same schedule change
     /// would notify a purchaser.
-    func testNonPurchaserGetsNoScheduledNotificationEvenWhenAFavouritesScheduleChanges() async throws {
+    func testNonPurchaserGetsNoScheduledNotificationEvenWhenAFavoritesScheduleChanges() async throws {
         let env = AppEnvironment(refresher: makeMockedSnapshotRefresher())
         XCTAssertFalse(env.purchases.isEntitled, "sanity check: a fresh environment must not already be entitled")
 
         let snapshot = try XCTUnwrap(env.snapshot)
         let target = try XCTUnwrap(waterWithNoCurrentOrFutureListing(in: snapshot), "fixture needs a water with nothing listed at/after source_week yet")
-        env.toggleFavourite(target)
-        XCTAssertTrue(env.isFavourite(target.id))
+        env.toggleFavorite(target)
+        XCTAssertTrue(env.isFavorite(target.id))
 
         let (data, _) = try updatedSnapshotFixture(addingListingTo: target.id, after: snapshot.sourceWeek)
         MockSnapshotURLProtocol.responseData = data
@@ -170,7 +231,7 @@ final class AppEnvironmentTests: XCTestCase {
     }
 
     /// Offline at launch: the app says it couldn't check and keeps the
-    /// bundled week, labelled with that week. It never shows the week as
+    /// bundled week, labeled with that week. It never shows the week as
     /// empty.
     func testAFailedFetchOnOpenKeepsTheBundledWeekAndSaysSo() async throws {
         let env = AppEnvironment(refresher: makeMockedSnapshotRefresher())

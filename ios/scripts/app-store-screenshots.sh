@@ -23,7 +23,7 @@ device_name="Trout Truck screenshots"
 device_type="com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
 bundle_id="com.chelseakr.cafishplanting"
 expected_size="1320x2868"
-shots=(01-this-week 02-water-history 03-favourites 04-notifications 05-about)
+shots=(01-this-week 02-water-history 03-favorites 04-notifications 05-about)
 
 udid="${1:-}"
 if [[ -z "$udid" ]]; then
@@ -57,7 +57,7 @@ xcrun simctl uninstall "$udid" "$bundle_id" 2>/dev/null || true
 # Region: the one with the most waters on this week's schedule. History
 # water: the deepest history among this week's waters in any region, with a
 # name short enough (18 characters) not to be cut off in the large title.
-# Favourites: that water, then this week's deepest three in the region, then
+# Favorites: that water, then this week's deepest three in the region, then
 # the deepest history not on this week's schedule. Names must be unique so
 # the UI test's search lands on the right row.
 picks="$(python3 - "$snapshot" <<'PY'
@@ -83,18 +83,18 @@ PY
 )"
 region="$(sed -n 1p <<<"$picks")"
 history_water="$(sed -n 2p <<<"$picks")"
-favourites="$(sed -n 3p <<<"$picks")"
+favorites="$(sed -n 3p <<<"$picks")"
 echo "snapshot: $(sed -n 4p <<<"$picks")"
 echo "region: $region"
 echo "history water: $history_water"
-echo "favourites: $favourites"
+echo "favorites: $favorites"
 
 work="$(mktemp -d "${TMPDIR:-/tmp}/trout-truck-screenshots.XXXXXX")"
 TEST_RUNNER_TT_SCREENSHOTS=1 \
 TEST_RUNNER_TT_OUTPUT_DIR="$work/png" \
 TEST_RUNNER_TT_REGION="$region" \
 TEST_RUNNER_TT_HISTORY_WATER="$history_water" \
-TEST_RUNNER_TT_FAVOURITES="$favourites" \
+TEST_RUNNER_TT_FAVORITES="$favorites" \
 xcodebuild -project "$ios_dir/CAFishPlanting.xcodeproj" -scheme CAFishPlanting \
   -destination "platform=iOS Simulator,id=$udid" \
   -derivedDataPath "${DERIVED_DATA:-$work/DerivedData}" \

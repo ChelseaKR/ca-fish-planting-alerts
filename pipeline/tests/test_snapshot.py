@@ -101,7 +101,7 @@ def test_coverage_numbers_are_populated_and_sane(tmp_path: Path):
     assert cov["weeks_of_history_min"] >= 1
 
 
-def test_snapshot_carries_attribution_and_licence(tmp_path: Path):
+def test_snapshot_carries_attribution_and_license(tmp_path: Path):
     snap = _run(tmp_path)
     assert "California Department of Fish and Wildlife" in snap["attribution"]["text"]
     assert snap["licence"]["sources"]

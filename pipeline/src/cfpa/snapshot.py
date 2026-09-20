@@ -36,14 +36,14 @@ ATTRIBUTION_TEXT = (
 )
 ATTRIBUTION_URL = "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch"
 
-LICENCE_SUMMARY = (
+LICENSE_SUMMARY = (
     "CDFW's site-wide Conditions of Use place page content in the public "
     "domain with no commercial-use restriction; the related CDFW Fishing "
     "Guide dataset on data.ca.gov is explicitly CC-BY. We attribute "
     "unconditionally. See docs/LICENSES-AND-ATTRIBUTION.md for the verbatim "
     "quotes this is built from."
 )
-LICENCE_SOURCES = [
+LICENSE_SOURCES = [
     {
         "name": "CDFW Fish Planting Schedule",
         "url": "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch",
@@ -330,7 +330,8 @@ def build_snapshot(
         },
         "source_week": source_week,
         "attribution": {"text": ATTRIBUTION_TEXT, "url": ATTRIBUTION_URL},
-        "licence": {"summary": LICENCE_SUMMARY, "sources": LICENCE_SOURCES},
+        # "licence" is a published v1 field name: spelling kept for existing readers.
+        "licence": {"summary": LICENSE_SUMMARY, "sources": LICENSE_SOURCES},
         "regions": REGIONS,
         "counties": counties,
         "species": species,

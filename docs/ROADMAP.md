@@ -31,16 +31,16 @@ standard.
 | Regression against baseline [PERF-03] | ≤ 10% worse on any metric | `perf/baseline.json` | AUTO | Chelsea |
 | Snapshot valid against contract [DG-03] | every run | `cfpa` refuses to publish an invalid snapshot | AUTO | Chelsea |
 | Stale or failed daily run surfaced [DG-04] | a failed or timed-out publish opens an issue | `publish.yml` `alert-on-failure` | AUTO | Chelsea |
-| Screen-reader and keyboard walkthrough [A11Y-11, A11Y-12] | per release | committed walkthrough record | REVIEW, gap #26 | Chelsea |
-| Threat model and residual risks [QM-14, RTF-06] | per new surface | `docs/RESPONSIBLE-TECH-AUDITS.md` §F | REVIEW, gap #30 | Chelsea |
+| Screen-reader and keyboard walkthrough [A11Y-11, A11Y-12] | per release | committed walkthrough record | REVIEW, gap #5 | Chelsea |
+| Threat model and residual risks [QM-14, RTF-06] | per new surface | `docs/RESPONSIBLE-TECH-AUDITS.md` §F | REVIEW, gap #9 | Chelsea |
 
 ## CI stages 6-8
 
 | Stage | State |
 |-------|-------|
-| 6 a11y | Applies. `site-checks.yml` runs axe, pa11y-ci and Lighthouse over every page the pipeline builds from the fixture. The review gates are open in #26. |
+| 6 a11y | Applies. `site-checks.yml` runs axe, pa11y-ci and Lighthouse over every page the pipeline builds from the fixture. The review gates are open in #5. |
 | 7 perf | Applies. Lighthouse CI budgets and the baseline in `perf/`. k6 (PERF-01) is N/A: GitHub Pages serves static files, and this repository runs no server route whose latency it controls. |
-| 8 responsible | Applies. The product's honesty rules are unit tests in `make verify`. A stale or failed fetch is refused and never published as "no plants this week". The history never loses or rewrites a recorded plant. A plant that ages off the page is not recorded as cancelled. The site shows the date CDFW's schedule was last checked. There is no AI component, so there are no eval gates. |
+| 8 responsible | Applies. The product's honesty rules are unit tests in `make verify`. A stale or failed fetch is refused and never published as "no plants this week". The history never loses or rewrites a recorded plant. A plant that ages off the page is not recorded as canceled. The site shows the date CDFW's schedule was last checked. There is no AI component, so there are no eval gates. |
 
 ## Observability
 
@@ -49,7 +49,7 @@ app are Tier C.
 
 - **Website (Tier B).** The lab Core Web Vitals budgets (LCP, CLS, and TBT
   as the stand-in for INP) are gated by Lighthouse CI on every PR. Field CWV
-  (RUM): gap, #28. Browser OTel spans and `traceparent`: N/A, because the
+  (RUM): gap, #7. Browser OTel spans and `traceparent`: N/A, because the
   pages make no API calls. They are static HTML, and the only script is the
   GA4 tag.
 - **Pipeline (Tier C).** It runs as the scheduled `publish` job. Every run
@@ -57,7 +57,7 @@ app are Tier C.
   waters known, names matched against names seen, rows parsed, weeks of
   history) and lists every unmatched water name. A failed or timed-out run
   opens an issue. OTel is out of scope for the CLI tier. There is no opt-in
-  `--log-format json` yet: gap, #28.
+  `--log-format json` yet: gap, #7.
 - **iOS app (Tier C).** No telemetry, by decision (`docs/DECISIONS.md`
   0011: the app collects nothing). Its state is on the device only.
 - SLOs, burn-rate alerts and health probes are Tier A controls: N/A. There

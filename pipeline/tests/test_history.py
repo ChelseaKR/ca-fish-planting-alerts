@@ -107,7 +107,7 @@ def test_merge_observations_leaves_out_of_window_history_alone():
     assert merged[0].status == "listed"
 
 
-def test_merge_observations_does_not_mark_the_ageing_off_oldest_week_removed():
+def test_merge_observations_does_not_mark_the_aging_off_oldest_week_removed():
     """Real case, 2026-09-17: the page still stated "All Plants (9/13/2025 -
     9/27/2026)" but had already dropped every plant for the week of
     2025-09-14 (rows age off by the day; the stated window moves by the

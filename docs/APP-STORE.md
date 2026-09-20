@@ -17,7 +17,7 @@ interactive Apple ID sign-in — and submits and registers nothing (per
 the task boundary). Everything below is prepared for Chelsea to execute.
 
 **2026-09-14 follow-up pass.** Re-verified against `origin/main` after
-PR #1 (pipeline/site) and PR #2 (iOS app) merged: the app icon gap this
+PR 1 (pipeline/site) and PR 2 (iOS app) merged: the app icon gap this
 doc originally flagged is closed (`0be59fd`, before this pass started —
 see "App icon" under Known gaps), `xcodebuild ... -destination
 'generic/platform=iOS Simulator' build` still succeeds clean (zero
@@ -76,7 +76,7 @@ in `code` are exact; paste them as they are.
    Guideline 1.5 asks for a Support URL that gives an easy way to contact
    you, and the page has no contact line until this is set.
 3. **Live privacy page: done 2026-09-18.** The 03:50 UTC build predated
-   #16 (the name) and #20 (GA4), but the `publish` run at 06:10 UTC
+   PR 16 (the name) and PR 20 (GA4), but the `publish` run at 06:10 UTC
    redeployed the site. Checked after it: `/privacy/` names Trout Truck,
    describes the website's Google Analytics 4, says the app collects
    nothing and that the host sees the requesting IP, and its app section
@@ -105,11 +105,16 @@ in `code` are exact; paste them as they are.
 7. **Register the bundle ID** at developer.apple.com → Certificates,
    Identifiers & Profiles → Identifiers → **+** → App IDs → App:
    Description `Trout Truck`, Bundle ID **Explicit**
-   `com.chelseakr.cafishplanting`. Don't add capabilities. In-App Purchase
-   is on for every App ID by default. Push Notifications is **not**
-   needed, because every alert is local. Xcode's automatic signing can also
-   register it on the first archive (step 16), but it has to exist before
-   it appears in step 8's Bundle ID menu.
+   `com.chelseakr.cafishplanting`. Add one capability, **App Groups**,
+   with the group `group.com.chelseakr.cafishplanting` (register it under
+   Identifiers → App Groups first). The Home Screen widget reads the app's
+   schedule digest through it. In-App Purchase is on for every App ID by
+   default. Push Notifications is **not** needed, because every alert is
+   local. Then register the widget's App ID the same way: Bundle ID
+   **Explicit** `com.chelseakr.cafishplanting.widgets`, capability **App
+   Groups** with the same group. Xcode's automatic signing can also
+   register both, and the group, on the first archive (step 16), but the
+   app's ID has to exist before it appears in step 8's Bundle ID menu.
 8. **Create the app record.** App Store Connect → Apps → **+** → New App:
    Platforms **iOS**; Name `Trout Truck`; Primary Language **English
    (U.S.)**; Bundle ID `com.chelseakr.cafishplanting`; SKU
@@ -145,8 +150,8 @@ in `code` are exact; paste them as they are.
     - Price: **$9.99** (USD), all storefronts at Apple's equivalents, or
       the availability chosen in step 10.
     - Localization, English (U.S.): Display Name `Full Access`;
-      Description `Alerts when a favourite water is listed` (39 of 45
-      characters).
+      Description `Alerts and a widget for your favorite waters` (44 of
+      45 characters).
     - Family Sharing: your call. Once turned on for a product, it
       can't be turned off.
     - Review Information: a screenshot of the purchase sheet (About →
@@ -154,7 +159,8 @@ in `code` are exact; paste them as they are.
       App Store, so it may show the price. Take it from the TestFlight
       build in step 18, where the sandbox price loads. The simulator can't
       load it on iOS 26.5 (`ios/README.md`). Review notes: "Unlocks local
-      notifications for favourited waters. About → Unlock full access."
+      notifications and the Home Screen widget for favorited waters.
+      About → Unlock full access."
     - Status must reach **Ready to Submit**. Apple reviews the first
       in-app purchase with an app version (step 20).
 13. **Version page (iOS App 0.1.0):**
@@ -214,7 +220,7 @@ in `code` are exact; paste them as they are.
       "Unlocked". Delete the app, reinstall, then Restore purchases
       unlocks it again.
     - Take the in-app purchase review screenshot (step 12) here.
-    - Favourite a water, choose Allow notifications, and check that
+    - Favorite a water, choose Allow notifications, and check that
       Settings → Trout Truck shows Notifications on and Background App
       Refresh available.
     - To test outside TestFlight, for example from an Xcode run on a
@@ -244,8 +250,8 @@ the 6.9" Display slot:
 |---|---|---|
 | `docs/app-store/screenshots/01-this-week.png` | Browse | Filtered to Inland Deserts Region (R6), the region with the most waters on this week's schedule (15 of 26). "This week" badges on the scheduled waters, and the header "Current schedule: week of 2026-09-13". |
 | `docs/app-store/screenshots/02-water-history.png` | Water detail | Carrville Pond (Trinity County): "Last planted week of 2026-09-13", then the 2026 history expanded, newest week first. The top row, week of 2026-09-20, is next week's scheduled plant. Every row is a week, never a day. |
-| `docs/app-store/screenshots/03-favourites.png` | Favourites | Five favourited waters. Four are on this week's schedule and one, Owens River, Section 2, is not, so the badge means something. |
-| `docs/app-store/screenshots/04-notifications.png` | The first-favourite sheet ("Stay in the loop") | What notifications will and won't do, "once you unlock full access". No price appears. The system permission prompt is not shown. |
+| `docs/app-store/screenshots/03-favorites.png` | Favorites | Five favorited waters. Four are on this week's schedule and one, Owens River, Section 2, is not, so the badge means something. |
+| `docs/app-store/screenshots/04-notifications.png` | The first-favorite sheet ("Stay in the loop") | What notifications will and won't do, "once you unlock full access". No price appears. The system permission prompt is not shown. |
 | `docs/app-store/screenshots/05-about.png` | About, scrolled to Privacy | The privacy statement, the CDFW attribution, and "This app is independent. It is not affiliated with or endorsed by the California Department of Fish and Wildlife." |
 
 **The data is real.** Every screen shows
@@ -253,7 +259,7 @@ the 6.9" Display slot:
 to the live `snapshot/v1.json` the pipeline built at 2026-09-18T03:50:44Z
 (week of 2026-09-13; 385 waters, 26 scheduled this week). It was checked
 against `schema/snapshot.v1.json` before it was copied in. No fixture was
-used, and nothing was seeded: the favourites were added by tapping the
+used, and nothing was seeded: the favorites were added by tapping the
 star, as a user would.
 
 **Honest details a reviewer may notice.** The Browse header says "Not
@@ -305,7 +311,7 @@ the code supports both.
   `CAFishPlanting/Views`. A `grep` for `https?://` in those directories on
   this branch finds only that URL.
 - Links aren't requests the app makes. The CDFW page, the water's site
-  page, the attribution URL and the licence URLs are SwiftUI `Link`s, which
+  page, the attribution URL and the license URLs are SwiftUI `Link`s, which
   open Safari only when tapped. There is no `WKWebView` or
   `SFSafariViewController`, so the website's Google Analytics never runs
   inside the app (DECISIONS 0011). The share button opens the system share
@@ -329,12 +335,16 @@ the code supports both.
 **No analytics or third-party SDK.**
 - Every `import` in `CAFishPlanting/` and `PlantingCore/Sources` is an
   Apple framework (`Foundation`, `SwiftUI`, `Observation`,
-  `UserNotifications`, `BackgroundTasks`, `StoreKit`) or the local
-  `PlantingCore` package.
+  `UserNotifications`, `BackgroundTasks`, `StoreKit`, and `WidgetKit` in
+  the app and its widget extension) or the local `PlantingCore` package.
 - `PlantingCore/Package.swift` declares no dependencies. The Xcode
   project has one package reference, the local `PlantingCore`
   (`XCLocalSwiftPackageReference`), and no remote package. There is no
   CocoaPods or Carthage.
+- The Shortcuts and Siri action (`App/ScheduleIntents.swift`) also
+  imports Apple's `AppIntents`. It reads the snapshot and favorites
+  already on the device, makes no network request, and returns its answer
+  only to Shortcuts or Siri on the device.
 - **Built app (2026-09-18, simulator build from this branch).** `otool -L`
   on the app's code (`CAFishPlanting.debug.dylib`) lists only system
   frameworks: Foundation, SwiftUI, UIKit, StoreKit, UserNotifications,
@@ -349,13 +359,22 @@ the code supports both.
   `ASIdentifierManager`, `AppTrackingTransparency`, `identifierForVendor`,
   `UIDevice`, `DeviceCheck`/App Attest, `UserDefaults`, `@AppStorage`,
   Keychain (`SecItem`), CloudKit or iCloud key-value storage.
-- Favourites, the alert baseline and the cached entitlement are JSON
+- Favorites, the alert baseline and the cached entitlement are JSON
   files in the app's Application Support directory
   (`PlantingCore/Sources/PlantingCore/Stores.swift`). They never leave
   the device.
 - Notifications are local `UNUserNotificationCenter` requests. There is
   no `registerForRemoteNotifications`, no `aps-environment` entitlement
-  (the project has no entitlements file) and so no device token.
+  and so no device token. The two entitlements files
+  (`CAFishPlanting/CAFishPlanting.entitlements` and
+  `CAFishPlantingWidgets/CAFishPlantingWidgets.entitlements`) hold one
+  key, the App Group, and `WidgetBridgeTests` fails if either gains
+  another.
+- The Home Screen and Lock Screen widget reads one file the app writes
+  to the App Group container (`widget-digest.json`: the schedule's week,
+  and each favorite's name and status). It makes no network request, and
+  the file never leaves the device. An App Group is a shared directory
+  here, not a `UserDefaults` suite, so it is not a required-reason API.
 
 **The privacy manifest agrees.** `PrivacyInfo.xcprivacy` sets
 `NSPrivacyTracking` false with no tracking domains, no collected data
@@ -394,7 +413,7 @@ Collected" answer needs revisiting.
 > **New this week's stocking schedule, without checking CDFW by hand.**
 > This app checks California's official trout stocking schedule roughly
 > once a day and tells you — with a notification on your phone, nothing
-> else — when a water you've favourited appears in that week's list. The
+> else — when a water you've favorited appears in that week's list. The
 > schedule itself only updates about once a week, so an alert can arrive
 > within days of a new listing, not the minute it's posted; iOS also
 > decides exactly when background checks run, so timing is never
@@ -416,7 +435,7 @@ Collected" answer needs revisiting.
 ## Category justification (2.3.1 / metadata accuracy)
 
 **Primary: Sports.** The app exists for anglers deciding where and when
-to fish; that is the entire feature set (favourite waters, stocking
+to fish; that is the entire feature set (favorite waters, stocking
 history, alerts tied to a fishing activity). Apple's own examples of
 Sports-category apps include league/team/activity trackers for a specific
 sport — trout stocking is the same shape, one level more specific.
@@ -440,7 +459,7 @@ draft suggested; see `APP-STORE-LISTING.md`.
   **kept history** CDFW itself does not publish (CDFW shows only the
   current window; `docs/DECISIONS.md` 0005: "The pipeline never
   overwrites history... this is the asset"). The per-water history table,
-  the offline-first snapshot, favourites, and device-local alerting are
+  the offline-first snapshot, favorites, and device-local alerting are
   all functionality beyond "a webview of a government page." Screenshot
   the water detail history table prominently in the review notes and the
   listing itself.
@@ -449,7 +468,7 @@ draft suggested; see `APP-STORE-LISTING.md`.
   solely to run one `BGAppRefreshTask` (`ios/CAFishPlanting/App/BackgroundRefresh.swift`)
   that performs the app's single network operation (one GET of the
   snapshot, `ios/PlantingCore/Sources/PlantingCore/SnapshotRefresher.swift`)
-  and, if a favourite has a new listing, schedules a local notification.
+  and, if a favorite has a new listing, schedules a local notification.
   No audio, VoIP, location, or Bluetooth background mode is declared —
   only the two needed for `BGTaskScheduler`. State this directly in the
   review notes, since "why does a fish-schedule app run in the
@@ -476,17 +495,19 @@ Connect with this exact identifier:
 | Reference Name (internal, App Store Connect only) | `Full Access` |
 | Price tier | $9.99 (USD Tier matching $9.99; DECISIONS 0003/0007) |
 | Display Name (customer-facing) | `Full Access` |
-| Description (customer-facing, 45 max) | `Alerts when a favourite water is listed` (39 characters) |
+| Description (customer-facing, 45 max) | `Alerts and a widget for your favorite waters` (44 characters) |
 | Cleared for sale | Yes, once the app record itself is created |
-| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView` — reachable from About > "Unlock full access" only; there is no other trigger) is required by App Store Connect for the IAP's own review |
+| Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView`, reachable from About > "Unlock full access" and from a tap on the locked Home Screen widget) is required by App Store Connect for the IAP's own review |
 
 App-side, what it unlocks is decided (DECISIONS 0009, resolving 0007's
-"owner follow-up"): favouriting and browsing are free and unconstrained for
+"owner follow-up"): favoriting and browsing are free and unconstrained for
 everyone, matching the free website. Purchasing unlocks **local
-notifications** — a notification on this device whenever a favourited
-water's planting schedule changes. Without the purchase, favouriting still
-works in full; no local notification is ever scheduled for any favourited
-water. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
+notifications** (a notification on this device whenever a favorited
+water's planting schedule changes) and, since DECISIONS 0015, **the Home
+Screen and Lock Screen widget**. Without the purchase, favoriting still
+works in full; no local notification is ever scheduled for any favorited
+water, and the widget says it is part of full access instead of listing
+favorites. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
 (`notificationsAllowed(isEntitled:)`) and
 `ios/CAFishPlanting/App/AppEnvironment.swift`'s `performBackgroundRefresh()`,
 which is the one call site that checks it before
@@ -539,7 +560,7 @@ missing:
 Conclusion: this is a fully standalone, notification-only app. Add
 `Associated Domains` and an `apple-app-site-association` file only if a
 future decision makes the site deep-link into specific app screens
-(e.g. "Add to Favourites" from a site water page) — there's no such
+(e.g. "Add to Favorites" from a site water page) — there's no such
 feature today, so building the infrastructure now would be unused
 surface area with its own review and hosting requirements.
 
@@ -553,7 +574,7 @@ Superseded 2026-09-18: the screenshots are captured. See
 Superseded 2026-09-18 by
 [Owner checklist: from here to submitted](#owner-checklist-from-here-to-submitted),
 which covers the same archive and upload steps in submission order. It
-drops `xcrun altool` in favour of Xcode's own upload.
+drops `xcrun altool` in favor of Xcode's own upload.
 
 ## Known gaps to close before any of the above
 
@@ -597,8 +618,8 @@ drops `xcrun altool` in favour of Xcode's own upload.
    screenshots are in `docs/app-store/screenshots/`. See
    [Screenshots](#screenshots).
 6. ~~The free/paid feature split is a placeholder~~ **Closed 2026-09-17**
-   (DECISIONS 0009). Favouriting and browsing are free and unconstrained
-   for everyone; the purchase unlocks local notifications on a favourited
+   (DECISIONS 0009). Favoriting and browsing are free and unconstrained
+   for everyone; the purchase unlocks local notifications on a favorited
    water's schedule change. See
    `PlantingCore/Sources/PlantingCore/FreeTier.swift`.
 7. **The app never refreshes in the foreground** (found 2026-09-18, not

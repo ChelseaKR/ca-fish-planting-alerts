@@ -12,6 +12,43 @@ SwiftUI, iOS 17+, no third-party dependencies. Two pieces:
   local Swift package (`type: .dynamic` — see the comment in
   `PlantingCore/Package.swift` for why static fails to link here).
 
+## The Home Screen and Lock Screen widget
+
+`CAFishPlantingWidgets/` is a WidgetKit extension
+(`com.chelseakr.cafishplanting.widgets`) with one widget, "Favorite
+waters", in small, medium and large Home Screen sizes and the Lock
+Screen's rectangular and inline sizes.
+
+- **Data.** The app writes a small digest of the snapshot it already has
+  (`WidgetDigest` in PlantingCore) to the App Group
+  `group.com.chelseakr.cafishplanting`, after every refresh (the
+  background task's too), every favorite change, and when the app goes to
+  the background (`App/WidgetBridge.swift`). It reloads the widget only
+  when the digest changed. The widget reads that file and nothing else:
+  **it makes no network request**, so the snapshot GET stays the app's
+  only one. The digest is ~1 KB; the widget never decodes the 1 MB
+  snapshot.
+- **Honest when stale or missing.** Every line names its week. At
+  midnight after the week's Saturday (Los Angeles time) the timeline
+  switches from "This week" to "Schedule for the week of …", without the
+  app running. A failed last check says so. No digest yet reads "Open
+  Trout Truck to load the schedule here", and favorites the snapshot no
+  longer has are counted, never shown as "nothing scheduled".
+- **Taps.** Each row in the medium and large sizes, and the small and
+  Lock Screen widgets as a whole, open a water through
+  `trouttruck://water/<id>`.
+- **Part of full access** (`docs/DECISIONS.md` 0015).
+  `FreeTier.widgetsRequireFullAccess` is `true`. Before the purchase the
+  digest is `locked`: it carries the schedule's week and how many waters
+  it lists, and no favorites. The widget says it is part of full access,
+  and a tap opens the purchase screen through `trouttruck://unlock`
+  (`UnlockLink`). `PurchaseManager.onEntitlementChange` rewrites the
+  digest the moment the entitlement changes, so a purchase, a restore or
+  a refund redraws the widget without waiting for a refresh.
+- **Signing.** Both targets use team `6X5YH93QNM` with automatic signing,
+  as before. On a device (not the simulator) the App Group has to be
+  registered for the team; see `docs/APP-STORE.md` step 7.
+
 ## The one-time purchase
 
 `CAFishPlanting/App/PurchaseManager.swift` is StoreKit 2 only (no
@@ -45,7 +82,7 @@ The app makes one kind of network request: a GET of the snapshot
 
 Browse shows which week the schedule is for, how many waters that week
 lists, and how the last check went (`SnapshotFreshness`). A failed check is
-said plainly, and the last good snapshot stays on screen, labelled with its
+said plainly, and the last good snapshot stays on screen, labeled with its
 week. Once that week has ended the app says so, and the tag on a listed
 water shows the week instead of "This week". A failed fetch never becomes
 "nothing listed": `SnapshotStore` keeps the last good snapshot, and
@@ -55,6 +92,20 @@ App-hosted unit tests run inside the app, so the launch refresh is skipped
 when `XCTestConfigurationFilePath` is set. `AppEnvironmentTests` calls
 `refreshIfDue` itself against a mocked session. UI tests launch the app
 normally, so they fetch the live snapshot.
+
+## Opening a water from an alert or a link
+
+A local notification carries only its water's ID (`WaterLink` in
+PlantingCore, key `water_id`). `App/NotificationResponder.swift` is the
+`UNUserNotificationCenter` delegate, installed in `App.init()` so the tap
+that launches the app is delivered too. It hands the ID to
+`App/AppRouter.swift`, which opens the water under Favorites (every alert is
+for a favorite) or, for any other water, under Browse. A water the snapshot
+doesn't have is never pushed as a blank screen.
+
+`trouttruck://water/<water id>` (registered in `Info.plist`) goes through the
+same router. The Home Screen widget uses it. Opening one makes no network
+request and can only show a water already on the device.
 
 ## Commands
 
@@ -87,35 +138,50 @@ xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
   -destination 'platform=iOS Simulator,name=iPhone 17' clean build test
 ```
 
-All of the above ran clean in this environment: `swift test` — 38/38;
-`xcodebuild build` — BUILD SUCCEEDED, zero warnings besides the expected
-"no AppIntents.framework dependency" note; `CAFishPlantingTests` — 5/5;
-`CAFishPlantingUITests` — the browse → favourite → explainer-sheet →
-Favourites-tab smoke path (see `docs/APP-STORE.md` for the exact run
-Chelsea can repeat).
+What each command covers:
 
-## Two things worth knowing before re-running these
+- `swift test` runs the `PlantingCore` unit tests: the strict snapshot
+  decoder (which also decodes the bundled snapshot), `AlertPlanner`, the
+  stores, the refresher and the freshness rules. CI runs this one on every
+  pull request (the `ios` job in `.github/workflows/ci.yml`).
+- `xcodebuild ... build` builds the app and its widget extension for a
+  simulator.
+- `-only-testing:CAFishPlantingTests` runs the app-hosted unit tests.
+  `PurchaseManagerTests` in that target cannot pass on an iOS 26.5
+  simulator; see "StoreKit tests can't pass on the iOS 26.5 simulator"
+  below.
+- `-only-testing:CAFishPlantingUITests` runs the UI tests: the
+  browse, favorite, explainer-sheet and Favorites-tab smoke path
+  (`SmokeUITests`, and see `docs/APP-STORE.md` for a run to repeat by hand)
+  and the automated accessibility audit (`AccessibilityAuditUITests`).
+
+CI does not run the Xcode builds or tests (the comment on the `ios` job in
+`ci.yml` says why), so run them by hand before a release. Pass and fail
+counts are not recorded here, because they go stale as tests are added. The
+commands print them.
+
+## Three things worth knowing before re-running these
 
 1. **Pick (or create) a simulator device explicitly** rather than relying
-   on Xcode's default. A device that is mid-boot or shared with another
-   concurrently-running `xcodebuild` (this session hit exactly that: a
-   sibling session's `queer-tv-guide` test run was using the same "iPhone
-   17 Pro" simulator, which stalled both) will look "hung" for minutes.
-   `xcrun simctl list devices` shows what's booted/booting; prefer `-destination
-   'platform=iOS Simulator,id=<UDID>'` with a device nothing else is using.
-2. **First-launch content.** If `xcodebuild`/the simulator fails with
-   something like "failed to load IDESimulatorFoundation" or a device
-   permanently stuck "Booting", the fix is an interactive owner step:
-   `sudo xcodebuild -runFirstLaunch`. Not needed in this session — noted
-   here because the task brief anticipated it.
+   on Xcode's default. A device that is mid-boot, or shared with another
+   `xcodebuild` run at the same time, will look "hung" for minutes. Two test
+   runs from different checkouts on the same "iPhone 17 Pro" simulator have
+   stalled each other this way. `xcrun simctl list devices` shows what's
+   booted or booting; prefer `-destination 'platform=iOS Simulator,id=<UDID>'`
+   with a device nothing else is using.
+2. **First-launch content.** If `xcodebuild` or the simulator fails with
+   something like "failed to load IDESimulatorFoundation", or a device stays
+   in "Booting", the fix is an interactive owner step:
+   `sudo xcodebuild -runFirstLaunch`.
 3. **StoreKit tests can't pass on the iOS 26.5 simulator.** See the next
    section.
 
 ## StoreKit tests can't pass on the iOS 26.5 simulator
 
-`PurchaseManagerTests` has never passed on this machine. PR #7 merged it
-unverified, and origin/main and PR #12 fail the same way (measured
-2026-09-17 on fresh simulators). This is an Apple bug in the simulator
+`PurchaseManagerTests` has not passed on an iOS 26.5 simulator in any run
+made so far. The tests were merged without a passing simulator run, and the
+copy on `main` at the time failed the same way (measured 2026-09-17 on
+fresh simulators; not re-run since). This is an Apple bug in the simulator
 runtime. It is not a problem with this repo's code, the product ID, or the
 `.storekit` file.
 
@@ -169,24 +235,18 @@ even with the corrected scheme path.
 
 ## The bundled snapshot: real pipeline output, not the hand-made fixture
 
-`ios/` started against a hand-built fixture (schema-valid, real water
-names, invented plants) while the pipeline lane was still in flight. That
-lane finished within the session — `schema/snapshot.v1.json` +
-`schema/README.md` landed as commit `1b1d0eb` on
-`origin/feat/pipeline-schema-site`, and a real generated snapshot later
-appeared at `site/snapshot/v1.json` (385 waters, `source_week` "week of
-2026-09-13", 7 waters listed that week) — so
-`CAFishPlanting/Resources/snapshot.json` is now **that real output**,
-copied in and verified: valid against `schema/snapshot.v1.json` (checked
-with the `jsonschema` Python package) and decodes cleanly through
-`SnapshotDecoder`, including the `this_week`-agrees-with-`waters[].plants`
-self-consistency check. The synthetic version this replaced is gone; if
-the pipeline lane's committed output ever diverges from this copy,
-re-sync `CAFishPlanting/Resources/snapshot.json` from whatever it
-publishes at the URL below (same filename, same location — nothing in
-`ios/` treats "real vs. fixture" specially, any schema-valid file drops
-in cleanly). `PlantingCore/Sources/PlantingCore/SnapshotEndpoint.swift`
-has the live URL from `schema/README.md`
+`CAFishPlanting/Resources/snapshot.json` is real pipeline output: a copy of
+the snapshot the site publishes, not a hand-made fixture. It is valid
+against `schema/snapshot.v1.json` (`scripts/sync-bundled-snapshot.sh` checks
+that with the `jsonschema` Python package before it copies a file in) and it
+decodes cleanly through `SnapshotDecoder`, including the check that
+`this_week` agrees with `waters[].plants` (the `PlantingCore` tests decode
+it). Nothing in `ios/` treats "real
+versus fixture" specially, so any schema-valid file drops in at the same
+filename and location. If the pipeline's published output diverges from this
+copy, re-sync it from the live URL.
+`PlantingCore/Sources/PlantingCore/SnapshotEndpoint.swift` has that URL, from
+`schema/README.md`
 (`https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json`,
 following redirects once a custom domain is set).
 
@@ -198,10 +258,9 @@ before archiving. `scripts/app-store-screenshots.sh` regenerates the App
 Store screenshots from whatever is bundled (see `docs/APP-STORE.md`,
 "Screenshots").
 
-One assumption flagged for the pipeline/site lane: `schema/snapshot.v1.json`
-has no per-water site-page URL field, so `SnapshotEndpoint.siteWaterURL(slug:)`
-derives it from the snapshot's own host + `/water/<slug>/` (matching the path
-convention `schema/README.md` documents). If the real site ends up on a
-different host than the snapshot, that derivation breaks — the clean fix is
-an explicit `site_url` per water in a future schema revision, which is a
-`schema/` change outside this task's boundary.
+One assumption to know about: `schema/snapshot.v1.json` has no per-water
+site-page URL field, so `SnapshotEndpoint.siteWaterURL(slug:)` derives it from
+the snapshot's own host + `/water/<slug>/` (matching the path convention
+`schema/README.md` documents). If the site ever moves to a different host
+than the snapshot, that derivation breaks. The clean fix is an explicit
+`site_url` per water in a future schema revision.

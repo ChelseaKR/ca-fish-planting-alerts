@@ -98,7 +98,7 @@ final class SnapshotDecoderTests: XCTestCase {
         return haystack.replacingCharacters(in: range, with: replacement)
     }
 
-    func testUnrecognisedStatusThrows() {
+    func testUnrecognizedStatusThrows() {
         let json = replacingFirst("\"species\": \"Trout\", \"status\": \"listed\",",
                                    with: "\"species\": \"Trout\", \"status\": \"planted\",",
                                    in: Fixture.minimalValid)

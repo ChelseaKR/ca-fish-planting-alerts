@@ -65,7 +65,7 @@ _ALL_PLANTS_RE = re.compile(
 # practice: any day of the week accepts that week's Sunday; a Sunday run
 # also accepts the previous week (CDFW not yet rolled over), and a Saturday
 # run also accepts the next week (CDFW already rolled over). Anything else
-# is a cache, not "yesterday's data centre".
+# is a cache, not "yesterday's data center".
 MAX_STALENESS_DAYS = 1
 
 

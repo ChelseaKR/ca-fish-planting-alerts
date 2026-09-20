@@ -10,15 +10,15 @@ import XCTest
 ///
 /// - `TT_REGION`: the region picker label to filter Browse by.
 /// - `TT_HISTORY_WATER`: the water whose history is shown. It is also the
-///   first favourite, so the notification explainer names it.
-/// - `TT_FAVOURITES`: `|`-separated water names to favourite after it.
+///   first favorite, so the notification explainer names it.
+/// - `TT_FAVORITES`: `|`-separated water names to favorite after it.
 /// - `TT_OUTPUT_DIR`: where the PNGs are written, on the Mac running the
 ///   simulator.
 final class AppStoreScreenshotsUITests: XCTestCase {
     private struct Plan {
         let region: String
         let historyWater: String
-        let favourites: [String]
+        let favorites: [String]
         let outputDirectory: URL
     }
 
@@ -49,27 +49,27 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         XCTAssertTrue(planted.waitForExistence(timeout: 5), "expanding the year should list its weeks")
         capture("02-water-history", app: app, into: plan.outputDirectory)
 
-        // 4. The first favourite shows the notification explainer. It names
+        // 4. The first favorite shows the notification explainer. It names
         //    the paid unlock but never a price.
-        favouriteOpenWater(plan.historyWater, in: app)
-        XCTAssertTrue(app.staticTexts["Stay in the loop"].waitForExistence(timeout: 10), "the first favourite should show the explainer")
+        favoriteOpenWater(plan.historyWater, in: app)
+        XCTAssertTrue(app.staticTexts["Stay in the loop"].waitForExistence(timeout: 10), "the first favorite should show the explainer")
         capture("04-notifications", app: app, into: plan.outputDirectory)
         app.buttons["Not now"].tap()
         goBackToWaters(in: app)
 
-        for name in plan.favourites {
+        for name in plan.favorites {
             openWater(name, in: app)
-            favouriteOpenWater(name, in: app)
+            favoriteOpenWater(name, in: app)
             goBackToWaters(in: app)
         }
 
-        // 3. Favourites.
-        app.tabBars.buttons["Favourites"].tap()
-        let favouritesList = app.collectionViews.firstMatch
-        XCTAssertTrue(favouritesList.waitForExistence(timeout: 10))
-        let firstFavourite = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", plan.historyWater + ",")).firstMatch
-        XCTAssertTrue(firstFavourite.waitForExistence(timeout: 10), "\(plan.historyWater) should be listed under Favourites")
-        capture("03-favourites", app: app, into: plan.outputDirectory)
+        // 3. Favorites.
+        app.tabBars.buttons["Favorites"].tap()
+        let favoritesList = app.collectionViews.firstMatch
+        XCTAssertTrue(favoritesList.waitForExistence(timeout: 10))
+        let firstFavorite = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", plan.historyWater + ",")).firstMatch
+        XCTAssertTrue(firstFavorite.waitForExistence(timeout: 10), "\(plan.historyWater) should be listed under Favorites")
+        capture("03-favorites", app: app, into: plan.outputDirectory)
 
         // 5. About, scrolled so the Privacy section sits just under the
         //    navigation bar, with the CDFW attribution and the "not
@@ -97,7 +97,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         return Plan(
             region: try required("TT_REGION"),
             historyWater: try required("TT_HISTORY_WATER"),
-            favourites: try required("TT_FAVOURITES").split(separator: "|").map(String.init),
+            favorites: try required("TT_FAVORITES").split(separator: "|").map(String.init),
             outputDirectory: URL(fileURLWithPath: try required("TT_OUTPUT_DIR"), isDirectory: true)
         )
     }
@@ -127,11 +127,11 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars[name].waitForExistence(timeout: 10), "\(name) detail did not open")
     }
 
-    private func favouriteOpenWater(_ name: String, in app: XCUIApplication) {
-        let star = app.buttons["Add \(name) to favourites"]
-        XCTAssertTrue(star.waitForExistence(timeout: 5), "favourite button for \(name) not found")
+    private func favoriteOpenWater(_ name: String, in app: XCUIApplication) {
+        let star = app.buttons["Add \(name) to favorites"]
+        XCTAssertTrue(star.waitForExistence(timeout: 5), "favorite button for \(name) not found")
         star.tap()
-        XCTAssertTrue(app.buttons["Remove \(name) from favourites"].waitForExistence(timeout: 5), "\(name) was not favourited")
+        XCTAssertTrue(app.buttons["Remove \(name) from favorites"].waitForExistence(timeout: 5), "\(name) was not favorited")
     }
 
     private func goBackToWaters(in app: XCUIApplication) {

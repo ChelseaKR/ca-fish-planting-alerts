@@ -31,6 +31,13 @@ final class PurchaseManager {
     private(set) var productLoadError: String?
     private(set) var uiState: UIState = .idle
 
+    /// Called on the main actor every time the entitlement is set: at
+    /// launch, after a purchase, a restore, a purchase from another device,
+    /// or a refund. `AppEnvironment` uses it to redraw the widget, which is
+    /// part of full access, so it unlocks (or locks) without waiting for
+    /// the next refresh.
+    var onEntitlementChange: (@MainActor (Bool) -> Void)?
+
     private let entitlementStore: EntitlementStore?
     // `deinit` on a `@MainActor` class is itself non-isolated (it may run
     // on any thread), so it cannot touch a main-actor-isolated stored
@@ -166,9 +173,12 @@ final class PurchaseManager {
         }
     }
 
-    private func setEntitled(_ value: Bool) {
+    /// Internal, not private, so hosted tests can stand in for StoreKit,
+    /// which can't run on the iOS 26.5 simulator (`ios/README.md`).
+    func setEntitled(_ value: Bool) {
         isEntitled = value
         try? entitlementStore?.save(PurchaseEntitlement(isPurchased: value))
+        onEntitlementChange?(value)
     }
 }
 

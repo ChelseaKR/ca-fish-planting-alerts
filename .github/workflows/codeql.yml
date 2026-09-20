@@ -5,14 +5,14 @@ name: codeql
 # pull requests into main and weekly (CI-CD §11e); the weekly run is what
 # catches a new query landing against code that has not changed.
 #
-# Code scanning is not enabled on this private repository: `GET
-# /code-scanning/alerts` returns 403 "Code scanning is not enabled" (checked
-# 2026-09-17). An upload would fail, so the analysis runs with
-# `upload: never`, keeps the SARIF as an artifact, and
-# scripts/codeql_gate.py fails the job on any result whose rule is
+# Code scanning was not available while this repository was private: `GET
+# /code-scanning/alerts` returned 403 "Code scanning is not enabled" (checked
+# 2026-09-17). The repository has been public since 2026-09-18, but the
+# analysis still runs with `upload: never`, keeps the SARIF as an artifact,
+# and scripts/codeql_gate.py fails the job on any result whose rule is
 # problem.severity `error` or security-severity 7.0 or higher, and on an
-# analysis that produced no SARIF at all. If the repository goes public or
-# code scanning is enabled, switch back to uploading.
+# analysis that produced no SARIF at all. Switching back to uploading is a
+# separate change.
 
 on:
   pull_request:
@@ -35,7 +35,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-      actions: read # CodeQL reads workflow run metadata on private repositories
+      actions: read # CodeQL needs this to read run metadata on a private repository
     strategy:
       fail-fast: false
       matrix:
@@ -45,13 +45,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: initialise CodeQL
+      - name: initialize CodeQL
         uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           languages: ${{ matrix.language }}
           build-mode: none
 
-      - name: analyse (no upload)
+      - name: analyze (no upload)
         uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           category: /language:${{ matrix.language }}

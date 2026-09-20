@@ -26,7 +26,7 @@ Public domain under CDFW's and California's Conditions of Use ("information
 presented on this web site, unless otherwise indicated, is considered in the
 public domain"), with no commercial-use restriction. No SPDX identifier fits
 a state's public-domain policy, so this is the plain-language statement.
-The related CDFW Fishing Guide dataset on data.ca.gov gives its licence as
+The related CDFW Fishing Guide dataset on data.ca.gov gives its license as
 "Creative Commons Attribution", without a version. The stricter of the two
 readings is taken, so every page and the snapshot attribute CDFW
 unconditionally. Verbatim terms, links and the date they
@@ -43,8 +43,10 @@ were read (2026-09-13) are in `docs/LICENSES-AND-ATTRIBUTION.md`.
   opens an issue (`publish.yml` `alert-on-failure`), so the operator is told
   within a day.
 - What readers see: every site page says when the schedule was last checked.
-  The app shows the snapshot's build time on its About screen only. Showing
-  staleness on the app's main screens is part of #29.
+  The app's Browse and Favorites screens say which week the schedule is for,
+  whether that week has ended, and how the last check for a newer schedule
+  went, and a failed check keeps the last good schedule on screen with its
+  week. The app's About screen also shows the snapshot's build time.
 
 ## Fetch timestamp
 
@@ -92,7 +94,7 @@ git keeps every prior version.
 ## Dataset version
 
 The snapshot carries `schema_version: 1` and its timestamps, but no dataset
-version of its own. Whether it should have one (DG-17/18) is open in #29.
+version of its own. Whether it should have one (DG-17/18) is open in #8.
 
 ---
 

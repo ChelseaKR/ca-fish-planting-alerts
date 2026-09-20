@@ -5,23 +5,61 @@ import PlantingCore
 
 /// What to tell the person before the system permission prompt appears —
 /// deliverable #3's "a sentence that says what will and won't happen".
-/// Shown on the first-ever favourite regardless of purchase status, so
+/// Shown on the first-ever favorite regardless of purchase status, so
 /// permission is already granted by the moment someone unlocks full access
-/// (see `FreeTier`) — `isEntitled` is carried through only so the sentence
+/// (see `FreeTier`) — `isEntitled` is carried through only so the copy
 /// can say so accurately, rather than implying alerts start immediately
-/// for a non-purchaser.
-struct FirstFavouriteExplainer: Identifiable {
+/// for a non-purchaser. The words are `NotificationPrimingCopy`.
+struct FirstFavoriteExplainer: Identifiable {
     let water: Water
     let isEntitled: Bool
     var id: Water.ID { water.id }
-    var sentence: String {
-        let when = isEntitled ? "" : " — once you unlock full access —"
-        return "If you allow notifications, this app will alert you on this device\(when) only when \(water.name) or another favourite you add appears in CDFW's new weekly schedule; it will not send any other notification, and nothing about you or your favourites ever leaves this device."
+    var copy: NotificationPrimingCopy { NotificationPrimingCopy(waterName: water.name, isEntitled: isEntitled) }
+}
+
+/// The words on the screen shown before the system notification prompt,
+/// from a first favorite or from About. Kept apart from the view so a test
+/// can read them: they say what an alert is, how often one comes, that it
+/// is made on this device, and (for a non-purchaser) that alerts need full
+/// access. They never name a price and never promise a day or a plant.
+struct NotificationPrimingCopy: Equatable {
+    struct Point: Equatable, Identifiable {
+        let systemImage: String
+        let text: String
+        var id: String { systemImage }
     }
+
+    /// The water just favorited, or `nil` when asked from About.
+    let waterName: String?
+    let isEntitled: Bool
+
+    var headline: String {
+        if let waterName { return "Get an alert when \(waterName) is on the schedule" }
+        return "Get an alert when a favorite is on the schedule"
+    }
+
+    var points: [Point] {
+        let which = waterName.map { "\($0) or another favorite" } ?? "one of your favorites"
+        var points = [
+            Point(systemImage: "calendar",
+                  text: "When CDFW's weekly schedule adds a week for \(which), this iPhone shows one alert. It names the week, never a day, and CDFW says plans can change."),
+            Point(systemImage: "iphone",
+                  text: "Alerts are made on this iPhone from the schedule it downloads. There is no account and no server, and nothing about you or your favorites leaves the device."),
+            Point(systemImage: "bell.slash",
+                  text: "No other notifications: no marketing, no reminders, no badges."),
+        ]
+        if !isEntitled {
+            points.append(Point(systemImage: "lock",
+                                text: "Alerts are part of full access, a one-time purchase in About. If you allow notifications now, alerts start as soon as you unlock it."))
+        }
+        return points
+    }
+
+    var footnote: String { "Next, iOS asks for permission. You can change it any time in Settings." }
 }
 
 /// The app's one shared piece of state. Owns the on-disk snapshot, the
-/// favourites list, the alert baseline, and the network+notification
+/// favorites list, the alert baseline, and the network+notification
 /// plumbing that touches them. A SwiftUI `@Observable` so views update
 /// automatically; not thread-safe by design — always touched from the
 /// main actor.
@@ -37,11 +75,14 @@ final class AppEnvironment {
 
     private(set) var loadError: String?
     private var store: SnapshotStore?
-    private var favouritesStore: FavouritesStore?
+    private var favoritesStore: FavoritesStore?
     private var alertStateStore: AlertStateStore?
     private let refresher: SnapshotRefresher
     private let notifications: NotificationScheduler
     private let openThrottle: RefreshThrottle
+    /// Writes what the Home Screen widget shows (`WidgetDigest`) to the App
+    /// Group container. No network, and only when it changed.
+    private let widgetBridge: WidgetBridge
     /// The one refresh running now, if any. Launch, return to the
     /// foreground and the background task can all ask at once; they share
     /// this task rather than racing two GETs into one `SnapshotStore`.
@@ -52,14 +93,17 @@ final class AppEnvironment {
     /// pre-built instance (e.g. one wired to an `SKTestSession`).
     let purchases: PurchaseManager
 
-    private(set) var favourites = Favourites()
+    /// Every change reaches the widget, whichever path made it.
+    private(set) var favorites = Favorites() {
+        didSet { publishWidgetDigest() }
+    }
     private var alertState = AlertState()
     private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
 
-    /// Set when a water is favourited for the first time ever. The view
-    /// layer presents `sentence`, then calls `confirmNotificationExplainer()`
+    /// Set when a water is favorited for the first time ever. The view
+    /// layer presents `copy`, then calls `confirmNotificationExplainer()`
     /// or `dismissNotificationExplainer()`.
-    var pendingNotificationExplainer: FirstFavouriteExplainer?
+    var pendingNotificationExplainer: FirstFavoriteExplainer?
 
     // Copies of the store's state, so SwiftUI sees a refresh land.
     // `SnapshotStore` is a plain class that Observation can't watch; these
@@ -81,21 +125,22 @@ final class AppEnvironment {
     /// Tests may inject a pre-built refresher (e.g. one wired to a mocked
     /// `URLSession` via `SnapshotRefresher.makeSession(protocolClasses:)`)
     /// to exercise `performBackgroundRefresh()` without a live network call.
-    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil, openThrottle: RefreshThrottle = .foreground) {
+    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil, openThrottle: RefreshThrottle = .foreground, widgetBridge: WidgetBridge? = nil) {
         self.notifications = NotificationScheduler(center: notificationCenter)
         self.refresher = refresher ?? SnapshotRefresher(session: SnapshotRefresher.makeSession())
         self.openThrottle = openThrottle
+        self.widgetBridge = widgetBridge ?? WidgetBridge()
         var entitlementStore: EntitlementStore?
         do {
             let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: bundleIdentifier)
             let bundledURL = Bundle.main.url(forResource: "snapshot", withExtension: "json")
             let store = try SnapshotStore(layout: layout, bundledSnapshotURL: bundledURL)
             self.store = store
-            let favStore = FavouritesStore(layout: layout)
+            let favStore = FavoritesStore(layout: layout)
             let stateStore = AlertStateStore(layout: layout)
-            self.favouritesStore = favStore
+            self.favoritesStore = favStore
             self.alertStateStore = stateStore
-            self.favourites = favStore.load()
+            self.favorites = favStore.load()
             self.alertState = stateStore.load()
             entitlementStore = EntitlementStore(layout: layout)
         } catch {
@@ -104,6 +149,9 @@ final class AppEnvironment {
             loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
         self.purchases = purchases ?? PurchaseManager(entitlementStore: entitlementStore)
+        // The widget is part of full access: a purchase, a restore or a
+        // refund redraws it straight away.
+        self.purchases.onEntitlementChange = { [weak self] _ in self?.publishWidgetDigest() }
         syncFromStore()
         Task { notificationAuthorization = await notifications.authorizationStatus() }
     }
@@ -112,40 +160,85 @@ final class AppEnvironment {
         snapshot = store?.snapshot
         snapshotOrigin = store?.origin
         refreshMeta = store?.meta
+        publishWidgetDigest()
     }
 
-    // MARK: Favourites
+    /// Hands the widget the snapshot's week at the current favorites. Runs
+    /// after every refresh (the background task's too) and every change to
+    /// `favorites`; `WidgetBridge` skips the write when nothing changed. Whether
+    /// the widget may list favorites is `FreeTier.widgetsAllowed`, the one
+    /// place that flag is read.
+    func publishWidgetDigest() {
+        guard let snapshot, let refreshMeta else { return }
+        let digest = WidgetDigest(snapshot: snapshot, meta: refreshMeta, favorites: favorites.ids,
+                                  locked: !FreeTier.widgetsAllowed(isEntitled: purchases.isEntitled))
+        widgetBridge.publish(digest)
+    }
 
-    func isFavourite(_ id: Water.ID) -> Bool { favourites.contains(id) }
+    // MARK: Favorites
 
-    /// Favouriting is never gated — every water may be favourited by
+    func isFavorite(_ id: Water.ID) -> Bool { favorites.contains(id) }
+
+    /// Removes a favorite by its ID alone. For a favorite the snapshot no
+    /// longer has, so there is no `Water` to toggle.
+    func removeFavorite(_ id: Water.ID) {
+        guard favorites.contains(id) else { return }
+        var updated = favorites
+        updated.remove(id)
+        favorites = updated
+        try? favoritesStore?.save(updated)
+        alertState = AlertPlanner.pruning(alertState, unfavoriting: id)
+        try? alertStateStore?.save(alertState)
+    }
+
+    /// Favoriting is never gated — every water may be favorited by
     /// anyone, purchaser or not (see `FreeTier`). What the one-time
     /// purchase unlocks is local notifications, not this.
-    func toggleFavourite(_ water: Water) {
-        let wasEmpty = favourites.isEmpty
+    func toggleFavorite(_ water: Water) {
+        let wasEmpty = favorites.isEmpty
 
-        var updated = favourites
-        let nowFavourited = updated.toggle(water.id)
-        favourites = updated
-        try? favouritesStore?.save(updated)
+        var updated = favorites
+        let nowFavorited = updated.toggle(water.id)
+        favorites = updated
+        try? favoritesStore?.save(updated)
 
-        if nowFavourited, let snapshot {
-            alertState = AlertPlanner.seeding(alertState, favouriting: water.id, snapshot: snapshot)
+        if nowFavorited, let snapshot {
+            alertState = AlertPlanner.seeding(alertState, favoriting: water.id, snapshot: snapshot)
             try? alertStateStore?.save(alertState)
-            if wasEmpty {
-                pendingNotificationExplainer = FirstFavouriteExplainer(water: water, isEntitled: purchases.isEntitled)
+            if Self.shouldPrimeNotifications(favoritesWereEmpty: wasEmpty, authorization: notificationAuthorization) {
+                pendingNotificationExplainer = FirstFavoriteExplainer(water: water, isEntitled: purchases.isEntitled)
             }
-        } else if !nowFavourited {
-            alertState = AlertPlanner.pruning(alertState, unfavouriting: water.id)
+        } else if !nowFavorited {
+            alertState = AlertPlanner.pruning(alertState, unfavoriting: water.id)
             try? alertStateStore?.save(alertState)
         }
+    }
+
+    /// The priming screen shows on the first favorite, and only while iOS
+    /// hasn't asked yet. Once the person has allowed or declined, the system
+    /// prompt never shows again, so the screen would promise a prompt that
+    /// doesn't come (About offers Settings instead).
+    nonisolated static func shouldPrimeNotifications(favoritesWereEmpty: Bool, authorization: UNAuthorizationStatus) -> Bool {
+        favoritesWereEmpty && authorization == .notDetermined
     }
 
     func confirmNotificationExplainer() async {
         guard pendingNotificationExplainer != nil else { return }
         pendingNotificationExplainer = nil
+        await requestNotificationAuthorization()
+    }
+
+    /// Shows the system prompt. Call only from the priming screen, after the
+    /// app has said in its own words what alerts are (`NotificationPrimingCopy`).
+    func requestNotificationAuthorization() async {
         let granted = await notifications.requestAuthorization()
         notificationAuthorization = granted ? .authorized : await notifications.authorizationStatus()
+    }
+
+    /// Re-reads the setting, which the person can change in Settings while
+    /// the app is in the background.
+    func refreshNotificationAuthorization() async {
+        notificationAuthorization = await notifications.authorizationStatus()
     }
 
     func dismissNotificationExplainer() {
@@ -177,7 +270,7 @@ final class AppEnvironment {
     }
 
     /// Entry point for `BGAppRefreshTask`. Refreshes the snapshot, replans
-    /// alerts for every favourite against the (possibly) new snapshot, and
+    /// alerts for every favorite against the (possibly) new snapshot, and
     /// — for a purchaser only (`FreeTier.notificationsAllowed`) — schedules
     /// any resulting local notifications. Safe to call with a stale or
     /// unusable store: it simply does nothing beyond the network attempt so
@@ -191,7 +284,7 @@ final class AppEnvironment {
         await refresh(now: now)
     }
 
-    /// Joins the refresh already running, or starts one. Cancelling the
+    /// Joins the refresh already running, or starts one. Canceling the
     /// caller (the background task's expiration handler) cancels the fetch.
     private func refresh(now: Date) async -> RefreshOutcome {
         let task: Task<RefreshOutcome, Never>
@@ -218,8 +311,8 @@ final class AppEnvironment {
         // Whatever the outcome. A failure changes only the meta (the store
         // keeps the last good snapshot), and the screen must say so.
         syncFromStore()
-        if case .updated = outcome, !favourites.isEmpty {
-            let plan = AlertPlanner.plan(snapshot: store.snapshot, favourites: favourites.ids, state: alertState)
+        if case .updated = outcome, !favorites.isEmpty {
+            let plan = AlertPlanner.plan(snapshot: store.snapshot, favorites: favorites.ids, state: alertState)
             alertState = plan.state
             try? alertStateStore?.save(alertState)
             if !plan.notifications.isEmpty, FreeTier.notificationsAllowed(isEntitled: purchases.isEntitled) {

@@ -21,6 +21,22 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<!--
+	trouttruck://water/<water id> opens one water's screen (WaterLink in
+	PlantingCore). The Home Screen widget links this way. Opening one makes
+	no network request and can only show a water the app already has.
+	-->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.chelseakr.cafishplanting.water-link</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>trouttruck</string>
+			</array>
+		</dict>
+	</array>
+	<!--
 	Export compliance: the only encryption is the HTTPS that URLSession and
 	StoreKit use from iOS itself, which is exempt. Declaring it here means
 	App Store Connect does not ask on every upload.

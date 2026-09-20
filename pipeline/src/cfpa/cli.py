@@ -62,7 +62,7 @@ def run(
 
     The freshness check runs here, uniformly, for *both* the live and
     ``--fixture`` paths (the live path also self-checks inside
-    ``fetch_schedule`` as a second, independent line of defence -- but this
+    ``fetch_schedule`` as a second, independent line of defense -- but this
     call is what a ``--fixture`` dry run relies on; without it a stale saved
     page would build a snapshot just like a fresh one).
     """

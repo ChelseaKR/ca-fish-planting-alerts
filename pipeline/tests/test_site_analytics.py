@@ -292,7 +292,7 @@ def test_id_build_copy_describes_ga4_and_keeps_the_app_at_data_not_collected(id_
         "global privacy control",
         "do not track",
         "the eea, the uk and switzerland",
-        "google signals and ad personalisation are turned off",
+        "google signals and ad personalization are turned off",
         "14 months",
         "the trout truck ios app collects no data at all",
         "app store privacy label: data not collected",

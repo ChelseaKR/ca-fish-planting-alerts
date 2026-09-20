@@ -4,7 +4,7 @@ The choice is a localStorage flag on this device, read by the GA4 tag before
 anything loads. These tests run the rendered tag under node against a stub
 browser with localStorage, the footer's elements and a click. The first
 checks are that the flag stops GA from loading, that a click writes the flag,
-and that the next page load honours it.
+and that the next page load honors it.
 
 Each negative control asserts that its sabotage changed the input before it
 asserts that the check caught it.
@@ -121,7 +121,7 @@ def test_privacy_page_describes_the_opt_out(id_pages):
         assert phrase in text.replace("&ldquo;", "“").replace("&rdquo;", "”"), phrase
 
 
-# ---- the behaviour, executed
+# ---- the behavior, executed
 
 _HARNESS = r"""
 const fs = require("fs");
@@ -257,7 +257,7 @@ def test_without_this_sites_flag_ga_loads_and_offers_the_opt_out(
     )
 
 
-def test_opting_out_is_remembered_and_honoured_on_the_next_page(tmp_path, tag_js):
+def test_opting_out_is_remembered_and_honored_on_the_next_page(tmp_path, tag_js):
     first_page = _run(tmp_path, tag_js, clicks=2)
     assert first_page["loaded"] is True
     _, out, back_in = first_page["states"]

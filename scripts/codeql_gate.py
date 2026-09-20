@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Fail the CodeQL job on a high-severity finding, read from local SARIF.
 
-Code scanning is not enabled on this private repository (GitHub answers
-`GET /code-scanning/alerts` with 403 "not enabled"), so a SARIF upload would
-fail and the Security tab would never show a result. The workflow analyses
-with `upload: never` and this script is the gate instead.
+Code scanning was not available while this repository was private (GitHub
+answered `GET /code-scanning/alerts` with 403 "not enabled"), so a SARIF
+upload would have failed. The workflow analyzes with `upload: never` and this
+script is the gate instead. The repository is public now, and the gate stays
+until uploading is switched on.
 
 A result gates the merge when either:
 

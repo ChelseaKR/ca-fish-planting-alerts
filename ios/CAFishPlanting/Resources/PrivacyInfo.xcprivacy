@@ -8,7 +8,7 @@
 	<array/>
 	<!--
 	No collected data types: no accounts, no analytics, no crash reporting,
-	no third-party SDKs (DECISIONS 0002). Favourites and the alert baseline
+	no third-party SDKs (DECISIONS 0002). Favorites and the alert baseline
 	are written only to this device's Application Support directory and are
 	never transmitted anywhere.
 	-->

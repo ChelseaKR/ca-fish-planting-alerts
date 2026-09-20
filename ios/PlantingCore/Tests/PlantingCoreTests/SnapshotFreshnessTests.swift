@@ -46,7 +46,7 @@ final class RefreshThrottleTests: XCTestCase {
     }
 
     /// The throttle reads the same meta the store writes, so a background
-    /// refresh counts against it and a failure is recognised as one.
+    /// refresh counts against it and a failure is recognized as one.
     func testTheThrottleReadsWhatTheStoreRecords() throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("cafp-throttle-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: dir) }
@@ -104,7 +104,7 @@ final class SnapshotFreshnessTests: XCTestCase {
 
     /// A week that has ended is never called "this week", and is said to be
     /// out of date, even when the check worked (the site had nothing newer).
-    func testAnEndedWeekIsLabelledWithItsWeekAndCalledOutOfDate() throws {
+    func testAnEndedWeekIsLabeledWithItsWeekAndCalledOutOfDate() throws {
         let f = SnapshotFreshness(snapshot: try snapshot(), origin: .stored,
                                   meta: SnapshotMeta(lastAttemptAt: weekLater, lastSuccessAt: weekLater, lastOutcome: "not modified"),
                                   isChecking: false, now: weekLater)
@@ -238,7 +238,7 @@ final class FailedFetchNeverRendersAbsenceTests: XCTestCase {
             XCTAssertTrue(f.checkFailed, "\(name): the failure must be reported, not hidden")
             XCTAssertEqual(f.watersListed, 1, "\(name): the count must come from the last good snapshot")
             XCTAssertTrue(f.detail.hasPrefix("Couldn't check for a newer schedule"), "\(name): \(f.detail)")
-            XCTAssertEqual(f.headline, "Schedule for the week of 2026-09-13", "\(name): the data shown must be labelled with its week")
+            XCTAssertEqual(f.headline, "Schedule for the week of 2026-09-13", "\(name): the data shown must be labeled with its week")
             let shown = [f.headline, f.summary, f.detail].joined(separator: " ")
             XCTAssertEqual(absenceClaims(in: shown), [], "\(name): a failed fetch rendered as an empty schedule: \(shown)")
         }

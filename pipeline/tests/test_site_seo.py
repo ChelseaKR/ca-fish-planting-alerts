@@ -447,7 +447,7 @@ def test_water_structured_data_states_only_what_the_snapshot_has(built):
         ]
 
 
-def test_dataset_describes_the_history_with_cdfw_as_source_and_no_unchosen_licence(
+def test_dataset_describes_the_history_with_cdfw_as_source_and_no_unchosen_license(
     built,
 ):
     out, snap = built
@@ -475,7 +475,7 @@ def test_dataset_describes_the_history_with_cdfw_as_source_and_no_unchosen_licen
         == "California Department of Fish and Wildlife"
     )
     assert ds["isBasedOn"]["license"] == "https://wildlife.ca.gov/Conditions-of-Use"
-    # CC-BY belongs to a different CDFW dataset; no licence is claimed for
+    # CC-BY belongs to a different CDFW dataset; no license is claimed for
     # the compiled history until the owner chooses one
     assert site.DATASET_LICENSE_URL == ""
     assert "license" not in ds
@@ -488,13 +488,13 @@ def test_dataset_describes_the_history_with_cdfw_as_source_and_no_unchosen_licen
     assert ds["dateModified"] == home.group(1)
 
 
-def test_dataset_licence_appears_only_when_configured(fresh, tmp_path):
+def test_dataset_license_appears_only_when_configured(fresh, tmp_path):
     _, snap = fresh
-    licence = "https://creativecommons.org/licenses/by/4.0/"
+    license = "https://creativecommons.org/licenses/by/4.0/"
     site.build_site(
-        snap, tmp_path / "s", base_url=BASE_URL, dataset_license_url=licence
+        snap, tmp_path / "s", base_url=BASE_URL, dataset_license_url=license
     )
-    assert _graph(_html(tmp_path / "s", "about"))["Dataset"]["license"] == licence
+    assert _graph(_html(tmp_path / "s", "about"))["Dataset"]["license"] == license
 
 
 def test_a_water_name_cannot_break_out_of_the_structured_data(fresh, tmp_path):

@@ -8,7 +8,25 @@ struct FavoritesView: View {
     var body: some View {
         Group {
             if let snapshot = environment.snapshot {
+<<<<<<< HEAD
+                let waters = environment.favourites.ids.compactMap(snapshot.water(id:))
+                if waters.isEmpty {
+                    ContentUnavailableView("No favourites yet", systemImage: "star",
+                        description: Text("Star a water in Browse to get a local alert when it appears in a new week's schedule."))
+                } else {
+                    let freshness = environment.freshness()
+                    List(waters) { water in
+                        NavigationLink(value: water.id) {
+                            WaterRow(water: water, listed: snapshot.thisWeek.contains { $0.waterID == water.id } ? freshness : nil)
+                        }
+                    }
+                    .navigationDestination(for: Water.ID.self) { id in
+                        if let water = snapshot.water(id: id) { WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek) }
+                    }
+                }
+=======
                 content(for: snapshot)
+>>>>>>> origin/main
             } else {
                 SnapshotUnavailableView(message: "No stocking schedule is available yet.")
             }
@@ -98,7 +116,7 @@ struct FavoritesView: View {
             }
         }
         .navigationDestination(for: Water.ID.self) { id in
-            if let water = snapshot.water(id: id) { WaterDetailView(water: water) }
+            if let water = snapshot.water(id: id) { WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek) }
         }
         .searchable(text: $search.text, prompt: "Favorite water or county")
         .toolbar {

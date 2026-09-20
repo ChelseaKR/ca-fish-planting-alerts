@@ -53,11 +53,17 @@
     <tr>
       <td>{{ p.label }}</td>
       <td>{{ p.species }}</td>
-      <td>{{ p.status }}</td>
+      <td>{{ "Scheduled" if p.status == "listed" else "Schedule changed" }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+{% if water.has_removed_weeks %}
+<p class="muted">
+  "Schedule changed" means CDFW listed this week earlier and later removed it
+  from its schedule. CDFW's plans can change.
+</p>
+{% endif %}
 {% else %}
 <p>No plants observed yet for {{ water.name }}.</p>
 {% endif %}

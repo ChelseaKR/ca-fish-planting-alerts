@@ -29,8 +29,8 @@ public enum ShareContent {
     public static let productName = "Trout Truck"
 
     /// The full share-sheet message: water name, real status, real link.
-    public static func message(for water: Water, siteURL: URL?) -> String {
-        var parts = ["\(water.name) — \(productName), CA fish planting alerts.", statusLine(for: water)]
+    public static func message(for water: Water, siteURL: URL?, sourceWeek: Week) -> String {
+        var parts = ["\(water.name) — \(productName), CA fish planting alerts.", statusLine(for: water, sourceWeek: sourceWeek)]
         if let siteURL {
             parts.append("Schedule history: \(siteURL.absoluteString)")
         }
@@ -40,13 +40,32 @@ public enum ShareContent {
     /// The one sentence stating which week, if any, this water's real history
     /// says it was most recently scheduled for. Exposed separately so it's easy to test
     /// in isolation from message framing/links.
-    public static func statusLine(for water: Water) -> String {
-        let line = ScheduleWording.lastScheduledLine(for: water)
+    public static func statusLine(for water: Water, sourceWeek: Week) -> String {
+        let line = ScheduleWording.lastScheduledLine(for: water, sourceWeek: sourceWeek)
         let species = water.lastListedSpecies
         guard water.lastListedWeek != nil, !species.isEmpty else {
             // No listed week, or (defensive only: lastListedWeek is derived
             // from a listed plant, so this shouldn't occur) a week with no
             // species. Never invent a species name.
+            return "\(line)."
+        }
+        return "\(line): \(species.joined(separator: ", "))."
+    }
+
+    /// Legacy entry point for callers without a source week.
+    public static func message(for water: Water, siteURL: URL?) -> String {
+        var parts = ["\(water.name) — \(productName), CA fish planting alerts.", statusLine(for: water)]
+        if let siteURL {
+            parts.append("Schedule history: \(siteURL.absoluteString)")
+        }
+        return parts.joined(separator: " ")
+    }
+
+    /// Legacy status line for callers without a source week.
+    public static func statusLine(for water: Water) -> String {
+        let line = ScheduleWording.lastScheduledLine(for: water)
+        let species = water.lastListedSpecies
+        guard water.lastListedWeek != nil, !species.isEmpty else {
             return "\(line)."
         }
         return "\(line): \(species.joined(separator: ", "))."

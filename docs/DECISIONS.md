@@ -119,6 +119,45 @@ is what no one else offers and what makes "when was X last planted" answerable.
 The pipeline never overwrites history; a stale or failed fetch never becomes a
 "no plants this week" fact.
 
+## 0017 — A water CDFW no longer lists is left out of the snapshot, not out of history (2026-09-19)
+
+A snapshot entry needs a county. History stores none, so the pipeline reads
+each water's counties from this run's table rows and then from CDFW's water
+picker. A water with history that was in neither raised a `ValueError`. History
+is append-only, so every later run hit the same error: the snapshot and site
+for every water stopped updating until someone edited code, and the refusal
+printed a raw traceback. CDFW has never been seen to drop a water from its
+picker (about 895 waters, 385 with history); this was reproduced by editing a
+fixture.
+
+Now such a water is left out of that run's snapshot and site, and every other
+water is published. Its records in `history.json` are untouched: never
+deleted, and their status follows the normal rule. The run prints a
+`cfpa: WARNING` block that names each water, its records on file and its newest
+week, and under GitHub Actions a `::warning` annotation. The water comes back
+by itself in the first run where CDFW lists it again. Leaving it out, rather
+than keeping a page with remembered counties, means it is never published as
+"nothing scheduled" when the truth is that CDFW does not list it: the app
+already says "No longer in the schedule data" for a favorite the snapshot lacks
+and keeps that favorite's alert baseline, so a return does not announce
+plants it already had. The water's site page and calendar feed are not built
+while it is left out. The exit status stays 0 on purpose: a non-zero exit would stop the
+commit and deploy steps for every other water, which is the failure this fixes.
+
+Refused, not left out: more than `snapshot.MAX_UNLISTED_WATERS` (5) waters in
+one run, which looks like a truncated or reshaped page, not a retirement; a
+water with history and no alias entry; a county with no region; a snapshot
+that fails the schema. Each is now one `cfpa: run refused -- nothing
+published:` line, not a traceback.
+
+Conservative default, not the last word. The schema's description of `waters`
+("every water with at least one observed plant") is not edited here and holds
+except for the waters a run's warning names. Owner decisions left open: whether
+the site and app should keep such a water with a label instead of omitting it
+(which would mean remembering each water's last-seen counties, for example in
+`aliases.json`); whether the limit of 5 is right; and whether a left-out water
+should turn the run red or open an issue.
+
 ## 0006 — Name and domain: undecided
 **Settled by 0010** (2026-09-17): the name is Trout Truck, and the site
 stays on `github.io` for now.

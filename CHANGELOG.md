@@ -139,6 +139,14 @@ This repository was republished with a new history on 2026-09-18
 - App: the water screen and the share text say "Last scheduled for the week
   of …", not "Last planted …". CDFW publishes scheduled plants, which are
   subject to change, not confirmed ones (PR 37).
+- A water CDFW drops from both its schedule table and its water picker no
+  longer stops the daily run for every water. It is left out of that run's
+  snapshot and site, its history is kept, and the run prints a warning that
+  names it; it returns when CDFW lists it again. More than five at once
+  refuses the run as a likely truncated page. Every refusal on the snapshot
+  path (a water with no alias entry, a county with no region, a schema
+  failure) is now one `run refused -- nothing published` line instead of a
+  traceback. Not seen in production.
 
 ### Security
 

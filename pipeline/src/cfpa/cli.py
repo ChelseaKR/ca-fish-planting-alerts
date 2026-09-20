@@ -11,9 +11,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
+
+import jsonschema
 
 from . import VERSION
 from . import aliases as aliases_mod
@@ -36,6 +40,45 @@ DEFAULT_BASE_URL = "https://chelseakr.github.io/ca-fish-planting-alerts"
 
 class PipelineError(RuntimeError):
     pass
+
+
+def print_unlisted_report(unlisted: Sequence[snapshot_mod.UnlistedWater]) -> None:
+    """Say loudly, on stderr, which waters with history were left out of this
+    run's snapshot because neither CDFW's table nor its picker names them.
+
+    Silent on an empty list. Under GitHub Actions it also emits a ``::warning``
+    workflow command, so the run's summary page shows it without opening the
+    log. It does not change the exit status: the data is right, and a failed
+    step would stop the commit and deploy steps for every other water.
+    """
+    if not unlisted:
+        return
+    n = len(unlisted)
+    print(
+        f"cfpa: WARNING {n} {'water' if n == 1 else 'waters'} with history "
+        f"{'is' if n == 1 else 'are'} in neither CDFW's schedule table nor its water "
+        "picker on this fetch. Left out of this run's snapshot and site; "
+        "their history is kept, not deleted:",
+        file=sys.stderr,
+    )
+    for u in unlisted:
+        print(
+            f"  cdfw-{u.cdfw_stock_id} {u.name}: {u.records} record(s) on file, "
+            f"{u.listed_records} still listed, newest week of {u.newest_week_start}",
+            file=sys.stderr,
+        )
+    print(
+        "  They come back on their own if CDFW lists them again. Until then the "
+        "app tells a user who favorited one that the schedule no longer lists it.",
+        file=sys.stderr,
+    )
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        ids = ", ".join(f"cdfw-{u.cdfw_stock_id}" for u in unlisted)
+        print(
+            "::warning title=Waters CDFW no longer lists::"
+            f"{n} {'water' if n == 1 else 'waters'} with history left out of "
+            f"this run's snapshot (history kept): {ids}"
+        )
 
 
 def run(
@@ -118,10 +161,20 @@ def run(
     # Refuse an overwrite before anything else is built from it.
     history_mod.assert_append_only(existing_history.records, new_history.records)
 
+    # A water with history that neither the table nor the picker names has no
+    # county to give its snapshot entry. It is left out of THIS run's snapshot,
+    # never guessed and never dropped from history, so one such water does not
+    # stop the run for every other water (DECISIONS 0017). Too many at once
+    # looks like a truncated page and refuses the run.
+    unlisted = snapshot_mod.find_unlisted_waters(
+        new_history, alias_table, rows, water_options
+    )
+    snapshot_mod.assert_unlisted_within_limit(unlisted)
+
     # Build and validate the snapshot from the in-memory history BEFORE any
-    # file is written: a snapshot that cannot be built (e.g. a water with no
-    # county anywhere on this fetch) or that fails the schema must leave
-    # data/history.json and data/aliases.json exactly as they were.
+    # file is written: a snapshot that cannot be built (e.g. a county with no
+    # region) or that fails the schema must leave data/history.json and
+    # data/aliases.json exactly as they were.
     generated_at = dt.datetime.now(dt.UTC)
     snap = snapshot_mod.build_snapshot(
         page=page,
@@ -135,6 +188,7 @@ def run(
         region_county_options=region_county_options,
         waters_known=len(water_options),
         water_options=water_options,
+        leave_out={u.cdfw_stock_id for u in unlisted},
     )
     snapshot_mod.validate_snapshot(snap, schema_path)
 
@@ -162,6 +216,7 @@ def run(
 
     coverage = snapshot_mod.Coverage(**snap["coverage"])
     coverage.print_report()
+    print_unlisted_report(unlisted)
     return snap
 
 
@@ -254,8 +309,19 @@ def main(argv: list[str] | None = None) -> int:
         fetch_mod.RobotsDisallowedError,
         parse_mod.ParseError,
         history_mod.HistoryIntegrityError,
+        snapshot_mod.SnapshotBuildError,
     ) as exc:
         print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
+        return 1
+    except jsonschema.ValidationError as exc:
+        # str(exc) can carry the whole failing snapshot; keep the refusal to
+        # the rule that broke and where.
+        where = "/".join(str(part) for part in exc.absolute_path) or "the snapshot"
+        print(
+            "cfpa: run refused -- nothing published: the snapshot failed schema "
+            f"validation at {where}: {exc.message[:300]}",
+            file=sys.stderr,
+        )
         return 1
     return 0
 

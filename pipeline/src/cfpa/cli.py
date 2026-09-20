@@ -1,8 +1,9 @@
 """Orchestrate one pipeline run: fetch -> parse -> match -> history -> snapshot
 -> validate -> site -> coverage report.
 
-A failed run (fetch failure, stale page, parse drift, history-integrity
-violation, schema validation failure) writes nothing new and exits non-zero.
+A failed run (fetch failure, stale page, a page showing a partial Time Period
+view, parse drift, history-integrity violation, schema validation failure)
+writes nothing new and exits non-zero.
 There is no code path that publishes a partial or assumed result.
 """
 
@@ -99,9 +100,9 @@ def run(
     run_today: dt.date | None = None,
 ) -> dict[str, Any]:
     """Execute one full run. Returns the built snapshot dict. Raises on any
-    of: fetch failure, stale page, parse error, history-integrity violation,
-    schema violation -- and writes nothing to history/aliases/site/snapshot
-    on any of those.
+    of: fetch failure, stale page, wrong Time Period view, parse error,
+    history-integrity violation, schema violation -- and writes nothing to
+    history/aliases/site/snapshot on any of those.
 
     The freshness check runs here, uniformly, for *both* the live and
     ``--fixture`` paths (the live path also self-checks inside
@@ -116,6 +117,11 @@ def run(
     fetch_mod.assert_fresh(
         page.stated_today, run_today or dt.datetime.now(dt.UTC).date()
     )
+    # A page showing "Current-Future Plants" or "Past Plants" is a partial
+    # table, and the merge below reads a plant missing from the table as
+    # dropped by CDFW. Refuse it before anything is parsed, merged or written
+    # (DECISIONS 0016). Like the freshness check, this runs for --fixture too.
+    fetch_mod.assert_full_window_view(page)
 
     rows = parse_mod.parse_schedule_table(page.html)
     water_options = parse_mod.parse_select_options(page.html, "Params_StockingWaterID")
@@ -305,6 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     except (
         fetch_mod.FetchError,
         fetch_mod.StalePageError,
+        fetch_mod.WrongViewError,
         fetch_mod.PageFormatError,
         fetch_mod.RobotsDisallowedError,
         parse_mod.ParseError,

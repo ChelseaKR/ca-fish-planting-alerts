@@ -84,6 +84,28 @@ struct AboutView: View {
                     SectionHeader("This snapshot")
                 }
             }
+
+            if !environment.notificationHistory.records.isEmpty {
+                Section {
+                    ForEach(environment.notificationHistory.records.sorted(by: { $0.sentAt > $1.sentAt })) { record in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(record.waterName)
+                                .font(.headline)
+                            Text(record.species)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondaryText)
+                            Text(record.sentAt.formatted(date: .abbreviated, time: .shortened))
+                                .font(.caption)
+                                .foregroundStyle(.tertiaryText)
+                        }
+                    }
+                } header: {
+                    SectionHeader("Notification history")
+                } footer: {
+                    Text("Last 30 days of alerts. Older entries are automatically removed.")
+                        .font(.footnote)
+                }
+            }
         }
         .navigationTitle("About")
         .sheet(isPresented: $showingPurchaseSheet) {

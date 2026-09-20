@@ -78,6 +78,7 @@ final class AppEnvironment {
     private var store: SnapshotStore?
     private var favoritesStore: FavoritesStore?
     private var alertStateStore: AlertStateStore?
+    private var notificationHistoryStore: NotificationHistoryStore?
     private let refresher: SnapshotRefresher
     private let notifications: NotificationScheduler
     private let openThrottle: RefreshThrottle
@@ -99,6 +100,7 @@ final class AppEnvironment {
         didSet { publishWidgetDigest() }
     }
     private var alertState = AlertState()
+    private(set) var notificationHistory = NotificationHistory()
     private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
 
     /// Set when a water is favorited for the first time ever. The view
@@ -139,10 +141,13 @@ final class AppEnvironment {
             self.store = store
             let favStore = FavoritesStore(layout: layout)
             let stateStore = AlertStateStore(layout: layout)
+            let historyStore = NotificationHistoryStore(layout: layout)
             self.favoritesStore = favStore
             self.alertStateStore = stateStore
+            self.notificationHistoryStore = historyStore
             self.favorites = favStore.load()
             self.alertState = stateStore.load()
+            self.notificationHistory = historyStore.load()
             entitlementStore = EntitlementStore(layout: layout)
         } catch {
             // Never fabricate a snapshot to paper over this: an honest
@@ -318,6 +323,10 @@ final class AppEnvironment {
             try? alertStateStore?.save(alertState)
             if !plan.notifications.isEmpty, FreeTier.notificationsAllowed(isEntitled: purchases.isEntitled) {
                 await notifications.schedule(plan.notifications)
+                for notification in plan.notifications {
+                    notificationHistory.record(notification)
+                }
+                try? notificationHistoryStore?.save(notificationHistory)
             }
         }
         return outcome

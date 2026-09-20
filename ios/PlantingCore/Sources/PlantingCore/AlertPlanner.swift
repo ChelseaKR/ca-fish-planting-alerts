@@ -69,6 +69,42 @@ public struct AlertPlan: Equatable, Sendable {
     }
 }
 
+/// A record of a notification that was sent, for display in notification history.
+public struct NotificationRecord: Codable, Equatable, Sendable, Identifiable {
+    public let id: String
+    public let waterID: Water.ID
+    public let waterName: String
+    public let species: String
+    public let sentAt: Date
+    public init(id: String, waterID: Water.ID, waterName: String, species: String, sentAt: Date) {
+        self.id = id
+        self.waterID = waterID
+        self.waterName = waterName
+        self.species = species
+        self.sentAt = sentAt
+    }
+}
+
+/// A log of sent notifications, limited to the last 30 days.
+public struct NotificationHistory: Codable, Equatable, Sendable {
+    public var records: [NotificationRecord]
+    public init(records: [NotificationRecord] = []) { self.records = records }
+
+    /// Adds a new record and prunes entries older than 30 days.
+    public mutating func record(_ notification: PlannedNotification) {
+        let record = NotificationRecord(
+            id: notification.id,
+            waterID: notification.waterID,
+            waterName: notification.waterName,
+            species: notification.species.joined(separator: ", "),
+            sentAt: Date()
+        )
+        records.append(record)
+        let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        records.removeAll { $0.sentAt < cutoff }
+    }
+}
+
 /// Pure. No clock, no I/O, no notification center — this is the function
 /// `docs/APP-STORE.md` and the deliverable list call out to test without the
 /// simulator. Implements the diff rule from `schema/README.md` exactly:

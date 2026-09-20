@@ -6,6 +6,7 @@ struct BrowseView: View {
     @State private var searchText = ""
     @State private var selectedRegion: String? // nil = all regions
     @State private var selectedCounty: String? // nil = all counties
+    @State private var thisWeekOnly = false
 
     var body: some View {
         Group {
@@ -26,6 +27,7 @@ struct BrowseView: View {
         let freshness = environment.freshness()
         List {
             Section {
+                Toggle("This week only", isOn: $thisWeekOnly)
                 Picker("Region", selection: $selectedRegion) {
                     Text("All regions").tag(String?.none)
                     ForEach(snapshot.regionsWithWaters) { region in
@@ -73,11 +75,12 @@ struct BrowseView: View {
         return snapshot.waters(inRegion: selectedRegion)
     }
 
-    /// Region, then county, then the search text: a water's name, any name
+    /// Region, then county, then this-week filter, then the search text: a water's name, any name
     /// CDFW has used for it, or its county (`WaterSearch`).
     private func filtered(_ waters: [Water], thisWeekIDs: Set<Water.ID>) -> [Water] {
         var result = waters
         if let selectedRegion { result = result.filter { $0.region == selectedRegion } }
+        if thisWeekOnly { result = result.filter { thisWeekIDs.contains($0.id) } }
         return WaterSearch(text: searchText, county: selectedCounty).filter(result)
     }
 }

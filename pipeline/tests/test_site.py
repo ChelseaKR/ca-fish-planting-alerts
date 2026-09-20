@@ -1,3 +1,4 @@
+import copy
 import datetime as dt
 import json
 import re
@@ -332,3 +333,176 @@ def test_every_page_carries_the_brand_and_the_search_terms(tmp_path: Path):
             assert search_terms.search(title), (f, title)
             assert search_terms.search(description), (f, description)
         assert "Data: California Department of Fish and Wildlife" in html, f
+
+
+# ---- the calendar's name says what the page says ------------------------
+
+
+def _plant(species: str, start: str, status: str = "listed") -> dict:
+    end = (dt.date.fromisoformat(start) + dt.timedelta(days=6)).isoformat()
+    return {
+        "week": {"start": start, "end": end, "label": f"week of {start}"},
+        "species": species,
+        "status": status,
+        "last_observed_at": "2026-09-13T12:00:00Z",
+    }
+
+
+def _ics_water(water_id: str, name: str, plants: list[dict]) -> dict:
+    return {"id": water_id, "name": name, "plants": plants}
+
+
+def _ics_lines(ics: str, prefix: str) -> list[str]:
+    return [ln for ln in ics.splitlines() if ln.startswith(prefix)]
+
+
+def test_calendar_name_says_the_species_the_water_is_scheduled_for():
+    """A catfish-only water's calendar used to be named "... trout planting
+    schedule" while its own page said catfish. The feed names now follow
+    species_phrase, the function the page uses, from the same plants."""
+    base = "https://example.invalid/water/x/"
+    catfish = _ics_water(
+        "cdfw-7351", "MacArthur Park Lake", [_plant("Catfish", "2026-09-13")]
+    )
+    trout = _ics_water("cdfw-1", "Eagle Lake", [_plant("Trout", "2026-09-13")])
+    mixed = _ics_water(
+        "cdfw-2",
+        "Lake Perris",
+        [_plant("Trout", "2026-09-13"), _plant("Catfish", "2026-09-20")],
+    )
+    assert _ics_lines(
+        site.build_water_ics(water=catfish, base_url=base), "X-WR-CALNAME"
+    ) == ["X-WR-CALNAME:MacArthur Park Lake catfish planting schedule"]
+    # A trout-only water's feed name is exactly what it was before.
+    assert _ics_lines(
+        site.build_water_ics(water=trout, base_url=base), "X-WR-CALNAME"
+    ) == ["X-WR-CALNAME:Eagle Lake trout planting schedule"]
+    assert _ics_lines(
+        site.build_water_ics(water=mixed, base_url=base), "X-WR-CALNAME"
+    ) == ["X-WR-CALNAME:Lake Perris trout and catfish planting schedule"]
+
+
+def test_calendar_name_counts_a_removed_week_like_the_page_does():
+    """The page's species comes from every plant on record, removed weeks
+    included; the feed name must agree with the page, not with the events."""
+    water = _ics_water(
+        "cdfw-3",
+        "Some Lake",
+        [_plant("Trout", "2026-09-13", "removed"), _plant("Catfish", "2026-09-20")],
+    )
+    ics = site.build_water_ics(water=water, base_url="https://example.invalid/w/")
+    assert "X-WR-CALNAME:Some Lake trout and catfish planting schedule" in ics
+    assert ics.count("BEGIN:VEVENT") == 1  # only the listed week is an event
+
+
+def test_calendar_identity_does_not_change_with_the_species_wording():
+    """Subscribers' calendar apps key events on UID (and treat the feed as the
+    same calendar by its URL). The UIDs and PRODID are pinned as literals, so
+    a change to any of them fails here instead of duplicating events in
+    people's calendars."""
+    base = "https://example.invalid/water/x/"
+    catfish = _ics_water(
+        "cdfw-7351",
+        "MacArthur Park Lake",
+        [_plant("Catfish", "2026-09-13"), _plant("Catfish", "2026-09-20")],
+    )
+    mixed = _ics_water(
+        "cdfw-2",
+        "Lake Perris",
+        [_plant("Trout", "2026-09-13"), _plant("Catfish", "2026-09-13")],
+    )
+    ics = site.build_water_ics(water=catfish, base_url=base)
+    assert _ics_lines(ics, "UID:") == [
+        "UID:cdfw-7351-2026-09-13-catfish@ca-fish-planting-alerts.invalid",
+        "UID:cdfw-7351-2026-09-20-catfish@ca-fish-planting-alerts.invalid",
+    ]
+    assert _ics_lines(ics, "PRODID:") == [
+        "PRODID:-//ca-fish-planting-alerts//snapshot v1//EN"
+    ]
+    assert _ics_lines(site.build_water_ics(water=mixed, base_url=base), "UID:") == [
+        "UID:cdfw-2-2026-09-13-trout@ca-fish-planting-alerts.invalid",
+        "UID:cdfw-2-2026-09-13-catfish@ca-fish-planting-alerts.invalid",
+    ]
+
+
+def test_every_built_feed_is_named_for_the_species_on_its_own_page(tmp_path: Path):
+    out = _build_site(tmp_path)
+    snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    seen = set()
+    for w in snap["waters"]:
+        species = site.species_phrase({p["species"] for p in w["plants"]})
+        ics = (out / "water" / w["slug"] / "feed.ics").read_text(encoding="utf-8")
+        assert _ics_lines(ics, "X-WR-CALNAME") == [
+            f"X-WR-CALNAME:{site._ics_escape(w['name'])} {species} planting schedule"
+        ], w["slug"]
+        assert f"{species} stocking schedule" in _water_html(out, w["slug"])
+        seen.add(species)
+    assert {"trout", "catfish"} <= seen  # a catfish-only water is in the build
+
+
+# ---- the history table says what its statuses mean ----------------------
+
+
+def _status_cells(html: str) -> list[str]:
+    table = re.search(r"<table\b.*?</table>", html, re.S).group(0)
+    return [
+        re.sub(r"\s+", " ", m).strip()
+        for m in re.findall(
+            r"<tr>\s*<td>[^<]*</td>\s*<td>[^<]*</td>\s*<td>([^<]*)</td>", table
+        )
+    ]
+
+
+def test_history_table_uses_plain_words_and_the_snapshot_keeps_raw_values(
+    tmp_path: Path,
+):
+    out = _build_site(tmp_path)
+    snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    statuses = {p["status"] for w in snap["waters"] for p in w["plants"]}
+    assert statuses == {"listed"}  # this fixture has no removed week
+    for w in snap["waters"]:
+        html = _water_html(out, w["slug"])
+        cells = _status_cells(html)
+        assert len(cells) == len(w["plants"]) > 0
+        assert set(cells) == {"Scheduled"}, w["slug"]
+        # The raw values are never a reader-facing status, and a water with
+        # no changed week carries no explanation of one.
+        assert "<td>listed</td>" not in html and "<td>removed</td>" not in html
+        assert "Schedule changed" not in html
+        assert 'id="status-note"' not in html and "aria-describedby" not in html
+
+
+def test_a_removed_week_reads_schedule_changed_and_the_page_says_what_that_means(
+    tmp_path: Path,
+):
+    out = _build_site(tmp_path)
+    snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    changed = copy.deepcopy(snap)
+    target = changed["waters"][0]
+    target["plants"][0]["status"] = "removed"
+    assert changed != snap  # the sabotage landed
+    other = changed["waters"][1]["slug"]
+    out2 = tmp_path / "changed-site"
+    site.build_site(
+        changed, out2, base_url="https://example.invalid/ca-fish-planting-alerts"
+    )
+
+    html = _water_html(out2, target["slug"])
+    cells = _status_cells(html)
+    assert cells.count("Schedule changed") == 1
+    assert cells.count("Scheduled") == len(target["plants"]) - 1
+    # Words carry the meaning: not a color, not an icon, and no script.
+    assert "<td>removed</td>" not in html and "<td>listed</td>" not in html
+    note = re.search(r'<p class="muted" id="status-note">(.*?)</p>', html, re.S)
+    assert note, "the explanation is missing"
+    text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", note.group(1))).strip()
+    assert text == (
+        "Schedule changed means CDFW listed that week earlier and later "
+        "removed it from its schedule. CDFW's plans can change."
+    )
+    # The table is tied to the explanation for assistive technology.
+    assert re.search(r'<table aria-describedby="status-note">', html)
+    # The week-of wording holds: never "planted" or "stocked" in the note.
+    assert "planted" not in text.lower() and "stocked" not in text.lower()
+    # A neighbor with no changed week is unaffected.
+    assert "status-note" not in _water_html(out2, other)

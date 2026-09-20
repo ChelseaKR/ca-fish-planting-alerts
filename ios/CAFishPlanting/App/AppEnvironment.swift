@@ -68,7 +68,8 @@ struct NotificationPrimingCopy: Equatable {
 final class AppEnvironment {
     /// Bridges the BGTaskScheduler launch handler (registered in
     /// `App.init()`, before any SwiftUI environment exists) to the live
-    /// environment. Set once, from the `WindowGroup`'s root view.
+    /// environment. Set once, in `App.init()`, so the background-refresh
+    /// handler can reach it even on a cold background launch.
     static var shared: AppEnvironment?
 
     let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.chelseakr.cafishplanting"

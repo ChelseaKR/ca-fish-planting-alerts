@@ -3449,6 +3449,15 @@
       "reviewed": false
     },
     {
+      "cdfw_stock_id": 503122,
+      "canonical_name": "Upper McCloud River",
+      "slug": "upper-mccloud-river",
+      "aliases": [
+        "Upper McCloud River"
+      ],
+      "reviewed": false
+    },
+    {
       "cdfw_stock_id": 503124,
       "canonical_name": "American River, South Fork, Chili Bar",
       "slug": "american-river-south-fork-chili-bar",

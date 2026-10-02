@@ -3,26 +3,50 @@
 # snapshot bundled with the app (real pipeline output, never a fixture).
 #
 #   ios/scripts/app-store-screenshots.sh [SIMULATOR_UDID]
+#   SCREENSHOT_CLASS=6.5 ios/scripts/app-store-screenshots.sh
+#
+# SCREENSHOT_CLASS picks the App Store display class:
+#   6.9 (default)  iPhone 17 Pro Max, 1320x2868, into docs/app-store/screenshots/
+#   6.5            iPhone 11 Pro Max, 1242x2688, into docs/app-store/screenshots/6.5-inch/
+# App Store Connect requires only the 6.9" set for an iPhone-only app and
+# scales it down for smaller iPhones; the 6.5" set is optional, for when the
+# scaled shots look wrong (docs/APP-STORE.md, Screenshots).
 #
 # With no UDID it creates (once) and reuses a simulator named
-# "Trout Truck screenshots", an iPhone 17 Pro Max: the 6.9" class,
-# 1320x2868. It overrides the status bar, deletes the app so the run starts
-# from a fresh install, picks the region and waters from the bundled
-# snapshot, runs AppStoreScreenshotsUITests, and fails unless all five PNGs
-# come back at 1320x2868.
+# "Trout Truck screenshots <class>". It overrides the status bar, deletes
+# the app so the run starts from a fresh install, picks the region and
+# waters from the bundled snapshot, runs AppStoreScreenshotsUITests, and
+# fails unless all five PNGs come back at the class's exact pixel size.
 #
-# Refresh the bundled snapshot first (ios/scripts/sync-bundled-snapshot.sh)
-# so the shots show the current week.
+# Refresh the bundled snapshot first (ios/scripts/sync-bundled-snapshot.sh).
+# The app refreshes on launch and shows the live week, so the picks must come
+# from a recent bundle; the script refuses one more than 7 days old unless
+# ALLOW_STALE_SNAPSHOT=1.
 set -euo pipefail
 
 ios_dir="$(cd "$(dirname "$0")/.." && pwd)"
 repo_dir="$(cd "$ios_dir/.." && pwd)"
 snapshot="$ios_dir/CAFishPlanting/Resources/snapshot.json"
-out_dir="$repo_dir/docs/app-store/screenshots"
-device_name="Trout Truck screenshots"
-device_type="com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
+screenshot_class="${SCREENSHOT_CLASS:-6.9}"
+case "$screenshot_class" in
+  6.9)
+    out_dir="$repo_dir/docs/app-store/screenshots"
+    device_name="Trout Truck screenshots"
+    device_type="com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
+    expected_size="1320x2868"
+    ;;
+  6.5)
+    out_dir="$repo_dir/docs/app-store/screenshots/6.5-inch"
+    device_name="Trout Truck screenshots 6.5"
+    device_type="com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro-Max"
+    expected_size="1242x2688"
+    ;;
+  *)
+    echo "SCREENSHOT_CLASS must be 6.9 or 6.5, not '$screenshot_class'" >&2
+    exit 2
+    ;;
+esac
 bundle_id="com.chelseakr.cafishplanting"
-expected_size="1320x2868"
 shots=(01-this-week 02-water-history 03-favorites 04-notifications 05-about)
 
 udid="${1:-}"
@@ -63,6 +87,16 @@ xcrun simctl uninstall "$udid" "$bundle_id" 2>/dev/null || true
 picks="$(python3 - "$snapshot" <<'PY'
 import collections, json, sys
 s = json.load(open(sys.argv[1]))
+# The app refreshes the snapshot on launch, so the screens show the live
+# week. Picks made from an older bundled week then miss it (measured
+# 2026-10-01: a 13-day-old bundle left one "This week" badge in five
+# favorites). Refuse unless the bundle is recent; sync it first.
+import datetime, os
+generated = datetime.datetime.fromisoformat(s["generated_at"].replace("Z", "+00:00"))
+age = datetime.datetime.now(datetime.timezone.utc) - generated
+if age > datetime.timedelta(days=7) and os.environ.get("ALLOW_STALE_SNAPSHOT") != "1":
+    sys.exit(f"the bundled snapshot is {age.days} days old; run ios/scripts/sync-bundled-snapshot.sh "
+             "first (or set ALLOW_STALE_SNAPSHOT=1)")
 this_week = {t["water_id"] for t in s["this_week"]}
 if not this_week:
     sys.exit("the bundled snapshot has nothing scheduled this week; refresh it first")
@@ -109,6 +143,6 @@ for shot in "${shots[@]}"; do
   size="$(sips -g pixelWidth -g pixelHeight "$png" | awk '/pixelWidth/ {w=$2} /pixelHeight/ {h=$2} END {print w "x" h}')"
   [[ "$size" == "$expected_size" ]] || { echo "$shot.png is $size, not $expected_size" >&2; exit 1; }
   cp "$png" "$out_dir/$shot.png"
-  echo "wrote docs/app-store/screenshots/$shot.png ($size)"
+  echo "wrote ${out_dir#"$repo_dir"/}/$shot.png ($size)"
 done
 xcrun simctl status_bar "$udid" clear

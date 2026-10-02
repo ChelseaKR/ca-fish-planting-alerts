@@ -11,6 +11,9 @@ Three portfolio controls that are a text search, not a tool:
 - IR-15: no wildcard `git add` (`-A`, `--all`, `.`) in a workflow that runs
   unattended. The publish job commits data back to main every day, so it
   must name exactly the files it means to commit.
+- No merge-conflict markers in source. CI builds the Swift package but not
+  the app target, so a marker left in an app view once reached main with
+  every check green.
 
 Written in Python rather than as `grep` lines in the Makefile because the
 same target has to behave identically on a developer's machine and on the CI
@@ -39,6 +42,10 @@ _MARKER = re.compile(
 _ISSUE_REF = re.compile(r"\(#\d+\)|https?://\S+/issues/\d+|#\d+\b")
 _NOQA = re.compile(r"#\s*noqa\b(?P<rest>.*)", re.IGNORECASE)
 _TYPE_IGNORE = re.compile(r"#\s*type:\s*ignore(?P<rest>.*)")
+# Built from parts so this file's own source never holds a marker line.
+_CONFLICT = re.compile(
+    "^(?:" + "<" * 7 + "(?: |$)|" + ">" * 7 + "(?: |$)|" + "=" * 7 + "$)"
+)
 _WILDCARD_ADD = re.compile(r"\bgit\s+add\s+(?:[^\n#]*\s)?(?:-A\b|--all\b|\.(?=\s|$))")
 
 SOURCE_GLOBS = (
@@ -49,6 +56,7 @@ SOURCE_GLOBS = (
     ".github/workflows/*.yml",
     "Makefile",
 )
+CONFLICT_GLOBS = (*SOURCE_GLOBS, "pipeline/src/**/*.jinja", "pipeline/src/**/*.css")
 WORKFLOW_GLOBS = (".github/workflows/*.yml", "scripts/**/*.sh")
 
 
@@ -72,6 +80,11 @@ def blanket_suppression(line: str) -> bool:
 def wildcard_add(line: str) -> bool:
     """True when a shell line stages files with a wildcard."""
     return bool(_WILDCARD_ADD.search(line))
+
+
+def conflict_marker(line: str) -> bool:
+    """True for a line git writes when a merge conflict is left unresolved."""
+    return bool(_CONFLICT.match(line))
 
 
 def _files(globs: Iterable[str]) -> list[Path]:
@@ -124,6 +137,14 @@ def self_test() -> list[str]:
         ("IR-15 -A", wildcard_add, "git add -A", "git add pipeline/data/history.json"),
         ("IR-15 --all", wildcard_add, "  git add --all && git commit", "git add a b"),
         ("IR-15 dot", wildcard_add, "git add .", "git add ./pipeline/data/x.json"),
+        ("conflict ours", conflict_marker, "<" * 7 + " HEAD", "if a << b {"),
+        ("conflict theirs", conflict_marker, ">" * 7 + " origin/main", "x >>= 1"),
+        (
+            "conflict split",
+            conflict_marker,
+            "=" * 7,
+            "    " + "=" * 7 + " heading rule",
+        ),
     ]
     failures = []
     for name, check, bad, good in cases:
@@ -152,6 +173,7 @@ def main(argv: list[str] | None = None) -> int:
             for h in scan(SOURCE_GLOBS, blanket_suppression)
         ),
         *(f"IR-15 wildcard git add: {h}" for h in scan(WORKFLOW_GLOBS, wildcard_add)),
+        *(f"conflict marker: {h}" for h in scan(CONFLICT_GLOBS, conflict_marker)),
     ]
     for problem in problems:
         print(problem, file=sys.stderr)

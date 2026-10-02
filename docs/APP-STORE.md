@@ -6,7 +6,7 @@ submission is done: the screenshots are captured from real snapshot data
 the code (see [Privacy answers, verified in code](#privacy-answers-verified-in-code)),
 the App Review notes are in `docs/APP-STORE-LISTING.md`, and the rest is
 the owner's, in order, in
-[Owner checklist: from here to submitted](#owner-checklist-from-here-to-submitted).
+[`docs/app-store/OWNER-STEPS.md`](app-store/OWNER-STEPS.md).
 The sections after the checklist are the earlier drafts, kept for their
 reasoning.
 
@@ -29,216 +29,13 @@ analysis, or owner steps needed correction.
 
 ## Owner checklist: from here to submitted
 
-Every step below needs the owner's Apple ID, App Store Connect, a
-payment or legal form, or a decision. Nothing here has been done. Values
-in `code` are exact; paste them as they are.
-
-**Values this checklist uses**
-
-| Field | Value | Source |
-|---|---|---|
-| App name | `Trout Truck` | DECISIONS 0010; `CFBundleDisplayName` |
-| Bundle ID | `com.chelseakr.cafishplanting` | `PRODUCT_BUNDLE_IDENTIFIER` in `ios/CAFishPlanting.xcodeproj/project.pbxproj` |
-| Team ID | `6X5YH93QNM` | `DEVELOPMENT_TEAM` in the same file. Not `ACKGM9XK9V`, which is the enrollment ID. |
-| SKU | `cafishplanting-ios` (suggested) | Any unique string. Customers never see it, and it can't be changed after the record is created. |
-| Primary category | Sports | See [Category justification](#category-justification-231--metadata-accuracy) |
-| Secondary category | Reference | `APP-STORE-LISTING.md` |
-| App price | Free | DECISIONS 0007 |
-| In-app purchase | Non-consumable, `com.chelseakr.cafishplanting.fullaccess`, **$9.99** | DECISIONS 0003/0007/0009. 0009 keeps "still $9.99". |
-| Version | `0.1.0`, build `1` | `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`. The App Store Connect version must match `MARKETING_VERSION`. To ship as `1.0`, change `MARKETING_VERSION` before archiving. |
-| Support URL | `https://chelseakr.github.io/ca-fish-planting-alerts/support/` | Returns 200 (checked 2026-09-18). It has no contact line yet; see step 2. |
-| Privacy Policy URL | `https://chelseakr.github.io/ca-fish-planting-alerts/privacy/` | Returns 200 (checked 2026-09-18) |
-| Marketing URL (optional) | `https://chelseakr.github.io/ca-fish-planting-alerts/` | |
-| Support email | **TODO(owner):** no address is recorded in this repo | The owner said she would create a support alias on chelseakr.com. |
-
-### Before App Store Connect
-
-1. **Trademark search for "Trout Truck".** DECISIONS 0010 records that
-   none has been run. Before submitting:
-   - USPTO Trademark Search (`https://tmsearch.uspto.gov/`): `TROUT TRUCK`,
-     `TROUTTRUCK`, `TROUT TRUCKS`, and sound-alikes, live and dead marks, in
-     International Classes 9 (downloadable software and apps), 42 (online
-     software and services) and 41 (information about recreation and
-     fishing).
-   - California state marks: the Secretary of State's trademark search.
-   - Common-law use: the App Store, Google Play and a web search for
-     "trout truck" app or fishing.
-   - Record the result and the date in DECISIONS 0010, replacing
-     "Trademarks were not searched". A conflict means a new name before
-     submitting, not after. This is a screen, not legal advice.
-2. **Support contact (TODO(owner)).** Create the support alias on
-   chelseakr.com. Then set it for the site and republish:
-   ```sh
-   gh variable set SUPPORT_EMAIL --repo ChelseaKR/ca-fish-planting-alerts --body '<the alias>'
-   gh workflow run publish.yml --repo ChelseaKR/ca-fish-planting-alerts
-   ```
-   Check that `/support/` and `/privacy/` now show a `mailto:` line.
-   Guideline 1.5 asks for a Support URL that gives an easy way to contact
-   you, and the page has no contact line until this is set.
-3. **Live privacy page: done 2026-09-18.** The 03:50 UTC build predated
-   PR 16 (the name) and PR 20 (GA4), but the `publish` run at 06:10 UTC
-   redeployed the site. Checked after it: `/privacy/` names Trout Truck,
-   describes the website's Google Analytics 4, says the app collects
-   nothing and that the host sees the requesting IP, and its app section
-   states "App Store privacy label: Data Not Collected". Re-read it
-   once before submitting, and whenever the privacy copy changes.
-4. **Paid Applications Agreement.** App Store Connect → Business: the
-   Paid Apps agreement must be **Active**, with banking and tax forms
-   done. Without it, the in-app purchase can't be tested in the sandbox
-   or TestFlight, and it can't be sold. Banking and tax review can take
-   days, so start this first.
-5. **Refresh the bundled snapshot** just before archiving, so a fresh
-   install opens on the current week:
-   ```sh
-   ios/scripts/sync-bundled-snapshot.sh   # downloads, validates against schema/snapshot.v1.json
-   git add ios/CAFishPlanting/Resources/snapshot.json   # then commit and merge through a PR
-   ```
-   To match the screenshots to the new week too, run
-   `ios/scripts/app-store-screenshots.sh` (see [Screenshots](#screenshots)).
-   This is optional: the committed screenshots are real data from the
-   week of 2026-09-13.
-
-### Register the app
-
-6. **Sign in to Xcode** with the Apple ID for team `6X5YH93QNM` (Xcode →
-   Settings → Accounts). This is interactive.
-7. **Register the bundle ID** at developer.apple.com → Certificates,
-   Identifiers & Profiles → Identifiers → **+** → App IDs → App:
-   Description `Trout Truck`, Bundle ID **Explicit**
-   `com.chelseakr.cafishplanting`. Add one capability, **App Groups**,
-   with the group `group.com.chelseakr.cafishplanting` (register it under
-   Identifiers → App Groups first). The Home Screen widget reads the app's
-   schedule digest through it. In-App Purchase is on for every App ID by
-   default. Push Notifications is **not** needed, because every alert is
-   local. Then register the widget's App ID the same way: Bundle ID
-   **Explicit** `com.chelseakr.cafishplanting.widgets`, capability **App
-   Groups** with the same group. Xcode's automatic signing can also
-   register both, and the group, on the first archive (step 16), but the
-   app's ID has to exist before it appears in step 8's Bundle ID menu.
-8. **Create the app record.** App Store Connect → Apps → **+** → New App:
-   Platforms **iOS**; Name `Trout Truck`; Primary Language **English
-   (U.S.)**; Bundle ID `com.chelseakr.cafishplanting`; SKU
-   `cafishplanting-ios` (or your own); User Access **Full Access**.
-
-### Fill in the record
-
-9. **App Information:** Subtitle `CA stocking schedule & alerts`; Category
-   Primary **Sports**, Secondary **Reference** (see
-   `APP-STORE-LISTING.md`). Content Rights: **Yes**, the app shows
-   third-party content (CDFW's schedule), and you have the rights to use
-   it. CDFW's Conditions of Use put it in the public domain
-   (`docs/LICENSES-AND-ATTRIBUTION.md`). The app uses no CDFW seals or
-   logos, which those terms reserve. Age Rating: answer **None** / **No**
-   to every question (no user-generated content, no web browsing, no
-   messaging, no ads, no gambling). The result should be the lowest tier,
-   4+.
-10. **Pricing and Availability:** Price **Free** (USD 0.00). Availability:
-    your call. The data is California's, and the listing is English. If
-    you include EU storefronts, App Store Connect requires a Digital
-    Services Act trader declaration, and a trader's address, phone and
-    email are shown on the EU product page.
-11. **App Privacy:** Privacy Policy URL (from the table). Data collection:
-    **"No, we do not collect data from this app"**, so the label is
-    **Data Not Collected**. Why that's true, with file references:
-    [Privacy answers, verified in code](#privacy-answers-verified-in-code).
-    Publish the answers.
-12. **In-app purchase:** Monetization → In-App Purchases → **+**: Type
-    **Non-Consumable**; Reference Name `Full Access`; Product ID
-    `com.chelseakr.cafishplanting.fullaccess`. Check this byte for byte
-    against `PurchaseManager.productID`. A mismatch means the button says
-    "Not available right now" for everyone. Then:
-    - Price: **$9.99** (USD), all storefronts at Apple's equivalents, or
-      the availability chosen in step 10.
-    - Localization, English (U.S.): Display Name `Full Access`;
-      Description `Alerts and a widget for your favorite waters` (44 of
-      45 characters).
-    - Family Sharing: your call. Once turned on for a product, it
-      can't be turned off.
-    - Review Information: a screenshot of the purchase sheet (About →
-      "Unlock full access"). App Review sees it, and it isn't shown on the
-      App Store, so it may show the price. Take it from the TestFlight
-      build in step 18, where the sandbox price loads. The simulator can't
-      load it on iOS 26.5 (`ios/README.md`). Review notes: "Unlocks local
-      notifications and the Home Screen widget for favorited waters.
-      About → Unlock full access."
-    - Status must reach **Ready to Submit**. Apple reviews the first
-      in-app purchase with an app version (step 20).
-13. **Version page (iOS App 0.1.0):**
-    - Screenshots → iPhone **6.9" Display**: upload the five PNGs in
-      [Screenshots](#screenshots) in their numbered order. The app is
-      iPhone-only (`TARGETED_DEVICE_FAMILY = 1`), so no iPad set is
-      needed, and App Store Connect scales the 6.9" set down for smaller
-      iPhones.
-    - Promotional Text, Description, Keywords, Support URL, Marketing URL
-      and Copyright: paste from `APP-STORE-LISTING.md`. Replace `[N]` in
-      the description with `coverage.waters_with_history` from the live
-      snapshot on the day (385 on 2026-09-18).
-14. **App Review Information** (same page): Sign-in required **off**, since
-    there are no accounts. Contact: your name, phone and email. Notes:
-    paste the "App Review notes" block from `APP-STORE-LISTING.md`.
-    Attachment: none needed.
-15. **Version Release:** choose **Manually release this version**, so you
-    pick the day it goes live after approval.
-
-### Archive and upload
-
-16. **Archive.** In Xcode: open `ios/CAFishPlanting.xcodeproj`, scheme
-    `CAFishPlanting`, destination **Any iOS Device (arm64)**, then Product
-    → Archive. Or from `ios/`:
-    ```sh
-    xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
-      -configuration Release -destination 'generic/platform=iOS' \
-      -archivePath build/CAFishPlanting.xcarchive archive
-    ```
-    Every upload needs a new build number. Raise `CURRENT_PROJECT_VERSION`
-    (currently `1`) before re-archiving after any rejected or replaced
-    upload.
-17. **Upload.** Xcode Organizer → the archive → Distribute App → **App
-    Store Connect** → Upload. Keep automatic signing and "Upload your
-    app's symbols". Or from `ios/`, with a `build/ExportOptions.plist`
-    that you keep out of git:
-    ```xml
-    <dict>
-      <key>method</key><string>app-store-connect</string>
-      <key>destination</key><string>upload</string>
-      <key>teamID</key><string>6X5YH93QNM</string>
-      <key>signingStyle</key><string>automatic</string>
-    </dict>
-    ```
-    ```sh
-    xcodebuild -exportArchive -archivePath build/CAFishPlanting.xcarchive \
-      -exportOptionsPlist build/ExportOptions.plist -exportPath build/export \
-      -allowProvisioningUpdates
-    ```
-    Export compliance won't be asked: `Info.plist` sets
-    `ITSAppUsesNonExemptEncryption` to `false`, because the only
-    encryption is the HTTPS that iOS itself provides.
-18. **TestFlight on your own iPhone** before you submit. Once the build
-    finishes processing, install it through TestFlight and check:
-    - About → "Unlock full access" shows **$9.99**. TestFlight purchases
-      use the sandbox and aren't charged. Buy, and About shows
-      "Unlocked". Delete the app, reinstall, then Restore purchases
-      unlocks it again.
-    - Take the in-app purchase review screenshot (step 12) here.
-    - Favorite a water, choose Allow notifications, and check that
-      Settings → Trout Truck shows Notifications on and Background App
-      Refresh available.
-    - To test outside TestFlight, for example from an Xcode run on a
-      device, create a sandbox tester in App Store Connect → Users and
-      Access → Sandbox. App Review uses its own sandbox accounts, so the
-      review notes need no credentials.
-
-### Submit
-
-19. **Attach the build** on the version page (Build → **+** → the
-    uploaded build).
-20. **Attach the in-app purchase:** on the same page, under "In-App
-    Purchases and Subscriptions", select `Full Access`. A first in-app
-    purchase can only be submitted together with an app version.
-21. **Add for Review → Submit to App Review.** Check once more that the
-    trademark result (step 1) and the support contact (step 2) are done.
-    With manual release, approval doesn't publish anything until you press
-    Release.
+Moved 2026-10-01 to [`docs/app-store/OWNER-STEPS.md`](app-store/OWNER-STEPS.md),
+which is now the one ordered list. It records the owner's 2026-10-01
+decisions (free download with the $9.99 in-app purchase as built, United
+States only, version 1.0.0; DECISIONS 0018), what is still hers (trademark,
+support address, privacy policy host), the branches to merge
+so `main` builds, the signed-tag release workflow, and a list of what is
+already done. The values table and steps that used to be here are all in it.
 
 ## Screenshots
 
@@ -262,15 +59,17 @@ against `schema/snapshot.v1.json` before it was copied in. No fixture was
 used, and nothing was seeded: the favorites were added by tapping the
 star, as a user would.
 
-**Honest details a reviewer may notice.** The Browse header says "Not
-refreshed on this device yet — showing the schedule bundled with the
-app", because the shots come from a fresh install and the app only
-refreshes in the background (Known gaps 7). The status bar is set to 9:41
+**Honest details a reviewer may notice.** In the committed shots (taken
+2026-09-18) the Browse header says "Not refreshed on this device yet —
+showing the schedule bundled with the app". The app has refreshed on launch
+since then, so a regenerated set shows "Last checked" and the live week
+instead. The status bar is set to 9:41
 with full signal and battery (`simctl status_bar`), which is Apple's
 convention. The purchase sheet isn't among the shots, because it shows the
-price. Its App Review screenshot is checklist step 12.
+price. Its App Review screenshot is taken in TestFlight
+([OWNER-STEPS](app-store/OWNER-STEPS.md) step 12).
 
-**To regenerate** (for example after checklist step 5 brings in a new
+**To regenerate** (for example after OWNER-STEPS step 9 brings in a new
 week), run this from the repository root with no other simulator work
 running:
 
@@ -278,13 +77,26 @@ running:
 ios/scripts/app-store-screenshots.sh
 ```
 
-It creates or reuses a simulator named "Trout Truck screenshots" (iPhone
-17 Pro Max), deletes the app so the run starts from a fresh install, and
+Run `ios/scripts/sync-bundled-snapshot.sh` first: the app refreshes on
+launch and shows the live week, so the picks below must come from a recent
+bundle, and the script refuses one more than 7 days old
+(`ALLOW_STALE_SNAPSHOT=1` overrides). It creates or reuses a simulator
+named "Trout Truck screenshots" (iPhone 17 Pro Max), deletes the app so the run starts from a fresh install, and
 picks the region and waters from the bundled snapshot. It then runs
 `CAFishPlantingUITests/AppStoreScreenshotsUITests`, which is skipped in
 ordinary test runs, and fails unless all five PNGs come back at
 1320×2868. The waters change with the data, so re-check this table
 against the new images.
+
+**6.5" display (optional).** App Store Connect requires only the 6.9"
+set for an iPhone-only app and scales it down for smaller iPhones. If the
+scaled images ever look wrong, make a native 6.5" set (1242×2688, iPhone 11
+Pro Max simulator, which the iOS 26.5 runtime still offers) into
+`docs/app-store/screenshots/6.5-inch/`:
+
+```sh
+SCREENSHOT_CLASS=6.5 ios/scripts/app-store-screenshots.sh
+```
 
 ## Privacy answers, verified in code
 
@@ -405,7 +217,7 @@ Collected" answer needs revisiting.
 | Category (primary) | **Sports** | See justification below. |
 | Category (secondary) | Reference (was: Weather) | The app has no weather content, and guideline 2.3.5 asks for the most appropriate category. A schedule-and-history lookup is Reference. See `APP-STORE-LISTING.md`. |
 | Age rating | **4+** | No objectionable content categories apply (no UGC, no gambling, no mature themes, no web browser). Apple's questionnaire should be answered "None" throughout. |
-| Price | **Free to download; $9.99 one-time in-app purchase, no subscription** | `docs/DECISIONS.md` 0003/0007: the app itself is free (App Store Connect price tier "Free"); the $9.99 is the one-time non-consumable in-app purchase implemented in `ios/` (`PurchaseManager.swift`). See "In-App Purchase to create in App Store Connect" below for the exact product to configure. |
+| Price | **Free to download; $9.99 one-time in-app purchase, no subscription** | `docs/DECISIONS.md` 0007, settled by 0018 on 2026-10-01: the app itself is free (App Store Connect price tier "Free"); the $9.99 is the one-time non-consumable in-app purchase implemented in `ios/` (`PurchaseManager.swift`). See "In-App Purchase to create in App Store Connect" below for the exact product to configure. |
 | Privacy label | **Data Not Collected** | Matches `ios/CAFishPlanting/Resources/PrivacyInfo.xcprivacy` (`NSPrivacyCollectedDataTypes` is empty) and `docs/DECISIONS.md` 0002 ("posture: none"). Fill in the App Store Connect privacy questionnaire identically: every category "Data Not Collected." |
 
 ### Description draft
@@ -493,7 +305,7 @@ Connect with this exact identifier:
 | Type | **Non-Consumable** |
 | Product ID | `com.chelseakr.cafishplanting.fullaccess` — must match `PurchaseManager.productID` exactly, byte-for-byte |
 | Reference Name (internal, App Store Connect only) | `Full Access` |
-| Price tier | $9.99 (USD Tier matching $9.99; DECISIONS 0003/0007) |
+| Price | USD 9.99 price point, United States only (DECISIONS 0007, 0018) |
 | Display Name (customer-facing) | `Full Access` |
 | Description (customer-facing, 45 max) | `Alerts and a widget for your favorite waters` (44 characters) |
 | Cleared for sale | Yes, once the app record itself is created |
@@ -522,7 +334,7 @@ purchase/restore/entitlement flow:
 
 - **Automated tests** (`ios/CAFishPlantingTests/PurchaseManagerTests.swift`)
   drive it directly via `StoreKitTest.SKTestSession(contentsOf:)` — this is
-  what `xcodebuild test` already runs; see "Owner steps" step 2.
+  what `xcodebuild test` already runs.
 - **Manual testing in Simulator**: the scheme (`CAFishPlanting.xcscheme`)
   already references `Configuration.storekit` for both Run and Test, so
   building and running the app in Xcode/Simulator gets a working local
@@ -571,9 +383,8 @@ Superseded 2026-09-18: the screenshots are captured. See
 
 ## Owner steps to a TestFlight build
 
-Superseded 2026-09-18 by
-[Owner checklist: from here to submitted](#owner-checklist-from-here-to-submitted),
-which covers the same archive and upload steps in submission order. It
+Superseded 2026-09-18 by the owner checklist, now
+[`docs/app-store/OWNER-STEPS.md`](app-store/OWNER-STEPS.md), which covers the same archive and upload steps in submission order. It
 drops `xcrun altool` in favor of Xcode's own upload.
 
 ## Known gaps to close before any of the above
@@ -612,7 +423,7 @@ drops `xcrun altool` in favor of Xcode's own upload.
    normally registers a new App ID itself the first time it archives or
    builds for a real device once Chelsea is signed in, so this is likely
    a non-issue — but it's unverified, not confirmed, and is the one
-   step in "Owner steps" (step 3) worth watching for a signing error
+   step in [OWNER-STEPS](app-store/OWNER-STEPS.md) (step 6) worth watching for a signing error
    rather than assuming success.
 5. ~~No screenshots captured yet~~ **Closed 2026-09-18.** Five 6.9"
    screenshots are in `docs/app-store/screenshots/`. See
@@ -622,25 +433,25 @@ drops `xcrun altool` in favor of Xcode's own upload.
    for everyone; the purchase unlocks local notifications on a favorited
    water's schedule change. See
    `PlantingCore/Sources/PlantingCore/FreeTier.swift`.
-7. **The app never refreshes in the foreground** (found 2026-09-18, not
-   fixed here). `AppEnvironment.refreshNow()` exists, but no view calls
-   it: there is no pull-to-refresh and no refresh on launch. The only
-   fetch is the `BGAppRefreshTask`, which the app requests when it goes to
-   the background and iOS runs when it chooses. So a fresh install, or App
-   Review, sees the bundled snapshot until iOS runs that task, and the
-   Browse header says "Not refreshed on this device yet". Checklist step 5
-   (refresh the bundled snapshot just before archiving) limits the
-   damage. Adding a refresh on launch or pull-to-refresh is a product
-   change. It would still be the same single request to the same host, so
-   the privacy answers wouldn't change.
+7. ~~The app never refreshes in the foreground~~ **Closed** (checked
+   2026-10-01). Browse and Favorites call `environment.refreshNow()` from
+   `.refreshable`, so pull-to-refresh fetches the snapshot in the
+   foreground. It is the same single request to the same host, so the
+   privacy answers are unchanged. A fresh install still opens on the
+   bundled snapshot until the first refresh, which is why
+   [OWNER-STEPS](app-store/OWNER-STEPS.md) step 9 refreshes it before
+   archiving.
 8. **Export compliance** is declared in `Info.plist`
    (`ITSAppUsesNonExemptEncryption` = `false`, added 2026-09-18). The
    only encryption is iOS's own HTTPS, so App Store Connect won't ask on
    each upload.
-9. **"Last planted" breaks the copy rule** (found 2026-09-18, not fixed
-   here). `WaterDetailView` titles the latest week "Last planted week
-   of …". `APP-STORE-LISTING.md` rules out "stocked on" and asks for
-   "scheduled for the week of…", because CDFW's weeks are plans that can
-   change. Screenshot `02-water-history.png` shows the line as it is. If
-   the wording changes (for example to "Last scheduled"), regenerate that
-   screenshot.
+9. ~~"Last planted" breaks the copy rule~~ **Closed** (checked
+   2026-10-01). `ScheduleWording` and the widget now say "Last scheduled
+   for the week of …". Screenshot `02-water-history.png` was captured
+   before that change; regenerate the screenshots before uploading them
+   ([OWNER-STEPS](app-store/OWNER-STEPS.md) step 9). A regeneration on
+   2026-10-01 was not kept: the app now refreshes on launch, so it showed
+   the live week of 2026-09-27 while the script had picked waters from the
+   13-day-old bundled week, and only one of five favorites carried a "This
+   week" badge. The script now refuses a bundled snapshot more than 7 days
+   old, so sync it first.

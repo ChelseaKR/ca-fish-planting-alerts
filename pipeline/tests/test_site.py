@@ -503,14 +503,22 @@ def test_a_removed_week_reads_schedule_changed_and_the_page_says_what_that_means
     assert "<td>removed</td>" not in html and "<td>listed</td>" not in html
     notes = [
         re.sub(r"\s+", " ", m).strip()
-        for m in re.findall(r'<p class="muted">([^<]*Schedule changed[^<]*)</p>', html)
+        for m in re.findall(
+            r'<p class="muted" id="status-note">([^<]*Schedule changed[^<]*)</p>', html
+        )
     ]
     assert notes, "the explanation is missing"
     assert notes == [
         '"Schedule changed" means CDFW listed this week earlier and later '
         "removed it from its schedule. CDFW's plans can change."
     ]
+    # The table is tied to the explanation for assistive technology, and
+    # the id it points at exists exactly once on the page.
+    assert re.search(r'<table aria-describedby="status-note">', html)
+    assert html.count('id="status-note"') == 1
     # The week-of wording holds: never "planted" or "stocked" in the note.
     assert "planted" not in notes[0].lower() and "stocked" not in notes[0].lower()
     # A neighbor with no changed week is unaffected.
-    assert "Schedule changed" not in _water_html(out2, other)
+    neighbor = _water_html(out2, other)
+    assert "Schedule changed" not in neighbor
+    assert "status-note" not in neighbor and "aria-describedby" not in neighbor

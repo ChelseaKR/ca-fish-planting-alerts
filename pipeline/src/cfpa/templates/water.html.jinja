@@ -39,7 +39,7 @@
 
 <h2>Planting history</h2>
 {% if water.plants %}
-<table>
+<table{% if water.has_removed_weeks %} aria-describedby="status-note"{% endif %}>
   <caption class="visually-hidden">Every week CDFW has scheduled a plant at {{ water.name }}, most recent first</caption>
   <thead>
     <tr>
@@ -59,7 +59,7 @@
   </tbody>
 </table>
 {% if water.has_removed_weeks %}
-<p class="muted">
+<p class="muted" id="status-note">
   "Schedule changed" means CDFW listed this week earlier and later removed it
   from its schedule. CDFW's plans can change.
 </p>

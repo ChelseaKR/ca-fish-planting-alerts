@@ -30,8 +30,10 @@ analysis, or owner steps needed correction.
 ## Owner checklist: from here to submitted
 
 Moved 2026-10-01 to [`docs/app-store/OWNER-STEPS.md`](app-store/OWNER-STEPS.md),
-which is now the one ordered list. It adds the decisions to settle first
-(price model, version number, trademark, storefronts), the branches to merge
+which is now the one ordered list. It records the owner's 2026-10-01
+decisions (free download with the $9.99 in-app purchase as built, United
+States only, version 1.0.0; DECISIONS 0018), what is still hers (trademark,
+support address, privacy policy host), the branches to merge
 so `main` builds, the signed-tag release workflow, and a list of what is
 already done. The values table and steps that used to be here are all in it.
 
@@ -215,7 +217,7 @@ Collected" answer needs revisiting.
 | Category (primary) | **Sports** | See justification below. |
 | Category (secondary) | Reference (was: Weather) | The app has no weather content, and guideline 2.3.5 asks for the most appropriate category. A schedule-and-history lookup is Reference. See `APP-STORE-LISTING.md`. |
 | Age rating | **4+** | No objectionable content categories apply (no UGC, no gambling, no mature themes, no web browser). Apple's questionnaire should be answered "None" throughout. |
-| Price | **Free to download; $9.99 one-time in-app purchase, no subscription** | `docs/DECISIONS.md` 0003/0007: the app itself is free (App Store Connect price tier "Free"); the $9.99 is the one-time non-consumable in-app purchase implemented in `ios/` (`PurchaseManager.swift`). See "In-App Purchase to create in App Store Connect" below for the exact product to configure. |
+| Price | **Free to download; $9.99 one-time in-app purchase, no subscription** | `docs/DECISIONS.md` 0007, settled by 0018 on 2026-10-01: the app itself is free (App Store Connect price tier "Free"); the $9.99 is the one-time non-consumable in-app purchase implemented in `ios/` (`PurchaseManager.swift`). See "In-App Purchase to create in App Store Connect" below for the exact product to configure. |
 | Privacy label | **Data Not Collected** | Matches `ios/CAFishPlanting/Resources/PrivacyInfo.xcprivacy` (`NSPrivacyCollectedDataTypes` is empty) and `docs/DECISIONS.md` 0002 ("posture: none"). Fill in the App Store Connect privacy questionnaire identically: every category "Data Not Collected." |
 
 ### Description draft
@@ -303,7 +305,7 @@ Connect with this exact identifier:
 | Type | **Non-Consumable** |
 | Product ID | `com.chelseakr.cafishplanting.fullaccess` — must match `PurchaseManager.productID` exactly, byte-for-byte |
 | Reference Name (internal, App Store Connect only) | `Full Access` |
-| Price tier | $9.99 (USD Tier matching $9.99; DECISIONS 0003/0007) |
+| Price | USD 9.99 price point, United States only (DECISIONS 0007, 0018) |
 | Display Name (customer-facing) | `Full Access` |
 | Description (customer-facing, 45 max) | `Alerts and a widget for your favorite waters` (44 characters) |
 | Cleared for sale | Yes, once the app record itself is created |

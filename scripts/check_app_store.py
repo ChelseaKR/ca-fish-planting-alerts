@@ -297,6 +297,23 @@ def changelog_section(changelog: str, version: str) -> str:
     return m.group("body").strip() if m else ""
 
 
+def changelog_dated(changelog: str, version: str) -> bool:
+    """True when `## [version]` carries a release date, `- YYYY-MM-DD`."""
+    pattern = r"^## \[" + re.escape(version) + r"\] - \d{4}-\d{2}-\d{2}[ \t]*$"
+    return re.search(pattern, changelog, re.MULTILINE) is not None
+
+
+def check_changelog_has_version(pbxproj: str, changelog: str) -> list[str]:
+    """The current MARKETING_VERSION has a CHANGELOG section (dated or TBD)."""
+    versions = set(build_settings(pbxproj, "MARKETING_VERSION"))
+    if len(versions) != 1:
+        return []  # check_project reports the drift
+    version = next(iter(versions))
+    if not re.search(r"^## \[" + re.escape(version) + r"\]", changelog, re.MULTILINE):
+        return [f"CHANGELOG.md has no '## [{version}]' section for MARKETING_VERSION"]
+    return []
+
+
 def check_release(
     tag: str, pbxproj: str, changelog: str, earlier_builds: Mapping[str, int]
 ) -> tuple[list[str], str]:
@@ -325,6 +342,11 @@ def check_release(
     notes = changelog_section(changelog, version)
     if not notes:
         problems.append(f"CHANGELOG.md has no non-empty '## [{version}]' section")
+    elif not changelog_dated(changelog, version):
+        problems.append(
+            f"CHANGELOG.md '## [{version}]' has no release date (it still says TBD?); "
+            "write the notes and date it (OWNER-STEPS step 9)"
+        )
     return problems, notes
 
 
@@ -368,6 +390,9 @@ def readiness() -> list[str]:
     problems = check_project(pbxproj)
     problems += check_app_info(_plist(APP_INFO))
     problems += _check_version_keys("widget Info.plist", _plist(WIDGET_INFO))
+    problems += check_changelog_has_version(
+        pbxproj, CHANGELOG.read_text(encoding="utf-8")
+    )
     sources = _swift_sources(SHIPPED_SWIFT)
     problems += [f"non-Apple import: {item}" for item in foreign_imports(sources)]
     used = required_reason_uses(sources)
@@ -582,6 +607,27 @@ def self_test() -> list[str]:
         (
             "build reused",
             bool(check_release("v1.0.0", good_proj, changelog, {"v0.9.0": 3})[0]),
+            True,
+        ),
+        (
+            "undated notes",
+            bool(
+                check_release(
+                    "v1.0.0", good_proj, changelog.replace("2026-10-01", "TBD"), {}
+                )[0]
+            ),
+            True,
+        ),
+        (
+            "changelog has version",
+            not check_changelog_has_version(
+                good_proj, changelog.replace("2026-10-01", "TBD")
+            ),
+            True,
+        ),
+        (
+            "changelog lacks version",
+            bool(check_changelog_has_version(good_proj, "## [Unreleased]\n")),
             True,
         ),
         (

@@ -23,38 +23,39 @@ them (review clauses, the privacy check in code, the in-app purchase) is in
 | App Group | `group.com.chelseakr.cafishplanting` | both `.entitlements` files |
 | Team ID | `6X5YH93QNM` | `DEVELOPMENT_TEAM`. Never `ACKGM9XK9V`, which is the enrollment ID; `make appstore` fails if it appears in the project. |
 | SKU | `cafishplanting-ios` (suggested) | Any unique string; it can't be changed later. |
-| In-app purchase | Non-Consumable, `com.chelseakr.cafishplanting.fullaccess`, USD 9.99 | `PurchaseManager.productID`; DECISIONS 0007 and 0009 |
-| Version, build | `0.1.0`, build `1` today | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` (see step 1) |
+| App price | Free (USD 0.00) | DECISIONS 0018 |
+| In-app purchase | Non-Consumable, `com.chelseakr.cafishplanting.fullaccess`, USD 9.99 | `PurchaseManager.productID`; DECISIONS 0007, 0009, 0018 |
+| Storefronts | United States only | DECISIONS 0018 |
+| Version, build | `1.0.0`, build `1` | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`; DECISIONS 0018 |
 | Support URL | `https://chelseakr.github.io/ca-fish-planting-alerts/support/` | 200 on 2026-10-01, but no contact line yet (step 5) |
 | Privacy Policy URL | `https://chelseakr.github.io/ca-fish-planting-alerts/privacy/` | 200 on 2026-10-01; says the app collects no data |
 | Marketing URL | `https://chelseakr.github.io/ca-fish-planting-alerts/` | optional field |
 
-## 1. Decide four things first
+## 1. Decided, and what is still yours
 
-These change what later steps type in, so settle them before App Store
-Connect.
+Decided 2026-10-01 and recorded in DECISIONS 0018:
 
-1. **Price model.** The code ships the app **free to download** with one
-   **$9.99 one-time in-app purchase** (Full Access) that unlocks
-   notifications and the widget; browsing, history and favorites are free
-   (DECISIONS 0007 and 0009). Charging $9.99 at download instead is a
-   different product: it needs a code change to remove the purchase gate,
-   not just a different price in App Store Connect. Confirm which one, and
-   confirm $9.99.
-2. **Version number.** The project says `0.1.0`. App Store Connect accepts
-   it, but a first public release usually ships as `1.0.0`. If you want
-   `1.0.0`, step 9 sets it.
-3. **Trademark screen for "Trout Truck"** (DECISIONS 0010 records that none
+- **Price model: as built.** Free to download, with one optional **$9.99
+  one-time in-app purchase**, Full Access, that unlocks notifications and
+  the widget. Browsing, history and favorites are free.
+- **Storefronts: United States only.** So no Digital Services Act trader
+  declaration is needed.
+- **Version: 1.0.0**, build 1. The project already says so in every
+  target, and `CHANGELOG.md` has a `## [1.0.0] - TBD` section that step 9
+  fills in.
+
+Still yours:
+
+1. **Trademark screen for "Trout Truck"** (DECISIONS 0010 records that none
    was run). USPTO Trademark Search (`https://tmsearch.uspto.gov/`) for
    `TROUT TRUCK`, `TROUTTRUCK` and sound-alikes, live and dead, in classes 9,
    41 and 42; the California Secretary of State's trademark search; and the
    App Store, Google Play and the web for "trout truck". Record the result
    and date in DECISIONS 0010. A conflict means renaming before submitting.
    This is a screen, not legal advice.
-4. **Storefronts.** The data is California's and the listing is English, so
-   the United States alone is the simplest choice. Any EU storefront needs a
-   Digital Services Act trader declaration, and a trader's address, phone
-   and email are then shown on the EU product page.
+2. **The support address** (step 5).
+3. **The privacy policy host.** It stays on github.io for now; if it ever
+   moves, update the Privacy Policy URL in App Store Connect the same day.
 
 ## 2. Merge what the build depends on
 
@@ -134,8 +135,9 @@ character counts are measured.
    under its Conditions of Use, `docs/LICENSES-AND-ATTRIBUTION.md`; the app
    uses no CDFW seal or logo); **Age Rating**: the answers in the listing
    file (every item None or No, which should give 4+).
-2. **Pricing and Availability:** price **Free** (USD 0.00), unless step 1.1
-   changed the model; the storefronts from step 1.4.
+2. **Pricing and Availability:** price **Free** (USD 0.00). Availability:
+   **United States** only (deselect every other country or region). With
+   no EU storefront, skip the Digital Services Act trader declaration.
 3. **App Privacy:** Privacy Policy URL from the table above; "Do you or your
    third-party partners collect data from this app?" **No**. The label
    becomes **Data Not Collected**. The per-category reasoning is in the
@@ -144,7 +146,7 @@ character counts are measured.
    **Non-Consumable**; Reference Name `Full Access`; Product ID
    `com.chelseakr.cafishplanting.fullaccess` (byte for byte; a mismatch
    makes the button say "Not available right now" for everyone). Price:
-   the **USD 9.99** price point, other storefronts at Apple's equivalents.
+   the **USD 9.99** price point, for the United States (the only storefront).
    English (U.S.) Display Name `Full Access`, Description
    `Alerts and a widget for your favorite waters`. Family Sharing: your call
    (it can't be turned off once on). Review screenshot: the purchase sheet,
@@ -165,13 +167,14 @@ On a branch from `main`:
    refuses one more than 7 days old. Optional 6.5" set:
    `SCREENSHOT_CLASS=6.5 ios/scripts/app-store-screenshots.sh`. Look at the
    five images before committing them.
-3. If you chose `1.0.0`, set `MARKETING_VERSION = 1.0.0;` in every build
-   configuration of `ios/CAFishPlanting.xcodeproj/project.pbxproj` (all
-   targets must match, or the upload is refused). Raise
-   `CURRENT_PROJECT_VERSION` for every later upload, including a re-upload
-   of the same version.
-4. In `CHANGELOG.md`, rename `## [Unreleased]` to `## [1.0.0] - <date>` (or
-   your version) and start a new empty `## [Unreleased]` above it.
+3. The version is already `1.0.0`, build `1`, in every target. For any
+   later upload, including a re-upload of 1.0.0 after a rejection, raise
+   `CURRENT_PROJECT_VERSION` in every build configuration (all targets must
+   match, or the upload is refused; `make appstore` checks).
+4. In `CHANGELOG.md`, replace `TBD` in `## [1.0.0] - TBD` with the date
+   (`YYYY-MM-DD`), replace the placeholder paragraph with the release
+   notes, and move anything under `## [Unreleased]` that ships in 1.0.0
+   into it. The release workflow refuses the section while it says TBD.
 5. `make verify` passes (it runs `make appstore`, the readiness check), then
    open the PR and merge it once `ci` is green.
 

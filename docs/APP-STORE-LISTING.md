@@ -38,7 +38,9 @@ description.
 | Primary category | — | Sports. | — |
 | Secondary category | — | **Reference**, not the Weather an earlier draft suggested. The app is a schedule-and-history lookup with no weather content, and guideline 2.3.5 asks for the most appropriate category. | — |
 | Age rating | — | Answer "None" to every content question in the questionnaire, which should come out at the lowest tier. There is no user-generated content, no web browsing, no gambling and no messaging. | — |
-| Price | — | Free app, plus one non-consumable in-app purchase at $9.99. See `APP-STORE.md` for the product ID. | — |
+| Price | — | Free app, plus one non-consumable in-app purchase at USD 9.99, one time, no subscription (DECISIONS 0018). See `APP-STORE.md` for the product ID. | — |
+| Availability | — | United States only (DECISIONS 0018), so no Digital Services Act trader declaration. | — |
+| Version | — | 1.0.0, build 1 (DECISIONS 0018). | — |
 | Support URL | — | `[SITE]/support/` | — |
 | Marketing URL (optional) | — | `[SITE]/` | — |
 | Privacy Policy URL | — | `[SITE]/privacy/` | — |

@@ -11,6 +11,14 @@ This repository was republished with a new history on 2026-09-18
 
 ## [Unreleased]
 
+## [1.0.0] - TBD
+
+The first App Store release: the app version is 1.0.0 (build 1), and this
+section is its release notes. Replace "TBD" with the release date and write
+the notes when the release commit is prepared
+(`docs/app-store/OWNER-STEPS.md` step 9). The release workflow refuses this
+section until it has a date.
+
 ### Added
 
 - `make appstore` (part of `make verify`): an App Store readiness check
@@ -32,6 +40,10 @@ This repository was republished with a new history on 2026-09-18
   refuses a bundled snapshot more than 7 days old, because the app now
   refreshes on launch and would show a different week from the one the
   script picked its waters from.
+- The iOS app's version is 1.0.0 (build 1) for the first App Store release,
+  free to download with the $9.99 in-app purchase as built, United States
+  only (DECISIONS 0018). `make appstore` requires a CHANGELOG section for
+  the app's version, and the release workflow requires it to be dated.
 - A daily pipeline over CDFW's Fish Planting Schedule. It keeps an
   append-only history per water, publishes a schema-validated snapshot
   (`schema/snapshot.v1.json`) for the app, and builds a static site with a

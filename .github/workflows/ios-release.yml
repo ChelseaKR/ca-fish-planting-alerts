@@ -39,7 +39,7 @@ name: ios-release
 # runs only when dispatched for a release.
 #
 # Measured locally 2026-10-01 (Xcode 26.6): the unsigned archive succeeds
-# and the archived app and widget both read 0.1.0 (1), with both privacy
+# and the archived app and widget both read 1.0.0 (1), with both privacy
 # manifests embedded and no Configuration.storekit in the bundle.
 
 on:

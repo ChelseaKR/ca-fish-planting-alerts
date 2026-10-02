@@ -4,7 +4,7 @@ import PlantingCore
 
 // Shortcuts and Siri: "When is <water> scheduled in Trout Truck?"
 //
-// The answer comes from the schedule already on this iPhone
+// The answer comes from the schedule already saved in the app
 // (`ScheduleAnswer`). Asking makes no network request, sends nothing, and
 // needs no purchase: it is the same lookup Browse gives everyone.
 
@@ -94,11 +94,11 @@ struct WaterEntityQuery: EntityStringQuery {
     }
 }
 
-/// "When is <water> scheduled next?" Answers from the schedule on this
-/// iPhone, and always names that schedule's week.
+/// "When is <water> scheduled next?" Answers from the schedule saved in
+/// the app, and always names that schedule's week.
 struct NextScheduledWeekIntent: AppIntent {
     static let title: LocalizedStringResource = "Next Scheduled Week"
-    static let description = IntentDescription("Says the next week CDFW's schedule lists a water for, from the schedule already on this iPhone. CDFW gives the week, not the day.")
+    static let description = IntentDescription("Says the next week CDFW's schedule lists a water for, from the schedule saved in Trout Truck. CDFW gives the week, not the day.")
 
     @Parameter(title: "Water", requestValueDialog: "Which water?")
     var water: WaterEntity
@@ -116,7 +116,7 @@ struct NextScheduledWeekIntent: AppIntent {
     /// Separate from `perform()` so a test can read it.
     static func answer(waterID: Water.ID, name: String, snapshot: Snapshot?, now: Date) -> String {
         guard let snapshot, let water = snapshot.water(id: waterID) else {
-            return "Trout Truck doesn't have \(name) in the schedule on this iPhone. Open Trout Truck to check for a newer one."
+            return "Trout Truck doesn't have \(name) in its saved schedule. Open Trout Truck to check for a newer one."
         }
         return ScheduleAnswer.nextScheduled(for: water, in: snapshot, now: now)
     }

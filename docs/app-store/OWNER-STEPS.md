@@ -26,7 +26,7 @@ them (review clauses, the privacy check in code, the in-app purchase) is in
 | App price | Free (USD 0.00) | DECISIONS 0018 |
 | In-app purchase | Non-Consumable, `com.chelseakr.cafishplanting.fullaccess`, USD 9.99 | `PurchaseManager.productID`; DECISIONS 0007, 0009, 0018 |
 | Storefronts | United States only | DECISIONS 0018 |
-| Version, build | `1.0.0`, build `1` | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`; DECISIONS 0018 |
+| Version, build | `1.0.0`, build `2` (build 1 was rejected in processing, ITMS-90626) | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`; DECISIONS 0018 |
 | Support URL | `https://chelseakr.github.io/ca-fish-planting-alerts/support/` | 200 on 2026-10-01; shows `mailto:chelsea@chelseakr.com` since 2026-10-02 (step 5) |
 | Privacy Policy URL | `https://chelseakr.github.io/ca-fish-planting-alerts/privacy/` | 200 on 2026-10-01; says the app collects no data |
 | Marketing URL | `https://chelseakr.github.io/ca-fish-planting-alerts/` | optional field |
@@ -40,7 +40,8 @@ Decided 2026-10-01 and recorded in DECISIONS 0018:
   the widget. Browsing, history and favorites are free.
 - **Storefronts: United States only.** So no Digital Services Act trader
   declaration is needed.
-- **Version: 1.0.0**, build 1. The project already says so in every
+- **Version: 1.0.0**, build 2 (build 1 was rejected in processing,
+  ITMS-90626). The project already says so in every
   target, and `CHANGELOG.md` has a `## [1.0.0] - TBD` section that step 9
   fills in.
 

@@ -22,7 +22,9 @@ This repository was republished with a new history on 2026-09-18
 ## [1.0.0] - 2026-10-02
 
 The first App Store release of Trout Truck for iPhone: version 1.0.0,
-build 1, free to download in the United States.
+build 2, free to download in the United States.
+
+Build 2 removes the device name from the Shortcuts description after App Store processing rejected build 1 (ITMS-90626).
 
 Trout Truck shows the California Department of Fish and Wildlife's fish
 planting schedule on your iPhone, a week at a time. Browse every water on

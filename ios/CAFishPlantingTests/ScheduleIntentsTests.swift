@@ -34,7 +34,7 @@ final class ScheduleIntentsTests: XCTestCase {
     /// never answered as "not scheduled".
     func testAWaterTheSnapshotDoesNotHaveIsSaidPlainly() throws {
         let answer = NextScheduledWeekIntent.answer(waterID: "cdfw-gone", name: "Gone Lake", snapshot: try bundledSnapshot(), now: Date())
-        XCTAssertEqual(answer, "Trout Truck doesn't have Gone Lake in the schedule on this iPhone. Open Trout Truck to check for a newer one.")
+        XCTAssertEqual(answer, "Trout Truck doesn't have Gone Lake in its saved schedule. Open Trout Truck to check for a newer one.")
         let noSnapshot = NextScheduledWeekIntent.answer(waterID: "cdfw-125", name: "Annie Lake", snapshot: nil, now: Date())
         XCTAssertTrue(noSnapshot.hasPrefix("Trout Truck doesn't have Annie Lake"))
     }

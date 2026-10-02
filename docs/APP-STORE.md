@@ -37,10 +37,13 @@ support address, privacy policy host), the branches to merge
 so `main` builds, the signed-tag release workflow, and a list of what is
 already done. The values table and steps that used to be here are all in it.
 
-## After Apple approves: turn on the website's App Store badge
+## Once the app is live: turn on the website's App Store badge
 
-The website says nothing about the App Store listing until the owner turns
-on one switch, the `APP_STORE_LIVE` repository variable, which publish.yml
+Do this after Apple approves and the version is released (the release is
+manual, docs/app-store/OWNER-STEPS.md), once
+https://apps.apple.com/us/app/id6818637427 opens the listing. The website
+says nothing about the App Store listing until the owner turns on one
+switch, the `APP_STORE_LIVE` repository variable, which publish.yml
 passes to the site build (`pipeline/src/cfpa/site.py`). Apple's badge
 license allows the badge only for an app that is available on the App
 Store, so it stays off until the app is live.
@@ -48,6 +51,8 @@ Store, so it stays off until the app is live.
 - On: `gh variable set APP_STORE_LIVE --repo ChelseaKR/ca-fish-planting-alerts --body true`,
   then `gh workflow run publish.yml --repo ChelseaKR/ca-fish-planting-alerts`
   to republish now instead of at the next daily run.
+- Check: `curl -s https://chelseakr.github.io/ca-fish-planting-alerts/ | grep -c apple-itunes-app`
+  prints 1, and the home and support pages show the badge.
 - What changes: every page gets Safari's Smart App Banner
   (`<meta name="apple-itunes-app" content="app-id=6818637427">`); the home
   and support pages get Apple's black "Download on the App Store" badge,

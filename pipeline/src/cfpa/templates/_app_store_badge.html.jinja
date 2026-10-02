@@ -1,0 +1,10 @@
+{#
+  Apple's "Download on the App Store" badge (site.py APP_STORE_LIVE),
+  included by index and support only when the switch is on. The image's
+  alt text is the link's accessible name. data-app-store-badge names the
+  placement for the GA4 click event in _ga4.html.jinja.
+#}
+<p class="app-store-cta">
+  <a class="app-store-badge" href="{{ app_store_url }}" data-app-store-badge="{{ badge_placement }}"><img src="{{ root }}assets/app-store-badge.svg" width="120" height="40" alt="Download on the App Store"></a>
+  <span class="app-store-price">For iPhone. Free on the App Store; optional $9.99 Full Access.</span>
+</p>

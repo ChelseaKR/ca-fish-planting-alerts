@@ -7,6 +7,9 @@
   change</strong> by CDFW &mdash; treat every entry as scheduled, not
   confirmed. Data refreshed {{ generated_at_label }}.
 </p>
+{% if app_store_live %}
+{% with badge_placement = "home" %}{% include "_app_store_badge.html.jinja" %}{% endwith %}
+{% endif %}
 
 {% if regions %}
 {% for region in regions %}

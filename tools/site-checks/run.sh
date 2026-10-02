@@ -23,6 +23,10 @@
 # plus gtag.js stays under PERFORMANCE-STANDARD's 204,800 B. See
 # perf/README.md.
 #
+# APP_STORE_LIVE=true tools/site-checks/run.sh runs every gate over the
+# site as it looks once the App Store switch is on (site.py APP_STORE_LIVE);
+# CI runs it with the switch off, as production is until Apple approves.
+#
 # Setup, once: (cd tools/site-checks && npm ci && npx puppeteer browsers install chrome)
 set -euo pipefail
 
@@ -57,7 +61,8 @@ mkdir -p "$site"
   --run-today 2026-09-13 \
   --history "$work/history.json" \
   --aliases "$work/aliases.json" \
-  --site-out "$site")
+  --site-out "$site" \
+  --app-store-live "${APP_STORE_LIVE:-}")
 
 # Every page, relative to the site root: "about/index.html" becomes
 # "about/", the home page "./", and 404.html stays as it is.

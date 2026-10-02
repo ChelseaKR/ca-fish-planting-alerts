@@ -107,6 +107,46 @@ def google_site_verification_or_none(value: str | None) -> str | None:
     return value
 
 
+# The iPhone app's App Store listing (DECISIONS 0018: US storefront only).
+# The site says nothing about it until the owner turns on APP_STORE_LIVE
+# after Apple approves the app (see ``app_store_live_or_false``). Then every
+# page carries Safari's Smart App Banner tag and the home and support pages
+# show Apple's "Download on the App Store" badge linking here.
+APP_STORE_ID = "6818637427"
+APP_STORE_CANONICAL_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
+# Apple's preferred black US-English badge, byte for byte as Apple serves it
+# (never edited: Apple's guidelines forbid modifying the artwork). Fetched
+# 2026-10-02 from Apple's marketing tools, toolbox.marketingtools.apple.com
+# /api/v2/badges/download-on-the-app-store/black/en-us, SHA-256
+# a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f. Used
+# under Apple's App Store Marketing Artwork License Agreement, which allows it
+# only for an app that is available on the App Store, hence the switch. See
+# NOTICE. Natural size 119.66 x 40: shown at 40px tall, Apple's on-screen
+# minimum, with a quarter of its height (10px) of clear space around it.
+APP_STORE_BADGE_FILE = "app-store-badge.svg"
+
+_APP_STORE_LIVE_ON = frozenset({"true"})
+_APP_STORE_LIVE_OFF = frozenset({"", "false"})
+
+
+def app_store_live_or_false(value: str | None) -> bool:
+    """Read the APP_STORE_LIVE switch: "true" is on; unset, "" or "false" is
+    off (case-insensitive, surrounding spaces ignored).
+
+    Anything else raises rather than guessing: a typo such as "ture" or
+    "yes" must not leave the site silently showing no badge after the owner
+    believes it is on, nor turn it on by accident.
+    """
+    if value is None:
+        return False
+    v = value.strip().lower()
+    if v in _APP_STORE_LIVE_ON:
+        return True
+    if v in _APP_STORE_LIVE_OFF:
+        return False
+    raise ValueError(f"APP_STORE_LIVE {value!r} is neither 'true' nor 'false'")
+
+
 # The license the compiled schedule history is offered under, as a URL, for
 # the Dataset structured data on /about/ (docs/adr/0013). Unset on purpose:
 # the CC-BY license in docs/LICENSES-AND-ATTRIBUTION.md belongs to a
@@ -821,12 +861,33 @@ def _home_regions(
     return regions
 
 
+def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -> None:
+    """assets/style.css, plus the App Store badge and its CSS when live.
+
+    The badge CSS is appended only when the switch is on, and the badge file
+    is only written then, so a build with the switch off writes exactly the
+    assets it wrote before the switch existed.
+    """
+    style_src = (TEMPLATES_DIR / "style.css").read_text(encoding="utf-8")
+    if app_store_live:
+        style_src += (TEMPLATES_DIR / "app-store.css").read_text(encoding="utf-8")
+    style_path = out_dir / "assets" / "style.css"
+    style_path.parent.mkdir(parents=True, exist_ok=True)
+    style_path.write_text(style_src, encoding="utf-8")
+    written.append(style_path)
+    if app_store_live:
+        badge_path = out_dir / "assets" / APP_STORE_BADGE_FILE
+        badge_path.write_bytes((TEMPLATES_DIR / APP_STORE_BADGE_FILE).read_bytes())
+        written.append(badge_path)
+
+
 def build_site(
     snapshot: dict[str, Any],
     out_dir: Path,
     *,
     base_url: str,
     app_store_url: str | None = None,
+    app_store_live: bool = False,
     support_email: str | None = None,
     ga4_measurement_id: str | None = None,
     google_site_verification: str | None = None,
@@ -838,6 +899,11 @@ def build_site(
     ``GA4_MEASUREMENT_ID``, so a caller gets the tag only by asking for it;
     ``cli.main`` is the caller that passes the committed value. The same
     goes for ``google_site_verification`` (``GOOGLE_SITE_VERIFICATION``).
+
+    ``app_store_live`` (the APP_STORE_LIVE switch) adds the Smart App Banner
+    tag to every page and the App Store badge to the home and support pages,
+    and links the app to ``APP_STORE_CANONICAL_URL`` unless ``app_store_url``
+    names another URL. Off, the build is exactly what it was without it.
     """
     # Checked before anything is written: a bad ID must not half-build.
     ga4_measurement_id = ga4_measurement_id_or_none(ga4_measurement_id)
@@ -854,13 +920,18 @@ def build_site(
     source_fetched_label = _fmt_dt(snapshot["source"]["fetched_at"])
     source_week_label = snapshot["source_week"]["label"]
     source_week_start = snapshot["source_week"]["start"]
-    app_store_url = app_store_url or None
+    app_store_url = app_store_url or (
+        APP_STORE_CANONICAL_URL if app_store_live else None
+    )
     support_email = support_email or None
     # Shared by every template: the app is only linked once it exists.
     common = {
         "attribution_text": attribution_text,
         "attribution_url": attribution_url,
         "app_store_url": app_store_url,
+        # Off: no banner tag, no badge, no badge file, no extra CSS.
+        "app_store_live": app_store_live,
+        "app_store_id": APP_STORE_ID,
         "support_email": support_email,
         "site_name": SITE_NAME,
         # base.html.jinja includes the GA4 tag only when this is set, and the
@@ -870,12 +941,8 @@ def build_site(
         "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
     }
 
-    # ---- assets/style.css
-    style_src = (TEMPLATES_DIR / "style.css").read_text(encoding="utf-8")
-    style_path = out_dir / "assets" / "style.css"
-    style_path.parent.mkdir(parents=True, exist_ok=True)
-    style_path.write_text(style_src, encoding="utf-8")
-    written.append(style_path)
+    # ---- assets/
+    _write_assets(out_dir, written, app_store_live=app_store_live)
 
     waters_by_id = {w["id"]: w for w in snapshot["waters"]}
     region_by_county = {c["name"]: c["region"] for c in snapshot["counties"]}

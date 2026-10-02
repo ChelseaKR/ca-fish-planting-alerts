@@ -81,6 +81,21 @@
     allow_google_signals: false,
     allow_ad_personalization_signals: false
   });
+{% if app_store_live %}
+  // A click on the App Store badge (site.py APP_STORE_LIVE), sent through
+  // this same tag, so it obeys the same GPC, Do Not Track, opt-out and
+  // consent rules: none of this runs when those return above, and a
+  // same-page opt-out sets ga-disable, which gtag.js honors.
+  d.addEventListener("click", function (e) {
+    var t = e.target;
+    var a = t && t.closest ? t.closest("a[data-app-store-badge]") : null;
+    if (!a || w["ga-disable-" + id]) return;
+    gtag("event", "app_store_badge_click", {
+      placement: a.getAttribute("data-app-store-badge"),
+      link_url: a.href
+    });
+  });
+{% endif %}
   var s = document.createElement("script");
   s.async = true;
   s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent({{ ga4_measurement_id|tojson }});

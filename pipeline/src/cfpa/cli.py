@@ -93,6 +93,7 @@ def run(
     base_url: str,
     write_site: bool = True,
     app_store_url: str | None = None,
+    app_store_live: bool = False,
     support_email: str | None = None,
     ga4_measurement_id: str | None = None,
     google_site_verification: str | None = None,
@@ -215,6 +216,7 @@ def run(
             site_out,
             base_url=base_url,
             app_store_url=app_store_url,
+            app_store_live=app_store_live,
             support_email=support_email,
             ga4_measurement_id=ga4_measurement_id,
             google_site_verification=google_site_verification,
@@ -255,6 +257,14 @@ def main(argv: list[str] | None = None) -> int:
         "is not in the App Store yet rather than linking to it (empty = unset)",
     )
     parser.add_argument(
+        "--app-store-live",
+        default=None,
+        help="'true' once Apple has approved the app: adds the Smart App Banner "
+        "tag to every page and the App Store badge to the home and support pages, "
+        "linking to the app's App Store URL; 'false' or empty = off "
+        "(the APP_STORE_LIVE repository variable in publish.yml)",
+    )
+    parser.add_argument(
         "--support-email",
         default=None,
         help="contact address shown on the support and privacy pages (empty = unset)",
@@ -287,6 +297,9 @@ def main(argv: list[str] | None = None) -> int:
         google_site_verification = site_mod.google_site_verification_or_none(
             site_mod.GOOGLE_SITE_VERIFICATION
         )
+        # The APP_STORE_LIVE switch, checked the same way: a value that is
+        # neither true nor false refuses the run instead of being guessed.
+        app_store_live = site_mod.app_store_live_or_false(args.app_store_live)
     except ValueError as exc:
         print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
         return 1
@@ -302,6 +315,7 @@ def main(argv: list[str] | None = None) -> int:
             base_url=args.base_url or DEFAULT_BASE_URL,
             write_site=not args.no_site,
             app_store_url=args.app_store_url or None,
+            app_store_live=app_store_live,
             support_email=args.support_email or None,
             ga4_measurement_id=ga4_measurement_id,
             google_site_verification=google_site_verification,

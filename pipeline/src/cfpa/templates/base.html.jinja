@@ -8,6 +8,10 @@
 {% endif %}
 <title>{{ title }}</title>
 <meta name="description" content="{{ description }}">
+{% if app_store_live %}
+{# Safari's Smart App Banner (site.py APP_STORE_LIVE). #}
+<meta name="apple-itunes-app" content="app-id={{ app_store_id }}">
+{% endif %}
 {% if noindex %}
 <meta name="robots" content="noindex">
 {% endif %}

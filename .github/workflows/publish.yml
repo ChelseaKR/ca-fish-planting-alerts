@@ -71,16 +71,22 @@ jobs:
         # Owner-set repository variables (Settings -> Secrets and variables ->
         # Actions -> Variables); all optional. Unset SITE_BASE_URL keeps the
         # github.io default. Unset APP_STORE_URL keeps the site saying the app
-        # is not in the App Store yet. Passed through env, not interpolated
-        # into the script.
+        # is not in the App Store yet. APP_STORE_LIVE=true, set by the owner
+        # once Apple approves the app, adds the Smart App Banner and the App
+        # Store badge and links the app's US listing (site.py
+        # APP_STORE_CANONICAL_URL) unless APP_STORE_URL names another; unset
+        # or false leaves all of that out, and any other value fails the run.
+        # Passed through env, not interpolated into the script.
         env:
           SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
           APP_STORE_URL: ${{ vars.APP_STORE_URL }}
+          APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}
           SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
         run: |
           uv run cfpa --site-out ../site \
             --base-url "$SITE_BASE_URL" \
             --app-store-url "$APP_STORE_URL" \
+            --app-store-live "$APP_STORE_LIVE" \
             --support-email "$SUPPORT_EMAIL"
 
       - name: commit updated history and alias table, if any

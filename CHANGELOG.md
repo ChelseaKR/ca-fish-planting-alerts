@@ -11,6 +11,13 @@ This repository was republished with a new history on 2026-09-18
 
 ## [Unreleased]
 
+### Changed
+
+- The vendored portfolio standards in `docs/standards/` move from v2.0.0 to
+  v3.0.0, replaced as one set. v3.0.0 re-verifies the three documents whose
+  quarterly recheck had lapsed and adds the advisory Discovery and Adoption
+  standard.
+
 ## [1.0.0] - TBD
 
 The first App Store release: the app version is 1.0.0 (build 1), and this

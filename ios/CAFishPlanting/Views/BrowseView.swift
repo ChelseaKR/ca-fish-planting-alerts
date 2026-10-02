@@ -28,7 +28,12 @@ struct BrowseView: View {
         let freshness = environment.freshness()
         List {
             Section {
-                Toggle("This week only", isOn: $thisWeekOnly)
+                // "This week" only while the snapshot's week is current
+                // (`SnapshotFreshness.listedFilterLabel`); otherwise the
+                // toggle names the week it filters to.
+                Toggle(freshness?.listedFilterLabel
+                       ?? SnapshotFreshness.listedFilterLabel(week: snapshot.sourceWeek, isStale: true),
+                       isOn: $thisWeekOnly)
                 Picker("Region", selection: $selectedRegion) {
                     Text("All regions").tag(String?.none)
                     ForEach(snapshot.regionsWithWaters) { region in

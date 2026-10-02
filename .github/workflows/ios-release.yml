@@ -2,7 +2,7 @@ name: ios-release
 
 # Trusted-main, signed-tag release for the iOS app (RELEASE-AND-VERSIONING
 # REL-14, REL-29/30/31; issue #3). Dispatch only, after the owner has pushed a
-# signed annotated tag:
+# signed annotated tag on the tip of main:
 #
 #   git tag -s v1.0.0 -m "release: v1.0.0" && git push origin v1.0.0
 #   gh workflow run ios-release.yml -f tag=v1.0.0
@@ -11,10 +11,25 @@ name: ios-release
 # trusted main and refuses to run from any other ref (it asserts
 # GITHUB_REF = refs/heads/main), so a tag-push trigger would fail there.
 #
+# Why the build checks out the dispatch commit and not the tag's commit: a
+# checkout of a ref taken from an earlier job's output, followed by steps
+# that run repository scripts, is the shape CodeQL reports as
+# actions/cache-poisoning/poisonable-step. Checking out the default ref (the
+# tip of main the run was dispatched from, already verified by the
+# authorizer) and then requiring the tag's commit to equal it runs exactly
+# the same code, and nothing is ever checked out from a job output. The cost:
+# tag the tip of main and dispatch before anything else merges. If main moved
+# first, the run refuses; release tags aren't moved, so cut the next patch
+# version from the new tip.
+#
 # What it does, in order:
 # 1. authorize (shared): stable SemVer tag, an annotated tag object, signed
 #    by a key in .github/allowed_signers, on a commit that is in main.
-# 2. build (macOS): at the verified commit, the release preflight
+# 2. build (macOS): checks out the dispatch commit, which the authorizer has
+#    just asserted is the tip of main, and refuses to go on unless the tag
+#    points at exactly that commit, so the tag must be on the tip of main
+#    when the workflow is dispatched. Then, at that commit: the release
+#    preflight
 #    (tag = MARKETING_VERSION, build number above every earlier tag's,
 #    CHANGELOG section present, the App Store readiness audit), the
 #    PlantingCore tests, and an UNSIGNED archive of the CAFishPlanting
@@ -78,13 +93,30 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
     steps:
+      # No `ref`: this is the dispatch commit, the tip of main that the
+      # authorizer verified. See "Why the build checks out the dispatch
+      # commit" above.
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
-          ref: ${{ needs.authorize.outputs.release-commit }}
           # Every tag, so the preflight can compare build numbers with
           # earlier releases.
           fetch-depth: 0
           persist-credentials: false
+
+      # git only, before any repository script runs: the signed tag must
+      # point at the commit this job checked out.
+      - name: the signed tag is on the commit this run checked out
+        env:
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+          RELEASE_COMMIT: ${{ needs.authorize.outputs.release-commit }}
+        run: |
+          set -euo pipefail
+          head="$(git rev-parse HEAD)"
+          test "$head" = "$GITHUB_SHA"
+          if [ "$RELEASE_COMMIT" != "$head" ]; then
+            echo "::error::$RELEASE_TAG is on $RELEASE_COMMIT, but this run was dispatched from main at $head. Tag the tip of main and dispatch before anything else merges; if main has moved on, cut the next patch version from the new tip (release tags aren't moved)." >&2
+            exit 1
+          fi
 
       # File reads only, so a release with no notes or a stale version
       # fails in seconds, before the build.

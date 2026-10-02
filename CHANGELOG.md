@@ -28,8 +28,10 @@ section until it has a date.
   declares tracking or collected data, a required-reason API the code calls
   without declaring it, a non-Apple import in shipped code, a push
   entitlement, or an incomplete or translucent app icon (#3).
-- `ios-release` workflow: dispatched with a signed `vX.Y.Z` tag, it verifies
-  the tag against `.github/allowed_signers`, checks the tag matches
+- `ios-release` workflow: dispatched with a signed `vX.Y.Z` tag on the tip of
+  `main`, it verifies the tag against `.github/allowed_signers`, builds only
+  the commit it was dispatched from (and refuses a tag on any other), checks
+  the tag matches
   `MARKETING_VERSION` with a higher build number and a CHANGELOG section,
   tests and archives the app unsigned, reads the version back out of the
   built app, and drafts a GitHub Release. It never signs or uploads (#3).

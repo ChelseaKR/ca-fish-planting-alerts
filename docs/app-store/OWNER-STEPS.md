@@ -181,8 +181,12 @@ On a branch from `main`:
 ## 10. Tag and run the release workflow
 
 From a clone whose `origin` is `ChelseaKR/ca-fish-planting-alerts`, on the
-merged `main`. The tag is signed with your release-signing key, whose public
-half is committed in `.github/allowed_signers`:
+merged `main`, up to date with GitHub. Tag the tip of `main` and dispatch the
+workflow right away: the run builds the commit `main` points at when it is
+dispatched, and refuses if the tag is on any other commit. If something
+merges first, cut the next patch version from the new tip. The tag is signed
+with your release-signing key, whose public half is committed in
+`.github/allowed_signers`:
 
     git config gpg.format ssh
     git config user.signingkey ~/.ssh/github-release-signing.pub
@@ -190,7 +194,8 @@ half is committed in `.github/allowed_signers`:
     git push origin v1.0.0
     gh workflow run ios-release.yml --repo ChelseaKR/ca-fish-planting-alerts -f tag=v1.0.0
 
-`ios-release` verifies the tag's signature, checks that the tag matches
+`ios-release` verifies the tag's signature, checks that the tag is on the
+commit it was dispatched from (the tip of `main`), checks that the tag matches
 `MARKETING_VERSION`, that the build number is higher than every earlier
 release's and that the CHANGELOG has the section, runs the PlantingCore
 tests, archives the app **unsigned** for a generic iOS device (the same Archive action as Xcode, without signing), reads the

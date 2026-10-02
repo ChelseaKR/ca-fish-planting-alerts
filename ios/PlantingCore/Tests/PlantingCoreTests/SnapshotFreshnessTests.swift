@@ -87,6 +87,7 @@ final class SnapshotFreshnessTests: XCTestCase {
         XCTAssertEqual(f.summary, "1 water is listed for that week.")
         XCTAssertEqual(f.detail, "This is the newest published schedule.")
         XCTAssertEqual(f.listedBadge, "This week")
+        XCTAssertEqual(f.listedFilterLabel, "This week only")
         XCTAssertEqual(f.lastSuccessfulCheck, midWeek)
     }
 
@@ -112,10 +113,19 @@ final class SnapshotFreshnessTests: XCTestCase {
         XCTAssertTrue(f.needsAttention)
         XCTAssertEqual(f.listedBadge, "week of 2026-09-13")
         XCTAssertEqual(f.listedPhrase, "scheduled for the week of 2026-09-13")
+        XCTAssertEqual(f.listedFilterLabel, "Only the week of 2026-09-13")
         XCTAssertEqual(f.detail, "This is the newest schedule published so far. That week has ended, so this schedule is out of date.")
-        for text in [f.headline, f.summary, f.detail, f.listedBadge, f.listedPhrase] {
+        for text in [f.headline, f.summary, f.detail, f.listedBadge, f.listedPhrase, f.listedFilterLabel] {
             XCTAssertFalse(text.localizedCaseInsensitiveContains("this week"), "an ended week called \"this week\": \(text)")
         }
+    }
+
+    /// With no freshness to judge by, the filter names the week rather than
+    /// guess that it is the current one.
+    func testTheFilterLabelNamesTheWeekWhenCurrencyIsUnknown() throws {
+        let week = try snapshot().sourceWeek
+        XCTAssertEqual(SnapshotFreshness.listedFilterLabel(week: week, isStale: true), "Only the week of 2026-09-13")
+        XCTAssertEqual(SnapshotFreshness.listedFilterLabel(week: week, isStale: false), "This week only")
     }
 
     func testAFreshInstallThatHasNotCheckedYetSaysItIsTheBundledSchedule() throws {

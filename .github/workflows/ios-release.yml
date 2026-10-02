@@ -120,6 +120,9 @@ jobs:
 
       # File reads only, so a release with no notes or a stale version
       # fails in seconds, before the build.
+      # The first release has no earlier tags, so `earlier` is empty, and
+      # the runner's /bin/bash 3.2 calls an empty array unbound under
+      # `set -u`: hence ${earlier[@]+"${earlier[@]}"}, never "${earlier[@]}".
       - name: release preflight
         env:
           RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
@@ -136,7 +139,7 @@ jobs:
           done < <(git tag --list 'v*')
           python3 scripts/check_app_store.py --self-test
           python3 scripts/check_app_store.py --release-tag "$RELEASE_TAG" \
-            --notes-out "$RUNNER_TEMP/changelog-section.md" "${earlier[@]}"
+            --notes-out "$RUNNER_TEMP/changelog-section.md" ${earlier[@]+"${earlier[@]}"}
 
       - name: lint the plists and privacy manifests
         run: |

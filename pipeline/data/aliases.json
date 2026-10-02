@@ -1136,6 +1136,15 @@
       "reviewed": false
     },
     {
+      "cdfw_stock_id": 10356,
+      "canonical_name": "Crater Lake",
+      "slug": "crater-lake",
+      "aliases": [
+        "Crater Lake"
+      ],
+      "reviewed": false
+    },
+    {
       "cdfw_stock_id": 10374,
       "canonical_name": "North Battle Creek Reservoir",
       "slug": "north-battle-creek-reservoir",

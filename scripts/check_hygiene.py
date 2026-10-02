@@ -18,6 +18,12 @@ Portfolio controls that are a text search, not a tool:
 - No merge-conflict markers in source. CI builds the Swift package but not
   the app target, so a marker left in an app view once reached main with
   every check green.
+- App Intents metadata names no Apple device, platform or trademark. App
+  Store processing rejects a build (ITMS-90626) whose intent title,
+  description, parameter text, entity display name or App Shortcut phrase
+  says "iPhone", "Siri", "Apple" and the like; build 1 of 1.0.0 was rejected
+  for "on this iPhone" in a Shortcuts description. The check reads the string
+  literals in those positions in any app Swift file that imports AppIntents.
 
 Written in Python rather than as `grep` lines in the Makefile because the
 same target has to behave identically on a developer's machine and on the CI
@@ -143,6 +149,68 @@ def scan_unguarded_arrays() -> list[str]:
     return hits
 
 
+# Apple's reserved words for App Intents metadata (ITMS-90626), matched
+# case-insensitively as whole words inside string literals only, so an
+# identifier such as `.applicationName` never counts.
+_RESERVED_INTENT_TERM = re.compile(
+    r"\b(?:iphone|ipad|ipod|ios|ipados|apple|siri|watchos|macos|mac|macbook|"
+    r"airpods|homepod|carplay|facetime|imessage|icloud|app\s+store)\b",
+    re.IGNORECASE,
+)
+# Where intent metadata starts: titles, descriptions, dialogs, summaries,
+# entity display representations, short titles and App Shortcut phrases.
+_INTENT_METADATA = re.compile(
+    r"IntentDescription\(|LocalizedStringResource\s*=|\btitle:|\bdescription:|"
+    r"\bshortTitle:|\bphrases:|TypeDisplayRepresentation\(|DisplayRepresentation\(|"
+    r"\brequestValueDialog:|\bSummary\(|\bname:"
+)
+_STRING_LITERAL = re.compile(r'"(?:[^"\\]|\\.)*"')
+INTENT_GLOBS = ("ios/**/*.swift",)
+
+
+def reserved_intent_terms(text: str) -> list[int]:
+    """Line numbers where intent metadata text names a reserved Apple term.
+
+    A metadata opener that leaves a bracket open (a multi-line
+    `IntentDescription(` or `phrases: [`) carries on until it closes.
+    """
+    if "import AppIntents" not in text:
+        return []
+    hits: list[int] = []
+    depth = 0
+    for number, line in enumerate(text.splitlines(), start=1):
+        code = _STRING_LITERAL.sub('""', line)
+        if depth == 0 and not _INTENT_METADATA.search(code):
+            continue
+        if any(
+            _RESERVED_INTENT_TERM.search(lit) for lit in _STRING_LITERAL.findall(line)
+        ):
+            hits.append(number)
+        code = code.split("//", 1)[0]
+        depth = max(
+            0,
+            depth
+            + code.count("(")
+            + code.count("[")
+            - code.count(")")
+            - code.count("]"),
+        )
+    return hits
+
+
+def scan_reserved_intent_terms() -> list[str]:
+    hits = []
+    for path in _files(INTENT_GLOBS):
+        if any(part.endswith("Tests") for part in path.relative_to(ROOT).parts):
+            continue
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        for number in reserved_intent_terms("\n".join(lines)):
+            hits.append(
+                f"{path.relative_to(ROOT)}:{number}: {lines[number - 1].strip()}"
+            )
+    return hits
+
+
 def conflict_marker(line: str) -> bool:
     """True for a line git writes when a merge conflict is left unresolved."""
     return bool(_CONFLICT.match(line))
@@ -226,6 +294,38 @@ def self_test() -> list[str]:
             failures.append(
                 f"self-test bash-3.2 array: {text!r} gave {unguarded_arrays(text)}"
             )
+    head = "import AppIntents\n"
+    intent_cases = [
+        (
+            head
+            + 'static let description = IntentDescription("From the schedule on this iPhone.")\n',
+            [2],
+        ),
+        (
+            head
+            + 'static let description = IntentDescription("From the schedule saved in Trout Truck.")\n',
+            [],
+        ),
+        (head + 'static let title: LocalizedStringResource = "Ask siri"\n', [2]),
+        (head + '@Parameter(title: "Water", description: "On your iPad")\n', [2]),
+        (
+            head
+            + "AppShortcut(\n    intent: X(),\n    phrases: [\n"
+            + '        "When is it in \\(.applicationName)",\n'
+            + '        "Ask Apple about \\(.applicationName)",\n'
+            + "    ],\n"
+            + '    shortTitle: "Next week on iOS",\n'
+            + ")\n",
+            [6, 8],
+        ),
+        (head + 'let note = "iPhone only"\n', []),
+        ('static let description = IntentDescription("On this iPhone.")\n', []),
+    ]
+    for text, expected in intent_cases:
+        if reserved_intent_terms(text) != expected:
+            failures.append(
+                f"self-test intent reserved term: {text!r} gave {reserved_intent_terms(text)}"
+            )
     return failures
 
 
@@ -251,6 +351,10 @@ def main(argv: list[str] | None = None) -> int:
         *(
             f"bash-3.2 unguarded array under set -u: {h}"
             for h in scan_unguarded_arrays()
+        ),
+        *(
+            f"ITMS-90626 reserved term in App Intents metadata: {h}"
+            for h in scan_reserved_intent_terms()
         ),
     ]
     for problem in problems:

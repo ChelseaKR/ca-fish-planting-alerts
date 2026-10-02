@@ -23,12 +23,15 @@ This repository was republished with a new history on 2026-09-18
 - `ios-release` workflow: dispatched with a signed `vX.Y.Z` tag, it verifies
   the tag against `.github/allowed_signers`, checks the tag matches
   `MARKETING_VERSION` with a higher build number and a CHANGELOG section,
-  tests and builds the app unsigned, reads the version back out of the
+  tests and archives the app unsigned, reads the version back out of the
   built app, and drafts a GitHub Release. It never signs or uploads (#3).
 - `docs/app-store/OWNER-STEPS.md`: the one ordered list of owner steps to
   App Store submission. The listing file gains the App Privacy reasoning
   per Apple data category and the age-rating answers, and the screenshot
-  script can make an optional 6.5" set (`SCREENSHOT_CLASS=6.5`).
+  script can make an optional 6.5" set (`SCREENSHOT_CLASS=6.5`) and
+  refuses a bundled snapshot more than 7 days old, because the app now
+  refreshes on launch and would show a different week from the one the
+  script picked its waters from.
 - A daily pipeline over CDFW's Fish Planting Schedule. It keeps an
   append-only history per water, publishes a schema-validated snapshot
   (`schema/snapshot.v1.json`) for the app, and builds a static site with a

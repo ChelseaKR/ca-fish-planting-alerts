@@ -159,7 +159,10 @@ On a branch from `main`:
    week: `ios/scripts/sync-bundled-snapshot.sh` (downloads the live
    snapshot and validates it against `schema/snapshot.v1.json`).
 2. Regenerate the screenshots from that snapshot, with no other simulator
-   work running: `ios/scripts/app-store-screenshots.sh`. Optional 6.5" set:
+   work running: `ios/scripts/app-store-screenshots.sh`. Do this right
+   after step 9.1: the app refreshes on launch and shows the live week, so
+   the script picks its region and waters from the bundled snapshot and
+   refuses one more than 7 days old. Optional 6.5" set:
    `SCREENSHOT_CLASS=6.5 ios/scripts/app-store-screenshots.sh`. Look at the
    five images before committing them.
 3. If you chose `1.0.0`, set `MARKETING_VERSION = 1.0.0;` in every build
@@ -187,7 +190,7 @@ half is committed in `.github/allowed_signers`:
 `ios-release` verifies the tag's signature, checks that the tag matches
 `MARKETING_VERSION`, that the build number is higher than every earlier
 release's and that the CHANGELOG has the section, runs the PlantingCore
-tests, builds the app **unsigned** for a generic iOS device, reads the
+tests, archives the app **unsigned** for a generic iOS device (the same Archive action as Xcode, without signing), reads the
 version back out of the built app and widget, and creates a **draft**
 GitHub Release with the notes and a `release-stamp.json`. It never signs or
 uploads anything. If it fails, fix the cause on `main` and cut the next
@@ -219,8 +222,9 @@ yourself → install on your iPhone, then check:
   load the sandbox price).
 - Favorite a water, choose "Allow notifications", and check Settings →
   Trout Truck: Notifications on, Background App Refresh available.
-- Pull down on Browse to refresh; the header should leave "Not refreshed on
-  this device yet".
+- On first launch the Browse header should show the current week and
+  "Last checked …" (the app refreshes on launch); pull down to refresh
+  again.
 - Add the Home Screen widget; it lists your favorites once unlocked.
 
 ## 13. Version page and submit

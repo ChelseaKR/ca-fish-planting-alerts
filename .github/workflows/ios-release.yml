@@ -17,22 +17,30 @@ name: ios-release
 # 2. build (macOS): at the verified commit, the release preflight
 #    (tag = MARKETING_VERSION, build number above every earlier tag's,
 #    CHANGELOG section present, the App Store readiness audit), the
-#    PlantingCore tests, and an UNSIGNED Release build for a generic iOS
-#    device. It then reads the version and build number back out of the
-#    built app and its widget extension, so the stamp in the binary is
-#    checked, not assumed.
+#    PlantingCore tests, and an UNSIGNED archive of the CAFishPlanting
+#    scheme for a generic iOS device: the same Archive action the owner
+#    runs in Xcode, minus signing. (A plain `build` of the scheme also
+#    builds the unit-test target, which cannot `@testable import` the app
+#    in Release; the scheme's Archive action leaves test targets out.) It
+#    then reads the version and build number back out of the archived app
+#    and its widget extension, so the stamp in the binary is checked, not
+#    assumed. The unsigned archive is never uploaded, exported or kept.
 # 3. publish: rechecks the tag object against the live repository and
 #    creates a DRAFT GitHub Release with the notes and the version stamp.
 #    The owner publishes the draft when the App Store release goes out.
 #
-# What it never does: sign, archive for distribution, export, or upload to
-# App Store Connect. It holds no Apple credential and reads no secret.
+# What it never does: sign, export, keep the archive, or upload to App Store
+# Connect. It holds no Apple credential and reads no secret.
 # Archive and upload stay in Xcode on the owner's Mac
 # (docs/app-store/OWNER-STEPS.md). Signing secrets can be added later as a
 # separate, reviewed change.
 #
 # Cost: this is a public repository, so the macOS minutes are free, and it
 # runs only when dispatched for a release.
+#
+# Measured locally 2026-10-01 (Xcode 26.6): the unsigned archive succeeds
+# and the archived app and widget both read 0.1.0 (1), with both privacy
+# manifests embedded and no Configuration.storekit in the bundle.
 
 on:
   workflow_dispatch:
@@ -58,7 +66,7 @@ jobs:
       tag: ${{ inputs.tag }}
 
   build:
-    name: preflight, test and build the app unsigned at the tagged commit
+    name: preflight, test and archive the app unsigned at the tagged commit
     needs: authorize
     runs-on: macos-26
     # The PlantingCore tests take about a minute and an unsigned Release
@@ -113,7 +121,7 @@ jobs:
         working-directory: ios/PlantingCore
         run: swift test
 
-      - name: unsigned Release build for a generic iOS device
+      - name: unsigned Release archive for a generic iOS device
         working-directory: ios
         run: |
           set -euo pipefail
@@ -121,8 +129,9 @@ jobs:
           xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
             -configuration Release -destination 'generic/platform=iOS' \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -archivePath "$RUNNER_TEMP/unsigned.xcarchive" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            build
+            archive
 
       - name: read the version stamp back out of the built app
         env:
@@ -130,7 +139,7 @@ jobs:
           RELEASE_COMMIT: ${{ needs.authorize.outputs.release-commit }}
         run: |
           set -euo pipefail
-          app="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/CAFishPlanting.app"
+          app="$RUNNER_TEMP/unsigned.xcarchive/Products/Applications/CAFishPlanting.app"
           appex="$app/PlugIns/CAFishPlantingWidgets.appex"
           version="$(plutil -extract CFBundleShortVersionString raw "$app/Info.plist")"
           build="$(plutil -extract CFBundleVersion raw "$app/Info.plist")"
@@ -140,6 +149,8 @@ jobs:
           test "$(plutil -extract ITSAppUsesNonExemptEncryption raw "$app/Info.plist")" = "false"
           test -f "$app/PrivacyInfo.xcprivacy"
           test -f "$appex/PrivacyInfo.xcprivacy"
+          # The local StoreKit test configuration must never ship.
+          test ! -e "$app/Configuration.storekit"
           mkdir -p release
           python3 - "$version" "$build" "$RELEASE_TAG" "$RELEASE_COMMIT" \
             ios/CAFishPlanting/Resources/snapshot.json "$(xcodebuild -version | head -1)" \
@@ -166,7 +177,7 @@ jobs:
               out.write(f"{notes}\n\n")
               out.write(f"Version {version}, build {build}, from commit {commit}.\n")
               out.write(f"Bundled schedule snapshot generated at {generated}.\n")
-              out.write("This release was built unsigned to verify it; the App Store build is archived and uploaded from Xcode.\n")
+              out.write("This release was archived unsigned to verify it; the App Store build is archived, signed and uploaded from Xcode.\n")
           PY
           cat release/release-stamp.json
 

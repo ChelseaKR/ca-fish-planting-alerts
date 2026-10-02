@@ -206,5 +206,5 @@ Updated 2026-10-01. The ordered steps are in
 | Live site predates PR 16 and PR 20 | Privacy Policy URL | **Done.** The 03:50 UTC build predated the rename and the GA4 copy; the 06:10 UTC `publish` run on 2026-09-18 brought `/privacy/` up to date (checked, and re-checked 2026-10-01). |
 | Free/paid split | Description and IAP text | **Done.** PR 12 merged. |
 | "Not affiliated with CDFW" line inside the app | Parity with this description and the review notes | **Done.** PR 19 merged. It shows in About (screenshot `05-about.png`). |
-| Screenshots | Submission | **Regenerate before upload.** Five 1320x2868 PNGs are in `docs/app-store/screenshots/`, but they show the week of 2026-09-13 and predate the browse filters in PRs #40 and #41. OWNER-STEPS step 9. |
+| Screenshots | Submission | **Regenerate before upload.** Five 1320x2868 PNGs are in `docs/app-store/screenshots/`, but they show the week of 2026-09-13 and the old "Last planted" line, and predate the browse filters in PRs #40 and #41. Sync the bundled snapshot, then regenerate. OWNER-STEPS step 9. |
 | Bundled snapshot | First-launch content and the screenshots | **Done, then repeat before archiving.** Refreshed on 2026-09-18 to the live snapshot built at 03:50:44 UTC (week of 2026-09-13, 26 waters this week). Run `ios/scripts/sync-bundled-snapshot.sh` again just before archiving. |

@@ -57,10 +57,11 @@ against `schema/snapshot.v1.json` before it was copied in. No fixture was
 used, and nothing was seeded: the favorites were added by tapping the
 star, as a user would.
 
-**Honest details a reviewer may notice.** The Browse header says "Not
-refreshed on this device yet — showing the schedule bundled with the
-app", because the shots come from a fresh install that has not been
-refreshed yet. The status bar is set to 9:41
+**Honest details a reviewer may notice.** In the committed shots (taken
+2026-09-18) the Browse header says "Not refreshed on this device yet —
+showing the schedule bundled with the app". The app has refreshed on launch
+since then, so a regenerated set shows "Last checked" and the live week
+instead. The status bar is set to 9:41
 with full signal and battery (`simctl status_bar`), which is Apple's
 convention. The purchase sheet isn't among the shots, because it shows the
 price. Its App Review screenshot is taken in TestFlight
@@ -74,8 +75,11 @@ running:
 ios/scripts/app-store-screenshots.sh
 ```
 
-It creates or reuses a simulator named "Trout Truck screenshots" (iPhone
-17 Pro Max), deletes the app so the run starts from a fresh install, and
+Run `ios/scripts/sync-bundled-snapshot.sh` first: the app refreshes on
+launch and shows the live week, so the picks below must come from a recent
+bundle, and the script refuses one more than 7 days old
+(`ALLOW_STALE_SNAPSHOT=1` overrides). It creates or reuses a simulator
+named "Trout Truck screenshots" (iPhone 17 Pro Max), deletes the app so the run starts from a fresh install, and
 picks the region and waters from the bundled snapshot. It then runs
 `CAFishPlantingUITests/AppStoreScreenshotsUITests`, which is skipped in
 ordinary test runs, and fails unless all five PNGs come back at
@@ -443,4 +447,9 @@ drops `xcrun altool` in favor of Xcode's own upload.
    2026-10-01). `ScheduleWording` and the widget now say "Last scheduled
    for the week of …". Screenshot `02-water-history.png` was captured
    before that change; regenerate the screenshots before uploading them
-   ([OWNER-STEPS](app-store/OWNER-STEPS.md) step 9).
+   ([OWNER-STEPS](app-store/OWNER-STEPS.md) step 9). A regeneration on
+   2026-10-01 was not kept: the app now refreshes on launch, so it showed
+   the live week of 2026-09-27 while the script had picked waters from the
+   13-day-old bundled week, and only one of five favorites carried a "This
+   week" badge. The script now refuses a bundled snapshot more than 7 days
+   old, so sync it first.

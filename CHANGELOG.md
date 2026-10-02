@@ -11,8 +11,41 @@ This repository was republished with a new history on 2026-09-18
 
 ## [Unreleased]
 
+## [1.0.0] - TBD
+
+The first App Store release: the app version is 1.0.0 (build 1), and this
+section is its release notes. Replace "TBD" with the release date and write
+the notes when the release commit is prepared
+(`docs/app-store/OWNER-STEPS.md` step 9). The release workflow refuses this
+section until it has a date.
+
 ### Added
 
+- `make appstore` (part of `make verify`): an App Store readiness check
+  for the iOS app. It fails on version or build-number drift between the
+  app and widget, a target that isn't iPhone-only, the wrong team ID, a
+  missing export-compliance flag or launch screen, a privacy manifest that
+  declares tracking or collected data, a required-reason API the code calls
+  without declaring it, a non-Apple import in shipped code, a push
+  entitlement, or an incomplete or translucent app icon (#3).
+- `ios-release` workflow: dispatched with a signed `vX.Y.Z` tag on the tip of
+  `main`, it verifies the tag against `.github/allowed_signers`, builds only
+  the commit it was dispatched from (and refuses a tag on any other), checks
+  the tag matches
+  `MARKETING_VERSION` with a higher build number and a CHANGELOG section,
+  tests and archives the app unsigned, reads the version back out of the
+  built app, and drafts a GitHub Release. It never signs or uploads (#3).
+- `docs/app-store/OWNER-STEPS.md`: the one ordered list of owner steps to
+  App Store submission. The listing file gains the App Privacy reasoning
+  per Apple data category and the age-rating answers, and the screenshot
+  script can make an optional 6.5" set (`SCREENSHOT_CLASS=6.5`) and
+  refuses a bundled snapshot more than 7 days old, because the app now
+  refreshes on launch and would show a different week from the one the
+  script picked its waters from.
+- The iOS app's version is 1.0.0 (build 1) for the first App Store release,
+  free to download with the $9.99 in-app purchase as built, United States
+  only (DECISIONS 0018). `make appstore` requires a CHANGELOG section for
+  the app's version, and the release workflow requires it to be dated.
 - A daily pipeline over CDFW's Fish Planting Schedule. It keeps an
   append-only history per water, publishes a schema-validated snapshot
   (`schema/snapshot.v1.json`) for the app, and builds a static site with a

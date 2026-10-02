@@ -48,7 +48,9 @@ for the full gate and `pipeline/README.md` for the pipeline's own commands.
   planted and when, a subscribable `.ics`, and where the app is. This is the
   free discovery surface.
 - `ios/` — SwiftUI. Favorite waters, background refresh of the snapshot, a
-  local notification when a favorite appears in the new week. Paid up front.
+  local notification when a favorite appears in the new week. Free to
+  download, with one optional $9.99 purchase that unlocks alerts and the
+  widget (DECISIONS 0007, 0009, 0018).
   No server, no push service, no account.
 - `docs/` — decisions, licenses and attributions.
 

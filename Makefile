@@ -20,10 +20,10 @@ SEMGREP_VERSION := 1.166.0
 # subdirectory, so nothing lands inside the checkout.
 TMP := $(shell mktemp -d 2>/dev/null || mktemp -d -t cfpa)
 
-.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene
+.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore
 
 # Stage order per CI-CD-STANDARD §1: format, lint, type, test, security.
-verify: sync format lint typecheck test smoke build audit sast secrets hygiene
+verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore
 
 # CQ-09: `uv lock --check` first. `--frozen` installs from uv.lock without
 # reading pyproject.toml, so it cannot notice drift, and a bare `uv run`
@@ -90,3 +90,12 @@ secrets:
 hygiene:
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_hygiene.py --self-test
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_hygiene.py
+
+# The iOS app's App Store readiness: versions, device family, team, export
+# compliance, privacy manifests against the APIs the code calls, no
+# third-party modules, and a complete opaque icon set. Plain file reads, so it
+# runs on Linux CI without Xcode. The release workflow runs the same script
+# with --release-tag. Self-test first, as for hygiene.
+appstore:
+	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_app_store.py --self-test
+	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_app_store.py

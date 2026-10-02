@@ -47,7 +47,7 @@ Screen's rectangular and inline sizes.
   a refund redraws the widget without waiting for a refresh.
 - **Signing.** Both targets use team `6X5YH93QNM` with automatic signing,
   as before. On a device (not the simulator) the App Group has to be
-  registered for the team; see `docs/APP-STORE.md` step 7.
+  registered for the team; see `docs/app-store/OWNER-STEPS.md` step 6.
 
 ## The one-time purchase
 

@@ -42,7 +42,14 @@ final class FullAccessCopyTests: XCTestCase {
         let listing = try read("docs/APP-STORE-LISTING.md")
         XCTAssertTrue(appStore.contains("| Description (customer-facing, 45 max) | `\(description)` (\(description.count) characters) |"),
                       "docs/APP-STORE.md's in-app purchase table must carry the StoreKit description and its length")
-        XCTAssertTrue(appStore.contains("Description `\(description)`"), "the owner checklist's step must carry it too")
+        // The owner checklist lives in docs/app-store/OWNER-STEPS.md; its
+        // step wraps across lines, so compare with whitespace collapsed.
+        let ownerSteps = try read("docs/app-store/OWNER-STEPS.md")
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        XCTAssertTrue(ownerSteps.contains("Description `\(description)`"),
+                      "docs/app-store/OWNER-STEPS.md's in-app purchase step must carry it too")
         XCTAssertTrue(listing.contains("| Description | 45 | `\(description)` | \(description.count) |"),
                       "docs/APP-STORE-LISTING.md must carry it with its length")
     }

@@ -1,0 +1,250 @@
+name: ios-release
+
+# Trusted-main, signed-tag release for the iOS app (RELEASE-AND-VERSIONING
+# REL-14, REL-29/30/31; issue #3). Dispatch only, after the owner has pushed a
+# signed annotated tag on the tip of main:
+#
+#   git tag -s v1.0.0 -m "release: v1.0.0" && git push origin v1.0.0
+#   gh workflow run ios-release.yml -f tag=v1.0.0
+#
+# Why dispatch and not `on: push: tags`: the shared authorizer checks out
+# trusted main and refuses to run from any other ref (it asserts
+# GITHUB_REF = refs/heads/main), so a tag-push trigger would fail there.
+#
+# Why the build checks out the dispatch commit and not the tag's commit: a
+# checkout of a ref taken from an earlier job's output, followed by steps
+# that run repository scripts, is the shape CodeQL reports as
+# actions/cache-poisoning/poisonable-step. Checking out the default ref (the
+# tip of main the run was dispatched from, already verified by the
+# authorizer) and then requiring the tag's commit to equal it runs exactly
+# the same code, and nothing is ever checked out from a job output. The cost:
+# tag the tip of main and dispatch before anything else merges. If main moved
+# first, the run refuses; release tags aren't moved, so cut the next patch
+# version from the new tip.
+#
+# What it does, in order:
+# 1. authorize (shared): stable SemVer tag, an annotated tag object, signed
+#    by a key in .github/allowed_signers, on a commit that is in main.
+# 2. build (macOS): checks out the dispatch commit, which the authorizer has
+#    just asserted is the tip of main, and refuses to go on unless the tag
+#    points at exactly that commit, so the tag must be on the tip of main
+#    when the workflow is dispatched. Then, at that commit: the release
+#    preflight
+#    (tag = MARKETING_VERSION, build number above every earlier tag's,
+#    CHANGELOG section present, the App Store readiness audit), the
+#    PlantingCore tests, and an UNSIGNED archive of the CAFishPlanting
+#    scheme for a generic iOS device: the same Archive action the owner
+#    runs in Xcode, minus signing. (A plain `build` of the scheme also
+#    builds the unit-test target, which cannot `@testable import` the app
+#    in Release; the scheme's Archive action leaves test targets out.) It
+#    then reads the version and build number back out of the archived app
+#    and its widget extension, so the stamp in the binary is checked, not
+#    assumed. The unsigned archive is never uploaded, exported or kept.
+# 3. publish: rechecks the tag object against the live repository and
+#    creates a DRAFT GitHub Release with the notes and the version stamp.
+#    The owner publishes the draft when the App Store release goes out.
+#
+# What it never does: sign, export, keep the archive, or upload to App Store
+# Connect. It holds no Apple credential and reads no secret.
+# Archive and upload stay in Xcode on the owner's Mac
+# (docs/app-store/OWNER-STEPS.md). Signing secrets can be added later as a
+# separate, reviewed change.
+#
+# Cost: this is a public repository, so the macOS minutes are free, and it
+# runs only when dispatched for a release.
+#
+# Measured locally 2026-10-01 (Xcode 26.6): the unsigned archive succeeds
+# and the archived app and widget both read 1.0.0 (1), with both privacy
+# manifests embedded and no Configuration.storekit in the bundle.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing signed stable SemVer tag (vX.Y.Z)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    permissions:
+      contents: read
+    uses: ChelseaKR/.github/.github/workflows/release-authorize.yml@7be4c3e44e2acf20e8a98eeea4351c1e5d2789bc # v1.0.0
+    with:
+      tag: ${{ inputs.tag }}
+
+  build:
+    name: preflight, test and archive the app unsigned at the tagged commit
+    needs: authorize
+    runs-on: macos-26
+    # The PlantingCore tests take about a minute and an unsigned Release
+    # build a few more; queer-tv-guide's comparable macos-26 job runs in
+    # about 15 minutes. A timeout reads as "cancelled", so the margin is wide.
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      # No `ref`: this is the dispatch commit, the tip of main that the
+      # authorizer verified. See "Why the build checks out the dispatch
+      # commit" above.
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          # Every tag, so the preflight can compare build numbers with
+          # earlier releases.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # git only, before any repository script runs: the signed tag must
+      # point at the commit this job checked out.
+      - name: the signed tag is on the commit this run checked out
+        env:
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+          RELEASE_COMMIT: ${{ needs.authorize.outputs.release-commit }}
+        run: |
+          set -euo pipefail
+          head="$(git rev-parse HEAD)"
+          test "$head" = "$GITHUB_SHA"
+          if [ "$RELEASE_COMMIT" != "$head" ]; then
+            echo "::error::$RELEASE_TAG is on $RELEASE_COMMIT, but this run was dispatched from main at $head. Tag the tip of main and dispatch before anything else merges; if main has moved on, cut the next patch version from the new tip (release tags aren't moved)." >&2
+            exit 1
+          fi
+
+      # File reads only, so a release with no notes or a stale version
+      # fails in seconds, before the build.
+      - name: release preflight
+        env:
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+        run: |
+          set -euo pipefail
+          earlier=()
+          mkdir -p "$RUNNER_TEMP/earlier"
+          while IFS= read -r other; do
+            [ -n "$other" ] && [ "$other" != "$RELEASE_TAG" ] || continue
+            if git show "${other}:ios/CAFishPlanting.xcodeproj/project.pbxproj" \
+                > "$RUNNER_TEMP/earlier/${other}.pbxproj" 2>/dev/null; then
+              earlier+=(--earlier-pbxproj "${other}=$RUNNER_TEMP/earlier/${other}.pbxproj")
+            fi
+          done < <(git tag --list 'v*')
+          python3 scripts/check_app_store.py --self-test
+          python3 scripts/check_app_store.py --release-tag "$RELEASE_TAG" \
+            --notes-out "$RUNNER_TEMP/changelog-section.md" "${earlier[@]}"
+
+      - name: lint the plists and privacy manifests
+        run: |
+          set -euo pipefail
+          plutil -lint \
+            ios/CAFishPlanting/Resources/Info.plist \
+            ios/CAFishPlanting/Resources/PrivacyInfo.xcprivacy \
+            ios/CAFishPlantingWidgets/Info.plist \
+            ios/CAFishPlantingWidgets/PrivacyInfo.xcprivacy \
+            ios/CAFishPlanting/CAFishPlanting.entitlements \
+            ios/CAFishPlantingWidgets/CAFishPlantingWidgets.entitlements
+
+      - name: swift test (PlantingCore)
+        working-directory: ios/PlantingCore
+        run: swift test
+
+      - name: unsigned Release archive for a generic iOS device
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -archivePath "$RUNNER_TEMP/unsigned.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            archive
+
+      - name: read the version stamp back out of the built app
+        env:
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+          RELEASE_COMMIT: ${{ needs.authorize.outputs.release-commit }}
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/unsigned.xcarchive/Products/Applications/CAFishPlanting.app"
+          appex="$app/PlugIns/CAFishPlantingWidgets.appex"
+          version="$(plutil -extract CFBundleShortVersionString raw "$app/Info.plist")"
+          build="$(plutil -extract CFBundleVersion raw "$app/Info.plist")"
+          test "v${version}" = "$RELEASE_TAG"
+          test "$(plutil -extract CFBundleShortVersionString raw "$appex/Info.plist")" = "$version"
+          test "$(plutil -extract CFBundleVersion raw "$appex/Info.plist")" = "$build"
+          test "$(plutil -extract ITSAppUsesNonExemptEncryption raw "$app/Info.plist")" = "false"
+          test -f "$app/PrivacyInfo.xcprivacy"
+          test -f "$appex/PrivacyInfo.xcprivacy"
+          # The local StoreKit test configuration must never ship.
+          test ! -e "$app/Configuration.storekit"
+          mkdir -p release
+          python3 - "$version" "$build" "$RELEASE_TAG" "$RELEASE_COMMIT" \
+            ios/CAFishPlanting/Resources/snapshot.json "$(xcodebuild -version | head -1)" \
+            "$RUNNER_TEMP/changelog-section.md" <<'PY'
+          import json, sys
+          version, build, tag, commit, snapshot, xcode, section = sys.argv[1:]
+          generated = json.load(open(snapshot, encoding="utf-8")).get("generated_at", "unknown")
+          stamp = {
+              "app": "Trout Truck",
+              "tag": tag,
+              "commit": commit,
+              "marketing_version": version,
+              "build": build,
+              "bundled_snapshot_generated_at": generated,
+              "built_with": xcode,
+              "signed": False,
+              "uploaded_to_app_store_connect": False,
+          }
+          with open("release/release-stamp.json", "w", encoding="utf-8") as out:
+              json.dump(stamp, out, indent=2)
+              out.write("\n")
+          notes = open(section, encoding="utf-8").read().strip()
+          with open("release/release-notes.md", "w", encoding="utf-8") as out:
+              out.write(f"{notes}\n\n")
+              out.write(f"Version {version}, build {build}, from commit {commit}.\n")
+              out.write(f"Bundled schedule snapshot generated at {generated}.\n")
+              out.write("This release was archived unsigned to verify it; the App Store build is archived, signed and uploaded from Xcode.\n")
+          PY
+          cat release/release-stamp.json
+
+      - name: upload the release notes and stamp
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-release
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    name: recheck the tag and draft the GitHub Release
+    needs: [authorize, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ios-release
+          path: release
+
+      - name: recheck the immutable tag object and create a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # No checkout in this job, so gh needs the repository named.
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+          TAG_OBJECT_SHA: ${{ needs.authorize.outputs.tag-object-sha }}
+        run: |
+          set -euo pipefail
+          live="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq .object.sha)"
+          test "$live" = "$TAG_OBJECT_SHA"
+          gh release create "$RELEASE_TAG" --draft \
+            --title "Trout Truck ${RELEASE_TAG#v}" \
+            --notes-file release/release-notes.md \
+            release/release-stamp.json

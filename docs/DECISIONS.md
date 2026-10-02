@@ -64,6 +64,9 @@ entry replaces 0002 for the website only.
 
 ## 0003 — Paid up front, one price (2026-09-13, provisional)
 
+**Settled by 0018 (2026-10-01):** the price model is the one 0007 built, a
+free download with one $9.99 in-app purchase, not a price at download.
+
 One-time purchase, no StoreKit, no subscription. The price is $9.99, one-time. [moved to private strategy notes]
 
 **Superseded in part by 0007** — the app shipped with no purchase mechanism
@@ -300,3 +303,24 @@ everyone.
 - Everything that says what full access unlocks now names both alerts and
   the widget: the purchase screen, About, `docs/APP-STORE.md`,
   `docs/APP-STORE-LISTING.md` and the local StoreKit configuration.
+
+## 0018 — First App Store release: as built, US only, version 1.0.0 (2026-10-01)
+
+The owner decided three things before submission:
+
+- **Price model: as built.** Free to download, with one non-consumable
+  in-app purchase, Full Access (`com.chelseakr.cafishplanting.fullaccess`),
+  at USD 9.99, one time, no subscription (0007, 0009, 0015). Browsing,
+  history and favorites stay free. 0003's "paid up front" is settled in
+  favor of this.
+- **Storefronts: United States only.** The data is California's and the
+  listing is English. With no EU storefront, App Store Connect needs no
+  Digital Services Act trader declaration.
+- **Version: 1.0.0.** `MARKETING_VERSION` is 1.0.0 in every target, with
+  build 1. Every later upload raises `CURRENT_PROJECT_VERSION`. `make
+  appstore` requires a `CHANGELOG.md` section for the current version, and
+  the release workflow requires that section to carry a date.
+
+Still the owner's: the trademark screen for "Trout Truck" (0010), the
+support address, and moving the privacy policy off github.io (it stays
+there for now).

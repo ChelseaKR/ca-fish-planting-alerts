@@ -27,7 +27,7 @@ them (review clauses, the privacy check in code, the in-app purchase) is in
 | In-app purchase | Non-Consumable, `com.chelseakr.cafishplanting.fullaccess`, USD 9.99 | `PurchaseManager.productID`; DECISIONS 0007, 0009, 0018 |
 | Storefronts | United States only | DECISIONS 0018 |
 | Version, build | `1.0.0`, build `1` | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`; DECISIONS 0018 |
-| Support URL | `https://chelseakr.github.io/ca-fish-planting-alerts/support/` | 200 on 2026-10-01, but no contact line yet (step 5) |
+| Support URL | `https://chelseakr.github.io/ca-fish-planting-alerts/support/` | 200 on 2026-10-01; shows `mailto:chelsea@chelseakr.com` since 2026-10-02 (step 5) |
 | Privacy Policy URL | `https://chelseakr.github.io/ca-fish-planting-alerts/privacy/` | 200 on 2026-10-01; says the app collects no data |
 | Marketing URL | `https://chelseakr.github.io/ca-fish-planting-alerts/` | optional field |
 
@@ -44,23 +44,29 @@ Decided 2026-10-01 and recorded in DECISIONS 0018:
   target, and `CHANGELOG.md` has a `## [1.0.0] - TBD` section that step 9
   fills in.
 
+Done 2026-10-02:
+
+1. **Trademark screen for "Trout Truck": done, no conflict found**
+   (recorded in DECISIONS 0010). The official USPTO trademark search
+   (`https://tmsearch.uspto.gov/`, a word search typed into the search
+   box), the US App Store search API, and the Justia, uspto.report and
+   Trademarkia mirrors found no "TROUT TRUCK" mark and no app by that name.
+   The nearest marks were TROUT EDGE (live, class 9, fishing apps, Fishing
+   Culture LLC), TROUT TRICK (fishing lures) and TRUCK TRUCK (toy models).
+   This is a screen, not legal advice; an attorney's clearance search is
+   the standard next step for certainty.
+2. **The support address: done** (step 5).
+
 Still yours:
 
-1. **Trademark screen for "Trout Truck"** (DECISIONS 0010 records that none
-   was run). USPTO Trademark Search (`https://tmsearch.uspto.gov/`) for
-   `TROUT TRUCK`, `TROUTTRUCK` and sound-alikes, live and dead, in classes 9,
-   41 and 42; the California Secretary of State's trademark search; and the
-   App Store, Google Play and the web for "trout truck". Record the result
-   and date in DECISIONS 0010. A conflict means renaming before submitting.
-   This is a screen, not legal advice.
-2. **The support address** (step 5).
-3. **The privacy policy host.** It stays on github.io for now; if it ever
+1. **The privacy policy host.** It stays on github.io for now; if it ever
    moves, update the Privacy Policy URL in App Store Connect the same day.
 
 ## 2. Merge what the build depends on
 
-`main` does not build the app today: a merge-conflict marker sits in
-`FavoritesView.swift`. In order:
+**Done 2026-10-02.** PRs #43, #47 and #45 are merged, so `main` builds the
+app and its `ci` check is green. The optional feature PRs #40, #41 and #42
+are still open and are not in 1.0.0. What this step asked for, in order:
 
 1. The CI fix branch `agent/tt-ci-fix` (PR #43), which makes `main`'s `ci`
    check green again.
@@ -93,6 +99,10 @@ download, but the in-app purchase can't be sold, or even tested in
 TestFlight, without it. Banking and tax review can take days.
 
 ## 5. Support contact
+
+**Done 2026-10-02.** `SUPPORT_EMAIL` is set to `chelsea@chelseakr.com`, and
+`/support/` and `/privacy/` both show a `mailto:` line. What this step
+asked for:
 
 Guideline 1.5 asks for a Support URL that gives an easy way to reach you,
 and `/support/` has no contact line until a support address is set. Create

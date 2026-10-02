@@ -14,7 +14,7 @@
 #
 # With no UDID it creates (once) and reuses a simulator named
 # "Trout Truck screenshots <class>". It overrides the status bar, deletes
-# the app so the run starts from a fresh install, picks the region and
+# the app so the run starts from a fresh install, picks the region, county and
 # waters from the bundled snapshot, runs AppStoreScreenshotsUITests, and
 # fails unless all five PNGs come back at the class's exact pixel size.
 #
@@ -78,7 +78,11 @@ xcrun simctl status_bar "$udid" override --time "9:41" \
   --batteryState discharging --batteryLevel 100
 xcrun simctl uninstall "$udid" "$bundle_id" 2>/dev/null || true
 
-# Region: the one with the most waters on this week's schedule. History
+# Region: the one with the most waters on this week's schedule. County: the
+# region's county with the most of them (fewest waters on a tie). Browse
+# lists waters alphabetically, so in a region-wide list this week's waters
+# can all sit below the first screen (measured 2026-10-02: none in the first
+# eight of Northern Region's 83). History
 # water: the deepest history among this week's waters in any region, with a
 # name short enough (18 characters) not to be cut off in the large title.
 # Favorites: that water, then this week's deepest three in the region, then
@@ -109,17 +113,24 @@ history = next(w for w in waters if w["id"] in this_week and len(w["name"]) <= 1
 in_region = [w for w in waters if w["id"] in this_week and w["region"] == region and w is not history][:3]
 not_this_week = next(w for w in waters if w["id"] not in this_week)
 region_name = next(r["name"] for r in s["regions"] if r["code"] == region)
+in_region_all = [w for w in s["waters"] if w["region"] == region]
+county_listed = collections.Counter(c for w in in_region_all if w["id"] in this_week for c in w["counties"])
+county_size = collections.Counter(c for w in in_region_all for c in w["counties"])
+county = max(county_listed, key=lambda c: (county_listed[c], -county_size[c], c))
 print(region_name)
 print(history["name"])
 print("|".join(w["name"] for w in in_region + [not_this_week]))
 print(s["generated_at"], s["source_week"]["label"])
+print(county)
 PY
 )"
 region="$(sed -n 1p <<<"$picks")"
 history_water="$(sed -n 2p <<<"$picks")"
 favorites="$(sed -n 3p <<<"$picks")"
+county="$(sed -n 5p <<<"$picks")"
 echo "snapshot: $(sed -n 4p <<<"$picks")"
 echo "region: $region"
+echo "county: $county"
 echo "history water: $history_water"
 echo "favorites: $favorites"
 
@@ -127,6 +138,7 @@ work="$(mktemp -d "${TMPDIR:-/tmp}/trout-truck-screenshots.XXXXXX")"
 TEST_RUNNER_TT_SCREENSHOTS=1 \
 TEST_RUNNER_TT_OUTPUT_DIR="$work/png" \
 TEST_RUNNER_TT_REGION="$region" \
+TEST_RUNNER_TT_COUNTY="$county" \
 TEST_RUNNER_TT_HISTORY_WATER="$history_water" \
 TEST_RUNNER_TT_FAVORITES="$favorites" \
 xcodebuild -project "$ios_dir/CAFishPlanting.xcodeproj" -scheme CAFishPlanting \

@@ -11,6 +11,7 @@ public struct AppStorageLayout: Sendable {
     // On-disk file name: never rename it, or saved favorites vanish on update.
     public var favoritesFile: URL { directory.appendingPathComponent("favourites.json") }
     public var alertStateFile: URL { directory.appendingPathComponent("alert-state.json") }
+    public var notificationHistoryFile: URL { directory.appendingPathComponent("notification-history.json") }
     public var entitlementFile: URL { directory.appendingPathComponent("entitlement.json") }
 
     /// `~/Library/Application Support/<bundle id>/`, created if needed.
@@ -111,6 +112,19 @@ public struct AlertStateStore: Sendable {
 
     public func save(_ state: AlertState) throws {
         try file.save(state)
+    }
+}
+
+public struct NotificationHistoryStore: Sendable {
+    let file: JSONFileStore<NotificationHistory>
+    public init(layout: AppStorageLayout) { file = JSONFileStore(url: layout.notificationHistoryFile) }
+
+    public func load() -> NotificationHistory {
+        (try? file.load()) ?? NotificationHistory()
+    }
+
+    public func save(_ history: NotificationHistory) throws {
+        try file.save(history)
     }
 }
 

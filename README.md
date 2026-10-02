@@ -62,7 +62,7 @@ Trout Truck, decided 2026-09-17 (`docs/DECISIONS.md` 0010). The site stays on
 ## Standards Conformance
 
 This repository follows the portfolio standards, vendored unedited in
-`docs/standards/` (v2.0.0). The table says which standards apply here, and
+`docs/standards/` (v3.0.0). The table says which standards apply here, and
 where each one has an open gap. Metrics, CI stages and the observability
 tier are in `docs/ROADMAP.md`.
 

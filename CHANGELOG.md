@@ -11,6 +11,14 @@ This repository was republished with a new history on 2026-09-18
 
 ## [Unreleased]
 
+### Fixed
+
+- The release workflow's preflight no longer fails on the first release.
+  With no earlier `v*` tags its list of earlier builds is empty, and the
+  macOS runner's bash 3.2 treated that empty list as an unbound variable
+  under `set -u`. The workflow checks now reject that pattern in any
+  `run:` step.
+
 ## [1.0.0] - 2026-10-02
 
 The first App Store release of Trout Truck for iPhone: version 1.0.0,

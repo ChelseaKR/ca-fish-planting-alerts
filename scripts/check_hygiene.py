@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Repository hygiene gate run by `make hygiene` (and so by `make verify`).
 
-Three portfolio controls that are a text search, not a tool:
+Portfolio controls that are a text search, not a tool:
 
 - CQ-34: a TODO, FIXME or HACK marker must name its issue on the same line,
   as `(#123)` or a full `/issues/123` URL. A bare marker is a promise nobody
@@ -11,6 +11,10 @@ Three portfolio controls that are a text search, not a tool:
 - IR-15: no wildcard `git add` (`-A`, `--all`, `.`) in a workflow that runs
   unattended. The publish job commits data back to main every day, so it
   must name exactly the files it means to commit.
+- A workflow `run:` body under `set -u` never expands an array bare. The
+  macOS runners' /bin/bash is 3.2, where `"${a[@]}"` on an empty array is an
+  "unbound variable" error; write `${a[@]+"${a[@]}"}`. The release preflight
+  died this way on the first release, when there were no earlier tags.
 - No merge-conflict markers in source. CI builds the Swift package but not
   the app target, so a marker left in an app view once reached main with
   every check green.
@@ -58,6 +62,11 @@ SOURCE_GLOBS = (
 )
 CONFLICT_GLOBS = (*SOURCE_GLOBS, "pipeline/src/**/*.jinja", "pipeline/src/**/*.css")
 WORKFLOW_GLOBS = (".github/workflows/*.yml", "scripts/**/*.sh")
+WORKFLOW_FILES = (".github/workflows/*.yml",)
+_RUN_KEY = re.compile(r"^(\s*)(?:- )?run:\s*(.*)$")
+_NOUNSET = re.compile(r"\bset\s+-[a-zA-Z]*u|\bset\s+-o\s+nounset\b")
+_ARRAY_EXPANSION = re.compile(r"\$\{\w+\[[@*]\]\}")
+_GUARDED_ARRAY = re.compile(r'\$\{(\w+)\[([@*])\]\+"\$\{\1\[\2\]\}"\}')
 
 
 def bare_marker(line: str) -> bool:
@@ -80,6 +89,58 @@ def blanket_suppression(line: str) -> bool:
 def wildcard_add(line: str) -> bool:
     """True when a shell line stages files with a wildcard."""
     return bool(_WILDCARD_ADD.search(line))
+
+
+def run_blocks(text: str) -> list[list[tuple[int, str]]]:
+    """Every `run:` body in a workflow, as (line number, line) pairs."""
+    lines = text.splitlines()
+    blocks: list[list[tuple[int, str]]] = []
+    i = 0
+    while i < len(lines):
+        match = _RUN_KEY.match(lines[i])
+        if not match:
+            i += 1
+            continue
+        indent = len(match.group(1))
+        inline = match.group(2).strip()
+        if inline and inline[0] not in "|>":
+            blocks.append([(i + 1, inline)])
+            i += 1
+            continue
+        body: list[tuple[int, str]] = []
+        i += 1
+        while i < len(lines) and (
+            not lines[i].strip() or len(lines[i]) - len(lines[i].lstrip()) > indent
+        ):
+            body.append((i + 1, lines[i]))
+            i += 1
+        blocks.append(body)
+    return blocks
+
+
+def unguarded_arrays(text: str) -> list[int]:
+    """Line numbers where a `set -u` run body expands an array without the guard."""
+    hits: list[int] = []
+    for block in run_blocks(text):
+        if not any(_NOUNSET.search(line) for _, line in block):
+            continue
+        hits.extend(
+            number
+            for number, line in block
+            if _ARRAY_EXPANSION.search(_GUARDED_ARRAY.sub("", line))
+        )
+    return hits
+
+
+def scan_unguarded_arrays() -> list[str]:
+    hits = []
+    for path in _files(WORKFLOW_FILES):
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        for number in unguarded_arrays("\n".join(lines)):
+            hits.append(
+                f"{path.relative_to(ROOT)}:{number}: {lines[number - 1].strip()}"
+            )
+    return hits
 
 
 def conflict_marker(line: str) -> bool:
@@ -152,6 +213,19 @@ def self_test() -> list[str]:
             failures.append(f"self-test {name}: did not reject {bad!r}")
         if check(good):
             failures.append(f"self-test {name}: rejected {good!r}")
+    step = "      - run: |\n          set -euo pipefail\n          earlier=()\n"
+    array_cases = [
+        (step + '          foo "${earlier[@]}"\n', [4]),
+        (step + '          foo "${earlier[*]}"\n', [4]),
+        (step + '          foo ${earlier[@]+"${earlier[@]}"} "${#earlier[@]}"\n', []),
+        ('      - run: |\n          foo "${args[@]}"\n', []),
+        ('      - run: |\n          set -u\n      - run: foo "${a[@]}"\n', []),
+    ]
+    for text, expected in array_cases:
+        if unguarded_arrays(text) != expected:
+            failures.append(
+                f"self-test bash-3.2 array: {text!r} gave {unguarded_arrays(text)}"
+            )
     return failures
 
 
@@ -174,6 +248,10 @@ def main(argv: list[str] | None = None) -> int:
         ),
         *(f"IR-15 wildcard git add: {h}" for h in scan(WORKFLOW_GLOBS, wildcard_add)),
         *(f"conflict marker: {h}" for h in scan(CONFLICT_GLOBS, conflict_marker)),
+        *(
+            f"bash-3.2 unguarded array under set -u: {h}"
+            for h in scan_unguarded_arrays()
+        ),
     ]
     for problem in problems:
         print(problem, file=sys.stderr)

@@ -9,6 +9,9 @@ import XCTest
 /// of names hardcoded here that go stale every week.
 ///
 /// - `TT_REGION`: the region picker label to filter Browse by.
+/// - `TT_COUNTY` (optional): the county picker label to filter that region
+///   by, so this week's waters are on the first screen of an alphabetical
+///   list instead of below it.
 /// - `TT_HISTORY_WATER`: the water whose history is shown. It is also the
 ///   first favorite, so the notification explainer names it.
 /// - `TT_FAVORITES`: `|`-separated water names to favorite after it.
@@ -17,6 +20,7 @@ import XCTest
 final class AppStoreScreenshotsUITests: XCTestCase {
     private struct Plan {
         let region: String
+        let county: String?
         let historyWater: String
         let favorites: [String]
         let outputDirectory: URL
@@ -33,8 +37,12 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
 
         // 1. Browse, filtered to the region with the most waters on this
-        //    week's schedule, so the "This week" badges are on screen.
+        //    week's schedule (and to its county with the most, when the
+        //    script picks one), so the "This week" badges are on screen.
         selectRegion(plan.region, in: app)
+        if let county = plan.county {
+            select(county, inPicker: "County", in: app)
+        }
         let badged = app.buttons.matching(NSPredicate(format: "label ENDSWITH %@", "scheduled this week"))
         XCTAssertTrue(badged.firstMatch.waitForExistence(timeout: 10), "a water scheduled this week should be listed in \(plan.region)")
         capture("01-this-week", app: app, into: plan.outputDirectory)
@@ -96,6 +104,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         }
         return Plan(
             region: try required("TT_REGION"),
+            county: env["TT_COUNTY"].flatMap { $0.isEmpty ? nil : $0 },
             historyWater: try required("TT_HISTORY_WATER"),
             favorites: try required("TT_FAVORITES").split(separator: "|").map(String.init),
             outputDirectory: URL(fileURLWithPath: try required("TT_OUTPUT_DIR"), isDirectory: true)
@@ -103,12 +112,17 @@ final class AppStoreScreenshotsUITests: XCTestCase {
     }
 
     private func selectRegion(_ region: String, in app: XCUIApplication) {
-        let picker = app.buttons.matching(NSPredicate(format: "label == 'Region' OR label BEGINSWITH 'Region,'")).firstMatch
-        XCTAssertTrue(picker.waitForExistence(timeout: 10), "region picker not found:\n\(app.debugDescription)")
+        select(region, inPicker: "Region", in: app)
+    }
+
+    /// Opens the Browse menu picker labeled `pickerLabel` and chooses `option`.
+    private func select(_ option: String, inPicker pickerLabel: String, in app: XCUIApplication) {
+        let picker = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", pickerLabel, pickerLabel + ",")).firstMatch
+        XCTAssertTrue(picker.waitForExistence(timeout: 10), "\(pickerLabel) picker not found:\n\(app.debugDescription)")
         picker.tap()
-        let option = app.buttons[region].exists ? app.buttons[region] : app.menuItems[region]
-        XCTAssertTrue(option.waitForExistence(timeout: 5), "region option \(region) not found:\n\(app.debugDescription)")
-        option.tap()
+        let choice = app.buttons[option].exists ? app.buttons[option] : app.menuItems[option]
+        XCTAssertTrue(choice.waitForExistence(timeout: 5), "\(pickerLabel) option \(option) not found:\n\(app.debugDescription)")
+        choice.tap()
     }
 
     /// Searches Browse for the water by name and opens it. Rows carry a

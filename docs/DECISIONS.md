@@ -173,9 +173,14 @@ audience already uses for the thing the product tracks.
 
 - **App Store:** a US App Store search on 2026-09-17 returned 0 apps using
   the name.
-- **Trademarks were not searched.** No USPTO or state trademark search has
-  been done. Run one before the App Store submission and before buying a
-  domain.
+- **Trademark screen (2026-10-02): no conflict found.** The official USPTO
+  trademark search (`https://tmsearch.uspto.gov/`, a word search typed into
+  the search box), the US App Store search API, and the Justia,
+  uspto.report and Trademarkia mirrors found no "TROUT TRUCK" mark and no
+  app by that name. The nearest marks were TROUT EDGE (live, class 9,
+  fishing apps, Fishing Culture LLC), TROUT TRICK (fishing lures) and
+  TRUCK TRUCK (toy models). This is a screen, not legal advice; an
+  attorney's clearance search is the standard next step for certainty.
 - **Search terms stay next to the brand.** The name says neither
   "planting" nor "stocking", which are the words people search with, so
   page titles and meta descriptions keep that wording beside the name
@@ -323,4 +328,5 @@ The owner decided three things before submission:
 
 Still the owner's: the trademark screen for "Trout Truck" (0010), the
 support address, and moving the privacy policy off github.io (it stays
-there for now).
+there for now). Update 2026-10-02: the trademark screen is done (0010) and
+the support address is set (`SUPPORT_EMAIL`, `chelsea@chelseakr.com`).

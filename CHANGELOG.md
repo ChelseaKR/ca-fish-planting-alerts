@@ -11,24 +11,32 @@ This repository was republished with a new history on 2026-09-18
 
 ## [Unreleased]
 
-### Changed
+## [1.0.0] - 2026-10-02
 
-- The vendored portfolio standards in `docs/standards/` move from v3.0.0 to
-  v3.0.1, replaced as one set from the signed tag. v3.0.1 is a patch release
-  (re-verified stamps, text corrections, and tooling fixes) with no control,
-  threshold, or gate change.
-- The vendored portfolio standards in `docs/standards/` move from v2.0.0 to
-  v3.0.0, replaced as one set. v3.0.0 re-verifies the three documents whose
-  quarterly recheck had lapsed and adds the advisory Discovery and Adoption
-  standard.
+The first App Store release of Trout Truck for iPhone: version 1.0.0,
+build 1, free to download in the United States.
 
-## [1.0.0] - TBD
+Trout Truck shows the California Department of Fish and Wildlife's fish
+planting schedule on your iPhone, a week at a time. Browse every water on
+the schedule by region and county, or search by name, an earlier name or
+county, and see which waters are scheduled for the current week. Each
+water has its week-by-week history of scheduled plants. Favorite the
+waters you fish; favorites, browsing and history are free. The schedule
+lists the week a plant is scheduled for, never a day, and CDFW notes that
+plants are subject to change, so the app says "scheduled", not "planted".
 
-The first App Store release: the app version is 1.0.0 (build 1), and this
-section is its release notes. Replace "TBD" with the release date and write
-the notes when the release commit is prepared
-(`docs/app-store/OWNER-STEPS.md` step 9). The release workflow refuses this
-section until it has a date.
+An optional one-time purchase, Full Access ($9.99), adds a local
+notification when a favorite appears on a new week's schedule, and a Home
+Screen and Lock Screen widget for your favorites. The app checks for a
+newer schedule on launch and in the background, says which week it is
+showing and when it last checked, and keeps the last good schedule on
+screen when a check fails. It also has a Shortcuts and Siri action, a way
+to share a water, and support for VoiceOver, Dynamic Type and dark mode.
+Trout Truck collects no data, has no accounts and shows no ads. It is not
+affiliated with or endorsed by CDFW.
+
+The detailed list below covers the app, the website and the data pipeline
+behind both.
 
 ### Added
 
@@ -114,6 +122,19 @@ section until it has a date.
 
 ### Changed
 
+- The vendored portfolio standards in `docs/standards/` move from v3.0.0 to
+  v3.0.1, replaced as one set from the signed tag. v3.0.1 is a patch release
+  (re-verified stamps, text corrections, and tooling fixes) with no control,
+  threshold, or gate change.
+- The vendored portfolio standards in `docs/standards/` move from v2.0.0 to
+  v3.0.0, replaced as one set. v3.0.0 re-verifies the three documents whose
+  quarterly recheck had lapsed and adds the advisory Discovery and Adoption
+  standard.
+- The App Store screenshot script also filters Browse by the chosen
+  region's county with the most waters on the week's schedule. Browse
+  lists waters alphabetically, and on 2026-10-02 none of Northern Region's
+  scheduled waters were on its first screen, so the first screenshot would
+  have shown no "This week" badge.
 - Site: a water page's planting history says "Scheduled" and "Schedule
   changed" where it printed the raw values "listed" and "removed", the words
   the app uses. A page that shows a changed week explains it in a sentence:

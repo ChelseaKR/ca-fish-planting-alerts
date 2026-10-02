@@ -147,7 +147,9 @@ final class AppEnvironment {
             self.notificationHistoryStore = historyStore
             self.favorites = favStore.load()
             self.alertState = stateStore.load()
-            self.notificationHistory = historyStore.load()
+            var history = historyStore.load()
+            history.prune(now: Date())
+            self.notificationHistory = history
             entitlementStore = EntitlementStore(layout: layout)
         } catch {
             // Never fabricate a snapshot to paper over this: an honest
@@ -323,9 +325,7 @@ final class AppEnvironment {
             try? alertStateStore?.save(alertState)
             if !plan.notifications.isEmpty, FreeTier.notificationsAllowed(isEntitled: purchases.isEntitled) {
                 await notifications.schedule(plan.notifications)
-                for notification in plan.notifications {
-                    notificationHistory.record(notification)
-                }
+                notificationHistory.record(plan.notifications, at: now)
                 try? notificationHistoryStore?.save(notificationHistory)
             }
         }

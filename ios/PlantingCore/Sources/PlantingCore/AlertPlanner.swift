@@ -46,17 +46,26 @@ public struct PlannedNotification: Equatable, Sendable, Identifiable {
     /// `schema/README.md`: "all fish plants are subject to change... Never
     /// say 'stocked'."
     public func body() -> String {
-        let byWeek = Dictionary(grouping: newKeys, by: \.weekStart)
-        let weeks = byWeek.keys.sorted()
-        let when: String
-        if weeks.count == 1 {
-            when = "Scheduled for the week of \(weeks[0].isoDate)"
-        } else {
-            when = "Scheduled for the weeks of " + weeks.map(\.isoDate).joined(separator: " and ")
-        }
-        let species = newKeys.map(\.species).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
-        let what = species.isEmpty ? "species not stated" : species.joined(separator: ", ")
-        return "\(when) (\(what)). Plans can change; CDFW gives the week, not the day."
+        "\(Self.scheduledPhrase(weeks: weeks)) (\(Self.speciesPhrase(species))). Plans can change; CDFW gives the week, not the day."
+    }
+
+    /// The distinct weeks, ascending.
+    public var weeks: [PlainDate] { Set(newKeys.map(\.weekStart)).sorted() }
+
+    /// The distinct species, in `newKeys` order.
+    public var species: [String] {
+        newKeys.map(\.species).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+    }
+
+    /// "Scheduled for the week of …": week-of only, never a day.
+    static func scheduledPhrase(weeks: [PlainDate]) -> String {
+        if weeks.count == 1 { return "Scheduled for the week of \(weeks[0].isoDate)" }
+        return "Scheduled for the weeks of " + weeks.map(\.isoDate).joined(separator: " and ")
+    }
+
+    /// An empty list is said, never left blank.
+    static func speciesPhrase(_ species: [String]) -> String {
+        species.isEmpty ? "species not stated" : species.joined(separator: ", ")
     }
 }
 
@@ -69,39 +78,64 @@ public struct AlertPlan: Equatable, Sendable {
     }
 }
 
-/// A record of a notification that was sent, for display in notification history.
+/// One alert the app planned, kept for the in-app history. It records the
+/// schedule's own granularity, the week(s), never a day: `foundAt` is when
+/// this device found the new week(s), not when fish are planted.
 public struct NotificationRecord: Codable, Equatable, Sendable, Identifiable {
+    /// Unique per record. `PlannedNotification.id` alone is not: a week that
+    /// is removed and later relisted produces the same identifier again.
     public let id: String
     public let waterID: Water.ID
     public let waterName: String
-    public let species: String
-    public let sentAt: Date
-    public init(id: String, waterID: Water.ID, waterName: String, species: String, sentAt: Date) {
+    /// Ascending week starts, as in the alert.
+    public let weeks: [PlainDate]
+    public let species: [String]
+    public let foundAt: Date
+
+    public init(id: String, waterID: Water.ID, waterName: String, weeks: [PlainDate], species: [String], foundAt: Date) {
         self.id = id
         self.waterID = waterID
         self.waterName = waterName
+        self.weeks = weeks
         self.species = species
-        self.sentAt = sentAt
+        self.foundAt = foundAt
+    }
+
+    public init(_ notification: PlannedNotification, foundAt: Date) {
+        self.init(id: "\(notification.id).\(Int(foundAt.timeIntervalSince1970))",
+                  waterID: notification.waterID,
+                  waterName: notification.waterName,
+                  weeks: notification.weeks,
+                  species: notification.species,
+                  foundAt: foundAt)
+    }
+
+    /// "Scheduled for the week of 2026-09-20 (Rainbow trout)": the same
+    /// wording as the alert itself.
+    public var summary: String {
+        "\(PlannedNotification.scheduledPhrase(weeks: weeks)) (\(PlannedNotification.speciesPhrase(species)))"
     }
 }
 
-/// A log of sent notifications, limited to the last 30 days.
+/// The alerts of the last 30 days, newest first. Pure: the caller passes
+/// the clock.
 public struct NotificationHistory: Codable, Equatable, Sendable {
-    public var records: [NotificationRecord]
+    public static let retentionDays = 30
+    public private(set) var records: [NotificationRecord]
     public init(records: [NotificationRecord] = []) { self.records = records }
 
-    /// Adds a new record and prunes entries older than 30 days.
-    public mutating func record(_ notification: PlannedNotification) {
-        let record = NotificationRecord(
-            id: notification.id,
-            waterID: notification.waterID,
-            waterName: notification.waterName,
-            species: notification.species.joined(separator: ", "),
-            sentAt: Date()
-        )
-        records.append(record)
-        let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-        records.removeAll { $0.sentAt < cutoff }
+    /// Adds the alerts found at `now`, then drops records older than
+    /// `retentionDays`.
+    public mutating func record(_ notifications: [PlannedNotification], at now: Date) {
+        records.append(contentsOf: notifications.map { NotificationRecord($0, foundAt: now) })
+        records.sort { $0.foundAt > $1.foundAt }
+        prune(now: now)
+    }
+
+    /// Drops records older than `retentionDays` before `now`.
+    public mutating func prune(now: Date) {
+        let cutoff = now.addingTimeInterval(-Double(Self.retentionDays) * 24 * 60 * 60)
+        records.removeAll { $0.foundAt < cutoff }
     }
 }
 

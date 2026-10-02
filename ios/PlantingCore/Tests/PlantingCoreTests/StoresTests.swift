@@ -63,6 +63,18 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(reloaded, state)
     }
 
+    func testNotificationHistoryRoundTripThroughDisk() throws {
+        let layout = AppStorageLayout(directory: tempDir)
+        let store = NotificationHistoryStore(layout: layout)
+        XCTAssertTrue(store.load().records.isEmpty, "no file yet = empty, not a crash")
+        var history = store.load()
+        let alert = PlannedNotification(waterID: "cdfw-1", waterName: "Test Lake",
+                                        newKeys: [PlantKey(weekStart: PlainDate(isoDate: "2026-09-20")!, species: "Trout")])
+        history.record([alert], at: Date(timeIntervalSince1970: 1_790_000_000))
+        try store.save(history)
+        XCTAssertEqual(store.load(), history)
+    }
+
     func testSnapshotStoreAtomicReplaceRejectsMalformedBytes() throws {
         let layout = AppStorageLayout(directory: tempDir)
         let bundled = tempDir.appendingPathComponent("bundled.json")

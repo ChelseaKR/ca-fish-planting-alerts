@@ -87,22 +87,25 @@ struct AboutView: View {
 
             if !environment.notificationHistory.records.isEmpty {
                 Section {
-                    ForEach(environment.notificationHistory.records.sorted(by: { $0.sentAt > $1.sentAt })) { record in
+                    ForEach(environment.notificationHistory.records) { record in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(record.waterName)
                                 .font(.headline)
-                            Text(record.species)
+                            Text(record.summary)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondaryText)
-                            Text(record.sentAt.formatted(date: .abbreviated, time: .shortened))
+                            // The day this device found the new week, not a
+                            // planting day: CDFW gives the week only.
+                            Text("Found \(record.foundAt.formatted(date: .abbreviated, time: .omitted))")
                                 .font(.caption)
                                 .foregroundStyle(.tertiaryText)
                         }
+                        .accessibilityElement(children: .combine)
                     }
                 } header: {
                     SectionHeader("Notification history")
                 } footer: {
-                    Text("Last 30 days of alerts. Older entries are automatically removed.")
+                    Text("New weeks found for your favorites in the last 30 days, kept on this device. CDFW gives the week, not the day, and plans can change.")
                         .font(.footnote)
                 }
             }

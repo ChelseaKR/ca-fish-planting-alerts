@@ -13,6 +13,10 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- The vendored portfolio standards in `docs/standards/` move from v3.0.0 to
+  v3.0.1, replaced as one set from the signed tag. v3.0.1 is a patch release
+  (re-verified stamps, text corrections, and tooling fixes) with no control,
+  threshold, or gate change.
 - The vendored portfolio standards in `docs/standards/` move from v2.0.0 to
   v3.0.0, replaced as one set. v3.0.0 re-verifies the three documents whose
   quarterly recheck had lapsed and adds the advisory Discovery and Adoption

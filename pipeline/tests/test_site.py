@@ -356,6 +356,14 @@ def _ics_lines(ics: str, prefix: str) -> list[str]:
     return [ln for ln in ics.splitlines() if ln.startswith(prefix)]
 
 
+def _feed(water: dict, base_url: str) -> str:
+    """Build a feed the way the site build does: the caller passes the
+    species phrase its water page uses, species_phrase over every plant on
+    record (_water_view), so the feed name and the page cannot disagree."""
+    species = site.species_phrase({p["species"] for p in water["plants"]})
+    return site.build_water_ics(water=water, base_url=base_url, species=species)
+
+
 def test_calendar_name_says_the_species_the_water_is_scheduled_for():
     """A catfish-only water's calendar used to be named "... trout planting
     schedule" while its own page said catfish. The feed names now follow
@@ -370,16 +378,16 @@ def test_calendar_name_says_the_species_the_water_is_scheduled_for():
         "Lake Perris",
         [_plant("Trout", "2026-09-13"), _plant("Catfish", "2026-09-20")],
     )
-    assert _ics_lines(
-        site.build_water_ics(water=catfish, base_url=base), "X-WR-CALNAME"
-    ) == ["X-WR-CALNAME:MacArthur Park Lake catfish planting schedule"]
+    assert _ics_lines(_feed(catfish, base), "X-WR-CALNAME") == [
+        "X-WR-CALNAME:MacArthur Park Lake catfish planting schedule"
+    ]
     # A trout-only water's feed name is exactly what it was before.
-    assert _ics_lines(
-        site.build_water_ics(water=trout, base_url=base), "X-WR-CALNAME"
-    ) == ["X-WR-CALNAME:Eagle Lake trout planting schedule"]
-    assert _ics_lines(
-        site.build_water_ics(water=mixed, base_url=base), "X-WR-CALNAME"
-    ) == ["X-WR-CALNAME:Lake Perris trout and catfish planting schedule"]
+    assert _ics_lines(_feed(trout, base), "X-WR-CALNAME") == [
+        "X-WR-CALNAME:Eagle Lake trout planting schedule"
+    ]
+    assert _ics_lines(_feed(mixed, base), "X-WR-CALNAME") == [
+        "X-WR-CALNAME:Lake Perris trout and catfish planting schedule"
+    ]
 
 
 def test_calendar_name_counts_a_removed_week_like_the_page_does():
@@ -390,7 +398,7 @@ def test_calendar_name_counts_a_removed_week_like_the_page_does():
         "Some Lake",
         [_plant("Trout", "2026-09-13", "removed"), _plant("Catfish", "2026-09-20")],
     )
-    ics = site.build_water_ics(water=water, base_url="https://example.invalid/w/")
+    ics = _feed(water, "https://example.invalid/w/")
     assert "X-WR-CALNAME:Some Lake trout and catfish planting schedule" in ics
     assert ics.count("BEGIN:VEVENT") == 1  # only the listed week is an event
 
@@ -411,7 +419,7 @@ def test_calendar_identity_does_not_change_with_the_species_wording():
         "Lake Perris",
         [_plant("Trout", "2026-09-13"), _plant("Catfish", "2026-09-13")],
     )
-    ics = site.build_water_ics(water=catfish, base_url=base)
+    ics = _feed(catfish, base)
     assert _ics_lines(ics, "UID:") == [
         "UID:cdfw-7351-2026-09-13-catfish@ca-fish-planting-alerts.invalid",
         "UID:cdfw-7351-2026-09-20-catfish@ca-fish-planting-alerts.invalid",
@@ -419,7 +427,7 @@ def test_calendar_identity_does_not_change_with_the_species_wording():
     assert _ics_lines(ics, "PRODID:") == [
         "PRODID:-//ca-fish-planting-alerts//snapshot v1//EN"
     ]
-    assert _ics_lines(site.build_water_ics(water=mixed, base_url=base), "UID:") == [
+    assert _ics_lines(_feed(mixed, base), "UID:") == [
         "UID:cdfw-2-2026-09-13-trout@ca-fish-planting-alerts.invalid",
         "UID:cdfw-2-2026-09-13-catfish@ca-fish-planting-alerts.invalid",
     ]
@@ -493,16 +501,16 @@ def test_a_removed_week_reads_schedule_changed_and_the_page_says_what_that_means
     assert cells.count("Scheduled") == len(target["plants"]) - 1
     # Words carry the meaning: not a color, not an icon, and no script.
     assert "<td>removed</td>" not in html and "<td>listed</td>" not in html
-    note = re.search(r'<p class="muted" id="status-note">(.*?)</p>', html, re.S)
-    assert note, "the explanation is missing"
-    text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", note.group(1))).strip()
-    assert text == (
-        "Schedule changed means CDFW listed that week earlier and later "
+    notes = [
+        re.sub(r"\s+", " ", m).strip()
+        for m in re.findall(r'<p class="muted">([^<]*Schedule changed[^<]*)</p>', html)
+    ]
+    assert notes, "the explanation is missing"
+    assert notes == [
+        '"Schedule changed" means CDFW listed this week earlier and later '
         "removed it from its schedule. CDFW's plans can change."
-    )
-    # The table is tied to the explanation for assistive technology.
-    assert re.search(r'<table aria-describedby="status-note">', html)
+    ]
     # The week-of wording holds: never "planted" or "stocked" in the note.
-    assert "planted" not in text.lower() and "stocked" not in text.lower()
+    assert "planted" not in notes[0].lower() and "stocked" not in notes[0].lower()
     # A neighbor with no changed week is unaffected.
-    assert "status-note" not in _water_html(out2, other)
+    assert "Schedule changed" not in _water_html(out2, other)

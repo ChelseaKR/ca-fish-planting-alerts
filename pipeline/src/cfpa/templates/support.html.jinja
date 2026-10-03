@@ -1,6 +1,9 @@
 {% extends "base.html.jinja" %}
 {% block content %}
 <h1>{{ site_name }} support &amp; FAQ</h1>
+{% if app_store_live %}
+{% with badge_placement = "support" %}{% include "_app_store_badge.html.jinja" %}{% endwith %}
+{% endif %}
 {% if support_email %}
 <p class="lede">
   Questions, a wrong water name, or an alert that did not arrive: email

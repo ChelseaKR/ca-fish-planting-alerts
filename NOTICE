@@ -37,3 +37,20 @@ California Department of Fish and Wildlife.
 
 The terms, quoted verbatim, and the reasoning behind the attribution are in
 docs/LICENSES-AND-ATTRIBUTION.md.
+
+
+App Store badge: Apple Inc.
+---------------------------
+
+pipeline/src/cfpa/templates/app-store-badge.svg is Apple's "Download on the
+App Store" badge (preferred black, US English), unmodified, as served by
+Apple's marketing tools on 2026-10-02:
+https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us
+SHA-256 a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f.
+
+Apple owns it. It is used under Apple's App Store Marketing Artwork License
+Agreement and the App Store Marketing Guidelines,
+https://developer.apple.com/app-store/marketing/guidelines/, which allow it
+only in connection with an app that is available on the App Store. The
+website shows it only when the APP_STORE_LIVE switch is on (pipeline/src/
+cfpa/site.py). The Elastic License 2.0 does not apply to it.

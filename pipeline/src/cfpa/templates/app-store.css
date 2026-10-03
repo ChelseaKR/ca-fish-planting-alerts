@@ -1,0 +1,27 @@
+
+/* App Store badge (site.py APP_STORE_LIVE). site.py appends this file to
+   style.css only when the switch is on. Apple's badge rules: shown at 40px
+   tall, the on-screen minimum, never resized below it or recolored; clear
+   space of a quarter of its height (10px) on every side, which the link's
+   padding provides, so the focus outline and the text sit outside it. The
+   img has width and height attributes, so the page does not shift when the
+   SVG arrives. */
+.app-store-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.app-store-badge {
+  display: inline-block;
+  padding: 10px;
+  margin-left: -10px;
+  line-height: 0;
+}
+.app-store-badge img {
+  display: block;
+  width: 120px;
+  height: 40px;
+}
+.app-store-price { color: var(--muted); }

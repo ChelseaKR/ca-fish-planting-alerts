@@ -17,9 +17,9 @@ import datetime as dt
 import hashlib
 import json
 import os
-import re
 import shutil
 import subprocess
+from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
@@ -106,33 +106,113 @@ def _off_problems(out: Path) -> list[str]:
     return problems
 
 
-_BADGE_LINK = re.compile(
-    r'<a class="app-store-badge" href="([^"]+)" data-app-store-badge="([a-z]+)">'
-    r'<img src="([^"]+)" width="120" height="40" alt="Download on the App Store"></a>'
-)
+class _PageParser(HTMLParser):
+    """What the App Store checks need from a page, read with the standard
+    library's HTML parser rather than by matching tags with a regex: every
+    Smart App Banner tag and whether it is in <head>, every App Store badge
+    link with its attributes and contents, and every executable <script>."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.in_head = False
+        self.banners: list[tuple[str | None, bool]] = []  # (content, in <head>)
+        self.badges: list[dict[str, object]] = []
+        self.scripts: list[str] = []
+        self._badge: dict[str, object] | None = None
+        self._script: list[str] | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = dict(attrs)
+        if tag == "head":
+            self.in_head = True
+        elif tag == "meta" and a.get("name") == "apple-itunes-app":
+            self.banners.append((a.get("content"), self.in_head))
+        elif tag == "a" and "app-store-badge" in (a.get("class") or "").split():
+            self._badge = {"attrs": a, "children": [], "text": ""}
+            self.badges.append(self._badge)
+        elif tag == "script" and a.get("type") in (None, "", "text/javascript"):
+            self._script = []
+        if self._badge is not None and tag != "a":
+            children = self._badge["children"]
+            assert isinstance(children, list)
+            children.append((tag, a))
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "head":
+            self.in_head = False
+        elif tag == "a":
+            self._badge = None
+        elif tag == "script" and self._script is not None:
+            self.scripts.append("".join(self._script))
+            self._script = None
+
+    def handle_data(self, data: str) -> None:
+        if self._script is not None:
+            self._script.append(data)
+        if self._badge is not None:
+            self._badge["text"] = str(self._badge["text"]) + data
+
+
+def _parse(html: str) -> _PageParser:
+    parser = _PageParser()
+    parser.feed(html)
+    parser.close()
+    return parser
 
 
 def _banner_problems(pages: dict[str, str]) -> list[str]:
     problems = []
     for name, html in pages.items():
-        if html.count(BANNER) != 1:
-            problems.append(f"{name}: banner tag count {html.count(BANNER)}")
-        elif BANNER not in html.split("</head>", 1)[0]:
+        banners = _parse(html).banners
+        if len(banners) != 1:
+            problems.append(f"{name}: banner tag count {len(banners)}")
+            continue
+        content, in_head = banners[0]
+        if content != f"app-id={APP_ID}":
+            problems.append(f"{name}: banner content {content!r}")
+        if not in_head:
             problems.append(f"{name}: banner tag not in <head>")
     return problems
+
+
+def _badge_shape(badge: dict[str, object]) -> tuple[object, ...]:
+    """(href, placement, img src, img width, img height, img alt), or the
+    whole record when the link holds anything but one image and no text."""
+    attrs = badge["attrs"]
+    children = badge["children"]
+    assert isinstance(attrs, dict) and isinstance(children, list)
+    if len(children) != 1 or children[0][0] != "img" or str(badge["text"]).strip():
+        return ("malformed", attrs, children, badge["text"])
+    img = children[0][1]
+    return (
+        attrs.get("href"),
+        attrs.get("data-app-store-badge"),
+        img.get("src"),
+        img.get("width"),
+        img.get("height"),
+        img.get("alt"),
+    )
 
 
 def _badge_problems(pages: dict[str, str]) -> list[str]:
     problems = []
     expected = {"index.html": ("home", "./"), "support/index.html": ("support", "../")}
     for name, html in pages.items():
-        links = _BADGE_LINK.findall(html)
+        links = [_badge_shape(b) for b in _parse(html).badges]
         if name not in expected:
             if links:
                 problems.append(f"{name}: badge on a page it does not belong on")
             continue
         placement, root = expected[name]
-        if links != [(APP_URL, placement, f"{root}assets/app-store-badge.svg")]:
+        want = (
+            APP_URL,
+            placement,
+            f"{root}assets/app-store-badge.svg",
+            "120",
+            "40",
+            "Download on the App Store",
+        )
+        if links != [want]:
             problems.append(f"{name}: badge link {links!r}")
         if PRICE_COPY not in html:
             problems.append(f"{name}: price copy missing")
@@ -277,7 +357,7 @@ def test_negative_control_on_check_catches_a_wrong_app_id(tmp_path, monkeypatch)
     monkeypatch.setattr(site, "APP_STORE_ID", "6818637465")  # Queer Frame's
     assert site.APP_STORE_ID != APP_ID  # the sabotage landed
     out = _build(tmp_path, app_store_live=True)
-    assert any("banner tag count 0" in p for p in _on_problems(out))
+    assert any("banner content 'app-id=6818637465'" in p for p in _on_problems(out))
 
 
 def test_negative_control_on_check_catches_an_edited_badge(tmp_path):
@@ -329,8 +409,6 @@ const events = (window.dataLayer || [])
 process.stdout.write(JSON.stringify({ clickListeners: (listeners.click || []).length, events }));
 """
 
-_SCRIPT = re.compile(r"<script>(.*?)</script>", re.DOTALL)
-
 
 def _node() -> str:
     node = shutil.which("node")
@@ -369,7 +447,7 @@ def live_tag_js(tmp_path_factory) -> str:
         app_store_live=True,
         ga4_measurement_id="G-TEST12345",
     )
-    scripts = _SCRIPT.findall((out / "index.html").read_text(encoding="utf-8"))
+    scripts = _parse((out / "index.html").read_text(encoding="utf-8")).scripts
     assert len(scripts) == 1
     return scripts[0]
 

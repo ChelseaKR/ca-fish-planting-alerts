@@ -96,9 +96,17 @@ has ever recorded).
 `publish.yml` passes three optional repository variables (Settings ->
 Secrets and variables -> Actions -> Variables) to `cfpa`:
 
-- `SITE_BASE_URL` -- canonical URLs, `sitemap.xml`, `robots.txt`. Unset keeps
-  `https://chelseakr.github.io/ca-fish-planting-alerts`. Set it when a custom
-  domain is attached to Pages.
+- `SITE_BASE_URL` -- canonical URLs, `og:url`, structured data,
+  `sitemap.xml`, `robots.txt` and the calendar feeds. Unset keeps
+  `https://chelseakr.github.io/ca-fish-planting-alerts`, and the build is
+  byte for byte what it was. Set to a custom domain (`https://<host>`, at the
+  host root, not github.io), the build also writes a `CNAME` file naming it.
+  `cfpa --legacy-site-out DIR` then also writes the github.io site that keeps
+  the app's snapshot and the calendar feeds and redirects every page to the
+  domain (DECISIONS 0019). `publish.yml` pushes the domain build to the
+  repository named by `DOMAIN_SITE_REPO` with the `DOMAIN_SITE_DEPLOY_KEY`
+  secret, waits until the domain serves the run's snapshot, and only then
+  deploys the github.io site.
 - `APP_STORE_URL` -- until set, the site says the app is not in the App Store
   yet instead of linking to it.
 - `SUPPORT_EMAIL` -- the contact line on `/support/` and `/privacy/`. Unset

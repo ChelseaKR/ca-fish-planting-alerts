@@ -38,6 +38,39 @@ SITE_NAME = "Trout Truck"
 # (about, privacy, support, 404).
 SITE_TAGLINE = "CA trout planting schedule"
 
+# Where the site has lived since it launched, and what the iOS app's snapshot
+# URL and per-water links point at (ios/PlantingCore SnapshotEndpoint.swift;
+# builds already in review hard-code it). With no SITE_BASE_URL the site is
+# built for this URL, exactly as before a custom domain was possible.
+LEGACY_BASE_URL = "https://chelseakr.github.io/ca-fish-planting-alerts"
+
+
+def custom_domain(base_url: str) -> str | None:
+    """The custom domain ``base_url`` names, or None when it names none.
+
+    A custom domain is an ``https://`` URL at the root of a host that is not
+    github.io, such as ``https://trouttruck.com``: the build then writes a
+    ``CNAME`` file with that host, and the github.io URL can get the redirect
+    pages from ``cfpa.legacy`` (DECISIONS 0019). Anything else (the github.io
+    default, a URL with a path, ``http://``, a port) is not a custom domain,
+    and the build is the one it was before this existed.
+    """
+    parts = urlsplit(base_url.rstrip("/"))
+    if (
+        parts.scheme != "https"
+        or parts.path
+        or parts.query
+        or parts.fragment
+        or parts.port is not None
+        or parts.username is not None
+    ):
+        return None
+    host = parts.hostname
+    if not host or host == "github.io" or host.endswith(".github.io"):
+        return None
+    return host
+
+
 # The website's Google Analytics 4 measurement ID (DECISIONS 0011): the web
 # stream of GA4 property 554849409. It is public by design (it appears in
 # every page's HTML), so it is committed here rather than kept in a secret or
@@ -892,8 +925,13 @@ def build_site(
     ga4_measurement_id: str | None = None,
     google_site_verification: str | None = None,
     dataset_license_url: str | None = DATASET_LICENSE_URL,
+    cname: str | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
+
+    ``cname`` (``custom_domain(base_url)``, passed by ``cli.run``) writes a
+    ``CNAME`` file naming the custom domain. None writes no file, so a build
+    without a custom domain is byte for byte what it was before.
 
     ``ga4_measurement_id`` defaults to None (no analytics) rather than to
     ``GA4_MEASUREMENT_ID``, so a caller gets the tag only by asking for it;
@@ -1216,5 +1254,13 @@ def build_site(
     robots_path = out_dir / "robots.txt"
     robots_path.write_text(robots_txt, encoding="utf-8")
     written.append(robots_path)
+
+    # ---- CNAME, only for a custom domain. A Pages site published from a
+    # branch takes its custom domain from this file, so it has to be in
+    # every build that is pushed there (DECISIONS 0019).
+    if cname:
+        cname_path = out_dir / "CNAME"
+        cname_path.write_text(f"{cname}\n", encoding="utf-8")
+        written.append(cname_path)
 
     return written

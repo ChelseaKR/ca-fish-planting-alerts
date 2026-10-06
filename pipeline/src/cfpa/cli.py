@@ -24,6 +24,7 @@ from . import VERSION
 from . import aliases as aliases_mod
 from . import fetch as fetch_mod
 from . import history as history_mod
+from . import legacy as legacy_mod
 from . import parse as parse_mod
 from . import site as site_mod
 from . import snapshot as snapshot_mod
@@ -36,7 +37,7 @@ DEFAULT_ALIASES_PATH = PIPELINE_DIR / "data" / "aliases.json"
 DEFAULT_SPECIES_ALIASES_PATH = PIPELINE_DIR / "data" / "species_aliases.json"
 DEFAULT_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v1.json"
 DEFAULT_SITE_OUT = REPO_ROOT / "site"
-DEFAULT_BASE_URL = "https://chelseakr.github.io/ca-fish-planting-alerts"
+DEFAULT_BASE_URL = site_mod.LEGACY_BASE_URL
 
 
 class PipelineError(RuntimeError):
@@ -92,6 +93,7 @@ def run(
     site_out: Path,
     base_url: str,
     write_site: bool = True,
+    legacy_site_out: Path | None = None,
     app_store_url: str | None = None,
     app_store_live: bool = False,
     support_email: str | None = None,
@@ -110,7 +112,17 @@ def run(
     ``fetch_schedule`` as a second, independent line of defense -- but this
     call is what a ``--fixture`` dry run relies on; without it a stale saved
     page would build a snapshot just like a fresh one).
+
+    ``legacy_site_out``, given only with a custom-domain ``base_url``, also
+    writes the github.io site that keeps the snapshot and the calendar feeds
+    and redirects every page to the domain (``cfpa.legacy``, DECISIONS 0019).
     """
+    cname = site_mod.custom_domain(base_url)
+    if legacy_site_out is not None and (cname is None or not write_site):
+        raise legacy_mod.LegacySiteError(
+            "--legacy-site-out needs a site build (no --no-site) for a custom "
+            f"domain (https://<host>, no path, not github.io); got {base_url!r}"
+        )
     if fixture_path:
         page = fetch_mod.load_fixture(fixture_path, fetched_at=fixture_fetched_at)
     else:
@@ -220,7 +232,15 @@ def run(
             support_email=support_email,
             ga4_measurement_id=ga4_measurement_id,
             google_site_verification=google_site_verification,
+            cname=cname,
         )
+        if legacy_site_out is not None:
+            legacy_mod.build_legacy_site(
+                site_out,
+                legacy_site_out,
+                new_base_url=base_url,
+                google_site_verification=google_site_verification,
+            )
 
     coverage = snapshot_mod.Coverage(**snap["coverage"])
     coverage.print_report()
@@ -249,7 +269,21 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA_PATH)
     parser.add_argument("--site-out", type=Path, default=DEFAULT_SITE_OUT)
-    parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
+    parser.add_argument(
+        "--base-url",
+        default=DEFAULT_BASE_URL,
+        help="the site's root URL (the SITE_BASE_URL repository variable; empty = "
+        f"{DEFAULT_BASE_URL}). An https:// URL at the root of a host that is not "
+        "github.io is a custom domain: the build also writes CNAME",
+    )
+    parser.add_argument(
+        "--legacy-site-out",
+        type=lambda s: Path(s) if s else None,
+        default=None,
+        help="with a custom-domain --base-url, also write the github.io site here: "
+        "the snapshot and calendar feeds byte for byte, and a redirect page for "
+        "every page (DECISIONS 0019; empty = unset)",
+    )
     parser.add_argument(
         "--app-store-url",
         default=None,
@@ -314,6 +348,7 @@ def main(argv: list[str] | None = None) -> int:
             site_out=args.site_out,
             base_url=args.base_url or DEFAULT_BASE_URL,
             write_site=not args.no_site,
+            legacy_site_out=args.legacy_site_out,
             app_store_url=args.app_store_url or None,
             app_store_live=app_store_live,
             support_email=args.support_email or None,
@@ -331,6 +366,7 @@ def main(argv: list[str] | None = None) -> int:
         parse_mod.ParseError,
         history_mod.HistoryIntegrityError,
         snapshot_mod.SnapshotBuildError,
+        legacy_mod.LegacySiteError,
     ) as exc:
         print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
         return 1

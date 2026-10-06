@@ -21,6 +21,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -77,6 +78,49 @@ def _ld_urls(node: Any) -> list[str]:
     if isinstance(node, str) and node.startswith(("http://", "https://")):
         return [node]
     return []
+
+
+LEGACY_HOST = "chelseakr.github.io"
+# The hosts the site links besides its own: CDFW's schedule and pages, and
+# schema.org's @context. Any other host in the structured data or a feed
+# fails the build check.
+EXTERNAL_HOSTS = frozenset(
+    {
+        "schema.org",
+        "nrm.dfg.ca.gov",
+        "wildlife.ca.gov",
+        "apps.wildlife.ca.gov",
+        "data.ca.gov",
+    }
+)
+
+
+def _host(url: str) -> str:
+    """The URL's host, parsed. A decision about a URL is never a substring
+    test on the whole string (CodeQL py/incomplete-url-substring-sanitization)."""
+    host = urlsplit(url).hostname
+    assert host, url
+    return host
+
+
+def _is_github_io(host: str) -> bool:
+    return host.split(".")[-2:] == ["github", "io"]
+
+
+def _assert_own(url: str) -> None:
+    parts = urlsplit(url)
+    assert parts.scheme == "https", url
+    assert parts.hostname == DOMAIN, url
+    assert parts.path.startswith("/"), url
+
+
+def _partition(urls: list[str], own: list[str], external: set[str]) -> None:
+    """Each URL by its parsed host: the site's own, or someone else's."""
+    for url in urls:
+        if _host(url) == DOMAIN:
+            own.append(url)
+        else:
+            external.add(_host(url))
 
 
 # ---- custom_domain ---------------------------------------------------------
@@ -181,18 +225,24 @@ def test_cname_names_the_domain(domain_build: tuple[Path, Path]) -> None:
     assert (out / "CNAME").read_text(encoding="utf-8") == f"{DOMAIN}\n"
 
 
-def test_nothing_in_the_domain_build_mentions_github_io(
+def test_no_url_in_the_domain_build_is_on_github_io(
     domain_build: tuple[Path, Path],
 ) -> None:
     out, _ = domain_build
     files = _files(out)
     assert len(files) > 50
+    found = 0
     for rel in files:
         text = (out / rel).read_text(encoding="utf-8")
-        assert "chelseakr.github.io" not in text, rel
+        for url in _URL.findall(text):
+            found += 1
+            host = _host(url)
+            assert host != LEGACY_HOST, (rel, url)
+            assert not _is_github_io(host), (rel, url)
         # No link keeps the github.io path prefix (the .ics PRODID names the
         # project, which is not a link, and stays as it is).
         assert '="/ca-fish-planting-alerts' not in text, rel
+    assert found > 100
 
 
 def test_every_url_the_site_states_about_itself_is_on_the_domain(
@@ -200,6 +250,7 @@ def test_every_url_the_site_states_about_itself_is_on_the_domain(
 ) -> None:
     out, _ = domain_build
     own: list[str] = []
+    external: set[str] = set()
     pages = [p for p in _files(out) if p.suffix == ".html"]
     for rel in pages:
         text = (out / rel).read_text(encoding="utf-8")
@@ -211,27 +262,20 @@ def test_every_url_the_site_states_about_itself_is_on_the_domain(
             assert canonical[0] == f"{DOMAIN_URL}/{prefix}", rel
         own += canonical + og
         for block in _LD.findall(text):
-            own += [
-                u
-                for u in _ld_urls(json.loads(block))
-                if not u.startswith("https://schema.org")
-                and "wildlife.ca.gov" not in u
-                and "data.ca.gov" not in u
-                and "dfg.ca.gov" not in u
-            ]
+            _partition(_ld_urls(json.loads(block)), own, external)
     own += _LOC.findall((out / "sitemap.xml").read_text(encoding="utf-8"))
     robots = (out / "robots.txt").read_text(encoding="utf-8")
     own += _URL.findall(robots)
     for rel in _files(out):
         if rel.suffix == ".ics":
-            own += [
-                u
-                for u in _URL.findall((out / rel).read_text(encoding="utf-8"))
-                if "dfg.ca.gov" not in u and "wildlife.ca.gov" not in u
-            ]
+            _partition(
+                _URL.findall((out / rel).read_text(encoding="utf-8")), own, external
+            )
     assert len(own) > 100
     for url in own:
-        assert url.startswith(f"{DOMAIN_URL}/"), url
+        _assert_own(url)
+    # Structured data and feeds link CDFW and schema.org, and nothing else.
+    assert external <= EXTERNAL_HOSTS, external - EXTERNAL_HOSTS
     assert f"Sitemap: {DOMAIN_URL}/sitemap.xml" in robots
 
 
@@ -250,9 +294,12 @@ def test_the_snapshot_stays_at_the_github_io_path_byte_for_byte(
     out, old = domain_build
     rel = Path("snapshot") / "v1.json"
     assert (old / rel).read_bytes() == (out / rel).read_bytes()
-    # The exact path the iOS app fetches, under the github.io site's root.
+    # The exact URL the iOS app fetches, parsed: its path, under the
+    # github.io site's root, is this file.
     app_url = "https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json"
-    assert old / app_url.removeprefix(LEGACY + "/") == old / rel
+    parts = urlsplit(app_url)
+    assert (parts.scheme, parts.hostname) == ("https", LEGACY_HOST)
+    assert Path(parts.path).relative_to(urlsplit(LEGACY).path) == rel
 
 
 def test_every_calendar_feed_stays_at_its_github_io_path_byte_for_byte(
@@ -291,8 +338,10 @@ def test_the_app_s_water_links_land_on_a_redirect(
     snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
     for w in snap["waters"]:
         # SnapshotEndpoint.siteWaterURL: /ca-fish-planting-alerts/water/<slug>/
-        page = old / "water" / w["slug"] / "index.html"
-        assert f"{DOMAIN_URL}/water/{w['slug']}/" in page.read_text(encoding="utf-8")
+        link = urlsplit(f"{LEGACY}/water/{w['slug']}/")
+        page = old / Path(link.path).relative_to(urlsplit(LEGACY).path) / "index.html"
+        text = page.read_text(encoding="utf-8")
+        assert _CANONICAL.findall(text) == [f"{DOMAIN_URL}/water/{w['slug']}/"], w
 
 
 def test_the_github_io_site_holds_only_data_redirects_404_and_sitemap(
@@ -309,7 +358,10 @@ def test_the_github_io_site_holds_only_data_redirects_404_and_sitemap(
     assert not (old / "robots.txt").exists()
     for rel in _files(old):
         if rel.suffix == ".html":
-            assert "googletagmanager" not in (old / rel).read_text(encoding="utf-8")
+            text = (old / rel).read_text(encoding="utf-8")
+            # A redirect page links the domain and nothing else: no
+            # analytics host, no github.io.
+            assert {_host(u) for u in _URL.findall(text)} == {DOMAIN}, rel
 
 
 def test_the_github_io_404_sends_any_other_path_to_the_domain(
@@ -330,7 +382,11 @@ def test_the_github_io_sitemap_lists_the_old_url_of_every_redirect(
     pages = [p for p in _files(old) if p.name == "index.html"]
     assert len(locs) == len(pages)
     assert f"{LEGACY}/" in locs
-    assert all(u.startswith(f"{LEGACY}/") for u in locs)
+    site_root = urlsplit(LEGACY).path
+    for url in locs:
+        parts = urlsplit(url)
+        assert (parts.scheme, parts.hostname) == ("https", LEGACY_HOST), url
+        assert parts.path.startswith(site_root + "/"), url
 
 
 def test_the_verification_tag_stays_on_the_old_home_page_only(

@@ -26,7 +26,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The pipeline itself takes a few minutes. With a custom domain, the
+    # wait for the domain to serve this run's snapshot adds up to ten more.
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
@@ -70,7 +72,12 @@ jobs:
         working-directory: pipeline
         # Owner-set repository variables (Settings -> Secrets and variables ->
         # Actions -> Variables); all optional. Unset SITE_BASE_URL keeps the
-        # github.io default. Unset APP_STORE_URL keeps the site saying the app
+        # github.io default and builds exactly what it always has. A custom
+        # domain in it (https://<host>, DECISIONS 0019) builds the site for
+        # that domain, with a CNAME file, into ../site, and the github.io
+        # site (the snapshot and the calendar feeds byte for byte, a redirect
+        # page for every page) into ../site-legacy; the two steps after the
+        # commit then publish each to its place. Unset APP_STORE_URL keeps the site saying the app
         # is not in the App Store yet. APP_STORE_LIVE=true, set by the owner
         # once Apple approves the app, adds the Smart App Banner and the App
         # Store badge and links the app's US listing (site.py
@@ -85,6 +92,7 @@ jobs:
         run: |
           uv run cfpa --site-out ../site \
             --base-url "$SITE_BASE_URL" \
+            --legacy-site-out "${SITE_BASE_URL:+../site-legacy}" \
             --app-store-url "$APP_STORE_URL" \
             --app-store-live "$APP_STORE_LIVE" \
             --support-email "$SUPPORT_EMAIL"
@@ -111,10 +119,93 @@ jobs:
               push origin HEAD:main
           fi
 
+      - name: push the domain site to its Pages repository (custom domain only)
+        # DECISIONS 0019, option B. This repository's own Pages site never
+        # gets the custom domain: GitHub answers every github.io URL of a
+        # site that has one with a 301 to the domain, and the iOS app
+        # fetches its snapshot from the github.io URL. So the domain is
+        # served by a second repository (DOMAIN_SITE_REPO, Pages "Deploy
+        # from a branch", gh-pages, root). This step replaces that branch
+        # with this run's domain build as one fresh commit, pushed over SSH
+        # with a deploy key that can write to that repository only. The key
+        # goes from the secret into ssh-agent on stdin and is never written
+        # to disk; the agent is killed when the step ends. github.com's host
+        # key is pinned, so the push cannot be answered by another host. The
+        # CNAME file in the build is what keeps the custom domain set on a
+        # branch-published site, and .nojekyll makes Pages serve the build
+        # as it is.
+        #
+        # The files are staged from a NUL-separated list, not a wildcard
+        # (IR-15): it is a fresh repository in RUNNER_TEMP holding only the
+        # build, never this checkout.
+        if: vars.SITE_BASE_URL != ''
+        env:
+          DOMAIN_SITE_REPO: ${{ vars.DOMAIN_SITE_REPO }}
+          DOMAIN_SITE_DEPLOY_KEY: ${{ secrets.DOMAIN_SITE_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${DOMAIN_SITE_REPO}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "::error::SITE_BASE_URL is set, so the DOMAIN_SITE_REPO variable must name the domain site's repository as owner/name"
+            exit 1
+          fi
+          if [ -z "${DOMAIN_SITE_DEPLOY_KEY}" ]; then
+            echo "::error::SITE_BASE_URL is set, so the DOMAIN_SITE_DEPLOY_KEY secret is required"
+            exit 1
+          fi
+          test -f site/CNAME
+          test -f site/snapshot/v1.json
+          test -f site-legacy/snapshot/v1.json
+          "$RUNNER_TEMP/bin/gitleaks" dir site --redact --no-banner --exit-code 1
+          known="$RUNNER_TEMP/github-known-hosts"
+          # github.com's ed25519 host key, as published at https://api.github.com/meta
+          printf '%s\n' "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > "$known"
+          eval "$(ssh-agent -s)" > /dev/null
+          trap 'ssh-agent -k > /dev/null' EXIT
+          printf '%s\n' "${DOMAIN_SITE_DEPLOY_KEY}" | ssh-add -q -
+          export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=${known} -o StrictHostKeyChecking=yes"
+          work="$RUNNER_TEMP/domain-site"
+          cp -R site "$work"
+          : > "$work/.nojekyll"
+          git -C "$work" init -q -b gh-pages
+          git -C "$work" config user.name "github-actions[bot]"
+          git -C "$work" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          (cd "$work" && find . -path ./.git -prune -o -type f -print0 | git add --pathspec-from-file=- --pathspec-file-nul)
+          git -C "$work" commit -q -m "site: ${GITHUB_REPOSITORY} publish run ${GITHUB_RUN_ID}"
+          git -C "$work" push --force "git@github.com:${DOMAIN_SITE_REPO}.git" gh-pages
+          echo "pushed this run's domain build to ${DOMAIN_SITE_REPO} gh-pages"
+
+      - name: wait for the domain to serve this run's snapshot (custom domain only)
+        # The next step turns the github.io site into redirects to the
+        # domain, so it must not run until the domain serves this run's own
+        # snapshot, byte for byte, over valid HTTPS. Until it does (the
+        # first setup, a certificate still being issued, a Pages build that
+        # failed) the run stops here, and github.io keeps the last full
+        # site. The query string defeats any cache in front of Pages.
+        if: vars.SITE_BASE_URL != ''
+        env:
+          SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
+        run: |
+          set -euo pipefail
+          want="$(sha256sum site/snapshot/v1.json | cut -d' ' -f1)"
+          url="${SITE_BASE_URL%/}/snapshot/v1.json"
+          for i in $(seq 1 40); do
+            got="$(curl -fsS --proto '=https' --max-time 20 "${url}?run=${GITHUB_RUN_ID}-${i}" | sha256sum | cut -d' ' -f1 || true)"
+            if [ "$got" = "$want" ]; then
+              echo "${url} serves this run's snapshot (sha256 ${want})"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::${url} did not serve this run's snapshot (sha256 ${want}) within 10 minutes; the github.io site was left as it was"
+          exit 1
+
       - name: upload site as a Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
-          path: site
+          # With a custom domain, this repository's Pages site is the
+          # github.io one: the snapshot, the calendar feeds and the
+          # redirect pages (DECISIONS 0019).
+          path: ${{ vars.SITE_BASE_URL != '' && 'site-legacy' || 'site' }}
 
   deploy:
     needs: build

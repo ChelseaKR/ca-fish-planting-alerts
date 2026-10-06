@@ -103,7 +103,10 @@ Secrets and variables -> Actions -> Variables) to `cfpa`:
   host root, not github.io), the build also writes a `CNAME` file naming it.
   `cfpa --legacy-site-out DIR` then also writes the github.io site that keeps
   the app's snapshot and the calendar feeds and redirects every page to the
-  domain (DECISIONS 0019).
+  domain (DECISIONS 0019). `publish.yml` pushes the domain build to the
+  repository named by `DOMAIN_SITE_REPO` with the `DOMAIN_SITE_DEPLOY_KEY`
+  secret, waits until the domain serves the run's snapshot, and only then
+  deploys the github.io site.
 - `APP_STORE_URL` -- until set, the site says the app is not in the App Store
   yet instead of linking to it.
 - `SUPPORT_EMAIL` -- the contact line on `/support/` and `/privacy/`. Unset

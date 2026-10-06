@@ -369,11 +369,21 @@ tool works only on domain-level properties, never a path such as
   `<meta http-equiv="refresh" content="0">`, which Google Search treats as a
   permanent redirect. The domain build, with its `CNAME`, is published by
   a second repository from a branch. The snapshot never depends on the
-  domain. B needs a `publish.yml` change that pushes the domain build to
-  that repository with a deploy key, and only deploys the redirect pages
-  once the domain serves the same run's snapshot. That change is not part
-  of this one: it holds a write credential for another repository, so it
-  needs the owner's own review.
+  domain. **Chosen by the owner on 2026-10-05**, with `trouttruck.com`.
+
+**What `publish.yml` does under B.** With `SITE_BASE_URL` unset, nothing
+new runs. Set, after the history commit: it pushes this run's domain build
+as one fresh commit to the `gh-pages` branch of `DOMAIN_SITE_REPO` (a
+repository variable), over SSH with a deploy key from the
+`DOMAIN_SITE_DEPLOY_KEY` secret that can write to that repository only.
+The key goes from the secret into `ssh-agent` on stdin and is never
+written to disk, and github.com's host key is pinned. Then it polls
+`<domain>/snapshot/v1.json` over HTTPS until it serves this run's
+snapshot byte for byte (up to ten minutes), and only then uploads the
+github.io site as this repository's Pages artifact. A domain that is not
+serving fails the run there, and github.io keeps the last full site. The
+second repository publishes from its branch, so the `CNAME` file in each
+build keeps its custom domain set.
 
 **What is built (both options).**
 

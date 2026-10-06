@@ -330,3 +330,69 @@ Still the owner's: the trademark screen for "Trout Truck" (0010), the
 support address, and moving the privacy policy off github.io (it stays
 there for now). Update 2026-10-02: the trademark screen is done (0010) and
 the support address is set (`SUPPORT_EMAIL`, `chelsea@chelseakr.com`).
+
+## 0019 — A custom domain without breaking the snapshot URL (2026-10-05; proposed)
+
+The site may move from `https://chelseakr.github.io/ca-fish-planting-alerts/`
+to a domain of its own. The iOS app fetches
+`https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json`, and
+the builds already on phones and in review hard-code that URL, so it has to
+keep working for as long as any of those builds is installed.
+
+**What GitHub Pages does (measured 2026-10-05, not assumed).** When a
+repository's Pages site has a custom domain, GitHub answers every github.io
+URL of that site with a path-preserving `301` to the domain:
+`https://chelseakr.github.io/womens-sports-calendar/some/deep/path.json`
+returns `301` with `location: https://nexthomegame.com/some/deep/path.json`.
+GitHub's docs describe the custom-domain setup, but not this redirect. A
+site published by a GitHub Actions workflow ignores any `CNAME` file and
+takes its domain from the Pages setting; a site published from a branch
+takes it from the `CNAME` file on that branch. Google's Change of Address
+tool works only on domain-level properties, never a path such as
+`/ca-fish-planting-alerts/`, so it does not apply to this move.
+
+**Two ways to move. The owner picks one.**
+
+- **A. The custom domain goes on this repository.** It needs nothing beyond
+  this change: set `SITE_BASE_URL` to `https://<domain>` and the domain in
+  this repository's Pages settings. Every github.io URL, the snapshot
+  included, becomes a real `301` to the same path on the domain.
+  URLSession follows it. The cost: from then on, the app's snapshot works
+  only while the domain stays registered, keeps its DNS and serves valid
+  HTTPS. A domain that lapses sends every installed app to whoever holds
+  it next.
+- **B. The domain is served by a second repository, and this one keeps
+  github.io (recommended).** This repository's Pages site never gets a
+  custom domain. It keeps serving `snapshot/v1.json` and every
+  `water/<slug>/feed.ics` byte for byte, and every page becomes a redirect
+  page: `rel=canonical` to the new URL plus an instant
+  `<meta http-equiv="refresh" content="0">`, which Google Search treats as a
+  permanent redirect. The domain build, with its `CNAME`, is published by
+  a second repository from a branch. The snapshot never depends on the
+  domain. B needs a `publish.yml` change that pushes the domain build to
+  that repository with a deploy key, and only deploys the redirect pages
+  once the domain serves the same run's snapshot. That change is not part
+  of this one: it holds a write credential for another repository, so it
+  needs the owner's own review.
+
+**What is built (both options).**
+
+- One value, `SITE_BASE_URL`. Unset, the build is byte for byte what it
+  was (measured by hashing the whole site built before and after from the
+  same snapshot). Set to `https://<host>` at a host root that is not
+  github.io (`site.custom_domain`), every canonical URL, `og:url`, piece of
+  structured data, `sitemap.xml` entry, `robots.txt` line and calendar
+  feed uses the domain, a `CNAME` file names it, and nothing in the build
+  mentions github.io. A `SITE_BASE_URL` with a path stays a plain base URL,
+  with no `CNAME`, as before.
+- `cfpa --legacy-site-out DIR` (option B; `cfpa.legacy`) writes the
+  github.io site from the domain build of the same run: the snapshot and
+  feeds copied byte for byte, a redirect page for every page (the home
+  page's keeps the Search Console tag), a `404.html` that sends any other
+  old path to the same path on the domain, and a `sitemap.xml` of the old
+  URLs. It refuses, writing nothing, without a custom domain or without a
+  snapshot.
+
+This supersedes 0010's "the `github.io` URL becomes a 301 to the new
+domain", which holds under A only. The owner's steps are in the runbook
+that came with this change.

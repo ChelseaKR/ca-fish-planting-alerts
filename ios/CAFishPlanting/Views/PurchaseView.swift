@@ -93,6 +93,9 @@ struct PurchaseView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .presentationDetents(dynamicTypeSize.isAccessibilitySize ? [.large] : [.medium, .large])
+        // The unlock landing, from a purchase or a restore. iOS skips it when
+        // system haptics are off.
+        .sensoryFeedback(.success, trigger: purchases.isEntitled) { wasEntitled, isEntitled in !wasEntitled && isEntitled }
         // Opaque, so text contrast doesn't depend on what the half-height
         // glass sheet happens to cover.
         .presentationBackground(Color(uiColor: .systemBackground))

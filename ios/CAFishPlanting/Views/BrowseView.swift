@@ -6,6 +6,7 @@ struct BrowseView: View {
     @State private var searchText = ""
     @State private var selectedRegion: String? // nil = all regions
     @State private var selectedCounty: String? // nil = all counties
+    @State private var refreshFeedback: RefreshFeedback?
 
     var body: some View {
         Group {
@@ -64,8 +65,9 @@ struct BrowseView: View {
             }
         }
         // Pull down to check for a newer schedule now, past the throttle.
-        // The freshness row above says how it went.
-        .refreshable { await environment.refreshNow() }
+        // The freshness row above says how it went, and a tap says it too.
+        .refreshable { refreshFeedback = RefreshFeedback(await environment.refreshNow()) }
+        .sensoryFeedback(trigger: refreshFeedback) { _, feedback in feedback?.haptic }
     }
 
     private func regionWaters(_ snapshot: Snapshot) -> [Water] {
@@ -138,6 +140,20 @@ struct WaterRow: View {
         if alertsMuted { parts.append("alerts muted") }
         return parts.joined(separator: ", ")
     }
+}
+
+/// What a pull to refresh ended in, for its haptic: a success tap when the
+/// check reached the schedule (new or unchanged), a warning when it failed.
+/// Each refresh is a new value, so two in a row both play.
+struct RefreshFeedback: Equatable {
+    let failed: Bool
+    private let id = UUID()
+
+    init(_ outcome: RefreshOutcome) {
+        if case .failed = outcome { failed = true } else { failed = false }
+    }
+
+    var haptic: SensoryFeedback { failed ? .warning : .success }
 }
 
 /// The offline-first promise made visible: which week's schedule the app

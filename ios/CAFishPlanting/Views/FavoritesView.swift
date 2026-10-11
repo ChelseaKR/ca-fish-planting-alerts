@@ -4,6 +4,7 @@ import PlantingCore
 struct FavoritesView: View {
     @Environment(AppEnvironment.self) private var environment
     @State private var search = WaterSearch()
+    @State private var refreshFeedback: RefreshFeedback?
 
     var body: some View {
         Group {
@@ -120,7 +121,8 @@ struct FavoritesView: View {
                 }
             }
         }
-        .refreshable { await environment.refreshNow() }
+        .refreshable { refreshFeedback = RefreshFeedback(await environment.refreshNow()) }
+        .sensoryFeedback(trigger: refreshFeedback) { _, feedback in feedback?.haptic }
     }
 
     private func countyMenu(_ counties: [String], selection: String?) -> some View {

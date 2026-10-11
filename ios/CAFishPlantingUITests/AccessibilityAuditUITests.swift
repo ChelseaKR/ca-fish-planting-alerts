@@ -103,7 +103,7 @@ final class AccessibilityAuditUITests: XCTestCase {
     /// the first tap can open the tab bar's large-content viewer instead.
     private func select(tab: String, in app: XCUIApplication) {
         for _ in 0..<3 {
-            app.tabBars.buttons[tab].tap()
+            app.tab(tab).tap()
             if app.navigationBars[tab].waitForExistence(timeout: 5) { return }
         }
         XCTFail("the \(tab) tab didn't open:\n\(app.debugDescription)")

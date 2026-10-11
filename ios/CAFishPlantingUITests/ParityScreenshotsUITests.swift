@@ -68,10 +68,10 @@ final class ParityScreenshotsUITests: XCTestCase {
                 }
             }
 
-            app.tabBars.buttons["Favorites"].tap()
+            app.tab("Favorites").tap()
             settle()
             shot("favorites-\(suffix)", app)
-            app.tabBars.buttons["About"].tap()
+            app.tab("About").tap()
             settle()
             shot("about-\(suffix)", app)
             app.terminate()

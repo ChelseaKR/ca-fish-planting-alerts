@@ -45,7 +45,7 @@ final class SmokeUITests: XCTestCase {
         // On iPad the list sits beside the water, with no Back.
         let back = app.navigationBars.buttons["Waters"].firstMatch
         if back.exists { back.tap() }
-        app.tabBars.buttons["Favorites"].tap()
+        app.tab("Favorites").tap()
         let favorite = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Annie Lake,")).firstMatch
         XCTAssertTrue(favorite.waitForExistence(timeout: 5), "the favorited water should appear under Favorites")
     }
@@ -59,7 +59,7 @@ final class SmokeUITests: XCTestCase {
         let app = XCUIApplication.troutTruck()
         app.launch()
         XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
-        app.tabBars.buttons["About"].tap()
+        app.tab("About").tap()
 
         app.open(URL(string: "trouttruck://water/cdfw-125")!)
 

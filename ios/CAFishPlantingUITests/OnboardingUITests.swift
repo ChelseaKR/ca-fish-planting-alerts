@@ -9,6 +9,13 @@ extension XCUIApplication {
         app.launchArguments += ["-UITestOnboarding", onboarding]
         return app
     }
+
+    /// A tab's button: in the bottom tab bar on iPhone, and in the bar at
+    /// the top on iPad, which isn't reported as a tab bar.
+    func tab(_ name: String) -> XCUIElement {
+        let inTabBar = tabBars.buttons[name]
+        return inTabBar.exists ? inTabBar : buttons[name].firstMatch
+    }
 }
 
 /// The introduction: four pages, stepped with Continue or swiped, skippable,
@@ -67,7 +74,7 @@ final class OnboardingUITests: XCTestCase {
         let app = XCUIApplication.troutTruck()
         app.launch()
         XCTAssertTrue(app.navigationBars["Waters"].waitForExistence(timeout: 30))
-        app.tabBars.buttons["About"].tap()
+        app.tab("About").tap()
         let show = app.buttons["Show the introduction"]
         let list = app.collectionViews.firstMatch
         for _ in 0..<6 where !(show.exists && show.isHittable) { list.swipeUp() }

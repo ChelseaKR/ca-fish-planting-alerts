@@ -44,7 +44,7 @@ struct WaterDetailView: View {
                 } footer: {
                     Text(alertsMuted
                          ? "Muted. \(water.name) stays in Favorites and the widget, with no alert when it is newly on the schedule."
-                         : "An alert on this iPhone when \(water.name) is newly on CDFW's weekly schedule.")
+                         : "An alert on this device when \(water.name) is newly on CDFW's weekly schedule.")
                         .foregroundStyle(.secondaryText)
                 }
             }

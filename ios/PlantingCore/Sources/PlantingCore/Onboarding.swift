@@ -56,7 +56,7 @@ public enum OnboardingCopy {
         Page(id: "welcome",
              systemImage: "box.truck.fill",
              title: "Welcome to Trout Truck",
-             body: "California's fish planting schedule from the Department of Fish and Wildlife, a week at a time, on your iPhone.",
+             body: "California's fish planting schedule from the Department of Fish and Wildlife, a week at a time.",
              points: [
                  "Every water on CDFW's weekly schedule",
                  "Each water's week-by-week history, which CDFW's own page doesn't keep",
@@ -84,7 +84,7 @@ public enum OnboardingCopy {
              body: "CDFW schedules plants by the week and says plans can change, so the app shows the week and says \"scheduled\".",
              points: [
                  "If the app can't check for a newer schedule, it says so and keeps the last one, labeled with its week",
-                 "No account and no tracking. Favorites stay on this iPhone",
+                 "No account and no tracking. Favorites stay on this device",
              ]),
     ]
 }

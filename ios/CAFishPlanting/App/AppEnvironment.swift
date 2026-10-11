@@ -42,9 +42,9 @@ struct NotificationPrimingCopy: Equatable {
         let which = waterName.map { "\($0) or another favorite" } ?? "one of your favorites"
         var points = [
             Point(systemImage: "calendar",
-                  text: "When CDFW's weekly schedule adds a week for \(which), this iPhone shows one alert. It names the week, never a day, and CDFW says plans can change."),
+                  text: "When CDFW's weekly schedule adds a week for \(which), this device shows one alert. It names the week, never a day, and CDFW says plans can change."),
             Point(systemImage: "iphone",
-                  text: "Alerts are made on this iPhone from the schedule it downloads. There is no account and no server, and nothing about you or your favorites leaves the device."),
+                  text: "Alerts are made on this device from the schedule it downloads. There is no account and no server, and nothing about you or your favorites leaves the device."),
             Point(systemImage: "bell.slash",
                   text: "No other notifications: no marketing, no reminders, no badges."),
         ]

@@ -56,6 +56,8 @@ struct OnboardingView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .accessibilityHint(isLast ? "Closes the introduction" : "Page \(index + 2) of \(pages.count)")
+            // As wide as the page's text on iPad, not the whole screen.
+            .frame(maxWidth: 560)
             .padding()
         }
         .background(OnboardingBackground())

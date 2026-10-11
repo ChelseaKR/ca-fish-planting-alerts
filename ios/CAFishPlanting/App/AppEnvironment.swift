@@ -78,6 +78,7 @@ final class AppEnvironment {
     private var store: SnapshotStore?
     private var favoritesStore: FavoritesStore?
     private var alertStateStore: AlertStateStore?
+    private var mutedStore: MutedWatersStore?
     private let refresher: SnapshotRefresher
     private let notifications: NotificationScheduler
     private let openThrottle: RefreshThrottle
@@ -99,6 +100,8 @@ final class AppEnvironment {
         didSet { publishWidgetDigest() }
     }
     private var alertState = AlertState()
+    /// Favorites whose alerts are off. They stay favorites.
+    private(set) var mutedWaters = MutedWaters()
     private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
 
     /// Set when a water is favorited for the first time ever. The view
@@ -143,6 +146,9 @@ final class AppEnvironment {
             self.alertStateStore = stateStore
             self.favorites = favStore.load()
             self.alertState = stateStore.load()
+            let mutedStore = MutedWatersStore(layout: layout)
+            self.mutedStore = mutedStore
+            self.mutedWaters = mutedStore.load()
             entitlementStore = EntitlementStore(layout: layout)
         } catch {
             // Never fabricate a snapshot to paper over this: an honest
@@ -190,6 +196,7 @@ final class AppEnvironment {
         try? favoritesStore?.save(updated)
         alertState = AlertPlanner.pruning(alertState, unfavoriting: id)
         try? alertStateStore?.save(alertState)
+        setAlertsMuted(false, for: id)
     }
 
     /// Favoriting is never gated — every water may be favorited by
@@ -212,7 +219,30 @@ final class AppEnvironment {
         } else if !nowFavorited {
             alertState = AlertPlanner.pruning(alertState, unfavoriting: water.id)
             try? alertStateStore?.save(alertState)
+            // Favoriting it again starts with alerts on.
+            setAlertsMuted(false, for: water.id)
         }
+    }
+
+    // MARK: Muted alerts
+
+    func alertsMuted(for id: Water.ID) -> Bool { mutedWaters.contains(id) }
+
+    /// Turns one favorite's alerts off or back on. From the alert's "Mute
+    /// this water" button (`NotificationResponder`) or the switch on the
+    /// water's screen. The alert baseline keeps moving either way, so
+    /// turning alerts back on never announces weeks that passed while muted.
+    func setAlertsMuted(_ muted: Bool, for id: Water.ID) {
+        guard muted != mutedWaters.contains(id) else { return }
+        var updated = mutedWaters
+        if muted { updated.mute(id) } else { updated.unmute(id) }
+        mutedWaters = updated
+        try? mutedStore?.save(updated)
+    }
+
+    /// The water's screen is open: its delivered alerts have been read.
+    func clearDeliveredAlerts(for id: Water.ID) async {
+        await notifications.removeDelivered(forWater: id)
     }
 
     /// The priming screen shows on the first favorite, and only while iOS
@@ -316,8 +346,11 @@ final class AppEnvironment {
             let plan = AlertPlanner.plan(snapshot: store.snapshot, favorites: favorites.ids, state: alertState)
             alertState = plan.state
             try? alertStateStore?.save(alertState)
-            if !plan.notifications.isEmpty, FreeTier.notificationsAllowed(isEntitled: purchases.isEntitled) {
-                await notifications.schedule(plan.notifications)
+            // A muted water's baseline moved forward with the rest above;
+            // only its alert is left out.
+            let shown = mutedWaters.unmuted(plan.notifications)
+            if !shown.isEmpty, FreeTier.notificationsAllowed(isEntitled: purchases.isEntitled) {
+                await notifications.schedule(shown)
             }
         }
         return outcome

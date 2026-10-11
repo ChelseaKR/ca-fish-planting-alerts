@@ -59,8 +59,20 @@ struct FavoritesView: View {
                     noMatches(activeSearch)
                 } else {
                     ForEach(shown) { water in
+                        let muted = environment.alertsMuted(for: water.id)
                         NavigationLink(value: water.id) {
-                            WaterRow(water: water, listed: thisWeekIDs.contains(water.id) ? freshness : nil)
+                            WaterRow(water: water, listed: thisWeekIDs.contains(water.id) ? freshness : nil, alertsMuted: muted)
+                        }
+                        .swipeActions(edge: .leading) {
+                            // Alerts come with full access; a mute can always be undone.
+                            if environment.purchases.isEntitled || muted {
+                                Button {
+                                    environment.setAlertsMuted(!muted, for: water.id)
+                                } label: {
+                                    Label(muted ? "Unmute" : "Mute", systemImage: muted ? "bell" : "bell.slash")
+                                }
+                                .tint(.indigo)
+                            }
                         }
                         .swipeActions {
                             Button(role: .destructive) {

@@ -89,6 +89,8 @@ struct WaterRow: View {
     /// "This week" only while that week is current; once it has ended, it
     /// shows the week instead (`SnapshotFreshness.listedBadge`).
     let listed: SnapshotFreshness?
+    /// A favorite whose alerts are off (`MutedWaters`). Shown in Favorites.
+    var alertsMuted = false
 
     var body: some View {
         // At the accessibility text sizes the tag goes under the name, so
@@ -98,7 +100,15 @@ struct WaterRow: View {
             : AnyLayout(HStackLayout())
         layout {
             VStack(alignment: .leading, spacing: 2) {
-                Text(water.name).font(.body)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(water.name).font(.body)
+                    if alertsMuted {
+                        Image(systemName: "bell.slash")
+                            .font(.caption)
+                            .foregroundStyle(.secondaryText)
+                            .accessibilityHidden(true)
+                    }
+                }
                 Text(water.countyLabel)
                     .font(.caption)
                     .foregroundStyle(.secondaryText)
@@ -119,7 +129,14 @@ struct WaterRow: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(listed.map { "\(water.name), \(water.countyLabel), \($0.listedPhrase)" } ?? "\(water.name), \(water.countyLabel)")
+        .accessibilityLabel(accessibilityText)
+    }
+
+    private var accessibilityText: String {
+        var parts = [water.name, water.countyLabel]
+        if let listed { parts.append(listed.listedPhrase) }
+        if alertsMuted { parts.append("alerts muted") }
+        return parts.joined(separator: ", ")
     }
 }
 

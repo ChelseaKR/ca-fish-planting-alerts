@@ -25,6 +25,21 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertEqual(env.snapshotOrigin, .bundled, "a freshly-installed app has only the bundled snapshot")
     }
 
+    func testAMuteIsSavedAndUnfavoritingClearsIt() throws {
+        let env = AppEnvironment()
+        let water = try XCTUnwrap(env.snapshot?.waters.first)
+        env.toggleFavorite(water)
+        env.dismissNotificationExplainer()
+        env.setAlertsMuted(true, for: water.id)
+        XCTAssertTrue(env.alertsMuted(for: water.id))
+        XCTAssertTrue(env.isFavorite(water.id), "muting keeps the favorite")
+        XCTAssertTrue(AppEnvironment().alertsMuted(for: water.id), "the mute is on disk, for the next launch")
+
+        env.toggleFavorite(water)
+        XCTAssertFalse(env.alertsMuted(for: water.id), "favoriting it again starts with alerts on")
+        XCTAssertFalse(AppEnvironment().alertsMuted(for: water.id))
+    }
+
     func testNotificationExplainerShownOnlyOnFirstEverFavorite() throws {
         let env = AppEnvironment()
         let waters = try XCTUnwrap(env.snapshot?.waters)

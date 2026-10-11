@@ -102,6 +102,25 @@ final class AppRouterTests: XCTestCase {
         XCTAssertEqual(schemes, [WaterLink.scheme], "Info.plist must register exactly the scheme WaterLink builds")
     }
 
+    /// Every alert carries the category with the "Mute this water" button.
+    func testTheScheduledAlertCarriesTheMuteButtonsCategory() {
+        let planned = PlannedNotification(waterID: "cdfw-3", waterName: "Test Lake",
+                                          newKeys: [PlantKey(weekStart: PlainDate(year: 2026, month: 9, day: 13), species: "Trout")])
+        XCTAssertEqual(NotificationScheduler.content(for: planned).categoryIdentifier, PlantingAlertAction.categoryIdentifier)
+    }
+
+    /// `App.init()` registered the category, with its one button, and the
+    /// button doesn't open the app or read as destructive.
+    func testTheMuteButtonIsRegisteredAtLaunch() async throws {
+        let categories = await UNUserNotificationCenter.current().notificationCategories()
+        let category = try XCTUnwrap(categories.first { $0.identifier == PlantingAlertAction.categoryIdentifier })
+        XCTAssertEqual(category.actions.map(\.identifier), [PlantingAlertAction.muteIdentifier])
+        let mute = try XCTUnwrap(category.actions.first)
+        XCTAssertEqual(mute.title, PlantingAlertAction.muteTitle)
+        XCTAssertFalse(mute.options.contains(.foreground), "muting must not open the app")
+        XCTAssertFalse(mute.options.contains(.destructive), "the water stays a favorite")
+    }
+
     func testTheResponderIsTheNotificationCenterDelegate() {
         XCTAssertTrue(UNUserNotificationCenter.current().delegate === NotificationResponder.shared,
                       "App.init() must install the responder, or a tapped alert opens nothing")

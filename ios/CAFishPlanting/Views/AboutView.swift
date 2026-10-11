@@ -38,6 +38,7 @@ struct AboutView: View {
 
             Section {
                 Text("Alerts are local notifications this app schedules on this device for full-access purchasers only — there is no server, no push service, and no account. iOS decides when the app is allowed to refresh in the background, and the schedule itself is weekly, so an alert arrives within the week a water is added, not the minute it is.")
+                Text("To stop one water's alerts and keep it as a favorite, touch and hold its alert and choose Mute this water, or use the switch on the water's page.")
                 Text("The app also checks for a newer schedule when you open it, at most every few hours. If it can't, it says so and keeps showing the last schedule it has, with that schedule's week.")
                 Text("Notification status: \(authorizationDescription)")
                     .font(.footnote)

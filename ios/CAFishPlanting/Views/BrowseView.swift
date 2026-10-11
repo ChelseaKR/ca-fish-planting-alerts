@@ -3,6 +3,10 @@ import PlantingCore
 
 struct BrowseView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// Set in a split view (iPad, Mac): a tapped row selects its water for
+    /// the detail column instead of pushing it.
+    var selection: Binding<Water.ID?>? = nil
     @State private var searchText = ""
     @State private var selectedRegion: String? // nil = all regions
     @State private var selectedCounty: String? // nil = all counties
@@ -25,7 +29,7 @@ struct BrowseView: View {
         let thisWeekIDs = Set(snapshot.thisWeek.map(\.waterID))
         let waters = filtered(snapshot.waters, thisWeekIDs: thisWeekIDs)
         let freshness = environment.freshness()
-        List {
+        SelectableList(selection: selection) {
             Section {
                 Picker("Region", selection: $selectedRegion) {
                     Text("All regions").tag(String?.none)
@@ -59,11 +63,8 @@ struct BrowseView: View {
                 }
             }
         }
-        .navigationDestination(for: Water.ID.self) { id in
-            if let water = snapshot.water(id: id) {
-                WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek)
-            }
-        }
+        .waterDestinations(in: snapshot, enabled: selection == nil)
+        .toolbar { RefreshToolbarButton(shown: horizontalSizeClass == .regular) { refreshFeedback = RefreshFeedback(await environment.refreshNow()) } }
         // Pull down to check for a newer schedule now, past the throttle.
         // The freshness row above says how it went, and a tap says it too.
         .refreshable { refreshFeedback = RefreshFeedback(await environment.refreshNow()) }
@@ -139,6 +140,65 @@ struct WaterRow: View {
         if let listed { parts.append(listed.listedPhrase) }
         if alertsMuted { parts.append("alerts muted") }
         return parts.joined(separator: ", ")
+    }
+}
+
+/// A `List` that keeps a selection when it has one (a split view's
+/// sidebar), and a plain one otherwise (a navigation stack).
+struct SelectableList<Content: View>: View {
+    let selection: Binding<Water.ID?>?
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        if let selection {
+            List(selection: selection, content: content)
+        } else {
+            List(content: content)
+        }
+    }
+}
+
+extension View {
+    /// A water's page pushed onto the stack, in the stack layout only. In a
+    /// split view the detail column shows the selection instead.
+    @ViewBuilder
+    func waterDestinations(in snapshot: Snapshot, enabled: Bool) -> some View {
+        if enabled {
+            navigationDestination(for: Water.ID.self) { id in
+                if let water = snapshot.water(id: id) {
+                    WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek)
+                }
+            }
+        } else {
+            self
+        }
+    }
+}
+
+/// A Refresh button with Command-R, at regular width (iPad, Mac), where a
+/// pointer or a keyboard makes pull to refresh awkward. It runs the same
+/// unthrottled check as pull to refresh.
+struct RefreshToolbarButton: ToolbarContent {
+    let shown: Bool
+    let refresh: () async -> Void
+    @State private var isRefreshing = false
+
+    var body: some ToolbarContent {
+        if shown {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    isRefreshing = true
+                    Task {
+                        await refresh()
+                        isRefreshing = false
+                    }
+                } label: {
+                    Label("Check for a newer schedule", systemImage: "arrow.clockwise")
+                }
+                .disabled(isRefreshing)
+                .keyboardShortcut("r", modifiers: .command)
+            }
+        }
     }
 }
 

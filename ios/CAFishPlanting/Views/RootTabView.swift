@@ -1,8 +1,12 @@
 import SwiftUI
+import PlantingCore
 
 struct RootTabView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(AppRouter.self) private var router
+    /// Regular on iPad (full screen and the wider multitasking sizes) and on
+    /// a Mac: Browse and Favorites become a list beside the water's page.
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
         if let error = environment.loadError {
@@ -10,13 +14,39 @@ struct RootTabView: View {
         } else {
             @Bindable var router = router
             TabView(selection: $router.selectedTab) {
-                NavigationStack(path: $router.browsePath) { BrowseView() }
-                    .tabItem { Label("Browse", systemImage: "map") }
-                    .tag(AppRouter.Tab.browse)
-                NavigationStack(path: $router.favoritesPath) { FavoritesView() }
-                    .tabItem { Label("Favorites", systemImage: "star") }
-                    .tag(AppRouter.Tab.favorites)
-                NavigationStack { AboutView() }
+                Group {
+                    if horizontalSizeClass == .regular {
+                        NavigationSplitView {
+                            BrowseView(selection: selection($router.browsePath))
+                        } detail: {
+                            NavigationStack {
+                                WaterDetailColumn(id: router.browsePath.last,
+                                                  placeholder: "Choose a water from the list to see its schedule and history.")
+                            }
+                        }
+                    } else {
+                        NavigationStack(path: $router.browsePath) { BrowseView() }
+                    }
+                }
+                .tabItem { Label("Browse", systemImage: "map") }
+                .tag(AppRouter.Tab.browse)
+                Group {
+                    if horizontalSizeClass == .regular {
+                        NavigationSplitView {
+                            FavoritesView(selection: selection($router.favoritesPath))
+                        } detail: {
+                            NavigationStack {
+                                WaterDetailColumn(id: router.favoritesPath.last,
+                                                  placeholder: "Choose a favorite to see its schedule and history.")
+                            }
+                        }
+                    } else {
+                        NavigationStack(path: $router.favoritesPath) { FavoritesView() }
+                    }
+                }
+                .tabItem { Label("Favorites", systemImage: "star") }
+                .tag(AppRouter.Tab.favorites)
+                NavigationStack { AboutView().readableWidth() }
                     .tabItem { Label("About", systemImage: "info.circle") }
                     .tag(AppRouter.Tab.about)
             }
@@ -49,6 +79,13 @@ struct RootTabView: View {
         }
     }
 
+    /// A split view's selection over the tab's path, so the router opens a
+    /// water the same way in both layouts: a path of one is the selection.
+    private func selection(_ path: Binding<[Water.ID]>) -> Binding<Water.ID?> {
+        Binding(get: { path.wrappedValue.last },
+                set: { path.wrappedValue = $0.map { [$0] } ?? [] })
+    }
+
     /// `@Observable` doesn't expose `Binding` the way `@Published` did;
     /// this adapts `pendingNotificationExplainer` for `.sheet(item:)`.
     private var notificationExplainerBinding: Binding<FirstFavoriteExplainer?> {
@@ -57,6 +94,49 @@ struct RootTabView: View {
             set: { if $0 == nil { environment.dismissNotificationExplainer() } }
         )
     }
+}
+
+/// The detail column of a split view: the chosen water's page, or a
+/// prompt to choose one. A water the snapshot doesn't have shows the prompt,
+/// never a blank page.
+struct WaterDetailColumn: View {
+    @Environment(AppEnvironment.self) private var environment
+    let id: Water.ID?
+    let placeholder: String
+
+    var body: some View {
+        if let id, let snapshot = environment.snapshot, let water = snapshot.water(id: id) {
+            WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek)
+                .readableWidth()
+                .id(id)
+        } else {
+            ContentUnavailableView {
+                Label("No water chosen", systemImage: "fish")
+            } description: {
+                Text(placeholder).foregroundStyle(.secondaryText)
+            }
+        }
+    }
+}
+
+/// Keeps a list's rows to a readable width on a wide screen (iPad
+/// landscape, a Mac window) instead of stretching them edge to edge. No
+/// change at compact width.
+struct ReadableWidth: ViewModifier {
+    static let maximum: CGFloat = 720
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    func body(content: Content) -> some View {
+        GeometryReader { geometry in
+            content.contentMargins(.horizontal,
+                                   horizontalSizeClass == .regular ? max(0, (geometry.size.width - Self.maximum) / 2) : 0,
+                                   for: .scrollContent)
+        }
+    }
+}
+
+extension View {
+    func readableWidth() -> some View { modifier(ReadableWidth()) }
 }
 
 /// UI tests choose whether the introduction shows, whatever an earlier run

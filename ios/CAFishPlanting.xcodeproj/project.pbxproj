@@ -41,6 +41,7 @@
 		BC31604666CC060883441CF1 /* TextColorContrastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8A4C8C3C63C94516114604 /* TextColorContrastTests.swift */; };
 		CB8310E205828530BA5957F3 /* PurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1754B738174DFB550243642 /* PurchaseManagerTests.swift */; };
 		B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */; };
+		7A11D0B0A1B2C3D4E5F60005 /* ParityScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11D0B0A1B2C3D4E5F60006 /* ParityScreenshotsUITests.swift */; };
 		7A11D0B0A1B2C3D4E5F60003 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11D0B0A1B2C3D4E5F60004 /* OnboardingUITests.swift */; };
 		7A11E5C0A1B2C3D4E5F60718 /* AppStoreScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */; };
 		980F5DE25013ABD66938186A /* AccessibilityAuditUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */; };
@@ -136,6 +137,7 @@
 		6F8A4C8C3C63C94516114604 /* TextColorContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextColorContrastTests.swift; sourceTree = "<group>"; };
 		E1754B738174DFB550243642 /* PurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManagerTests.swift; sourceTree = "<group>"; };
 		157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokeUITests.swift; sourceTree = "<group>"; };
+		7A11D0B0A1B2C3D4E5F60006 /* ParityScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParityScreenshotsUITests.swift; sourceTree = "<group>"; };
 		7A11D0B0A1B2C3D4E5F60004 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
 		7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotsUITests.swift; sourceTree = "<group>"; };
 		C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityAuditUITests.swift; sourceTree = "<group>"; };
@@ -286,6 +288,7 @@
 			children = (
 				7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */,
 				157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */,
+				7A11D0B0A1B2C3D4E5F60006 /* ParityScreenshotsUITests.swift */,
 				7A11D0B0A1B2C3D4E5F60004 /* OnboardingUITests.swift */,
 				C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */,
 			);
@@ -491,6 +494,7 @@
 			files = (
 				7A11E5C0A1B2C3D4E5F60718 /* AppStoreScreenshotsUITests.swift in Sources */,
 				B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */,
+				7A11D0B0A1B2C3D4E5F60005 /* ParityScreenshotsUITests.swift in Sources */,
 				7A11D0B0A1B2C3D4E5F60003 /* OnboardingUITests.swift in Sources */,
 				980F5DE25013ABD66938186A /* AccessibilityAuditUITests.swift in Sources */,
 			);
@@ -666,7 +670,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -692,7 +696,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -709,7 +713,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CAFishPlanting.app/CAFishPlanting";
 			};
 			name = Debug;
@@ -727,7 +731,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CAFishPlanting.app/CAFishPlanting";
 			};
 			name = Release;
@@ -744,7 +748,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = CAFishPlanting;
 			};
 			name = Debug;
@@ -761,7 +765,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = CAFishPlanting;
 			};
 			name = Release;
@@ -786,7 +790,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -810,7 +814,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

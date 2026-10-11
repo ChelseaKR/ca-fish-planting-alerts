@@ -3,6 +3,9 @@ import PlantingCore
 
 struct FavoritesView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// Set in a split view (iPad, Mac). See `BrowseView.selection`.
+    var selection: Binding<Water.ID?>? = nil
     @State private var search = WaterSearch()
     @State private var refreshFeedback: RefreshFeedback?
 
@@ -49,7 +52,7 @@ struct FavoritesView: View {
         // A county chosen earlier that no favorite is in any more.
         let activeSearch = WaterSearch(text: search.text, county: search.county.flatMap { counties.contains($0) ? $0 : nil })
         let shown = activeSearch.filter(present)
-        return List {
+        return SelectableList(selection: selection) {
             if let freshness {
                 Section {
                     FreshnessRow(freshness: freshness)
@@ -110,10 +113,9 @@ struct FavoritesView: View {
                 }
             }
         }
-        .navigationDestination(for: Water.ID.self) { id in
-            if let water = snapshot.water(id: id) { WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek) }
-        }
+        .waterDestinations(in: snapshot, enabled: selection == nil)
         .searchable(text: $search.text, prompt: "Favorite water or county")
+        .toolbar { RefreshToolbarButton(shown: horizontalSizeClass == .regular) { refreshFeedback = RefreshFeedback(await environment.refreshNow()) } }
         .toolbar {
             if counties.count > 1 {
                 ToolbarItem(placement: .topBarTrailing) {

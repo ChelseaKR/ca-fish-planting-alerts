@@ -10,7 +10,7 @@ final class SmokeUITests: XCTestCase {
     }
 
     func testBrowseToFavoriteFlow() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         app.launch()
 
         let browseList = app.collectionViews.firstMatch
@@ -54,7 +54,7 @@ final class SmokeUITests: XCTestCase {
     /// so far. Whether it is a favorite depends on what earlier tests left
     /// on this simulator, so the test reads that first.
     func testAWaterLinkOpensThatWater() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         app.launch()
         XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
         app.tabBars.buttons["About"].tap()
@@ -74,7 +74,7 @@ final class SmokeUITests: XCTestCase {
     /// The locked widget's link (`UnlockLink`) opens the purchase screen,
     /// from anywhere in the running app, and closing it leaves About.
     func testTheUnlockLinkOpensThePurchaseScreen() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         app.launch()
         XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
 

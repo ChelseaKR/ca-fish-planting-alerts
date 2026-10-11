@@ -48,7 +48,7 @@ final class AccessibilityAuditUITests: XCTestCase {
 
     private func auditMainScreens(contentSize: String?, appearance: XCUIDevice.Appearance) throws {
         XCUIDevice.shared.appearance = appearance
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         if let contentSize {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", contentSize]
         }

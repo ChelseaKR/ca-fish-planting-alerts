@@ -4,6 +4,7 @@ import PlantingCore
 
 struct AboutView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(AppRouter.self) private var router
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
     @State private var showingPurchaseSheet = false
@@ -32,6 +33,7 @@ struct AboutView: View {
             Section {
                 Text("Favorite any California water for free and browse its full schedule history. With full access, also get a notification on this device when a favorite appears in the California Department of Fish and Wildlife's weekly stocking schedule, and a Home Screen and Lock Screen widget with your favorites.")
                 Text("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
+                Button("Show the introduction") { router.showingOnboarding = true }
             } header: {
                 SectionHeader("What this app does")
             }

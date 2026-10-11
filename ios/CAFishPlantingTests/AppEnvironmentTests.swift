@@ -40,6 +40,22 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertFalse(AppEnvironment().alertsMuted(for: water.id))
     }
 
+    func testTheIntroductionShowsOnAFreshInstallUntilFinished() throws {
+        let env = AppEnvironment()
+        XCTAssertTrue(env.shouldShowOnboarding)
+        env.completeOnboarding()
+        XCTAssertFalse(env.shouldShowOnboarding)
+        XCTAssertFalse(AppEnvironment().shouldShowOnboarding, "finishing it is saved")
+    }
+
+    func testTheIntroductionDoesNotStopSomeoneWhoAlreadyHasFavorites() throws {
+        let env = AppEnvironment()
+        let water = try XCTUnwrap(env.snapshot?.waters.first)
+        env.toggleFavorite(water)
+        env.dismissNotificationExplainer()
+        XCTAssertFalse(AppEnvironment().shouldShowOnboarding)
+    }
+
     func testNotificationExplainerShownOnlyOnFirstEverFavorite() throws {
         let env = AppEnvironment()
         let waters = try XCTUnwrap(env.snapshot?.waters)

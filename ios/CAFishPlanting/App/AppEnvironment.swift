@@ -79,6 +79,7 @@ final class AppEnvironment {
     private var favoritesStore: FavoritesStore?
     private var alertStateStore: AlertStateStore?
     private var mutedStore: MutedWatersStore?
+    private var onboardingStore: OnboardingStore?
     private let refresher: SnapshotRefresher
     private let notifications: NotificationScheduler
     private let openThrottle: RefreshThrottle
@@ -102,6 +103,7 @@ final class AppEnvironment {
     private var alertState = AlertState()
     /// Favorites whose alerts are off. They stay favorites.
     private(set) var mutedWaters = MutedWaters()
+    private(set) var onboarding = OnboardingState()
     private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
 
     /// Set when a water is favorited for the first time ever. The view
@@ -149,6 +151,9 @@ final class AppEnvironment {
             let mutedStore = MutedWatersStore(layout: layout)
             self.mutedStore = mutedStore
             self.mutedWaters = mutedStore.load()
+            let onboardingStore = OnboardingStore(layout: layout)
+            self.onboardingStore = onboardingStore
+            self.onboarding = onboardingStore.load()
             entitlementStore = EntitlementStore(layout: layout)
         } catch {
             // Never fabricate a snapshot to paper over this: an honest
@@ -243,6 +248,19 @@ final class AppEnvironment {
     /// The water's screen is open: its delivered alerts have been read.
     func clearDeliveredAlerts(for id: Water.ID) async {
         await notifications.removeDelivered(forWater: id)
+    }
+
+    // MARK: Introduction
+
+    /// Whether the introduction shows over the app at launch.
+    var shouldShowOnboarding: Bool {
+        loadError == nil && onboarding.shouldShow(hasFavorites: !favorites.isEmpty)
+    }
+
+    /// Finished or skipped: it doesn't show again until a newer version.
+    func completeOnboarding() {
+        onboarding = OnboardingState(completedVersion: OnboardingCopy.version)
+        try? onboardingStore?.save(onboarding)
     }
 
     /// The priming screen shows on the first favorite, and only while iOS

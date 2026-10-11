@@ -33,6 +33,19 @@ struct RootTabView: View {
             .sheet(isPresented: $router.showingPurchase) {
                 PurchaseView()
             }
+            .fullScreenCover(isPresented: $router.showingOnboarding) {
+                OnboardingView {
+                    environment.completeOnboarding()
+                    router.showingOnboarding = false
+                }
+            }
+            // The introduction's end. iOS skips it when system haptics are off.
+            .sensoryFeedback(.success, trigger: environment.onboarding.completedVersion)
+            .onAppear {
+                if OnboardingLaunchOverride.current?.show ?? environment.shouldShowOnboarding {
+                    router.showingOnboarding = true
+                }
+            }
         }
     }
 
@@ -43,6 +56,29 @@ struct RootTabView: View {
             get: { environment.pendingNotificationExplainer },
             set: { if $0 == nil { environment.dismissNotificationExplainer() } }
         )
+    }
+}
+
+/// UI tests choose whether the introduction shows, whatever an earlier run
+/// left on the simulator: `-UITestOnboarding show` or `skip`. Debug builds
+/// only; a release build always decides from what is on the device.
+enum OnboardingLaunchOverride {
+    case show, skip
+
+    var show: Bool { self == .show }
+
+    static var current: OnboardingLaunchOverride? {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let flag = arguments.firstIndex(of: "-UITestOnboarding"), flag + 1 < arguments.count else { return nil }
+        switch arguments[flag + 1] {
+        case "show": return .show
+        case "skip": return .skip
+        default: return nil
+        }
+        #else
+        return nil
+        #endif
     }
 }
 

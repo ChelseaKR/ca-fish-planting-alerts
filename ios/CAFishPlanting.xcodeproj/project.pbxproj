@@ -23,6 +23,7 @@
 		6C60EAAC54621979E87FBBC3 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E1F6EB12C1A16AFB6CBF15 /* RootTabView.swift */; };
 		BA2FA77B273C0F7AE4C905BC /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81FDE9BC8AA076CBB11F4B2 /* BrowseView.swift */; };
 		35B24F0B9AF01AF261F753E3 /* WaterDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B31EB45EC95630DFC10927 /* WaterDetailView.swift */; };
+		7A11D0B0A1B2C3D4E5F60001 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11D0B0A1B2C3D4E5F60002 /* OnboardingView.swift */; };
 		D8EEA5FF73C12181DB1CAB1E /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B074D06A52CA7DB1A4E9CA /* FavoritesView.swift */; };
 		F5AB81A0DE71F0E1B4FD87B8 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A24082BEE264A5C795D13B3 /* AboutView.swift */; };
 		DE5C3AA9D0F26980149CF6C4 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63C8B0C2C2207D48119767B6 /* PurchaseManager.swift */; };
@@ -40,6 +41,7 @@
 		BC31604666CC060883441CF1 /* TextColorContrastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8A4C8C3C63C94516114604 /* TextColorContrastTests.swift */; };
 		CB8310E205828530BA5957F3 /* PurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1754B738174DFB550243642 /* PurchaseManagerTests.swift */; };
 		B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */; };
+		7A11D0B0A1B2C3D4E5F60003 /* OnboardingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11D0B0A1B2C3D4E5F60004 /* OnboardingUITests.swift */; };
 		7A11E5C0A1B2C3D4E5F60718 /* AppStoreScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */; };
 		980F5DE25013ABD66938186A /* AccessibilityAuditUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */; };
 		FF536AE84AB86CFCEFEFA610 /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3148F689D98979AD9E0825B9 /* PlantingCore */; };
@@ -114,6 +116,7 @@
 		88E1F6EB12C1A16AFB6CBF15 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		E81FDE9BC8AA076CBB11F4B2 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
 		48B31EB45EC95630DFC10927 /* WaterDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterDetailView.swift; sourceTree = "<group>"; };
+		7A11D0B0A1B2C3D4E5F60002 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		C9B074D06A52CA7DB1A4E9CA /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		4A24082BEE264A5C795D13B3 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		63C8B0C2C2207D48119767B6 /* PurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
@@ -133,6 +136,7 @@
 		6F8A4C8C3C63C94516114604 /* TextColorContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextColorContrastTests.swift; sourceTree = "<group>"; };
 		E1754B738174DFB550243642 /* PurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManagerTests.swift; sourceTree = "<group>"; };
 		157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokeUITests.swift; sourceTree = "<group>"; };
+		7A11D0B0A1B2C3D4E5F60004 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
 		7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotsUITests.swift; sourceTree = "<group>"; };
 		C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityAuditUITests.swift; sourceTree = "<group>"; };
 		3054F6C342DF00206DE60541 /* CAFishPlanting.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CAFishPlanting.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -243,6 +247,7 @@
 				88E1F6EB12C1A16AFB6CBF15 /* RootTabView.swift */,
 				E81FDE9BC8AA076CBB11F4B2 /* BrowseView.swift */,
 				48B31EB45EC95630DFC10927 /* WaterDetailView.swift */,
+				7A11D0B0A1B2C3D4E5F60002 /* OnboardingView.swift */,
 				C9B074D06A52CA7DB1A4E9CA /* FavoritesView.swift */,
 				4A24082BEE264A5C795D13B3 /* AboutView.swift */,
 				A9D40716CC05CF8E701D8EBA /* TextColors.swift */,
@@ -281,6 +286,7 @@
 			children = (
 				7A11E5C0A1B2C3D4E5F60719 /* AppStoreScreenshotsUITests.swift */,
 				157900783202CD3AD2B9ABC8 /* SmokeUITests.swift */,
+				7A11D0B0A1B2C3D4E5F60004 /* OnboardingUITests.swift */,
 				C3FB2153DBCFAF616C03E37D /* AccessibilityAuditUITests.swift */,
 			);
 			path = CAFishPlantingUITests;
@@ -454,6 +460,7 @@
 				6C60EAAC54621979E87FBBC3 /* RootTabView.swift in Sources */,
 				BA2FA77B273C0F7AE4C905BC /* BrowseView.swift in Sources */,
 				35B24F0B9AF01AF261F753E3 /* WaterDetailView.swift in Sources */,
+				7A11D0B0A1B2C3D4E5F60001 /* OnboardingView.swift in Sources */,
 				D8EEA5FF73C12181DB1CAB1E /* FavoritesView.swift in Sources */,
 				F5AB81A0DE71F0E1B4FD87B8 /* AboutView.swift in Sources */,
 				DE5C3AA9D0F26980149CF6C4 /* PurchaseManager.swift in Sources */,
@@ -484,6 +491,7 @@
 			files = (
 				7A11E5C0A1B2C3D4E5F60718 /* AppStoreScreenshotsUITests.swift in Sources */,
 				B4E4C8697E4AB604828B050E /* SmokeUITests.swift in Sources */,
+				7A11D0B0A1B2C3D4E5F60003 /* OnboardingUITests.swift in Sources */,
 				980F5DE25013ABD66938186A /* AccessibilityAuditUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

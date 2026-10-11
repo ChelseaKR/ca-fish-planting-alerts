@@ -32,7 +32,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
 
     func testCaptureAppStoreScreenshots() throws {
         let plan = try readPlan()
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         app.launch()
         XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
 

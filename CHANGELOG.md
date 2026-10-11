@@ -11,6 +11,18 @@ This repository was republished with a new history on 2026-09-18
 
 ## [Unreleased]
 
+### Added
+
+- A four-page introduction on first launch: what the app is, finding
+  waters, favorites and what full access adds, and why it says a week and
+  "scheduled". Swipe or tap Continue, or skip it. About can show it again.
+- "Mute this water" on a planting alert turns that water's alerts off
+  without opening the app. The water stays a favorite. Turn its alerts back
+  on with the Alerts switch on its page or a swipe in Favorites.
+- Opening a water clears its alerts from Notification Center.
+- Haptics when a pull to refresh finishes (a warning if the check failed)
+  and when full access unlocks.
+
 ### Fixed
 
 - The release workflow's preflight no longer fails on the first release.

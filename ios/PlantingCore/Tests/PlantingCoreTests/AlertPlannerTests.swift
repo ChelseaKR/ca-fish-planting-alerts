@@ -116,3 +116,58 @@ final class AlertPlannerTests: XCTestCase {
         XCTAssertEqual(planA.notifications.first?.id, planB.notifications.first?.id, "same input, same id — UNUserNotificationCenter dedupes on this")
     }
 }
+
+/// The in-app history of alerts: week-of only, 30 days, never a day.
+final class NotificationHistoryTests: XCTestCase {
+    private let found = Date(timeIntervalSince1970: 1_790_000_000)
+
+    private func alert(id: String = "cdfw-1", _ keys: [PlantKey]) -> PlannedNotification {
+        PlannedNotification(waterID: id, waterName: "Test Lake", newKeys: keys)
+    }
+
+    func testARecordKeepsTheWeeksAndSpeciesOfTheAlert() {
+        let n = alert([
+            PlantKey(weekStart: TS.date("2026-09-27"), species: "Rainbow trout"),
+            PlantKey(weekStart: TS.date("2026-09-20"), species: "Rainbow trout"),
+            PlantKey(weekStart: TS.date("2026-09-20"), species: "Channel catfish"),
+        ])
+        var history = NotificationHistory()
+        history.record([n], at: found)
+        guard let record = history.records.first else { return XCTFail("no record") }
+        XCTAssertEqual(record.waterName, "Test Lake")
+        XCTAssertEqual(record.weeks, [TS.date("2026-09-20"), TS.date("2026-09-27")])
+        XCTAssertEqual(record.species, ["Channel catfish", "Rainbow trout"])
+        XCTAssertEqual(record.summary, "Scheduled for the weeks of 2026-09-20 and 2026-09-27 (Channel catfish, Rainbow trout)")
+        XCTAssertTrue(n.body().hasPrefix(record.summary), "the history repeats the alert's own wording")
+        XCTAssertEqual(record.foundAt, found)
+    }
+
+    func testTheSameAlertFoundTwiceGetsTwoDistinctRecords() {
+        let n = alert([PlantKey(weekStart: TS.date("2026-09-20"), species: "Trout")])
+        var history = NotificationHistory()
+        history.record([n], at: found)
+        history.record([n], at: found.addingTimeInterval(7 * 24 * 60 * 60))
+        XCTAssertEqual(history.records.count, 2)
+        XCTAssertEqual(Set(history.records.map(\.id)).count, 2, "SwiftUI lists need unique ids")
+        XCTAssertEqual(history.records.first?.foundAt, found.addingTimeInterval(7 * 24 * 60 * 60), "newest first")
+    }
+
+    func testRecordsOlderThanThirtyDaysAreDropped() {
+        let n = alert([PlantKey(weekStart: TS.date("2026-09-20"), species: "Trout")])
+        var history = NotificationHistory()
+        history.record([n], at: found)
+        history.prune(now: found.addingTimeInterval(30 * 24 * 60 * 60))
+        XCTAssertEqual(history.records.count, 1, "exactly 30 days old is kept")
+        history.prune(now: found.addingTimeInterval(31 * 24 * 60 * 60))
+        XCTAssertTrue(history.records.isEmpty)
+    }
+
+    func testNoTextInTheHistoryNamesADayOfTheWeek() {
+        var history = NotificationHistory()
+        history.record([alert([PlantKey(weekStart: TS.date("2026-09-20"), species: "Trout")])], at: found)
+        let summary = history.records[0].summary
+        for day in ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "today", "tomorrow"] {
+            XCTAssertFalse(summary.localizedCaseInsensitiveContains(day), summary)
+        }
+    }
+}

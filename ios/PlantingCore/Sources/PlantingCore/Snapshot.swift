@@ -171,7 +171,9 @@ public struct StateInfo: Equatable, Sendable, Identifiable {
     public static func california(source: SourceInfo, sourceWeek: Week, attribution: Attribution, license: License, regions: [Region], counties: [County], watersCount: Int) -> StateInfo {
         StateInfo(code: "CA", name: "California",
                   agencyName: "California Department of Fish and Wildlife", agencyShortName: "CDFW",
-                  agencyURL: URL(string: "https://wildlife.ca.gov/")!,
+                  // From the file, never a second host in the app's source
+                  // (`HostAllowlistTests`).
+                  agencyURL: source.url,
                   semantics: .schedule, datePrecisions: [.week], removalInference: true,
                   currentWeek: sourceWeek, asOf: source.statedToday, newestRecord: nil, recencyNote: nil,
                   sourceName: source.name, sourceURL: source.url, fetchedAt: source.fetchedAt, lastModified: nil,

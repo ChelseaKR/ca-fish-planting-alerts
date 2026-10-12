@@ -139,6 +139,7 @@ final class AppEnvironment {
     // are set from it after init and after every refresh (`syncFromStore`).
     private(set) var snapshot: Snapshot?
     private(set) var snapshotOrigin: SnapshotOrigin?
+
     private(set) var refreshMeta: SnapshotMeta?
 
     var isRefreshing: Bool { inFlightRefresh != nil }

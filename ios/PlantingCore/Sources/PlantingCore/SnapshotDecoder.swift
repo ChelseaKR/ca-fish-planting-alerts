@@ -136,9 +136,7 @@ public struct SnapshotDecoder: Sendable {
         }
         let name = w.name.trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty else { throw SnapshotDecodingError.malformed("water \(id) has an empty name") }
-        let location = w.location.map { l -> GeoLocation in
-            GeoLocation(lat: l.lat, lon: l.lon, source: l.source)
-        }
+        let location = w.location.map(\.geoLocation)
         let lastListedWeek = try w.lastListedWeek.map { try week($0, field: "waters[\(id)].last_listed_week") }
         let plants = try w.plants.map { p -> Plant in
             guard let status = PlantStatus(rawValue: p.status) else {
@@ -286,7 +284,18 @@ struct LicenseSourceDTO: Decodable {
 struct RegionDTO: Decodable { let code: String; let name: String }
 struct CountyDTO: Decodable { let name: String; let region: String }
 
-struct LocationDTO: Decodable { let lat: Double; let lon: Double; let source: String }
+struct LocationDTO: Decodable {
+    let lat: Double
+    let lon: Double
+    let source: String
+    /// v2 only (DECISIONS 0024): what the point stands for. Unknown values
+    /// decode as `nil`, never as a guess.
+    let kind: String?
+
+    var geoLocation: GeoLocation {
+        GeoLocation(lat: lat, lon: lon, source: source, kind: kind.flatMap(GeoLocation.Kind.init(rawValue:)))
+    }
+}
 
 struct PlantDTO: Decodable {
     let week: WeekDTO

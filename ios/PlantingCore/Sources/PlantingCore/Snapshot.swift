@@ -252,11 +252,29 @@ public struct County: Equatable, Sendable, Identifiable {
 }
 
 public struct GeoLocation: Equatable, Sendable {
+    /// What the point stands for (DECISIONS 0024). `nil` when the source
+    /// did not say, which v1 never does.
+    public enum Kind: String, Equatable, Sendable {
+        /// Inside the lake or reservoir's mapped outline.
+        case waterbody
+        /// The USGS's own point for a lake with no mapped outline.
+        case namedPoint = "named_point"
+        /// On the stream, central to its course in the listed county. CDFW
+        /// plants along a stream, so this is approximate.
+        case streamPoint = "stream_point"
+    }
+
     public let lat: Double
     public let lon: Double
     /// The licensed dataset the point came from. Never a guess.
     public let source: String
-    public init(lat: Double, lon: Double, source: String) { self.lat = lat; self.lon = lon; self.source = source }
+    public let kind: Kind?
+    public init(lat: Double, lon: Double, source: String, kind: Kind? = nil) {
+        self.lat = lat; self.lon = lon; self.source = source; self.kind = kind
+    }
+
+    /// A stream's point: say "approximate" wherever it is shown.
+    public var isApproximate: Bool { kind == .streamPoint }
 }
 
 /// `listed` and `removed` belong to a schedule; `reported` to a report

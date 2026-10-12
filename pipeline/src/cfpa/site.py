@@ -15,12 +15,22 @@ engines, not JavaScript: a browser never executes it and it makes no
 request. It only ever states what the snapshot says -- a planting is a
 scheduled *week*, so there is no ``Event``, and no coordinates are given
 because the snapshot has none.
+
+Maps (DECISIONS 0026) are on only when ``build_site`` is given ``maps`` and
+a snapshot v2, whose waters carry the locations (``cli.run`` turns them on).
+Then map pages carry one first-party module, ``map/map.js``, which loads
+nothing until a visitor presses "Show map"; the map's library, style, fonts
+and California tiles are then fetched from this site (``map/``), never from
+another host. Without ``maps`` the build is what it was before maps.
 """
 
 from __future__ import annotations
 
 import datetime as dt
+import json
 import re
+import shutil
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -31,6 +41,7 @@ import jinja2
 from . import site_states
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
+MAP_STATIC_DIR = Path(__file__).parent / "static" / "map"
 
 # The product name (DECISIONS 0010). It says nothing a searcher types, so
 # every title and meta description keeps the descriptive "trout planting" /
@@ -332,6 +343,7 @@ def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
     species = species_phrase({p["species"] for p in w["plants"]})
     place = f"{w['name']} ({county_phrase(w['counties'])})"
     return {
+        "id": w["id"],
         "slug": w["slug"],
         "name": w["name"],
         # Five CDFW names (Silver Lake, Bass Lake, Deer Creek, Sacramento
@@ -367,6 +379,137 @@ def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
             }
             for p in plants_sorted
         ],
+    }
+
+
+def _location_view(loc: dict[str, Any] | None, name: str) -> dict[str, Any] | None:
+    """What a water page says about its map location, or None for none."""
+    if loc is None:
+        return None
+    lat, lon = loc["lat"], loc["lon"]
+    approx = loc.get("kind") == "stream_point"
+    return {
+        "lat": f"{lat:.5f}",
+        "lon": f"{lon:.5f}",
+        "approximate": approx,
+        "kind_text": (
+            "A point on the stream. It is approximate: CDFW plants along a "
+            "stream, and does not say where."
+            if approx
+            else "A point inside the lake."
+            if loc.get("kind") == "waterbody"
+            else "The point the U.S. Geological Survey gives for this lake."
+            if loc.get("kind") == "named_point"
+            else "A point for this water."
+        ),
+        "source": loc["source"],
+        # Apple Maps opens in the Maps app on Apple devices and on the web
+        # elsewhere; the link is only followed if the visitor taps it.
+        "apple_maps_url": (
+            f"https://maps.apple.com/?ll={lat:.5f},{lon:.5f}&q="
+            + re.sub(r"[^A-Za-z0-9]+", "+", name).strip("+")
+        ),
+    }
+
+
+# What map/california.pmtiles covers (map/licenses/README.md). A pin outside
+# it would sit on an empty map, so the build refuses it: cut tiles for that
+# state first (DECISIONS 0026).
+TILE_BOUNDS = (-124.48, 32.53, -114.13, 42.01)  # west, south, east, north
+
+
+class MapCoverageError(ValueError):
+    """A located water is outside the self-hosted tiles."""
+
+
+def _map_features(snapshot_v2: dict[str, Any]) -> dict[str, Any]:
+    """map/waters.json: one GeoJSON point per v2 water with a location, in
+    every state; a water without one is not on the map."""
+    this_week = {e["water_id"] for e in snapshot_v2["this_week"]}
+    west, south, east, north = TILE_BOUNDS
+    features = []
+    for w in snapshot_v2["waters"]:
+        loc = w["location"]
+        if loc is None:
+            continue
+        if not (west <= loc["lon"] <= east and south <= loc["lat"] <= north):
+            raise MapCoverageError(
+                f"{w['id']} ({w['state']}) is at {loc['lat']}, {loc['lon']}, "
+                "outside the map tiles; cut tiles for its state first"
+            )
+        places = w["counties"] or w.get("towns") or []
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [loc["lon"], loc["lat"]]},
+                "properties": {
+                    "id": w["id"],
+                    "state": w["state"],
+                    "name": w["name"],
+                    "county": places[0] if places else "",
+                    "url": w["site_path"].lstrip("/"),
+                    "kind": loc.get("kind"),
+                    "this_week": w["id"] in this_week,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+def _write_map_assets(
+    out_dir: Path, written: list[Path], features: dict[str, Any]
+) -> None:
+    """Copy map/ (library, tiles, fonts, sprites, licenses) and waters.json."""
+    dest = out_dir / "map"
+    shutil.copytree(MAP_STATIC_DIR, dest, dirs_exist_ok=True)
+    written.extend(sorted(p for p in dest.rglob("*") if p.is_file()))
+    data = dest / "waters.json"
+    data.write_text(
+        json.dumps(features, ensure_ascii=False, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    written.append(data)
+
+
+def _prepare_maps(
+    snapshot_v2: dict[str, Any] | None,
+    maps: bool,
+    out_dir: Path,
+    written: list[Path],
+) -> tuple[dict[str, dict[str, Any]] | None, dict[str, Any] | None]:
+    """California water id -> location (for its pages) and the home page's
+    map counts, per state; None, None when the build has no maps. Writes
+    map/ when it does."""
+    if not maps:
+        return None, None
+    if snapshot_v2 is None:
+        raise ValueError("maps need snapshot_v2: the locations live there")
+    _write_map_assets(out_dir, written, _map_features(snapshot_v2))
+    waters = snapshot_v2["waters"]
+    placed = {w["id"] for w in waters if w["location"] is not None}
+    this_week = {e["water_id"] for e in snapshot_v2["this_week"]}
+    states = [
+        {
+            "code": st["code"],
+            "name": st["name"],
+            "total": sum(1 for w in waters if w["state"] == st["code"]),
+            "placed": sum(
+                1 for w in waters if w["state"] == st["code"] and w["id"] in placed
+            ),
+        }
+        for st in snapshot_v2["states"]
+    ]
+    ca = {
+        w["id"]: w["location"]
+        for w in waters
+        if w["state"] == "CA" and w["location"] is not None
+    }
+    return ca, {
+        "placed": len(placed),
+        "total": len(waters),
+        "this_week": len(this_week),
+        "this_week_placed": len(this_week & placed),
+        "states": states,
     }
 
 
@@ -660,6 +803,8 @@ class _PageContext:
     source_week_start: str
     source_week_label: str
     source_fetched_label: str
+    # Water id -> location; None when the build has no maps.
+    locations: Mapping[str, dict[str, Any]] | None = None
 
     @property
     def home_crumb(self) -> tuple[str, str]:
@@ -734,6 +879,7 @@ def _render_water_page(
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
         recorded_since_label=f"week of {recorded_since}" if recorded_since else "",
+        location=_location_view((ctx.locations or {}).get(w["id"]), w["name"]),
     )
     _write_page(ctx.out_dir, f"water/{w['slug']}", html, ctx.written)
 
@@ -896,7 +1042,9 @@ def _home_regions(
     return regions
 
 
-def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -> None:
+def _write_assets(
+    out_dir: Path, written: list[Path], *, app_store_live: bool, maps: bool = False
+) -> None:
     """assets/style.css, plus the App Store badge and its CSS when live.
 
     The badge CSS is appended only when the switch is on, and the badge file
@@ -906,6 +1054,8 @@ def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -
     style_src = (TEMPLATES_DIR / "style.css").read_text(encoding="utf-8")
     if app_store_live:
         style_src += (TEMPLATES_DIR / "app-store.css").read_text(encoding="utf-8")
+    if maps:
+        style_src += (TEMPLATES_DIR / "map.css").read_text(encoding="utf-8")
     style_path = out_dir / "assets" / "style.css"
     style_path.parent.mkdir(parents=True, exist_ok=True)
     style_path.write_text(style_src, encoding="utf-8")
@@ -929,8 +1079,15 @@ def build_site(
     dataset_license_url: str | None = DATASET_LICENSE_URL,
     cname: str | None = None,
     snapshot_v2: dict[str, Any] | None = None,
+    maps: bool = False,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
+
+    ``maps`` (DECISIONS 0026; ``cli.run`` turns it on with the committed
+    locations) writes map/ assets and map/waters.json from ``snapshot_v2``'s
+    locations, every state, and adds a map section to the home page and a
+    location section to each California water page. It needs
+    ``snapshot_v2``. Off, the build has no maps.
 
     ``cname`` (``custom_domain(base_url)``, passed by ``cli.run``) writes a
     ``CNAME`` file naming the custom domain. None writes no file, so a build
@@ -985,13 +1142,15 @@ def build_site(
         # describe a state the build is not in.
         "ga4_measurement_id": ga4_measurement_id,
         "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
+        # Maps on: the privacy and about copy says what map.js does.
+        "maps": maps,
     }
     # The header's "Other states" link, only when v2 has another state, so a
     # California-only build keeps its header byte for byte.
     common["states_nav"] = snapshot_v2 is not None and len(snapshot_v2["states"]) > 1
 
     # ---- assets/
-    _write_assets(out_dir, written, app_store_live=app_store_live)
+    _write_assets(out_dir, written, app_store_live=app_store_live, maps=common["maps"])
 
     waters_by_id = {w["id"]: w for w in snapshot["waters"]}
     region_by_county = {c["name"]: c["region"] for c in snapshot["counties"]}
@@ -1008,6 +1167,7 @@ def build_site(
         w["id"]: _water_view(w, source_week_start=source_week_start)
         for w in snapshot["waters"]
     }
+    water_locations, map_summary = _prepare_maps(snapshot_v2, maps, out_dir, written)
     data_lastmods = {
         w["id"]: _water_data_lastmod(w, source_week_start=source_week_start)
         for w in snapshot["waters"]
@@ -1070,6 +1230,7 @@ def build_site(
         regions=regions,
         all_waters=all_waters,
         county_counts=county_counts,
+        map_summary=map_summary,
     )
     _write_page(out_dir, "", index_html, written)
 
@@ -1174,6 +1335,7 @@ def build_site(
         source_week_start=source_week_start,
         source_week_label=source_week_label,
         source_fetched_label=source_fetched_label,
+        locations=water_locations,
     )
 
     # ---- per-water pages + ics

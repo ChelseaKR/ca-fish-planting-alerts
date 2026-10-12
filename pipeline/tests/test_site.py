@@ -59,8 +59,11 @@ def test_no_executable_script_anywhere_in_the_built_site(tmp_path: Path):
     parse as JSON. The with-ID build is covered in test_site_analytics.py."""
     out = _build_site(tmp_path)
     ld_open = re.compile(r'<script type="application/ld\+json">', re.I)
+    map_module = re.compile(
+        r'<script type="module" src="(?:\./|(?:\.\./)+)map/map\.js"></script>'
+    )
     for f in _all_html(out):
-        html = f.read_text(encoding="utf-8")
+        html = map_module.sub("", f.read_text(encoding="utf-8"))
         openings = len(re.findall(r"<script\b", html, re.I))
         data_blocks = ld_open.findall(html)
         assert openings == len(data_blocks) <= 1, f"executable <script> in {f}"
@@ -99,7 +102,18 @@ def test_about_page_privacy_claims_match_reality(tmp_path: Path):
     out = _build_site(tmp_path)
     about = (out / "about" / "index.html").read_text(encoding="utf-8")
     assert "No cookies" in about or "no cookies" in about.lower()
-    assert "No JavaScript runs" in about or "no javascript" in about.lower()
+    text = " ".join(about.lower().split())
+    assert "all javascript here is this site's own map code" in text
+    assert "sends nothing anywhere" in text
+
+
+def test_about_page_without_maps_still_says_no_javascript(tmp_path: Path):
+    """locations_path=None builds the site as it was before maps."""
+    out = _build_site(tmp_path, locations_path=None)
+    about = (out / "about" / "index.html").read_text(encoding="utf-8")
+    assert "No JavaScript runs" in about
+    assert not (out / "map").exists()
+    assert "map.js" not in (out / "index.html").read_text(encoding="utf-8")
 
 
 def test_no_plant_rendered_as_a_single_day_on_any_page(tmp_path: Path):

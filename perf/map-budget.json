@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "date": "2026-10-12",
+    "decision": "DECISIONS 0026: the map's own download, budgeted at its measured size plus 10% (owner, 2026-10-12)",
+    "how": "tools/site-checks/map-budget.mjs on the fixture site served by scripts/serve_ranges.py, uncompressed; Chrome for Testing via the pinned puppeteer, 1280x900 at pixel ratio 1, a fresh context with the cache off, bytes transferred after pressing Show map until the network is quiet for 3 s",
+    "pages": "home = the home page; water = the first lake in map/waters.json"
+  },
+  "measured_bytes": {
+    "home": 1611829,
+    "water": 1549468
+  },
+  "budget_bytes": {
+    "home": 1773012,
+    "water": 1704415
+  }
+}

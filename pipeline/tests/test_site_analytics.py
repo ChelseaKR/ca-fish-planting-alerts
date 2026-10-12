@@ -49,7 +49,9 @@ EXPECTED_DENIED_REGIONS = {
 # the tag is on. Matched against page text with tags stripped and whitespace
 # collapsed, case-insensitively.
 FALSE_WITH_ANALYTICS = (
-    "no javascript runs",
+    # With maps (DECISIONS 0026) the no-analytics copy says this instead of
+    # "no javascript runs"; test_site.py covers the no-maps wording.
+    "all javascript here is this site's own map code",
     "no cookies are set",
     "literally nothing is collected",
     "nothing you do here leaves your browser",
@@ -124,8 +126,23 @@ _EXEC_SCRIPT = re.compile(
 )
 
 
+# The site's own map module (DECISIONS 0026): same-origin, by a relative
+# path, with no inline code. It is the one other <script> a page may carry;
+# it is not analytics, and test_site_map.py checks what it may contact. Only
+# this exact tag is exempt: any other src, an absolute URL or inline code
+# still counts (see test_map_module_exemption_is_exact).
+MAP_MODULE = re.compile(
+    r'<script type="module" src="(?:\./|(?:\.\./)+)map/map\.js"></script>'
+)
+
+
+def _without_map(html: str) -> str:
+    return MAP_MODULE.sub("", html)
+
+
 def _exec_script_openings(html: str) -> int:
-    """Every <script opening that is not a JSON-LD block, closed or not."""
+    """Every <script opening that is not a JSON-LD block or the map module."""
+    html = _without_map(html)
     return len(re.findall(r"<script\b", html, re.IGNORECASE)) - len(
         _LD_JSON_OPEN.findall(html)
     )
@@ -153,7 +170,7 @@ def _ga_markers(html: str) -> list[str]:
 
 
 def _scripts(html: str) -> list[str]:
-    return _EXEC_SCRIPT.findall(html)
+    return _EXEC_SCRIPT.findall(_without_map(html))
 
 
 def _guard_problems(html: str, measurement_id: str) -> list[str]:
@@ -250,10 +267,28 @@ def test_no_analytics_detector_is_not_vacuous(no_id_pages, id_pages):
     assert _ga_markers(typed) == ["<script"]
 
 
+def test_map_module_exemption_is_exact(no_id_pages):
+    """Negative control for MAP_MODULE: the real tag is exempt, lookalikes
+    are not."""
+    original = no_id_pages["index.html"]
+    assert MAP_MODULE.search(original)  # the exemption is exercised
+    for tag in (
+        '<script type="module" src="https://cdn.example/map/map.js"></script>',
+        '<script type="module" src="./map/map.js">alert(1)</script>',
+        '<script type="module" src="./map/other.js"></script>',
+        '<script src="./map/map.js"></script>',
+    ):
+        sabotaged = original.replace("</head>", tag + "</head>", 1)
+        assert sabotaged != original  # the sabotage landed
+        assert _ga_markers(sabotaged) == ["<script"], tag
+
+
 def test_no_id_copy_still_says_the_site_collects_nothing(no_id_pages):
     privacy = _text(no_id_pages["privacy/index.html"])
     assert "no analytics, no advertising, no tracking" in privacy
-    assert "no cookies are set and no javascript runs" in privacy
+    assert (
+        "no cookies are set. all javascript here is this site's own map code" in privacy
+    )
     assert "literally nothing is collected" in _text(no_id_pages["about/index.html"])
 
 

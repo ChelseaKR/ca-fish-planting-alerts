@@ -73,5 +73,12 @@
 	<array>
 		<string>com.chelseakr.cafishplanting.refresh</string>
 	</array>
+	<!--
+	Near me on the Map tab (DECISIONS 0026): asked only when Near me is
+	used, When In Use only, one coarse fix. Distances are worked out on the
+	device; the location is never stored or sent.
+	-->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Near me uses your location to sort waters by distance, on this iPhone only. It isn't saved or sent anywhere.</string>
 </dict>
 </plist>

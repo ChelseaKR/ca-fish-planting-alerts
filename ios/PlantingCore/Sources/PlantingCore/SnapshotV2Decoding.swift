@@ -177,7 +177,7 @@ enum SnapshotV2Decoding {
         return Water(id: id, cdfwStockID: stockID, name: name, nameReviewed: w.nameStatus == "reviewed",
                      slug: w.slug, aliases: SnapshotDecoder.clean(w.aliases), counties: SnapshotDecoder.clean(w.counties),
                      region: region, cdfwMapURL: try SnapshotDecoder.url(w.sourceURL, field: "waters[\(id)].source_url"),
-                     location: w.location.map { GeoLocation(lat: $0.lat, lon: $0.lon, source: $0.source) },
+                     location: w.location.map(\.geoLocation),
                      lastListedWeek: try w.lastPeriod.map { try period($0, field: "waters[\(id)].last_period") },
                      plants: plants, state: state.code, semantics: state.semantics,
                      agencyShortName: state.agencyShortName, towns: SnapshotDecoder.clean(w.towns),

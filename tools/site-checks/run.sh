@@ -78,7 +78,10 @@ echo "   $page_count pages"
 
 port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
 base="http://127.0.0.1:$port/$prefix/"
-python3 -m http.server "$port" --bind 127.0.0.1 --directory "$work/root" > "$work/server.log" 2>&1 &
+# With HTTP Range support, like GitHub Pages: the map reads its tiles in
+# ranges (PMTiles), and python -m http.server cannot serve them.
+python3 "$root/scripts/serve_ranges.py" --self-test
+python3 "$root/scripts/serve_ranges.py" "$work/root" "$port" > "$work/server.log" 2>&1 &
 server_pid=$!
 for _ in $(seq 1 50); do
   if curl -fsS -o /dev/null "$base" 2>/dev/null; then break; fi
@@ -129,6 +132,10 @@ mkdir -p "$work/lhci"
   --config="$root/perf/lighthouserc.json" \
   --url="$base" --url="${base}about/" --url="$base$water" --url="$base$county")
 (cd "$work/lhci" && npx --prefix "$tools" --no-install lhci assert --config="$root/perf/lighthouserc.json")
+
+echo "== map download budget (DECISIONS 0026)"
+# What "Show map" loads, which Lighthouse never presses (perf/README.md).
+node map-budget.mjs "$base" "$root/perf/map-budget.json"
 
 echo "== baseline regression (PERF-03)"
 (cd "$root" && python3 scripts/perf_baseline.py --self-test)

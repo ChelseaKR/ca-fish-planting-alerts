@@ -26,15 +26,40 @@ send Global Privacy Control or Do Not Track, the tag loads `gtag.js`, which
 measured 154,391 B over brotli on 2026-09-17. The gate run blocks Google
 Analytics, so CI never sends page views to the real property. The
 first-party budget is therefore what's left of the 204,800 B, rounded down
-with some headroom for `gtag.js` growing: 45,056 B. Today the site loads
-no first-party script file at all. Its only script is the small inline GA4
-guard in each page's HTML.
+with some headroom for `gtag.js` growing: 45,056 B. The one first-party
+script file is `map/map.js` (DECISIONS 0026), on the home page and on each
+water page that has a location: 7,102 B, 2,818 B gzipped.
 
-**The baseline's `js_kb_gzip` is 0.** The regression rule allows 10% worse
-than the baseline, and 10% of 0 is 0. So a pull request that adds any
-script file fails PERF-03 until the same PR updates `baseline.json`, which
-is the baseline-update ritual in PERFORMANCE-STANDARD §2. That is
-deliberate: a script file on this site is a decision.
+**The map's own download has its own budget** (DECISIONS 0026).
+`map.js` loads nothing until a visitor presses "Show map". Then it loads
+MapLibre GL JS, PMTiles and the basemap style from `map/vendor/`, the fonts
+and sprites, `map/waters.json`, and the first tiles from
+`map/california.pmtiles`. Lighthouse loads the page and never presses the
+button, so none of that is in its numbers, and it does not delay the page or
+count toward the Core Web Vitals above. `tools/site-checks/map-budget.mjs`
+presses the button on the home page and on one water page, each as a first
+visit, and adds up what was transferred after the press.
+`perf/map-budget.json` holds the measured totals and the budget, the
+measured size plus 10% (owner, 2026-10-12):
+
+| Page | Measured, 2026-10-12 | Budget |
+|---|---|---|
+| Home | 1,611,829 B | 1,773,012 B |
+| A water page | 1,549,468 B | 1,704,415 B |
+
+These are uncompressed sizes: the test server sends files as they are,
+and GitHub Pages compresses the text ones. To re-measure after a deliberate
+change, run `node map-budget.mjs BASE_URL ../../perf/map-budget.json
+--measure` against a site served by `scripts/serve_ranges.py` and update
+both numbers in the same pull request.
+
+**The baseline's `js_kb_gzip` is 7.223** (since 2026-10-12, the map
+module; it was 0 before). The test server sends files uncompressed, so this
+is `map.js`'s raw size; GitHub Pages serves it gzipped. The regression rule
+allows 10% worse than the baseline, so a pull request that adds script
+still fails PERF-03 until the same PR updates `baseline.json`, which is the
+baseline-update ritual in PERFORMANCE-STANDARD §2. That is deliberate: a
+script file on this site is a decision.
 
 ## The checkers' own dependencies
 

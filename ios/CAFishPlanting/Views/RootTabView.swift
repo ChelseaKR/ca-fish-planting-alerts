@@ -36,8 +36,11 @@ struct RootTabView: View {
                         NavigationStack(path: $router.browsePath) { BrowseView() }
                     }
                 }
-                .tabItem { Label("Browse", systemImage: "map") }
+                .tabItem { Label("Browse", systemImage: "list.bullet") }
                 .tag(AppRouter.Tab.browse)
+                MapTabView()
+                    .tabItem { Label("Map", systemImage: "map") }
+                    .tag(AppRouter.Tab.map)
                 Group {
                     if showsListBesideWater {
                         NavigationSplitView {

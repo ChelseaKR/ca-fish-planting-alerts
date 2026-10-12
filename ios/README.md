@@ -108,7 +108,8 @@ local configuration, and `docs/DECISIONS.md` 0007 for why this replaced
 
 ## When the app fetches the snapshot
 
-The app makes one kind of network request: a GET of the snapshot
+The app makes one kind of network request of its own: a GET of the snapshot
+(the Map tab's MapKit loads map tiles from Apple, which is Apple's service)
 (`PlantingCore/Sources/PlantingCore/SnapshotRefresher.swift`). It runs:
 
 - from the `BGAppRefreshTask`, when iOS chooses (`App/BackgroundRefresh.swift`);

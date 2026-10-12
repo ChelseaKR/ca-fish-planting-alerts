@@ -39,6 +39,8 @@ from .states import store as states_store
 PIPELINE_DIR = Path(__file__).resolve().parents[2]
 REPO_ROOT = PIPELINE_DIR.parent
 DEFAULT_HISTORY_PATH = PIPELINE_DIR / "data" / "history.json"
+# Committed output of cfpa-geocode (DECISIONS 0024). Turns the site's maps on.
+DEFAULT_LOCATIONS_PATH = PIPELINE_DIR / "data" / "water_locations.json"
 DEFAULT_ALIASES_PATH = PIPELINE_DIR / "data" / "aliases.json"
 DEFAULT_SPECIES_ALIASES_PATH = PIPELINE_DIR / "data" / "species_aliases.json"
 DEFAULT_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v1.json"
@@ -295,6 +297,8 @@ def run(
             google_site_verification=google_site_verification,
             cname=cname,
             snapshot_v2=snap_v2,
+            # Maps (DECISIONS 0026) show the locations v2 carries.
+            maps=locations_path is not None,
         )
         if legacy_site_out is not None:
             legacy_mod.build_legacy_site(

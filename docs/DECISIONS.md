@@ -636,6 +636,65 @@ another state has data.
   9.99, one time, product id `com.chelseakr.cafishplanting.state.tn`.
   Michigan's indemnity clause and species scope are moot while it is off.
 
+## 0026 — Maps on the site and in the app, from confident locations only (2026-10-12; proposed)
+
+The owner approved maps on 2026-10-12 ("make the app and site more
+visual with maps"). 0024 gives each California water a point or none, and
+0025's snapshot v2 carries it in `waters[].location`; this is how the point
+is shown.
+
+- **Only confident points.** A pin only for a water whose v2 `location` is
+  set: for California, an `exact` geocoder match or one the owner resolved
+  in `pipeline/data/water_location_overrides.json`. **Owner-resolved
+  waters go on the map** (owner, 2026-10-12): an override is her deliberate
+  pick, recorded with who, when and why. Ambiguous and unmatched waters get
+  no pin, and their pages say "No map location" with the reason. A
+  stream's point is drawn differently (a ring on the site, a wave glyph in
+  the app) and called approximate wherever it appears.
+- **State-aware.** The site's map and the app's Map tab pin every state's
+  waters that carry a location, and say per state how many do. Only
+  California has a location source today, so Tennessee says it has none yet
+  rather than showing an empty promise. The site's tiles cover California
+  only, so the build fails (`MapCoverageError`) on a located water outside
+  them: a state's tiles are cut before its pins go on the site map. The
+  app uses Apple Maps, which covers everywhere, and frames all pins.
+- **One source of locations.** The site and the app both read v2. Snapshot
+  v1 keeps `location: null` for installed 1.0 builds. The app's bundled
+  snapshot is v2 and carries the same locations, so there is no separate
+  bundled locations file.
+- **Website: MapLibre GL JS with self-hosted tiles.** A Protomaps basemap
+  cut to California at zoom 10 (18 MB, one PMTiles file), MapLibre GL JS
+  6.11.2, PMTiles 4.5.0, the Protomaps style, fonts and sprites: all served
+  from this site under `map/`. No Google, no other tile host, no tracker.
+  Attribution "© OpenStreetMap contributors" (ODbL) is on every map and
+  the about page. Versions and licenses: `map/licenses/README.md`.
+- **The map loads only when asked, and both loads have a budget.** Pages
+  carry one small first-party module, `map/map.js`, which shows a "Show
+  map" button; page load, Lighthouse scores and Core Web Vitals are
+  unchanged. The map's own download after the button (library, style,
+  fonts, the first tiles) has its own budget, its measured size plus 10%
+  (owner, 2026-10-12), checked by a scripted press of the button
+  (`perf/README.md`). The tables on the page stay the full list and the
+  text alternative; the map region is labeled, and keyboard pan and zoom
+  work.
+- **The privacy copy changes with it.** With maps, the site no longer says
+  "no JavaScript runs"; it says what `map.js` does: nothing until pressed,
+  then loads the map from this site, sets no cookie, stores nothing and
+  sends nothing. Tests pin that only that exact same-origin module is
+  exempt from the no-script checks.
+- **App: MapKit, no SDK.** A Map tab with clustered pins (this week's in
+  the accent color), a map and Directions (handed to Apple Maps) on each
+  water's page, and an iPad layout with the list beside the map.
+- **Near me: on the device, When In Use, only when tapped.** The app says
+  what it will do before iOS asks, takes one coarse fix (kilometer
+  accuracy), sorts waters by straight-line distance on the device, and
+  never stores or sends the location. Everything works without it. The
+  App Store answer stays "Data Not Collected": nothing leaves the device
+  for the developer. MapKit loads map tiles from Apple, which is Apple's
+  service; the About screen and privacy page now say so instead of "the
+  only network request". The listing's own copy waits for the next
+  listing revision (owner, 2026-10-12).
+
 ## 0027 — Apple Watch and a round Lock Screen widget, in full access (2026-10-12; proposed, pending owner)
 
 The owner asked on 2026-10-12 for Apple Watch and Lock Screen extras, as

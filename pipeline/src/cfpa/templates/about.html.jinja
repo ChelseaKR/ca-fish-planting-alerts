@@ -48,8 +48,16 @@
 <p>This is a plain static site. Specifically:</p>
 <ul>
   <li>No cookies are set by this site.</li>
+  {% if maps %}
+  <li>All JavaScript here is this site's own map code, on the home page and
+      on the page of each water that has a location. It does nothing until
+      you press &ldquo;Show map&rdquo;, then loads the map from this site.
+      It sets no cookie, stores nothing, and sends nothing anywhere. There
+      is no analytics, tracking, or &ldquo;third-party script&rdquo;.</li>
+  {% else %}
   <li>No JavaScript runs on this site, at all &mdash; there is nothing to run
       analytics, tracking, or a "third-party script" with.</li>
+  {% endif %}
   <li>No request made by a page on this site contacts any server other than
       the one serving the page itself. Nothing you do here leaves your
       browser.</li>
@@ -124,6 +132,16 @@
   along its length. Waters with no single match have no location and are
   never placed on a map.
 </p>
+{% if maps %}
+<p>
+  Base map: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>
+  (Open Database License) and Natural Earth, from the
+  <a href="https://protomaps.com">Protomaps</a> basemap. The map's tiles,
+  fonts and code (MapLibre GL JS, PMTiles; BSD licenses; Noto Sans, SIL Open
+  Font License) are served from this site, and a map loads only when you
+  press "Show map". <a href="{{ root }}map/licenses/README.md">Versions and licenses</a>.
+</p>
+{% endif %}
 
 <h2>Accuracy</h2>
 <p>

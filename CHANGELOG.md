@@ -13,6 +13,16 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Maps. On the website, a "Show map" button on the home page and on each
+  water's page loads a map of California served entirely from the site
+  (MapLibre GL JS and OpenStreetMap data via Protomaps; no other host).
+  In the app, a Map tab with clustered pins, a map and Directions on each
+  water's page, and Near me, which sorts waters by distance on the device
+  and never sends the location anywhere. Only waters with a confident
+  location get a pin, in any state (California is the only state with a
+  location source so far); a stream's pin is marked approximate, and a
+  water with no location says so. The map's own download has a budget
+  (DECISIONS 0026).
 - Water locations for maps, from public-domain USGS data (GNIS and the
   National Hydrography Dataset), matched by name and county and never
   guessed: a water with several same-name candidates, or none, has no

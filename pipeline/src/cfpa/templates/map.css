@@ -1,0 +1,37 @@
+
+/* Maps (map/map.js). The section is a summary and a button until someone
+   asks for the map; the page's list is its text alternative. */
+.map-section { margin: 1.5rem 0; }
+.map-section [data-map-canvas] {
+  height: min(70vh, 32rem);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-top: 0.75rem;
+}
+.map-section button[data-map-show] {
+  font: inherit;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--link);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--link);
+  cursor: pointer;
+}
+.map-section button[data-map-show]:disabled { opacity: 0.6; cursor: progress; }
+.map-legend { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; }
+.map-legend li::before {
+  content: "";
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 0.4em;
+  border-radius: 50%;
+  vertical-align: -0.05em;
+  border: 2px solid var(--muted);
+}
+.map-legend .this-week::before { background: var(--link); border-color: var(--link); }
+.map-legend .other::before { background: var(--muted); }
+.map-legend .approx::before { background: var(--bg); border-width: 3px; }
+.maplibregl-popup-content { color: #14231c; }
+.maplibregl-popup-content p { margin: 0.25rem 0; }

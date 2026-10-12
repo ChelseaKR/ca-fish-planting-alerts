@@ -77,6 +77,8 @@ struct WaterDetailView: View {
                 }
             }
 
+            WaterLocationSection(water: water, location: water.location)
+
             Section {
                 Link(destination: water.cdfwMapURL) {
                     Label(water.state == "CA" ? "CDFW schedule for this water" : "\(water.agencyShortName) source for this water", systemImage: "link")

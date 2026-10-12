@@ -68,7 +68,9 @@ jobs:
         # A failed run (stale page, fetch failure, parse drift, history
         # integrity violation, schema violation) exits non-zero here and the
         # job stops: no commit, no artifact upload, no deploy. Nothing is
-        # ever published from a run that didn't fully succeed.
+        # ever published from a run that didn't fully succeed. The other
+        # states (docs/adr/0021) are fetched in the same run: one that fails
+        # keeps its last good data, logs a ::warning, and stops nothing.
         working-directory: pipeline
         # Owner-set repository variables (Settings -> Secrets and variables ->
         # Actions -> Variables); all optional. Unset SITE_BASE_URL keeps the
@@ -98,13 +100,16 @@ jobs:
             --support-email "$SUPPORT_EMAIL"
 
       - name: commit updated history and alias table, if any
+        # Each fetched state's history file is named here, one path each
+        # (cfpa.states.ENABLED_STATES). Enabling a state means adding its
+        # file to this line.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pipeline/data/history.json pipeline/data/aliases.json
+          git add pipeline/data/history.json pipeline/data/aliases.json pipeline/data/states/tn.json
           if git diff --cached --quiet; then
             echo "no change to history or aliases this run"
           else

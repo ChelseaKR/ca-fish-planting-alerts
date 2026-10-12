@@ -1,0 +1,92 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+{% if schedule %}
+<h1>{{ state.name }} {{ species }} stocking schedule</h1>
+<p class="lede">
+  Where the {{ state.agency.name }} ({{ state.agency.short_name }}) has
+  scheduled {{ species }} stocking in {{ state.name }}, at the precision
+  {{ state.agency.short_name }} gives: a day, the week of a Sunday, or a
+  month. These are scheduled dates, not confirmed stockings.
+</p>
+{% else %}
+<h1>{{ state.name }} {{ species }} stocking report</h1>
+<p class="lede">
+  Where the {{ state.agency.name }} ({{ state.agency.short_name }}) reports
+  it has stocked {{ species }} in {{ state.name }}, by the day of each
+  stocking.
+</p>
+{% endif %}
+<p class="muted">
+  {{ state.agency.short_name }}'s data was last read {{ fetched_label }}{% if state.source.last_modified %}; {{ state.agency.short_name }} last changed the file {{ state.source.last_modified }}{% endif %}.
+  {% if attempt_failed %}<strong>The most recent check failed, so this is the data from that last good read.</strong>{% endif %}
+  {% if newest_label %}The newest date in it is {{ newest_label }}.{% endif %}
+</p>
+{% if state.recency_note %}
+<p><strong>{{ state.recency_note }}</strong></p>
+{% endif %}
+
+<h2>This week: the {{ state.current_week.label }}</h2>
+{% if this_week %}
+<table>
+  <caption class="visually-hidden">{{ state.name }} waters {{ "scheduled" if schedule else "stocked" }} the {{ state.current_week.label }}</caption>
+  <thead>
+    <tr><th scope="col">Water</th><th scope="col">Where</th><th scope="col">When</th><th scope="col">Species</th>{% if has_counts %}<th scope="col">Fish</th>{% endif %}</tr>
+  </thead>
+  <tbody>
+    {% for r in this_week %}
+    <tr><td><a href="water/{{ r.slug }}/">{{ r.name }}</a></td><td>{{ r.place }}</td><td>{{ r.when }}</td><td>{{ r.species }}</td>{% if has_counts %}<td>{{ r.count if r.count is not none else "" }}</td>{% endif %}</tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{% if schedule %}No {{ state.name }} water has a day or week on {{ state.agency.short_name }}'s schedule for the {{ state.current_week.label }}.{% else %}{{ state.agency.short_name }}'s data has no stocking dated the {{ state.current_week.label }}.{% endif %} That is what the agency's own data says, not a failed read.</p>
+{% endif %}
+
+{% if schedule %}
+<h2>Coming up: the next {{ upcoming_days }} days</h2>
+{% else %}
+<h2>Recently stocked: the last {{ recent_days }} days</h2>
+{% endif %}
+{% if other %}
+<table>
+  <caption class="visually-hidden">{{ "Scheduled stockings in the next " ~ upcoming_days ~ " days" if schedule else "Stockings reported in the last " ~ recent_days ~ " days" }}</caption>
+  <thead>
+    <tr><th scope="col">When</th><th scope="col">Water</th><th scope="col">Where</th><th scope="col">Species</th>{% if has_counts %}<th scope="col">Fish</th>{% endif %}</tr>
+  </thead>
+  <tbody>
+    {% for r in other %}
+    <tr><td>{{ r.when }}</td><td><a href="water/{{ r.slug }}/">{{ r.name }}</a></td><td>{{ r.place }}</td><td>{{ r.species }}</td>{% if has_counts %}<td>{{ r.count if r.count is not none else "" }}</td>{% endif %}</tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{% if schedule %}Nothing else is on the schedule in the next {{ upcoming_days }} days.{% else %}No stocking is on record in the last {{ recent_days }} days.{% endif %}</p>
+{% endif %}
+{% if has_months %}
+<p class="muted">
+  Some waters are also listed by month: {{ state.agency.short_name }} writes
+  each month as one letter (so "M" may be March or May) and says the dates
+  vary through those months. Each water's page shows those letters as
+  {{ state.agency.short_name }} wrote them.
+</p>
+{% endif %}
+
+<h2>Every {{ state.name }} water</h2>
+{% for g in water_groups %}
+{% if g.name %}<h3>{{ g.name }}</h3>{% endif %}
+<ul class="water-index">
+  {% for w in g.waters %}
+  <li><a href="water/{{ w.slug }}/">{{ w.name }}</a> <span class="muted">({{ w.place }})</span></li>
+  {% endfor %}
+</ul>
+{% endfor %}
+
+<h2>Source and terms</h2>
+<p>{{ state.attribution.text }}</p>
+<p>{{ state.disclaimer }}</p>
+<p class="muted">{{ state.license.summary }}</p>
+<p>
+  In the iOS app, browsing and history in {{ state.name }} are free. Alerts
+  and the widget for {{ state.name }} waters are a one-time purchase.
+</p>
+{% endblock %}

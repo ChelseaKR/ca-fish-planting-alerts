@@ -34,6 +34,7 @@ from urllib.parse import urlsplit
 from .site import LEGACY_BASE_URL, SITE_NAME, custom_domain
 
 SNAPSHOT_PATH = Path("snapshot") / "v1.json"
+SNAPSHOT_V2_PATH = Path("snapshot") / "v2.json"
 
 
 class LegacySiteError(ValueError):
@@ -103,6 +104,16 @@ def _not_found(new_base_url: str, legacy_prefix: str) -> str:
     )
 
 
+def _snapshot_files(site_dir: Path) -> list[Path]:
+    """v1 always; v2 (docs/adr/0021) too when the build has it, because new
+    app builds fetch it from the github.io URL, the same as v1."""
+    return [
+        p
+        for p in (SNAPSHOT_PATH, SNAPSHOT_V2_PATH)
+        if p == SNAPSHOT_PATH or (site_dir / p).is_file()
+    ]
+
+
 def build_legacy_site(
     site_dir: Path,
     out_dir: Path,
@@ -136,7 +147,7 @@ def build_legacy_site(
         raise LegacySiteError("a base URL cannot contain '<'")
 
     pages: list[Path] = []
-    data: list[Path] = [SNAPSHOT_PATH]
+    data: list[Path] = _snapshot_files(site_dir)
     for path in sorted(p.relative_to(site_dir) for p in site_dir.rglob("*")):
         if not (site_dir / path).is_file():
             continue

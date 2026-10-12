@@ -49,7 +49,8 @@ test:
 	cd $(PIPELINE) && $(UV_RUN) pytest --cov=src --cov-branch --cov-report=term
 
 # The offline end-to-end run: fixture -> history -> schema-validated
-# snapshot -> site, with no network and nothing written inside the repo.
+# snapshot -> site, with no network and nothing written inside the repo. The
+# other states read their fixtures (docs/adr/0021); MA and MI are synthetic.
 smoke:
 	cd $(PIPELINE) && $(UV_RUN) cfpa \
 		--fixture tests/fixtures/schedule-fresh-2026-09-13.html \
@@ -57,8 +58,14 @@ smoke:
 		--run-today 2026-09-13 \
 		--history $(TMP)/smoke/history.json \
 		--aliases $(TMP)/smoke/aliases.json \
-		--site-out $(TMP)/smoke/site
+		--site-out $(TMP)/smoke/site \
+		--states-dir $(TMP)/smoke/states \
+		--states-fixtures tests/fixtures/states \
+		--states TN,MA,MI
 	test -f $(TMP)/smoke/site/index.html
+	test -f $(TMP)/smoke/site/snapshot/v2.json
+	test -f $(TMP)/smoke/site/tn/index.html
+	test -f $(TMP)/smoke/site/states/index.html
 
 # CQ-10: the wheel builds, and the site templates ship inside it.
 build:

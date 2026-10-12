@@ -43,11 +43,20 @@
 <a class="skip-link" href="#main">Skip to main content</a>
 <header class="site-header">
   <div class="wrap">
-    <p class="site-name"><a href="{{ root }}">{{ site_name }}</a> <span class="site-tagline">California trout planting &amp; stocking schedule</span></p>
+    <p class="site-name"><a href="{{ root }}">{{ site_name }}</a> <span class="site-tagline">{% if header_tagline %}{{ header_tagline }}{% else %}California trout planting &amp; stocking schedule{% endif %}</span></p>
     <nav aria-label="Primary">
+      {% if nav_links %}
+      {% for label, href in nav_links %}
+      <a href="{{ href }}">{{ label }}</a>
+      {% endfor %}
+      {% else %}
       <a href="{{ root }}">This week</a>
       <a href="{{ root }}county/">By county</a>
+      {% if states_nav %}
+      <a href="{{ root }}states/">Other states</a>
+      {% endif %}
       <a href="{{ root }}about/">About &amp; privacy</a>
+      {% endif %}
     </nav>
   </div>
 </header>
@@ -70,7 +79,11 @@
 </main>
 <footer class="site-footer">
   <div class="wrap">
+    {% if footer_disclaimer %}
+    <p>{{ attribution_text }} {{ footer_disclaimer }}</p>
+    {% else %}
     <p>{{ attribution_text }} {{ site_name }} is independent and is not affiliated with or endorsed by CDFW.</p>
+    {% endif %}
     <p><a href="{{ attribution_url }}">{{ attribution_url }}</a> &middot; <a href="{{ root }}about/">about &amp; attribution</a> &middot; <a href="{{ root }}privacy/">privacy</a> &middot; <a href="{{ root }}support/">support</a></p>
     {% if ga4_measurement_id %}
     {# Hidden until the GA4 tag's script shows it: with no JavaScript there

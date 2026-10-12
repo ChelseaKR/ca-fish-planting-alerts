@@ -28,7 +28,12 @@ from . import legacy as legacy_mod
 from . import parse as parse_mod
 from . import site as site_mod
 from . import snapshot as snapshot_mod
+from . import snapshot_v2 as snapshot_v2_mod
 from . import species_aliases as species_aliases_mod
+from . import states as states_mod
+from .states import base as states_base
+from .states import run as states_run
+from .states import store as states_store
 
 PIPELINE_DIR = Path(__file__).resolve().parents[2]
 REPO_ROOT = PIPELINE_DIR.parent
@@ -36,6 +41,8 @@ DEFAULT_HISTORY_PATH = PIPELINE_DIR / "data" / "history.json"
 DEFAULT_ALIASES_PATH = PIPELINE_DIR / "data" / "aliases.json"
 DEFAULT_SPECIES_ALIASES_PATH = PIPELINE_DIR / "data" / "species_aliases.json"
 DEFAULT_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v1.json"
+DEFAULT_V2_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v2.json"
+DEFAULT_STATES_DIR = PIPELINE_DIR / "data" / "states"
 DEFAULT_SITE_OUT = REPO_ROOT / "site"
 DEFAULT_BASE_URL = site_mod.LEGACY_BASE_URL
 
@@ -101,6 +108,10 @@ def run(
     google_site_verification: str | None = None,
     fixture_fetched_at: dt.datetime | None = None,
     run_today: dt.date | None = None,
+    states_dir: Path | None = None,
+    states_fetch: Sequence[str] = (),
+    states_fixtures: Path | None = None,
+    v2_schema_path: Path = DEFAULT_V2_SCHEMA_PATH,
 ) -> dict[str, Any]:
     """Execute one full run. Returns the built snapshot dict. Raises on any
     of: fetch failure, stale page, wrong Time Period view, parse error,
@@ -116,6 +127,13 @@ def run(
     ``legacy_site_out``, given only with a custom-domain ``base_url``, also
     writes the github.io site that keeps the snapshot and the calendar feeds
     and redirects every page to the domain (``cfpa.legacy``, DECISIONS 0019).
+
+    ``states_dir`` turns on the other states (docs/adr/0021): their histories
+    are read from it, the states in ``states_fetch`` are fetched (from
+    ``states_fixtures`` when given, else live), and ``snapshot/v2.json`` and
+    the state pages are built. A state that fails keeps its last good data
+    and never stops California. None (the default) builds v2 with
+    California alone and touches no state file.
     """
     cname = site_mod.custom_domain(base_url)
     if legacy_site_out is not None and (cname is None or not write_site):
@@ -211,10 +229,31 @@ def run(
     )
     snapshot_mod.validate_snapshot(snap, schema_path)
 
+    # The other states, then v2, built and validated before anything is
+    # written, like v1. v1 above is final: nothing below changes it.
+    state_runs: list[states_run.StateRun] = []
+    if states_dir is not None:
+        state_runs = states_run.run_states(
+            states_dir=states_dir,
+            fetch_codes=states_fetch,
+            user_agent=states_base.USER_AGENT_TEMPLATE.format(version=VERSION),
+            now=fixture_fetched_at
+            if states_fixtures is not None and fixture_fetched_at is not None
+            else dt.datetime.now(dt.UTC),
+            fixtures_dir=states_fixtures,
+        )
+    snap_v2 = snapshot_v2_mod.build_snapshot_v2(
+        snap,
+        [(r.source, r.history) for r in state_runs],
+        generated_at=generated_at,
+    )
+    snapshot_v2_mod.validate_snapshot_v2(snap_v2, v2_schema_path)
+
     new_history.save(
         history_path
     )  # raises HistoryIntegrityError; nothing written on failure
     alias_table.save(aliases_path)
+    states_run.write(state_runs)
 
     if write_site:
         site_out.mkdir(parents=True, exist_ok=True)
@@ -222,6 +261,9 @@ def run(
         snap_dir.mkdir(parents=True, exist_ok=True)
         (snap_dir / "v1.json").write_text(
             json.dumps(snap, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+        (snap_dir / "v2.json").write_text(
+            json.dumps(snap_v2, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
         site_mod.build_site(
             snap,
@@ -233,6 +275,7 @@ def run(
             ga4_measurement_id=ga4_measurement_id,
             google_site_verification=google_site_verification,
             cname=cname,
+            snapshot_v2=snap_v2,
         )
         if legacy_site_out is not None:
             legacy_mod.build_legacy_site(
@@ -245,6 +288,7 @@ def run(
     coverage = snapshot_mod.Coverage(**snap["coverage"])
     coverage.print_report()
     print_unlisted_report(unlisted)
+    states_run.print_report(state_runs)
     return snap
 
 
@@ -268,6 +312,32 @@ def main(argv: list[str] | None = None) -> int:
         "--species-aliases", type=Path, default=DEFAULT_SPECIES_ALIASES_PATH
     )
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA_PATH)
+    parser.add_argument("--v2-schema", type=Path, default=DEFAULT_V2_SCHEMA_PATH)
+    parser.add_argument(
+        "--states-dir",
+        type=Path,
+        default=DEFAULT_STATES_DIR,
+        help="where each other state's history file lives (docs/adr/0021)",
+    )
+    parser.add_argument(
+        "--states",
+        default=None,
+        help="comma-separated state codes to fetch this run (default: "
+        f"{','.join(states_mod.ENABLED_STATES)} on a live run, none with "
+        "--fixture unless --states-fixtures is given; empty = none)",
+    )
+    parser.add_argument(
+        "--states-fixtures",
+        type=Path,
+        default=None,
+        help="read each fetched state's response from <dir>/<code>.json instead "
+        "of the network (offline runs and tests)",
+    )
+    parser.add_argument(
+        "--no-states",
+        action="store_true",
+        help="leave the other states out entirely: v2 carries California alone",
+    )
     parser.add_argument("--site-out", type=Path, default=DEFAULT_SITE_OUT)
     parser.add_argument(
         "--base-url",
@@ -338,6 +408,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
         return 1
 
+    if args.states is not None:
+        states_fetch: tuple[str, ...] = tuple(
+            c.strip().upper() for c in args.states.split(",") if c.strip()
+        )
+    elif args.fixture and args.states_fixtures is None:
+        # An offline run never reaches the network for a state either.
+        states_fetch = ()
+    else:
+        states_fetch = states_mod.ENABLED_STATES
+
     try:
         run(
             fixture_path=args.fixture,
@@ -356,6 +436,10 @@ def main(argv: list[str] | None = None) -> int:
             google_site_verification=google_site_verification,
             run_today=args.run_today,
             fixture_fetched_at=args.fixture_fetched_at,
+            states_dir=None if args.no_states else args.states_dir,
+            states_fetch=states_fetch,
+            states_fixtures=args.states_fixtures,
+            v2_schema_path=args.v2_schema,
         )
     except (
         fetch_mod.FetchError,
@@ -366,6 +450,9 @@ def main(argv: list[str] | None = None) -> int:
         parse_mod.ParseError,
         history_mod.HistoryIntegrityError,
         snapshot_mod.SnapshotBuildError,
+        snapshot_v2_mod.SnapshotV2Error,
+        states_base.StateFetchError,
+        states_store.StateHistoryError,
         legacy_mod.LegacySiteError,
     ) as exc:
         print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)

@@ -162,6 +162,18 @@ public struct SnapshotFreshness: Equatable, Sendable {
 
     /// The same, for VoiceOver: "scheduled this week" or "scheduled for the week of …".
     public var listedPhrase: String { isStale ? "scheduled for the \(week.label)" : "scheduled this week" }
+
+    /// The Waters list's filter for the waters listed in the snapshot's
+    /// week. Same rule as `listedBadge`: "This week" only while that week is
+    /// current; once it has ended, the label names the week instead.
+    public var listedFilterLabel: String { Self.listedFilterLabel(week: week, isStale: isStale) }
+
+    /// The same label when there is no freshness to judge by: pass
+    /// `isStale: true` so a week not known to be current is named, never
+    /// called "this week".
+    public static func listedFilterLabel(week: Week, isStale: Bool) -> String {
+        isStale ? "Only the \(week.label)" : "This week only"
+    }
 }
 
 extension SnapshotMeta {

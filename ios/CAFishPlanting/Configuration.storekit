@@ -16,6 +16,51 @@
       "productID" : "com.chelseakr.cafishplanting.fullaccess",
       "referenceName" : "Full Access",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "2B91C4E7A0D1",
+      "localizations" : [
+        {
+          "description" : "Alerts and widget for Tennessee waters",
+          "displayName" : "Tennessee",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.chelseakr.cafishplanting.state.tn",
+      "referenceName" : "Tennessee access",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "3C02D5F8B1E2",
+      "localizations" : [
+        {
+          "description" : "Alerts and widget for Massachusetts waters",
+          "displayName" : "Massachusetts",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.chelseakr.cafishplanting.state.ma",
+      "referenceName" : "Massachusetts access",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "4D13E609C2F3",
+      "localizations" : [
+        {
+          "description" : "Alerts and widget for Michigan waters",
+          "displayName" : "Michigan",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.chelseakr.cafishplanting.state.mi",
+      "referenceName" : "Michigan access",
+      "type" : "NonConsumable"
     }
   ],
   "settings" : {

@@ -120,8 +120,21 @@ public struct AlertStateStore: Sendable {
 /// can show the right paywall/unlocked state instantly at launch instead
 /// of waiting on an async StoreKit round trip first.
 public struct PurchaseEntitlement: Codable, Equatable, Sendable {
+    /// California's Full Access, the only product before states. Kept so a
+    /// cache written by 1.0 still unlocks California at once.
     public var isPurchased: Bool
-    public init(isPurchased: Bool = false) { self.isPurchased = isPurchased }
+    /// Every owned product id (docs/adr/0021). nil in a cache from 1.0.
+    public var productIDs: [String]?
+    public init(isPurchased: Bool = false, productIDs: [String]? = nil) {
+        self.isPurchased = isPurchased; self.productIDs = productIDs
+    }
+
+    /// The owned product ids, reading a 1.0 cache as California's product.
+    public var ownedProductIDs: Set<String> {
+        var ids = Set(productIDs ?? [])
+        if isPurchased { ids.insert(StateAccess.californiaProductID) }
+        return ids
+    }
 }
 
 /// Persistence for the cached entitlement. A corrupt or missing file reads

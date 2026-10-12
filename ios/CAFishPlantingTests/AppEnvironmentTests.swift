@@ -218,6 +218,58 @@ final class AppEnvironmentTests: XCTestCase {
         center.removeAllPendingNotificationRequests()
     }
 
+    // MARK: - Per-state purchases (docs/adr/0021)
+
+    /// A California buyer favorites a Tennessee water whose schedule then
+    /// gains a date: nothing is scheduled, because Tennessee isn't bought.
+    func testACaliforniaBuyerGetsNoTennesseeAlert() async throws {
+        let env = AppEnvironment(refresher: makeMockedSnapshotRefresher())
+        env.purchases.setEntitled(states: ["CA"])
+        XCTAssertTrue(env.purchases.isEntitled, "California's original product")
+        XCTAssertFalse(env.purchases.isEntitled(state: "TN"))
+
+        let snapshot = try XCTUnwrap(env.snapshot)
+        let tn = try XCTUnwrap(snapshot.waters.first { $0.state == "TN" && snapshot.alertBasis(for: $0).isEmpty },
+                               "the bundled snapshot needs a Tennessee water with nothing upcoming")
+        env.toggleFavorite(tn)
+        let (data, _) = try updatedSnapshotFixture(addingListingTo: tn.id, after: snapshot.currentWeek(for: tn))
+        MockSnapshotURLProtocol.responseData = data
+        defer { MockSnapshotURLProtocol.responseData = nil }
+        let outcome = await env.performBackgroundRefresh()
+        XCTAssertEqual(outcome, .updated)
+        let center = UNUserNotificationCenter.current()
+        let pending = await center.pendingNotificationRequests()
+        XCTAssertTrue(pending.filter { $0.identifier.contains(tn.id) }.isEmpty)
+        center.removeAllPendingNotificationRequests()
+        env.purchases.setEntitled(false)
+    }
+
+    func testEachAlertNeedsItsOwnStatesPurchase() throws {
+        let snapshot = try XCTUnwrap(AppEnvironment(refresher: makeMockedSnapshotRefresher()).snapshot)
+        let ca = try XCTUnwrap(snapshot.waters.first { $0.state == "CA" })
+        let tn = try XCTUnwrap(snapshot.waters.first { $0.state == "TN" })
+        let key = PlantKey(weekStart: PlainDate(year: 2026, month: 12, day: 6), species: "Rainbow Trout")
+        let planned = [PlannedNotification(waterID: ca.id, waterName: ca.name, newKeys: [key]),
+                       PlannedNotification(waterID: tn.id, waterName: tn.name, newKeys: [key], agencyShortName: "TWRA")]
+        XCTAssertEqual(AppEnvironment.alertsToSchedule(planned, in: snapshot, entitledStates: ["CA"]).map(\.waterID), [ca.id])
+        XCTAssertEqual(AppEnvironment.alertsToSchedule(planned, in: snapshot, entitledStates: ["TN"]).map(\.waterID), [tn.id])
+        XCTAssertEqual(AppEnvironment.alertsToSchedule(planned, in: snapshot, entitledStates: ["CA", "TN"]).count, 2)
+        XCTAssertTrue(AppEnvironment.alertsToSchedule(planned, in: snapshot, entitledStates: []).isEmpty)
+    }
+
+    /// Someone who bought Full Access in 1.0 has a cache with only
+    /// `isPurchased: true`. It must still unlock California at launch.
+    func testA1_0FullAccessCacheStillUnlocksCalifornia() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("cafp-1_0-cache-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let layout = AppStorageLayout(directory: dir)
+        try Data(#"{"isPurchased":true}"#.utf8).write(to: layout.entitlementFile)
+        let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: layout))
+        XCTAssertTrue(manager.isEntitled)
+        XCTAssertEqual(manager.entitledStates, ["CA"])
+    }
+
     // MARK: - Refresh on open (launch and return to the foreground)
 
     private let opened = Date(timeIntervalSince1970: 1_790_000_000) // 2026-09-21
@@ -382,13 +434,25 @@ func updatedSnapshotFixture(addingListingTo waterID: Water.ID, after sourceWeek:
 
     var water = waters[index]
     var plants = (water["plants"] as? [[String: Any]]) ?? []
-    plants.append([
-        "week": ["start": startISO, "end": endISO, "label": "week of \(startISO)"],
-        "species": "Trout",
-        "status": "listed",
-        "first_observed_at": "2026-09-21T00:00:00Z",
-        "last_observed_at": "2026-09-21T00:00:00Z",
-    ])
+    if (json["schema_version"] as? Int) == 2 {
+        // The bundled snapshot is v2 (docs/adr/0021): a period, not a week.
+        plants.append([
+            "period": ["precision": "week", "start": startISO, "end": endISO, "label": "week of \(startISO)"],
+            "species": "Trout",
+            "status": "listed",
+            "count": NSNull(),
+            "first_observed_at": "2026-09-21T00:00:00Z",
+            "last_observed_at": "2026-09-21T00:00:00Z",
+        ])
+    } else {
+        plants.append([
+            "week": ["start": startISO, "end": endISO, "label": "week of \(startISO)"],
+            "species": "Trout",
+            "status": "listed",
+            "first_observed_at": "2026-09-21T00:00:00Z",
+            "last_observed_at": "2026-09-21T00:00:00Z",
+        ])
+    }
     water["plants"] = plants
     waters[index] = water
     json["waters"] = waters

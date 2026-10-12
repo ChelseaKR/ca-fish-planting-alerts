@@ -12,9 +12,19 @@ import PlantingCore
 /// for a non-purchaser. The words are `NotificationPrimingCopy`.
 struct FirstFavoriteExplainer: Identifiable {
     let water: Water
+    /// Whether this water's state is unlocked on this device.
     let isEntitled: Bool
     var id: Water.ID { water.id }
-    var copy: NotificationPrimingCopy { NotificationPrimingCopy(waterName: water.name, isEntitled: isEntitled) }
+    var copy: NotificationPrimingCopy {
+        NotificationPrimingCopy(waterName: water.name, isEntitled: isEntitled,
+                                agencyShortName: water.agencyShortName, semantics: water.semantics)
+    }
+}
+
+/// Which state Browse shows. A file like favorites, not `UserDefaults`, so
+/// the app still calls no required-reason API (`PrivacyInfo.xcprivacy`).
+struct BrowseChoice: Codable, Equatable {
+    var state: String = "CA"
 }
 
 /// The words on the screen shown before the system notification prompt,
@@ -32,6 +42,9 @@ struct NotificationPrimingCopy: Equatable {
     /// The water just favorited, or `nil` when asked from About.
     let waterName: String?
     let isEntitled: Bool
+    /// The water's agency and what its records mean. California's by default.
+    var agencyShortName: String = "CDFW"
+    var semantics: StateSemantics = .schedule
 
     var headline: String {
         if let waterName { return "Get an alert when \(waterName) is on the schedule" }
@@ -42,7 +55,11 @@ struct NotificationPrimingCopy: Equatable {
         let which = waterName.map { "\($0) or another favorite" } ?? "one of your favorites"
         var points = [
             Point(systemImage: "calendar",
-                  text: "When CDFW's weekly schedule adds a week for \(which), this device shows one alert. It names the week, never a day, and CDFW says plans can change."),
+                  text: semantics == .report
+                    ? "When \(agencyShortName)'s stocking report adds \(which), this device shows one alert, naming the day \(agencyShortName) gives."
+                    : agencyShortName == "CDFW"
+                    ? "When CDFW's weekly schedule adds a week for \(which), this device shows one alert. It names the week, never a day, and CDFW says plans can change."
+                    : "When \(agencyShortName)'s schedule adds a date for \(which), this device shows one alert. It names the date as precisely as \(agencyShortName) gives it, and plans can change."),
             Point(systemImage: "iphone",
                   text: "Alerts are made on this device from the schedule it downloads. There is no account and no server, and nothing about you or your favorites leaves the device."),
             Point(systemImage: "bell.slash",
@@ -50,7 +67,7 @@ struct NotificationPrimingCopy: Equatable {
         ]
         if !isEntitled {
             points.append(Point(systemImage: "lock",
-                                text: "Alerts are part of full access, a one-time purchase in About. If you allow notifications now, alerts start as soon as you unlock it."))
+                                text: "Alerts are part of full access, a one-time purchase for each state in About. If you allow notifications now, alerts start as soon as you unlock the state."))
         }
         return points
     }
@@ -105,6 +122,9 @@ final class AppEnvironment {
     private(set) var mutedWaters = MutedWaters()
     private(set) var onboarding = OnboardingState()
     private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
+    /// The state Browse shows. California until the person picks another.
+    private(set) var browseChoice = BrowseChoice()
+    private var browseChoiceFile: JSONFileStore<BrowseChoice>?
 
     /// Set when a water is favorited for the first time ever. The view
     /// layer presents `copy`, then calls `confirmNotificationExplainer()`
@@ -154,6 +174,9 @@ final class AppEnvironment {
             let onboardingStore = OnboardingStore(layout: layout)
             self.onboardingStore = onboardingStore
             self.onboarding = onboardingStore.load()
+            let choiceFile = JSONFileStore<BrowseChoice>(url: layout.directory.appendingPathComponent("browse-state.json"))
+            self.browseChoiceFile = choiceFile
+            self.browseChoice = ((try? choiceFile.load()) ?? nil) ?? BrowseChoice()
             entitlementStore = EntitlementStore(layout: layout)
         } catch {
             // Never fabricate a snapshot to paper over this: an honest
@@ -182,9 +205,35 @@ final class AppEnvironment {
     /// place that flag is read.
     func publishWidgetDigest() {
         guard let snapshot, let refreshMeta else { return }
+        let entitled = purchases.entitledStates
         let digest = WidgetDigest(snapshot: snapshot, meta: refreshMeta, favorites: favorites.ids,
-                                  locked: !FreeTier.widgetsAllowed(isEntitled: purchases.isEntitled))
+                                  locked: !FreeTier.widgetsAllowed(entitledStates: entitled),
+                                  entitledStates: entitled)
         widgetBridge.publish(digest)
+    }
+
+    // MARK: States
+
+    /// Each alert needs its own water's state's purchase (docs/adr/0021): a
+    /// California buyer gets no Tennessee alert, and the reverse. A water the
+    /// snapshot no longer has is treated as California's, where every alert
+    /// before states came from.
+    nonisolated static func alertsToSchedule(_ planned: [PlannedNotification], in snapshot: Snapshot, entitledStates: Set<String>) -> [PlannedNotification] {
+        planned.filter {
+            FreeTier.notificationsAllowed(forState: snapshot.water(id: $0.waterID)?.state ?? "CA",
+                                          entitledStates: entitledStates)
+        }
+    }
+
+    /// The state Browse shows, if the snapshot still has it; else California.
+    var browseState: String {
+        snapshot?.state(code: browseChoice.state) == nil ? "CA" : browseChoice.state
+    }
+
+    func setBrowseState(_ code: String) {
+        guard code != browseChoice.state else { return }
+        browseChoice = BrowseChoice(state: code)
+        try? browseChoiceFile?.save(browseChoice)
     }
 
     // MARK: Favorites
@@ -219,7 +268,7 @@ final class AppEnvironment {
             alertState = AlertPlanner.seeding(alertState, favoriting: water.id, snapshot: snapshot)
             try? alertStateStore?.save(alertState)
             if Self.shouldPrimeNotifications(favoritesWereEmpty: wasEmpty, authorization: notificationAuthorization) {
-                pendingNotificationExplainer = FirstFavoriteExplainer(water: water, isEntitled: purchases.isEntitled)
+                pendingNotificationExplainer = FirstFavoriteExplainer(water: water, isEntitled: purchases.isEntitled(state: water.state))
             }
         } else if !nowFavorited {
             alertState = AlertPlanner.pruning(alertState, unfavoriting: water.id)
@@ -366,8 +415,9 @@ final class AppEnvironment {
             try? alertStateStore?.save(alertState)
             // A muted water's baseline moved forward with the rest above;
             // only its alert is left out.
-            let shown = mutedWaters.unmuted(plan.notifications)
-            if !shown.isEmpty, FreeTier.notificationsAllowed(isEntitled: purchases.isEntitled) {
+            let shown = Self.alertsToSchedule(mutedWaters.unmuted(plan.notifications), in: store.snapshot,
+                                              entitledStates: purchases.entitledStates)
+            if !shown.isEmpty {
                 await notifications.schedule(shown)
             }
         }

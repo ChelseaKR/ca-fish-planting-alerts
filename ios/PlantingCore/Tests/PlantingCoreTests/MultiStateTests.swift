@@ -141,6 +141,22 @@ final class MultiStateTests: XCTestCase {
         XCTAssertEqual(StateAccess.allProductIDs.count, 4)
     }
 
+    /// Every state's product is in the local StoreKit configuration, with a
+    /// description App Store Connect accepts (45 characters at most).
+    func testEveryStateProductIsInTheStoreKitConfiguration() throws {
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("CAFishPlanting/Configuration.storekit")
+        let json = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any]
+        let products = json?["products"] as? [[String: Any]] ?? []
+        for id in StateAccess.allProductIDs {
+            let product = try XCTUnwrap(products.first { $0["productID"] as? String == id }, id)
+            XCTAssertEqual(product["type"] as? String, "NonConsumable", id)
+            let description = try XCTUnwrap(((product["localizations"] as? [[String: Any]])?.first)?["description"] as? String)
+            XCTAssertLessThanOrEqual(description.count, 45, description)
+        }
+    }
+
     func testAlertsAndTheWidgetFollowEachStatesPurchase() throws {
         XCTAssertTrue(FreeTier.notificationsAllowed(forState: "TN", entitledStates: ["TN"]))
         XCTAssertFalse(FreeTier.notificationsAllowed(forState: "TN", entitledStates: ["CA"]))

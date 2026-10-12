@@ -15,6 +15,7 @@ dependencies = [
 
 [project.scripts]
 cfpa = "cfpa.cli:main"
+cfpa-geocode = "cfpa.geocode:main"
 
 # CODE-QUALITY-STANDARD §2 (CQ-10): hatchling. `make build` builds the wheel
 # in CI, so a template or package-data file that stops shipping fails there.

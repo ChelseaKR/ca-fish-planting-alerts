@@ -60,9 +60,9 @@ final class SnapshotDecoderTests: XCTestCase {
     // MARK: contract violations throw, precisely
 
     func testUnsupportedSchemaVersionThrows() {
-        let json = Fixture.minimalValid.replacingOccurrences(of: "\"schema_version\": 1,", with: "\"schema_version\": 2,")
+        let json = Fixture.minimalValid.replacingOccurrences(of: "\"schema_version\": 1,", with: "\"schema_version\": 3,")
         XCTAssertThrowsError(try decoder.decode(Fixture.data(json))) { error in
-            XCTAssertEqual(error as? SnapshotDecodingError, .unsupportedSchemaVersion(2))
+            XCTAssertEqual(error as? SnapshotDecodingError, .unsupportedSchemaVersion(3))
         }
     }
 
@@ -149,7 +149,9 @@ final class SnapshotDecoderTests: XCTestCase {
         // stated pipeline invariant — the app itself checks it too.
         var derived = Set<String>()
         for water in snapshot.waters {
-            for plant in water.plants where plant.status == .listed && plant.week == snapshot.sourceWeek {
+            // Each state's own current week; a month never counts as this week.
+            let week = snapshot.currentWeek(for: water)
+            for plant in water.plants where plant.status != .removed && plant.week.precision != .month && plant.week.overlaps(week) {
                 derived.insert("\(water.id)|\(plant.species)")
             }
         }

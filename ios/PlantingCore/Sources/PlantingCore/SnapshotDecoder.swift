@@ -7,7 +7,7 @@ public enum SnapshotDecodingError: Error, Equatable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .unsupportedSchemaVersion(let v):
-            return "Snapshot schema version \(v) is not supported (this app reads version \(Snapshot.supportedSchemaVersion))."
+            return "Snapshot schema version \(v) is not supported (this app reads versions 1 and \(Snapshot.supportedSchemaVersion))."
         case .malformed(let what):
             return "Snapshot is malformed: \(what)."
         }
@@ -21,14 +21,26 @@ public struct SnapshotDecoder: Sendable {
     public init() {}
 
     public func decode(_ data: Data) throws -> Snapshot {
+        let version: Int
+        do {
+            version = try JSONDecoder().decode(VersionDTO.self, from: data).schemaVersion
+        } catch let error as DecodingError {
+            throw SnapshotDecodingError.malformed(Self.describe(error))
+        }
+        switch version {
+        case 1: return try decodeV1(data)
+        case 2: return try SnapshotV2Decoding.decode(data)
+        default: throw SnapshotDecodingError.unsupportedSchemaVersion(version)
+        }
+    }
+
+    /// `schema/snapshot.v1.json`: California alone.
+    func decodeV1(_ data: Data) throws -> Snapshot {
         let dto: SnapshotDTO
         do {
             dto = try JSONDecoder().decode(SnapshotDTO.self, from: data)
         } catch let error as DecodingError {
             throw SnapshotDecodingError.malformed(Self.describe(error))
-        }
-        guard dto.schemaVersion == Snapshot.supportedSchemaVersion else {
-            throw SnapshotDecodingError.unsupportedSchemaVersion(dto.schemaVersion)
         }
 
         let generatedAt = try Self.datetime(dto.generatedAt, field: "generated_at")
@@ -206,6 +218,11 @@ public struct SnapshotDecoder: Sendable {
 }
 
 // MARK: - Wire DTOs (private to decoding; the public model is `Snapshot`)
+
+struct VersionDTO: Decodable {
+    let schemaVersion: Int
+    enum CodingKeys: String, CodingKey { case schemaVersion = "schema_version" }
+}
 
 struct SnapshotDTO: Decodable {
     let schemaVersion: Int

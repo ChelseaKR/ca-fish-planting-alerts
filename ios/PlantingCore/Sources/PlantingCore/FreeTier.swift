@@ -53,4 +53,27 @@ public enum FreeTier {
         "An alert on this device when a favorite is newly on CDFW's weekly schedule",
         "The Favorite waters widget for your Home Screen and Lock Screen",
     ]
+
+    // MARK: Per state (docs/adr/0021)
+
+    /// Alerts for a water need its state's purchase. California's is the
+    /// original Full Access (`StateAccess.californiaProductID`).
+    public static func notificationsAllowed(forState code: String, entitledStates: Set<String>) -> Bool {
+        entitledStates.contains(code)
+    }
+
+    /// The widget unlocks with any state's purchase, and then lists only the
+    /// favorites in states this device owns.
+    public static func widgetsAllowed(entitledStates: Set<String>) -> Bool {
+        !widgetsRequireFullAccess || !entitledStates.isEmpty
+    }
+
+    /// What a state's purchase unlocks, in the purchase screen's words. A
+    /// report state's alert says "stocked", a schedule state's "scheduled".
+    public static func stateFeatures(stateName: String, agencyShortName: String, semantics: StateSemantics) -> [String] {
+        let alert = semantics == .schedule
+            ? "An alert on this device when a \(stateName) favorite is newly on \(agencyShortName)'s schedule"
+            : ReportWording.alertFeature(stateName: stateName, agencyShortName: agencyShortName)
+        return [alert, "\(stateName) favorites in the Favorite waters widget"]
+    }
 }

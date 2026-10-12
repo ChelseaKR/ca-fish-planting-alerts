@@ -10,7 +10,14 @@ import Foundation
 /// fish".
 public enum ScheduleAnswer {
     public static func nextScheduled(for water: Water, in snapshot: Snapshot, now: Date) -> String {
-        let week = snapshot.sourceWeek
+        let week = snapshot.currentWeek(for: water)
+        if water.semantics == .report {
+            // A report has no future: say what the newest record is, and how
+            // the agency's records lag when they do.
+            return ReportWording.answer(waterName: water.name, last: water.lastListedWeek,
+                                        agencyShortName: water.agencyShortName,
+                                        lagging: snapshot.state(of: water)?.recencyNote != nil)
+        }
         let stale = SnapshotFreshness.scheduleDate(of: now) > week.end
         let upcoming = water.listedPlants(onOrAfter: week)
         var sentences: [String] = []
@@ -20,17 +27,19 @@ public enum ScheduleAnswer {
             if first.week == week, !stale {
                 sentences.append("\(water.name) is on the schedule this week, the \(week.label)\(species).")
             } else {
-                sentences.append("\(water.name) is next scheduled for the \(first.week.label)\(species).")
+                sentences.append("\(water.name) is next scheduled for \(first.week.phrase)\(species).")
             }
             let later = Array(Set(upcoming.map(\.week).filter { $0 > first.week })).sorted()
             if let next = later.first {
-                sentences.append("After that, the \(next.label).")
+                sentences.append("After that, \(next.phrase).")
             }
-            sentences.append("CDFW gives the week, not the day, and plans can change.")
+            sentences.append(upcoming.allSatisfy { $0.week.precision == .week }
+                ? "\(water.agencyShortName) gives the week, not the day, and plans can change."
+                : "\(water.agencyShortName)'s plans can change.")
         } else {
             sentences.append("\(water.name) isn't on the schedule for the \(week.label) or later.")
             if let last = water.lastListedWeek {
-                sentences.append("It was last scheduled for the \(last.label).")
+                sentences.append("It was last scheduled for \(last.phrase).")
             } else {
                 sentences.append("It hasn't been on the schedule in this app's history.")
             }

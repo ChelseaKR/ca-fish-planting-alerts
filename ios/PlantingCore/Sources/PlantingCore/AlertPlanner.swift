@@ -9,8 +9,27 @@ import Foundation
 public struct PlantKey: Hashable, Sendable, Codable {
     public let weekStart: PlainDate
     public let species: String
-    public init(weekStart: PlainDate, species: String) { self.weekStart = weekStart; self.species = species }
-    public init(_ plant: Plant) { self.weekStart = plant.week.start; self.species = plant.species }
+    /// nil for a week, so every baseline stored before precision existed
+    /// (California's, all weeks) still matches; `.day` or `.month` otherwise.
+    public let precision: DatePrecision?
+    public init(weekStart: PlainDate, species: String, precision: DatePrecision? = nil) {
+        self.weekStart = weekStart; self.species = species
+        self.precision = precision == .week ? nil : precision
+    }
+    public init(_ plant: Plant) { self.init(weekStart: plant.week.start, species: plant.species, precision: plant.week.precision) }
+
+    /// The period the key names, in words: "the week of 2026-10-11",
+    /// "2026-10-14", or "December 2026".
+    public var phrase: String {
+        switch precision ?? .week {
+        case .week: return "the week of \(weekStart.isoDate)"
+        case .day: return weekStart.isoDate
+        case .month: return "\(Self.monthNames[weekStart.month - 1]) \(weekStart.year)"
+        }
+    }
+
+    static let monthNames = ["January", "February", "March", "April", "May", "June", "July",
+                             "August", "September", "October", "November", "December"]
 }
 
 /// Per favorited water, the listed-plant baseline as of the last
@@ -30,8 +49,15 @@ public struct PlannedNotification: Equatable, Sendable, Identifiable {
     public let waterName: String
     /// Ascending. Usually one; more when a refresh reveals several new weeks at once.
     public let newKeys: [PlantKey]
+    public let semantics: StateSemantics
+    public let agencyShortName: String
+    /// The state's lag note (Michigan), shortened into the alert.
+    public let lagging: Bool
 
-    public init(waterID: Water.ID, waterName: String, newKeys: [PlantKey]) {
+    public init(waterID: Water.ID, waterName: String, newKeys: [PlantKey], semantics: StateSemantics = .schedule, agencyShortName: String = "CDFW", lagging: Bool = false) {
+        self.semantics = semantics
+        self.agencyShortName = agencyShortName
+        self.lagging = lagging
         precondition(!newKeys.isEmpty)
         let sorted = newKeys.sorted { $0.weekStart == $1.weekStart ? $0.species < $1.species : $0.weekStart < $1.weekStart }
         self.newKeys = sorted
@@ -40,23 +66,34 @@ public struct PlannedNotification: Equatable, Sendable, Identifiable {
         self.waterName = waterName
     }
 
-    public var title: String { "\(waterName) is on the stocking schedule" }
+    public var title: String {
+        semantics == .report ? ReportWording.alertTitle(waterName) : "\(waterName) is on the stocking schedule"
+    }
 
     /// Week-of only, and "scheduled" rather than "stocked" — per
     /// `schema/README.md`: "all fish plants are subject to change... Never
     /// say 'stocked'."
     public func body() -> String {
-        let byWeek = Dictionary(grouping: newKeys, by: \.weekStart)
-        let weeks = byWeek.keys.sorted()
-        let when: String
-        if weeks.count == 1 {
-            when = "Scheduled for the week of \(weeks[0].isoDate)"
-        } else {
-            when = "Scheduled for the weeks of " + weeks.map(\.isoDate).joined(separator: " and ")
-        }
         let species = newKeys.map(\.species).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
         let what = species.isEmpty ? "species not stated" : species.joined(separator: ", ")
-        return "\(when) (\(what)). Plans can change; CDFW gives the week, not the day."
+        if semantics == .report {
+            let days = newKeys.map(\.phrase).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+            return ReportWording.alertBody(periods: days, species: what, agencyShortName: agencyShortName, lagging: lagging)
+        }
+        if newKeys.allSatisfy({ $0.precision == nil }) {
+            // Weeks only: California's words, exactly as before.
+            let weeks = Set(newKeys.map(\.weekStart)).sorted()
+            let when: String
+            if weeks.count == 1 {
+                when = "Scheduled for the week of \(weeks[0].isoDate)"
+            } else {
+                when = "Scheduled for the weeks of " + weeks.map(\.isoDate).joined(separator: " and ")
+            }
+            return "\(when) (\(what)). Plans can change; \(agencyShortName) gives the week, not the day."
+        }
+        let periods = newKeys.map(\.phrase).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+        let unset = newKeys.contains { $0.precision == .month } ? " \(agencyShortName) hasn't set the day yet." : ""
+        return "Scheduled for \(periods.joined(separator: " and ")) (\(what)).\(unset) Plans can change."
     }
 }
 
@@ -99,11 +136,14 @@ public enum AlertPlanner {
                 if let previous = state.lastListed[id] { nextBaseline[id] = previous }
                 continue
             }
-            let currentListed = Set(water.listedPlants(onOrAfter: snapshot.sourceWeek).map(PlantKey.init))
+            let currentListed = Set(snapshot.alertBasis(for: water).map(PlantKey.init))
             let previous = state.lastListed[id] ?? []
             let newKeys = currentListed.subtracting(previous)
             if !newKeys.isEmpty {
-                notifications.append(PlannedNotification(waterID: id, waterName: water.name, newKeys: Array(newKeys)))
+                notifications.append(PlannedNotification(
+                    waterID: id, waterName: water.name, newKeys: Array(newKeys),
+                    semantics: water.semantics, agencyShortName: water.agencyShortName,
+                    lagging: snapshot.state(of: water)?.recencyNote != nil))
             }
             nextBaseline[id] = currentListed
         }
@@ -115,7 +155,7 @@ public enum AlertPlanner {
     public static func seeding(_ state: AlertState, favoriting id: Water.ID, snapshot: Snapshot) -> AlertState {
         guard let water = snapshot.water(id: id) else { return state }
         var next = state
-        next.lastListed[id] = Set(water.listedPlants(onOrAfter: snapshot.sourceWeek).map(PlantKey.init))
+        next.lastListed[id] = Set(snapshot.alertBasis(for: water).map(PlantKey.init))
         return next
     }
 

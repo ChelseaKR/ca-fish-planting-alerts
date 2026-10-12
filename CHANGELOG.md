@@ -50,6 +50,21 @@ This repository was republished with a new history on 2026-09-18
   Refresh button (Command-R). The iPhone layout is used in Slide Over,
   narrow splits and at the accessibility text sizes. The full-access sheet
   opens at full height. The iPad turns to every orientation.
+- The app may ask for an App Store rating with iOS's own prompt, and only
+  when someone goes back from a water's page: after opening a planting
+  alert, or from the third launch on with at least one favorite. Never on
+  the first launch, never over another screen, at most once per app
+  version, 120 days apart and three times a year. Nothing is offered for a
+  rating. About has a "Rate Trout Truck" row that opens the App Store's
+  review page.
+- Website: water page titles lead with the water, the species and
+  "stocking", and add "& planting" when that still fits in 60 characters,
+  for example "Nora Lake trout stocking & planting schedule (Shasta County)
+  | Trout Truck". The h1 says "stocking & planting schedule and history".
+- Website: when CDFW lists nothing for the current week, the home page
+  leads with the waters scheduled for a later week and the waters
+  scheduled most recently, each with its own week, instead of an empty
+  table.
 
 ### Fixed
 

@@ -1,0 +1,23 @@
+{# One table of waters, each row labeled with its own scheduled week (the
+   home page's empty-week sections). Expects `rows` and `caption`. #}
+<table>
+  <caption class="visually-hidden">{{ caption }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">County</th>
+      <th scope="col">Species</th>
+      <th scope="col">Scheduled</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{% for c in row.county_links %}<a href="{{ root }}county/{{ c.slug }}/">{{ c.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</td>
+      <td>{{ row.species }}</td>
+      <td>{{ row.week_label }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

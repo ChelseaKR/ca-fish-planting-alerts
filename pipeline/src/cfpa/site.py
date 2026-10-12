@@ -370,6 +370,34 @@ def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
     }
 
 
+# How much of a title a results page shows: Google cuts titles at about 600
+# pixels, roughly 60 characters. The words a searcher typed (the water, the
+# species, "stocking") come first so the cut, when there is one, falls on the
+# county or the brand, never on them.
+TITLE_VISIBLE_CHARS = 60
+
+
+def water_title(view: dict[str, Any]) -> str:
+    """A water page's <title>: "Collins Lake trout stocking & planting
+    schedule (Yuba County) | Trout Truck".
+
+    "Stocking" is the word most anglers search with; "planting" is CDFW's.
+    Both go in when the part before the brand still fits in
+    ``TITLE_VISIBLE_CHARS``; otherwise the title keeps "stocking" alone and
+    "planting" stays in the h1 and the meta description. The county always
+    stays, because five CDFW names belong to more than one water.
+    """
+    lead = f"{view['name']} {view['species']}"
+    where = f"({view['county_phrase']})"
+    both = f"{lead} stocking & planting schedule {where}"
+    chosen = (
+        both
+        if len(both) <= TITLE_VISIBLE_CHARS
+        else f"{lead} stocking schedule {where}"
+    )
+    return f"{chosen} | {SITE_NAME}"
+
+
 def _water_description(view: dict[str, Any], *, source_week_label: str) -> str:
     """The meta description: the water, its county, the stocking wording
     people search with, then the weeks that answer the query, within the
@@ -710,7 +738,7 @@ def _render_water_page(
         (f"{primary} County", f"{base_url}/county/{county_slug(primary)}/"),
         (w["name"], page_url),
     ]
-    title = f"{view['place']} {view['species']} planting schedule | {SITE_NAME}"
+    title = water_title(view)
     html = ctx.env.get_template("water.html.jinja").render(
         title=title,
         description=_water_description(view, source_week_label=ctx.source_week_label),
@@ -896,6 +924,72 @@ def _home_regions(
     return regions
 
 
+def _home_row(
+    w: dict[str, Any],
+    week: dict[str, Any],
+    species: list[str],
+    county_link: dict[str, dict[str, str]],
+) -> dict[str, Any]:
+    return {
+        "slug": w["slug"],
+        "name": w["name"],
+        "county_links": [county_link[c] for c in w["counties"]],
+        "species": ", ".join(sorted(species)),
+        "week_start": week["start"],
+        "week_label": week["label"],
+    }
+
+
+def _home_nearest_weeks(
+    snapshot: dict[str, Any], county_link: dict[str, dict[str, str]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """For a home page whose current week lists nothing: the waters CDFW has
+    scheduled for a later week, and the waters on the most recent earlier
+    week with any listing. Each row carries its own week, from the data.
+
+    Only ``listed`` plants count: a week CDFW took off its schedule is not
+    "next" or "recent". Nothing is inferred, so both lists can be empty.
+    """
+    current = snapshot["source_week"]["start"]
+    later: dict[tuple[str, str], tuple[dict[str, Any], dict[str, Any], list[str]]] = {}
+    earlier: dict[
+        tuple[str, str], tuple[dict[str, Any], dict[str, Any], list[str]]
+    ] = {}
+    for w in snapshot["waters"]:
+        for p in w["plants"]:
+            if p["status"] != "listed" or p["week"]["start"] == current:
+                continue
+            bucket = later if p["week"]["start"] > current else earlier
+            key = (w["id"], p["week"]["start"])
+            bucket.setdefault(key, (w, p["week"], []))[2].append(p["species"])
+    upcoming = [_home_row(w, wk, sp, county_link) for w, wk, sp in later.values()]
+    upcoming.sort(key=lambda r: (r["week_start"], r["name"], r["slug"]))
+    recent_week = max((k[1] for k in earlier), default=None)
+    recent = [
+        _home_row(w, wk, sp, county_link)
+        for (_, start), (w, wk, sp) in earlier.items()
+        if start == recent_week
+    ]
+    recent.sort(key=lambda r: (r["name"], r["slug"]))
+    return upcoming, recent
+
+
+def _home_description(
+    source_week_label: str, species: str, *, week_is_empty: bool
+) -> str:
+    if week_is_empty:
+        return (
+            f"CDFW lists no California fish plants for the {source_week_label}. "
+            "The waters it scheduled next and most recently, by county, with "
+            f"each water's {species} stocking history."
+        )
+    return (
+        f"Every California water on CDFW's fish planting schedule for the "
+        f"{source_week_label}, by region and county, with each water's "
+        f"{species} stocking history."
+    )
+
+
 def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -> None:
     """assets/style.css, plus the App Store badge and its CSS when live.
 
@@ -1041,13 +1135,20 @@ def build_site(
         {**county_link[c], "count": len(waters_by_county[c])} for c in county_names
     ]
 
+    # An empty current week (CDFW lists nothing for it, which happens between
+    # seasons) leads with the nearest weeks that do list waters, each labeled
+    # with its own week, instead of an empty table.
+    week_is_empty = not snapshot["this_week"]
+    upcoming_rows, recent_rows = (
+        _home_nearest_weeks(snapshot, county_link) if week_is_empty else ([], [])
+    )
+    home_description = _home_description(
+        source_week_label, site_species, week_is_empty=week_is_empty
+    )
+
     index_html = env.get_template("index.html.jinja").render(
         title=f"California {site_species} planting schedule this week, from CDFW | {SITE_NAME}",
-        description=(
-            f"Every California water on CDFW's fish planting schedule for the "
-            f"{source_week_label}, by region and county, with each water's "
-            f"{site_species} stocking history."
-        ),
+        description=home_description,
         canonical_url=f"{base_url}/",
         root="./",
         **common,
@@ -1068,6 +1169,9 @@ def build_site(
         source_week_label=source_week_label,
         generated_at_label=generated_at_label,
         regions=regions,
+        week_is_empty=week_is_empty,
+        upcoming_rows=upcoming_rows,
+        recent_rows=recent_rows,
         all_waters=all_waters,
         county_counts=county_counts,
     )

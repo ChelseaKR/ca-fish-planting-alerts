@@ -46,10 +46,24 @@ found these gaps:
   first. The home page links every county page, and every row of its
   this-week tables links the water's county pages. The header gets a
   "By county" link.
+- **An empty week on the home page.** When CDFW lists nothing for the
+  current week (as for the week of 2026-10-11), the home page leads
+  with two tables instead of an empty one: "Next scheduled" (every listed
+  plant in a later week, soonest first, or a line saying none is listed
+  yet) and "Most recently scheduled" (every water listed in the latest
+  earlier week that has a listing). Each row shows its own week from the
+  data. A week CDFW removed from its schedule counts as neither. Its meta
+  description says the current week lists nothing.
 - **Water pages.** The title reads
-  "<water> (<county> County) <species> planting schedule | Trout Truck".
-  The h1 reads "... <species> stocking schedule and history", so the page
-  carries both of the words people search with. The meta description gives
+  "<water> <species> stocking & planting schedule (<county> County) | Trout
+  Truck" when the part before the brand fits in 60 characters (about what a
+  results page shows), and "<water> <species> stocking schedule (<county>
+  County) | Trout Truck" when it does not. The water, the species and
+  "stocking" come first, so a cut falls on the county or the brand. (Until
+  2026-10-12 it read "<water> (<county> County) <species> planting
+  schedule | Trout Truck"; "stocking" is the word most anglers search with.)
+  The h1 reads "... <species> stocking & planting schedule and history", so
+  the page carries both of the words people search with. The meta description gives
   the county, "stocking", and the week that answers the question (this
   week, the next week, or the last week with "none listed this week or
   later"). The species wording comes from the data: "trout", "catfish" or

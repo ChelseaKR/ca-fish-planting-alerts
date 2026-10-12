@@ -118,8 +118,9 @@ def test_no_plant_rendered_as_a_single_day_on_any_page(tmp_path: Path):
 def test_water_page_titles_and_first_paragraph_answer_the_query(tmp_path: Path):
     """The per-water page should answer '<water> trout stocking' and
     '<water> trout planting schedule' from the title, h1 and description,
-    from data -- the free discovery surface. The title says "planting
-    schedule", the h1 "stocking schedule", so both wordings are on the page."""
+    from data -- the free discovery surface. The title leads with the water,
+    the species and "stocking" (adding "& planting" when it still fits what a
+    results page shows); the h1 and the description carry both wordings."""
     out = _build_site(tmp_path)
     snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
     for w in snap["waters"]:
@@ -131,8 +132,13 @@ def test_water_page_titles_and_first_paragraph_answer_the_query(tmp_path: Path):
         ).group(1)
         species = site.species_phrase({p["species"] for p in w["plants"]})
         where = site.county_phrase(w["counties"])
-        assert f"{species} planting schedule" in title
-        assert f"{species} stocking schedule" in h1
+        assert title.startswith(
+            f"{w['name'].replace("'", '&#39;')} {species} stocking "
+        )
+        visible = title.split(" | ")[0]
+        if "& planting" in title or "&amp; planting" in title:
+            assert len(visible.replace("&amp;", "&")) <= site.TITLE_VISIBLE_CHARS
+        assert f"{species} stocking &amp; planting schedule" in h1
         for text in (title, h1, description):
             assert w["name"].replace("'", "&#39;") in text, (w["slug"], text)
             assert where in text, (w["slug"], text)
@@ -443,7 +449,9 @@ def test_every_built_feed_is_named_for_the_species_on_its_own_page(tmp_path: Pat
         assert _ics_lines(ics, "X-WR-CALNAME") == [
             f"X-WR-CALNAME:{site._ics_escape(w['name'])} {species} planting schedule"
         ], w["slug"]
-        assert f"{species} stocking schedule" in _water_html(out, w["slug"])
+        assert f"{species} stocking &amp; planting schedule" in _water_html(
+            out, w["slug"]
+        )
         seen.add(species)
     assert {"trout", "catfish"} <= seen  # a catfish-only water is in the build
 

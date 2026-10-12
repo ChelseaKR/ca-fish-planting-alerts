@@ -668,3 +668,156 @@ def test_cli_refuses_a_malformed_committed_token_before_writing_anything(
     assert cli.main(argv) == 1
     assert "run refused" in capsys.readouterr().err
     assert list(tmp_path.iterdir()) == []
+
+
+# ---- water titles: "stocking" first, "& planting" when it fits
+
+
+def test_water_titles_lead_with_stocking_and_add_planting_only_when_it_fits(built):
+    out, snap = built
+    both = 0
+    for w in snap["waters"]:
+        view = site._water_view(w, source_week_start=snap["source_week"]["start"])
+        title = site.water_title(view)
+        visible = title.removesuffix(" | Trout Truck")
+        assert visible != title  # the brand is still there (DECISIONS 0010)
+        assert visible.startswith(f"{w['name']} {view['species']} stocking ")
+        assert visible.endswith(f"({view['county_phrase']})")
+        if "& planting" in visible:
+            assert len(visible) <= site.TITLE_VISIBLE_CHARS
+            both += 1
+        else:
+            longer = visible.replace(" stocking ", " stocking & planting ", 1)
+            assert len(longer) > site.TITLE_VISIBLE_CHARS, w["slug"]
+        html = _html(out, f"water/{w['slug']}")
+        rendered = re.search(r"<title>([^<]+)</title>", html).group(1)
+        assert rendered == title.replace("&", "&amp;").replace("'", "&#39;")
+    assert both  # the fixtures exercise the longer title too
+
+
+def test_water_title_examples():
+    """Measured: "Collins Lake trout stocking & planting schedule (Yuba
+    County)" is 61 characters, one over, so it keeps "stocking" alone."""
+    collins = {
+        "name": "Collins Lake",
+        "species": "trout",
+        "county_phrase": "Yuba County",
+    }
+    assert site.water_title(collins) == (
+        "Collins Lake trout stocking schedule (Yuba County) | Trout Truck"
+    )
+    nora = {"name": "Nora Lake", "species": "trout", "county_phrase": "Shasta County"}
+    assert site.water_title(nora) == (
+        "Nora Lake trout stocking & planting schedule (Shasta County) | Trout Truck"
+    )
+    long = {
+        "name": "American River, South Fork, Camp Sacramento",
+        "species": "trout",
+        "county_phrase": "El Dorado County",
+    }
+    assert site.water_title(long) == (
+        "American River, South Fork, Camp Sacramento trout stocking schedule"
+        " (El Dorado County) | Trout Truck"
+    )
+
+
+# ---- the home page when CDFW lists nothing for the current week
+
+
+def _expected_nearest(
+    snap: dict[str, Any],
+) -> tuple[set[tuple[str, str]], set[tuple[str, str]]]:
+    """(slug, week label) pairs: every listed plant after the current week,
+    and every listed plant in the latest week before it."""
+    week = snap["source_week"]["start"]
+    later, earlier = set(), set()
+    for w in snap["waters"]:
+        for p in w["plants"]:
+            if p["status"] != "listed" or p["week"]["start"] == week:
+                continue
+            pair = (w["slug"], p["week"]["label"], p["week"]["start"])
+            (later if p["week"]["start"] > week else earlier).add(pair)
+    latest = max((s for _, _, s in earlier), default=None)
+    return (
+        {(s, lbl) for s, lbl, _ in later},
+        {(s, lbl) for s, lbl, st in earlier if st == latest},
+    )
+
+
+def _home_rows(html: str, section_id: str) -> set[tuple[str, str]]:
+    section = _section(html, f'<section aria-labelledby="{section_id}">', "</section>")
+    rows = re.findall(
+        r'<tr>\s*<td><a href="\./water/([^/]+)/">.*?<td>(week of [0-9-]+)</td>\s*</tr>',
+        section,
+        re.S,
+    )
+    return set(rows)
+
+
+def test_fresh_fixture_is_an_empty_week_with_next_and_recent_weeks(fresh):
+    """The empty-week checks below need a build whose current week lists
+    nothing but whose history has a later and an earlier week."""
+    _, snap = fresh
+    assert not snap["this_week"]
+    upcoming, recent = _expected_nearest(snap)
+    assert upcoming and recent
+
+
+def test_empty_week_home_leads_with_next_and_recent_waters_from_the_data(fresh):
+    out, snap = fresh
+    html = _html(out, "")
+    week_label = snap["source_week"]["label"]
+    upcoming, recent = _expected_nearest(snap)
+    assert _home_rows(html, "next-scheduled") == upcoming
+    assert _home_rows(html, "recently-scheduled") == recent
+    # Every row is labeled with its own week, and none is the empty week.
+    assert week_label not in {lbl for _, lbl in upcoming | recent}
+    text = _visible_text(html)
+    assert f"nothing listed for the {week_label}" in text
+    # They lead: before the browse lists, and the "scheduled these waters"
+    # wording of a non-empty week is gone.
+    assert html.index('id="next-scheduled"') < html.index("Browse by county")
+    assert html.index('id="recently-scheduled"') < html.index("Browse by county")
+    assert "scheduled these waters" not in text
+    description = re.search(r'<meta name="description" content="([^"]+)">', html)
+    assert f"no California fish plants for the {week_label}" in description.group(1)
+
+
+def test_a_non_empty_week_home_has_no_empty_week_sections(built):
+    out, snap = built
+    assert snap["this_week"]
+    html = _html(out, "")
+    assert 'id="next-scheduled"' not in html
+    assert 'id="recently-scheduled"' not in html
+    assert "scheduled these waters" in _visible_text(html)
+
+
+def test_empty_week_home_says_so_when_nothing_is_scheduled_later(fresh, tmp_path):
+    """Negative control: drop every later week from the data, and the
+    section says none is listed instead of showing a row."""
+    _, snap = fresh
+    week = snap["source_week"]["start"]
+    trimmed = copy.deepcopy(snap)
+    for w in trimmed["waters"]:
+        for p in w["plants"]:
+            if p["week"]["start"] > week:
+                p["status"] = "removed"
+    upcoming, _ = _expected_nearest(trimmed)
+    assert not upcoming  # the sabotage landed
+    site.build_site(trimmed, tmp_path / "s", base_url=BASE_URL)
+    html = _html(tmp_path / "s", "")
+    assert _home_rows(html, "next-scheduled") == set()
+    assert "lists no plants for a later week yet" in _visible_text(html)
+
+
+def test_empty_week_home_skips_removed_weeks(fresh, tmp_path):
+    """A week CDFW took off its schedule is neither next nor recent."""
+    _, snap = fresh
+    marked = copy.deepcopy(snap)
+    for w in marked["waters"]:
+        for p in w["plants"]:
+            p["status"] = "removed"
+    site.build_site(marked, tmp_path / "s", base_url=BASE_URL)
+    html = _html(tmp_path / "s", "")
+    assert _home_rows(html, "next-scheduled") == set()
+    assert 'id="recently-scheduled"' not in html

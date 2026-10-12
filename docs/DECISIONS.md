@@ -420,8 +420,9 @@ review, and nothing here changes it.
   (`NavigationSplitView`), not a stretched phone screen. About and a
   water's page keep their rows to a readable width. At compact width
   (iPhone, and iPad Slide Over or a narrow split) the app is the
-  iPhone layout. The iPad turns to all four orientations, which iPad
-  multitasking needs. iPhone stays portrait.
+  iPhone layout. So is iPad at the accessibility text sizes, where the
+  list's column is too narrow for the words. The iPad turns to all four
+  orientations, which iPad multitasking needs. iPhone stays portrait.
 - **Pointer and keyboard.** Lists and buttons get the system pointer
   effects. At regular width a Refresh button with Command-R runs the same
   check as pull to refresh, which is awkward with a pointer.

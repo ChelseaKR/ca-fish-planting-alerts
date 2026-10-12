@@ -21,7 +21,7 @@ struct BrowseView: View {
             }
         }
         .navigationTitle("Waters")
-        .searchable(text: $searchText, prompt: "Water or county")
+        .searchable(text: $searchText, placement: .splitAware(selection), prompt: "Water or county")
     }
 
     @ViewBuilder
@@ -155,6 +155,17 @@ struct SelectableList<Content: View>: View {
         } else {
             List(content: content)
         }
+    }
+}
+
+extension SearchFieldPlacement {
+    /// In a split view's list column, a search field that always shows at
+    /// the top of the list. Left to itself (`.automatic`, or `.sidebar`),
+    /// iPadOS 26 shows no search field there at all until it is revealed,
+    /// which UI tests measured on 2026-10-11. The stack layout keeps the
+    /// system's placement.
+    static func splitAware(_ selection: Binding<Water.ID?>?) -> SearchFieldPlacement {
+        selection == nil ? .automatic : .navigationBarDrawer(displayMode: .always)
     }
 }
 

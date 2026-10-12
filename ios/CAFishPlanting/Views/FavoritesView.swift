@@ -114,7 +114,7 @@ struct FavoritesView: View {
             }
         }
         .waterDestinations(in: snapshot, enabled: selection == nil)
-        .searchable(text: $search.text, prompt: "Favorite water or county")
+        .searchable(text: $search.text, placement: .splitAware(selection), prompt: "Favorite water or county")
         .toolbar { RefreshToolbarButton(shown: horizontalSizeClass == .regular) { refreshFeedback = RefreshFeedback(await environment.refreshNow()) } }
         .toolbar {
             if counties.count > 1 {

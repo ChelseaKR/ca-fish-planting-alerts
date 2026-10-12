@@ -7,6 +7,14 @@ struct RootTabView: View {
     /// Regular on iPad (full screen and the wider multitasking sizes) and on
     /// a Mac: Browse and Favorites become a list beside the water's page.
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// The list beside the water's page. Not at the accessibility text
+    /// sizes, where the sidebar is too narrow for the words and the
+    /// full-width iPhone layout reads better.
+    private var showsListBesideWater: Bool {
+        horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
+    }
 
     var body: some View {
         if let error = environment.loadError {
@@ -15,7 +23,7 @@ struct RootTabView: View {
             @Bindable var router = router
             TabView(selection: $router.selectedTab) {
                 Group {
-                    if horizontalSizeClass == .regular {
+                    if showsListBesideWater {
                         NavigationSplitView {
                             BrowseView(selection: selection($router.browsePath))
                         } detail: {
@@ -31,7 +39,7 @@ struct RootTabView: View {
                 .tabItem { Label("Browse", systemImage: "map") }
                 .tag(AppRouter.Tab.browse)
                 Group {
-                    if horizontalSizeClass == .regular {
+                    if showsListBesideWater {
                         NavigationSplitView {
                             FavoritesView(selection: selection($router.favoritesPath))
                         } detail: {

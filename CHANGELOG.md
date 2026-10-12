@@ -22,6 +22,11 @@ This repository was republished with a new history on 2026-09-18
 - Opening a water clears its alerts from Notification Center.
 - Haptics when a pull to refresh finishes (a warning if the check failed)
   and when full access unlocks.
+- iPad. At full width, Browse and Favorites show the list beside the
+  water's page, with the search field always at the top of the list, and a
+  Refresh button (Command-R). The iPhone layout is used in Slide Over,
+  narrow splits and at the accessibility text sizes. The full-access sheet
+  opens at full height. The iPad turns to every orientation.
 
 ### Fixed
 

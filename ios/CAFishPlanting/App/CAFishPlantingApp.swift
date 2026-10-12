@@ -5,6 +5,10 @@ import BackgroundTasks
 struct CAFishPlantingApp: App {
     @State private var environment = AppEnvironment()
     @Environment(\.scenePhase) private var scenePhase
+    /// This trip to the foreground has been counted as a launch (for the
+    /// rating prompt). Reset when the app goes to the background, so a
+    /// glance at Control Center doesn't count as another.
+    @State private var countedThisForeground = false
 
     init() {
         // Must run before applicationDidFinishLaunching returns, so this
@@ -34,7 +38,12 @@ struct CAFishPlantingApp: App {
             switch phase {
             case .active:
                 Task { await refreshOnOpen() }
+                if !countedThisForeground, !Self.isHostingUnitTests {
+                    countedThisForeground = true
+                    environment.recordForegroundLaunch()
+                }
             case .background:
+                countedThisForeground = false
                 BackgroundRefresh.scheduleNextRefresh()
                 // Leaving the app: make sure the widget shows what the app
                 // shows (a purchase, for one, isn't a snapshot change).

@@ -97,6 +97,8 @@ final class AppEnvironment {
     private var alertStateStore: AlertStateStore?
     private var mutedStore: MutedWatersStore?
     private var onboardingStore: OnboardingStore?
+    private var reviewPromptStore: ReviewPromptStore?
+    private var reviewPrompter = ReviewPrompter()
     private let refresher: SnapshotRefresher
     private let notifications: NotificationScheduler
     private let openThrottle: RefreshThrottle
@@ -128,6 +130,14 @@ final class AppEnvironment {
     /// The state Browse shows. California until the person picks another.
     private(set) var browseChoice = BrowseChoice()
     private var browseChoiceFile: JSONFileStore<BrowseChoice>?
+
+    /// Goes up by one each time the app should ask iOS for its rating
+    /// prompt. `RootTabView` watches it and calls `requestReview`, the only
+    /// prompt there is (`ReviewPromptPolicy`).
+    private(set) var reviewRequestCount = 0
+    /// The water a tapped planting alert opened, until the person leaves it.
+    private var waterOpenedFromAlert: Water.ID?
+    let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
 
     /// Set when a water is favorited for the first time ever. The view
     /// layer presents `copy`, then calls `confirmNotificationExplainer()`
@@ -181,6 +191,9 @@ final class AppEnvironment {
             let choiceFile = JSONFileStore<BrowseChoice>(url: layout.directory.appendingPathComponent("browse-state.json"))
             self.browseChoiceFile = choiceFile
             self.browseChoice = ((try? choiceFile.load()) ?? nil) ?? BrowseChoice()
+            let reviewPromptStore = ReviewPromptStore(layout: layout)
+            self.reviewPromptStore = reviewPromptStore
+            self.reviewPrompter = ReviewPrompter(state: reviewPromptStore.load())
             entitlementStore = EntitlementStore(layout: layout)
         } catch {
             // Never fabricate a snapshot to paper over this: an honest
@@ -355,6 +368,37 @@ final class AppEnvironment {
         pendingNotificationExplainer = nil
     }
 
+    // MARK: Rating prompt
+
+    /// The window came to the foreground: one launch, for
+    /// `ReviewPromptPolicy.minimumLaunches`. Not called for a background
+    /// launch by the refresh task.
+    func recordForegroundLaunch() {
+        guard reviewPromptStore != nil else { return }
+        reviewPrompter.recordLaunch()
+        try? reviewPromptStore?.save(reviewPrompter.state)
+    }
+
+    /// A tapped planting alert is opening this water (`NotificationResponder`).
+    func notePlantingAlertOpened(_ id: Water.ID) {
+        waterOpenedFromAlert = id
+    }
+
+    /// The person went back from a water's page: the end of a task, the only
+    /// time the app may ask for a rating. `isBusy` is anything else on
+    /// screen (a sheet, the introduction).
+    func finishedWithWater(_ id: Water.ID, isBusy: Bool) {
+        let fromAlert = waterOpenedFromAlert == id
+        if fromAlert { waterOpenedFromAlert = nil }
+        guard loadError == nil, reviewPromptStore != nil, ReviewPromptLaunchOverride.allowsAsking else { return }
+        let busy = isBusy || isRefreshing || pendingNotificationExplainer != nil
+        guard reviewPrompter.considerAsking(fromAlert ? .readPlantingAlert : .finishedWithWater,
+                                            hasFavorites: !favorites.isEmpty, appVersion: appVersion,
+                                            isBusy: busy) else { return }
+        try? reviewPromptStore?.save(reviewPrompter.state)
+        reviewRequestCount += 1
+    }
+
     // MARK: Refresh
 
     /// Launch and return to the foreground. Fetches the snapshot unless one
@@ -434,5 +478,21 @@ final class AppEnvironment {
             }
         }
         return outcome
+    }
+}
+
+/// Debug builds show the system rating prompt on every request, which would
+/// land in the middle of UI tests and screenshots. So a debug build never
+/// asks unless launched with `-ReviewPrompt allow`. A release build always
+/// follows `ReviewPromptPolicy`; TestFlight builds never show the prompt.
+enum ReviewPromptLaunchOverride {
+    static var allowsAsking: Bool {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let flag = arguments.firstIndex(of: "-ReviewPrompt"), flag + 1 < arguments.count else { return false }
+        return arguments[flag + 1] == "allow"
+        #else
+        return true
+        #endif
     }
 }

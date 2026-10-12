@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 import PlantingCore
 
 struct RootTabView: View {
@@ -8,6 +9,7 @@ struct RootTabView: View {
     /// a Mac: Browse and Favorites become a list beside the water's page.
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.requestReview) private var requestReview
 
     /// The list beside the water's page. Not at the accessibility text
     /// sizes, where the sidebar is too narrow for the words and the
@@ -64,6 +66,19 @@ struct RootTabView: View {
             .onChange(of: router.pendingWaterID, initial: true) {
                 router.openPending(in: environment.snapshot, isFavorite: environment.isFavorite)
             }
+            // Back from a water's page: the one moment the app may ask for a
+            // rating (`AppEnvironment.finishedWithWater`). A path that only
+            // got replaced (a tapped alert, another water chosen beside the
+            // list) is not the end of anything.
+            .onChange(of: router.browsePath) { old, new in wentBack(from: old, to: new) }
+            .onChange(of: router.favoritesPath) { old, new in wentBack(from: old, to: new) }
+            .onChange(of: environment.reviewRequestCount) {
+                // After the back animation, so the prompt doesn't land on it.
+                Task {
+                    try? await Task.sleep(for: .seconds(1))
+                    requestReview()
+                }
+            }
             .sheet(item: notificationExplainerBinding) { explainer in
                 FirstFavoriteExplainerSheet(explainer: explainer)
             }
@@ -85,6 +100,11 @@ struct RootTabView: View {
                 }
             }
         }
+    }
+
+    private func wentBack(from old: [Water.ID], to new: [Water.ID]) {
+        guard let left = old.last, new.count < old.count else { return }
+        environment.finishedWithWater(left, isBusy: router.showingOnboarding || router.showingPurchase)
     }
 
     /// A split view's selection over the tab's path, so the router opens a

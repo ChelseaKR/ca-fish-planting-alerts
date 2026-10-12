@@ -10,7 +10,7 @@ final class SmokeUITests: XCTestCase {
     }
 
     func testBrowseToFavoriteFlow() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         app.launch()
 
         let browseList = app.collectionViews.firstMatch
@@ -42,8 +42,10 @@ final class SmokeUITests: XCTestCase {
             app.buttons["Not now"].tap()
         }
 
-        app.navigationBars.buttons["Waters"].firstMatch.tap()
-        app.tabBars.buttons["Favorites"].tap()
+        // On iPad the list sits beside the water, with no Back.
+        let back = app.navigationBars.buttons["Waters"].firstMatch
+        if back.exists { back.tap() }
+        app.tab("Favorites").tap()
         let favorite = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Annie Lake,")).firstMatch
         XCTAssertTrue(favorite.waitForExistence(timeout: 5), "the favorited water should appear under Favorites")
     }
@@ -54,10 +56,10 @@ final class SmokeUITests: XCTestCase {
     /// so far. Whether it is a favorite depends on what earlier tests left
     /// on this simulator, so the test reads that first.
     func testAWaterLinkOpensThatWater() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         app.launch()
         XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
-        app.tabBars.buttons["About"].tap()
+        app.tab("About").tap()
 
         app.open(URL(string: "trouttruck://water/cdfw-125")!)
 
@@ -66,15 +68,20 @@ final class SmokeUITests: XCTestCase {
         // Back is titled after the list the water opened from.
         let listTitle = isFavorite ? "Favorites" : "Waters"
         let back = app.navigationBars.buttons[listTitle].firstMatch
-        XCTAssertTrue(back.waitForExistence(timeout: 5), "the water should open under \(listTitle):\n\(app.debugDescription)")
-        back.tap()
-        XCTAssertTrue(app.navigationBars[listTitle].waitForExistence(timeout: 5), "Back returns to the list")
+        if app.windows.firstMatch.horizontalSizeClass == .regular {
+            // iPad: the list is beside the water, titled the same.
+            XCTAssertTrue(app.navigationBars[listTitle].waitForExistence(timeout: 5), "the water should open beside \(listTitle):\n\(app.debugDescription)")
+        } else {
+            XCTAssertTrue(back.waitForExistence(timeout: 5), "the water should open under \(listTitle):\n\(app.debugDescription)")
+            back.tap()
+            XCTAssertTrue(app.navigationBars[listTitle].waitForExistence(timeout: 5), "Back returns to the list")
+        }
     }
 
     /// The locked widget's link (`UnlockLink`) opens the purchase screen,
     /// from anywhere in the running app, and closing it leaves About.
     func testTheUnlockLinkOpensThePurchaseScreen() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         app.launch()
         XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
 

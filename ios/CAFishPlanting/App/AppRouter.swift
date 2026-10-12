@@ -35,6 +35,10 @@ final class AppRouter {
     /// locked widget's `trouttruck://unlock`).
     var showingPurchase = false
 
+    /// The introduction is showing: on a first launch
+    /// (`AppEnvironment.shouldShowOnboarding`), or from About.
+    var showingOnboarding = false
+
     /// Asks for a water to be opened as soon as the UI can.
     func request(waterID: Water.ID) {
         pendingWaterID = waterID

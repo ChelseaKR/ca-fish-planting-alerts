@@ -11,7 +11,7 @@ import XCTest
 /// What fails the test (`Verdict.fail`): any contrast finding in the app's
 /// own content, "nearly passed" included (the app's grays meet 4.5:1, see
 /// `TextColorContrastTests`, so a regression to iOS's lighter grays fails
-/// here), text clipped at AX5, and a missing description, hit region or
+/// here), text clipped at AX5 (on iPhone; see `audit`), and a missing description, hit region or
 /// trait on the app's own elements. What is recorded but doesn't fail is
 /// listed in `verdict(for:)`, each with its reason. Every run attaches the
 /// full list for each screen, failures and recorded issues alike.
@@ -48,7 +48,7 @@ final class AccessibilityAuditUITests: XCTestCase {
 
     private func auditMainScreens(contentSize: String?, appearance: XCUIDevice.Appearance) throws {
         XCUIDevice.shared.appearance = appearance
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         if let contentSize {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", contentSize]
         }
@@ -103,7 +103,7 @@ final class AccessibilityAuditUITests: XCTestCase {
     /// the first tap can open the tab bar's large-content viewer instead.
     private func select(tab: String, in app: XCUIApplication) {
         for _ in 0..<3 {
-            app.tabBars.buttons[tab].tap()
+            app.tab(tab).tap()
             if app.navigationBars[tab].waitForExistence(timeout: 5) { return }
         }
         XCTFail("the \(tab) tab didn't open:\n\(app.debugDescription)")
@@ -145,6 +145,11 @@ final class AccessibilityAuditUITests: XCTestCase {
             chrome.append(CGRect(x: 0, y: top, width: app.frame.width, height: app.frame.maxY - top))
         }
         if app.keyboards.firstMatch.exists { chrome.append(app.keyboards.firstMatch.frame) }
+        // iOS's own search field and its Clear button. On iPhone it sits in
+        // the navigation bar's band below; on iPad it is a drawer under the
+        // list column's title, outside that band.
+        let searchField = app.searchFields.firstMatch
+        if searchField.exists { chrome.append(searchField.frame) }
         // The same at the top: the status bar, the navigation bar and the
         // fade under it, where scrolled content passes behind.
         let navigationBar = app.navigationBars.firstMatch
@@ -152,8 +157,21 @@ final class AccessibilityAuditUITests: XCTestCase {
             chrome.append(CGRect(x: 0, y: 0, width: app.frame.width, height: navigationBar.frame.maxY + 16))
         }
 
+        // Dynamic Type and clipping run in the AX5 pass on iPhone, where
+        // clipping fails the test. Elsewhere they are skipped:
+        // - At the default size their findings are only recorded (see
+        //   `verdict(for:)`), so skipping them changes no verdict.
+        // - On iPad the check never finished. It spins the run loop while
+        //   iPadOS's floating tab bar rebuilds itself: 99% CPU for over 10
+        //   minutes, no app code on the stack, on Favorites at the default
+        //   size and on a water's page at AX5 (2026-10-11). A person at
+        //   AX5 isn't affected: the same Favorites tap settles in seconds.
+        //   At the accessibility sizes the iPad uses the iPhone's
+        //   full-width layout, which the iPhone AX5 pass checks.
+        let isPad = UIDevice.current.userInterfaceIdiom == .pad
+        let types: XCUIAccessibilityAuditType = context.isAX5 && !isPad ? .all : XCUIAccessibilityAuditType.all.subtracting([.dynamicType, .textClipped])
         var lines: [String] = []
-        try app.performAccessibilityAudit(for: .all) { issue in
+        try app.performAccessibilityAudit(for: types) { issue in
             let element = issue.element.map { "\($0.elementType.rawValue) '\($0.label)' \($0.frame)" } ?? "no element"
             let description = "\(issue.auditType.name): \(issue.compactDescription) — \(element)"
             switch Self.verdict(for: issue, chrome: chrome, screen: app.frame, isAX5: context.isAX5) {
@@ -194,7 +212,7 @@ final class AccessibilityAuditUITests: XCTestCase {
             return .record("off screen, or partly: the audit samples pixels it can't see")
         }
         if chrome.contains(where: { $0.intersects(frame) }) {
-            return .record("under the tab bar, its scroll-edge fade or the keyboard: the audit samples the system chrome, not the app's content")
+            return .record("under the tab bar, its scroll-edge fade, the keyboard or iOS's search field: the audit samples the system chrome, not the app's content")
         }
         // Measured false positives: at AX5 these purchase-sheet lines wrap,
         // and the audit calls them clipped, but its own element screenshot

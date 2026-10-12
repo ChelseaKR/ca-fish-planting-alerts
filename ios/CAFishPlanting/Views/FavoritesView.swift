@@ -3,7 +3,11 @@ import PlantingCore
 
 struct FavoritesView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// Set in a split view (iPad, Mac). See `BrowseView.selection`.
+    var selection: Binding<Water.ID?>? = nil
     @State private var search = WaterSearch()
+    @State private var refreshFeedback: RefreshFeedback?
 
     var body: some View {
         Group {
@@ -48,7 +52,7 @@ struct FavoritesView: View {
         // A county chosen earlier that no favorite is in any more.
         let activeSearch = WaterSearch(text: search.text, county: search.county.flatMap { counties.contains($0) ? $0 : nil })
         let shown = activeSearch.filter(present)
-        return List {
+        return SelectableList(selection: selection) {
             if let freshness {
                 Section {
                     FreshnessRow(freshness: freshness)
@@ -59,8 +63,20 @@ struct FavoritesView: View {
                     noMatches(activeSearch)
                 } else {
                     ForEach(shown) { water in
+                        let muted = environment.alertsMuted(for: water.id)
                         NavigationLink(value: water.id) {
-                            WaterRow(water: water, listed: thisWeekIDs.contains(water.id) ? freshness : nil)
+                            WaterRow(water: water, listed: thisWeekIDs.contains(water.id) ? freshness : nil, alertsMuted: muted)
+                        }
+                        .swipeActions(edge: .leading) {
+                            // Alerts come with full access; a mute can always be undone.
+                            if environment.purchases.isEntitled || muted {
+                                Button {
+                                    environment.setAlertsMuted(!muted, for: water.id)
+                                } label: {
+                                    Label(muted ? "Unmute" : "Mute", systemImage: muted ? "bell" : "bell.slash")
+                                }
+                                .tint(.indigo)
+                            }
                         }
                         .swipeActions {
                             Button(role: .destructive) {
@@ -97,10 +113,9 @@ struct FavoritesView: View {
                 }
             }
         }
-        .navigationDestination(for: Water.ID.self) { id in
-            if let water = snapshot.water(id: id) { WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek) }
-        }
-        .searchable(text: $search.text, prompt: "Favorite water or county")
+        .waterDestinations(in: snapshot, enabled: selection == nil)
+        .searchable(text: $search.text, placement: .splitAware(selection), prompt: "Favorite water or county")
+        .toolbar { RefreshToolbarButton(shown: horizontalSizeClass == .regular) { refreshFeedback = RefreshFeedback(await environment.refreshNow()) } }
         .toolbar {
             if counties.count > 1 {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -108,7 +123,8 @@ struct FavoritesView: View {
                 }
             }
         }
-        .refreshable { await environment.refreshNow() }
+        .refreshable { refreshFeedback = RefreshFeedback(await environment.refreshNow()) }
+        .sensoryFeedback(trigger: refreshFeedback) { _, feedback in feedback?.haptic }
     }
 
     private func countyMenu(_ counties: [String], selection: String?) -> some View {

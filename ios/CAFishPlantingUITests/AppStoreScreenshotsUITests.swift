@@ -32,7 +32,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
 
     func testCaptureAppStoreScreenshots() throws {
         let plan = try readPlan()
-        let app = XCUIApplication()
+        let app = XCUIApplication.troutTruck()
         app.launch()
         XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30), "Browse list should appear")
 
@@ -72,7 +72,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         }
 
         // 3. Favorites.
-        app.tabBars.buttons["Favorites"].tap()
+        app.tab("Favorites").tap()
         let favoritesList = app.collectionViews.firstMatch
         XCTAssertTrue(favoritesList.waitForExistence(timeout: 10))
         let firstFavorite = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", plan.historyWater + ",")).firstMatch
@@ -82,7 +82,7 @@ final class AppStoreScreenshotsUITests: XCTestCase {
         // 5. About, scrolled so the Privacy section sits just under the
         //    navigation bar, with the CDFW attribution and the "not
         //    affiliated" line below it.
-        app.tabBars.buttons["About"].tap()
+        app.tab("About").tap()
         XCTAssertTrue(app.staticTexts["Full access"].waitForExistence(timeout: 10), "About did not open")
         let privacyHeader = app.staticTexts["Privacy"]
         scroll(privacyHeader, toJustBelowNavigationBarIn: app)

@@ -406,3 +406,34 @@ build keeps its custom domain set.
 This supersedes 0010's "the `github.io` URL becomes a 301 to the new
 domain", which holds under A only. The owner's steps are in the runbook
 that came with this change.
+
+## 0020 — iPhone, iPad, and Apple silicon Macs from the version after 1.0.0 (2026-10-11)
+
+The owner decided on 2026-10-11 to make Trout Truck available on iPad and
+on Apple silicon Macs. 1.0.0 (build 2) stays iPhone-only: it was already in
+review, and nothing here changes it.
+
+- **iPad.** Every target is `TARGETED_DEVICE_FAMILY = "1,2"`, and
+  `make appstore` now requires that, where it used to require iPhone-only.
+  At regular width (iPad full screen and the wider multitasking sizes),
+  Browse and Favorites are a list beside the water's page
+  (`NavigationSplitView`), not a stretched phone screen. About and a
+  water's page keep their rows to a readable width. At compact width
+  (iPhone, and iPad Slide Over or a narrow split) the app is the
+  iPhone layout. So is iPad at the accessibility text sizes, where the
+  list's column is too narrow for the words. The iPad turns to all four
+  orientations, which iPad multitasking needs. iPhone stays portrait.
+- **Pointer and keyboard.** Lists and buttons get the system pointer
+  effects. At regular width a Refresh button with Command-R runs the same
+  check as pull to refresh, which is awkward with a pointer.
+- **Mac.** As "Designed for iPad": the iPad app, unchanged, on Apple
+  silicon. No Mac Catalyst target. Alerts are local notifications, so on
+  a Mac they go to the Mac's own Notification Center, where macOS shows an
+  alert's buttons under Options. When the background refresh runs on a
+  Mac is up to macOS. None of the Mac behavior is verified yet: running
+  the app on a Mac needs the Mac registered for development, an owner
+  step.
+- **What the owner does in App Store Connect.** Mac availability is a
+  checkbox under Pricing and Availability ("Make this app available on
+  Mac"). A version that adds iPad needs iPad 13-inch screenshots before it
+  can be submitted. Both are in `docs/app-store/OWNER-STEPS.md`.

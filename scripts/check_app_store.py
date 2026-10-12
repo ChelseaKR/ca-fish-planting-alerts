@@ -11,8 +11,9 @@ Two modes:
     CURRENT_PROJECT_VERSION (an extension whose version differs from its
     app is rejected on upload), and both Info.plists take their versions
     from those build settings;
-  - every target is iPhone-only (TARGETED_DEVICE_FAMILY = 1) and signs with
-    team 6X5YH93QNM, never the enrollment ID;
+  - every target runs on iPhone and iPad (TARGETED_DEVICE_FAMILY = "1,2",
+    DECISIONS 0020; a Mac runs the iPad app) and signs with team
+    6X5YH93QNM, never the enrollment ID;
   - the project has no remote Swift package, and no Swift file imports a
     module outside Apple's SDK and the local PlantingCore package, so no
     analytics or tracking SDK can arrive unnoticed;
@@ -148,9 +149,9 @@ def check_project(pbxproj: str) -> list[str]:
             f"CURRENT_PROJECT_VERSION is not a positive integer: {sorted(builds)}"
         )
     families = build_settings(pbxproj, "TARGETED_DEVICE_FAMILY")
-    if not families or any(f != "1" for f in families):
+    if not families or any(f.strip('"') != "1,2" for f in families):
         problems.append(
-            f"TARGETED_DEVICE_FAMILY must be 1 (iPhone) everywhere: {families}"
+            f'TARGETED_DEVICE_FAMILY must be "1,2" (iPhone and iPad) everywhere: {families}'
         )
     teams = set(build_settings(pbxproj, "DEVELOPMENT_TEAM"))
     if teams != {TEAM_ID}:
@@ -421,7 +422,7 @@ def _png(width: int, height: int, color_type: int) -> bytes:
 def self_test() -> list[str]:
     """Each check must reject its bad input and accept its good one."""
     good_proj = (
-        "MARKETING_VERSION = 1.0.0;\nCURRENT_PROJECT_VERSION = 3;\nTARGETED_DEVICE_FAMILY = 1;\n"
+        'MARKETING_VERSION = 1.0.0;\nCURRENT_PROJECT_VERSION = 3;\nTARGETED_DEVICE_FAMILY = "1,2";\n'
         f"DEVELOPMENT_TEAM = {TEAM_ID};\n"
     )
     good_info: dict[str, Any] = {
@@ -473,8 +474,8 @@ def self_test() -> list[str]:
             True,
         ),
         (
-            "ipad",
-            bool(check_project(good_proj + 'TARGETED_DEVICE_FAMILY = "1,2";\n')),
+            "iphone only",
+            bool(check_project(good_proj + "TARGETED_DEVICE_FAMILY = 1;\n")),
             True,
         ),
         (

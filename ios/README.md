@@ -107,6 +107,39 @@ doesn't have is never pushed as a blank screen.
 same router. The Home Screen widget uses it. Opening one makes no network
 request and can only show a water already on the device.
 
+Opening a water's page, from an alert or anywhere else, clears that
+water's delivered alerts from Notification Center.
+
+## Muting one water's alerts
+
+Every alert carries the category `TT_PLANTING_ALERT` (`PlantingAlertAction`
+in PlantingCore) with one button, **Mute this water**, shown on a touch and
+hold. `NotificationResponder.install()` registers it at every launch. The
+button doesn't open the app: iOS runs it in the background long enough for
+`AppEnvironment.setAlertsMuted` to save the mute to `muted-alerts.json`.
+
+A muted water stays a favorite, in Favorites, the widget and Shortcuts.
+Only its alerts stop. `MutedWaters.unmuted` filters the planned alerts after
+`AlertPlanner` runs, and the baseline moves forward as before, so turning
+alerts back on (the Alerts switch on the water's page, or a leading swipe in
+Favorites) never announces the weeks that passed while muted. Unfavoriting
+clears a mute. There is still no badge: the priming screen promises none.
+
+## The introduction
+
+On a first launch the app opens on a four-page introduction
+(`Views/OnboardingView.swift`, words in `OnboardingCopy` in PlantingCore,
+where `OnboardingTests` holds them to the app's wording rules). It asks for
+nothing: the notification prompt stays behind the first favorite's
+explanation. It doesn't show to someone updating who already has favorites.
+Finishing or skipping it writes `onboarding.json` beside the favorites, not
+`UserDefaults`, so the privacy manifest still declares no required-reason
+API. About > "Show the introduction" shows it again.
+
+UI tests choose with a Debug-only launch argument, `-UITestOnboarding show`
+or `skip` (`XCUIApplication.troutTruck(onboarding:)`). Every UI test skips
+it except `OnboardingUITests`.
+
 ## Commands
 
 ```sh

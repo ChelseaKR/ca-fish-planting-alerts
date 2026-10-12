@@ -8,6 +8,14 @@ struct WaterDetailView: View {
     let sourceWeek: Week
 
     private var isFavorite: Bool { environment.isFavorite(water.id) }
+    private var alertsMuted: Bool { environment.alertsMuted(for: water.id) }
+
+    /// The alerts switch shows for a favorite once alerts can come (full
+    /// access), and for a muted one whatever the purchase, so a mute can
+    /// always be undone.
+    private var showsAlertsSwitch: Bool {
+        isFavorite && (environment.purchases.isEntitled || alertsMuted)
+    }
 
     var body: some View {
         List {
@@ -21,6 +29,23 @@ struct WaterDetailView: View {
                         Text("Species seen: \(water.speciesSeen.joined(separator: ", "))")
                             .font(.subheadline)
                     }
+                }
+            }
+
+            if showsAlertsSwitch {
+                Section {
+                    Toggle(isOn: Binding(get: { !alertsMuted },
+                                         set: { environment.setAlertsMuted(!$0, for: water.id) })) {
+                        Label("Alerts for this water", systemImage: alertsMuted ? "bell.slash" : "bell")
+                    }
+                    .sensoryFeedback(.selection, trigger: alertsMuted)
+                } header: {
+                    SectionHeader("Alerts")
+                } footer: {
+                    Text(alertsMuted
+                         ? "Muted. \(water.name) stays in Favorites and the widget, with no alert when it is newly on the schedule."
+                         : "An alert on this device when \(water.name) is newly on CDFW's weekly schedule.")
+                        .foregroundStyle(.secondaryText)
                 }
             }
 
@@ -56,6 +81,9 @@ struct WaterDetailView: View {
         }
         .navigationTitle(water.name)
         .navigationBarTitleDisplayMode(.large)
+        // Opened, from an alert or anywhere else: its alerts in Notification
+        // Center have been read.
+        .task(id: water.id) { await environment.clearDeliveredAlerts(for: water.id) }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {

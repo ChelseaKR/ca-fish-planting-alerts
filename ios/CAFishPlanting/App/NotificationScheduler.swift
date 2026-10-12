@@ -4,9 +4,10 @@ import PlantingCore
 
 /// The app's only scheduling of `UserNotifications`: request permission
 /// once, and schedule deterministic-identifier local notifications the OS
-/// naturally dedupes. No categories, no actions, no badge, no server-sent
-/// content — everything in the notification is built on-device from the
-/// snapshot already on disk. A tap is handled by `NotificationResponder`.
+/// naturally dedupes. One category with one button ("Mute this water",
+/// `PlantingAlertAction`), no badge, no server-sent content — everything in
+/// the notification is built on-device from the snapshot already on disk.
+/// A tap or the button is handled by `NotificationResponder`.
 struct NotificationScheduler {
     let center: UNUserNotificationCenter
     init(center: UNUserNotificationCenter = .current()) { self.center = center }
@@ -21,6 +22,35 @@ struct NotificationScheduler {
     @discardableResult
     func requestAuthorization() async -> Bool {
         (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false
+    }
+
+    /// Registers the planting alert's button. iOS keeps the set per
+    /// install; call at every launch, from `App.init()`, so an alert that
+    /// arrives after an update still has it.
+    ///
+    /// The button doesn't open the app (no `.foreground`): iOS runs the app
+    /// in the background long enough for `NotificationResponder` to save the
+    /// mute. It isn't `.destructive` either: the water stays a favorite.
+    func registerCategories() {
+        let mute = UNNotificationAction(identifier: PlantingAlertAction.muteIdentifier,
+                                        title: PlantingAlertAction.muteTitle,
+                                        options: [],
+                                        icon: UNNotificationActionIcon(systemImageName: "bell.slash"))
+        let category = UNNotificationCategory(identifier: PlantingAlertAction.categoryIdentifier,
+                                              actions: [mute],
+                                              intentIdentifiers: [],
+                                              options: [])
+        center.setNotificationCategories([category])
+    }
+
+    /// Clears the alerts already delivered for one water from Notification
+    /// Center: its screen is open, so they have been read. Pending ones stay.
+    func removeDelivered(forWater id: Water.ID) async {
+        let delivered = await center.deliveredNotifications()
+        let ids = delivered
+            .filter { WaterLink.waterID(fromNotificationUserInfo: $0.request.content.userInfo) == id }
+            .map(\.request.identifier)
+        if !ids.isEmpty { center.removeDeliveredNotifications(withIdentifiers: ids) }
     }
 
     /// Schedules one local notification per planned water. A short fixed
@@ -44,6 +74,7 @@ struct NotificationScheduler {
         content.sound = .default
         content.userInfo = notification.userInfo
         content.threadIdentifier = notification.waterID
+        content.categoryIdentifier = PlantingAlertAction.categoryIdentifier
         return content
     }
 }

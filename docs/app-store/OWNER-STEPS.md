@@ -251,8 +251,9 @@ yourself → install on your iPhone, then check:
 On the iOS App version page:
 
 1. **Screenshots → iPhone 6.9" Display:** the five PNGs in
-   `docs/app-store/screenshots/`, in numbered order. The app is iPhone-only,
-   so no iPad set. Upload the 6.5" set only if you made one.
+   `docs/app-store/screenshots/`, in numbered order. 1.0.0 is iPhone-only,
+   so no iPad set (from the next version, see "For the next version: iPad
+   and Mac" below). Upload the 6.5" set only if you made one.
 2. **Promotional Text, Description, Keywords, Support URL, Marketing URL,
    Copyright:** from the listing file. Replace `[N]` in the description with
    `coverage.waters_with_history` from the snapshot you bundled.
@@ -267,6 +268,30 @@ On the iOS App version page:
 
 After approval, press **Release**, then publish the draft GitHub Release
 for the same tag.
+
+## For the next version: iPad and Mac (DECISIONS 0020)
+
+1.0.0 (build 2) is iPhone-only and is not affected. The version after it
+adds iPad and Apple silicon Macs. Before submitting that version:
+
+1. **iPad screenshots.** App Store Connect requires an **iPad 13-inch**
+   set before it accepts a version that adds iPad. Take them on an iPad Pro
+   13-inch simulator (2064 x 2752 portrait, or 2752 x 2064 landscape). The
+   agent's working set from 2026-10-11 is a starting point, not the
+   listing set: it was taken from the debug build.
+2. **Mac availability** is a checkbox: App Store Connect > the app >
+   **Pricing and Availability** > **iPhone and iPad Apps on Apple Silicon
+   Macs** > "Make this app available". Leave it off until you've opened the
+   app on your Mac once.
+3. **Running it on your Mac** before that: in Xcode, choose the destination
+   **My Mac (Designed for iPad)** and run. Xcode asks to register this Mac
+   for development the first time; the agent could not do that (the team
+   profiles don't include the Mac). Check that the app opens, a water opens
+   from the list, and Command-R refreshes. With full access, check that an
+   alert appears in the Mac's Notification Center and that its Options menu
+   shows Mute this water.
+4. **Review notes.** Add one line: "Runs on iPhone and iPad; on iPad,
+   Browse and Favorites show the list beside the water."
 
 ## What is already done
 

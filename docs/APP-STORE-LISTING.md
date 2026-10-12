@@ -127,7 +127,7 @@ service the request.
 | Contact Info (name, email, phone, address) | No | No account, sign-up, form or email anywhere in the app. |
 | Health and Fitness | No | No HealthKit, no fitness data. |
 | Financial Info | No | The purchase is StoreKit: Apple processes payment; the app sees only its own entitlement, stored on the device. |
-| Location (precise or coarse) | No | No Core Location. The county and region filters are pickers over the snapshot. |
+| Location (precise or coarse) | No | From the version with the Map tab, Near me uses Core Location (When In Use, kilometer accuracy, one fix) only when tapped. Distances are computed on the device; the location is never stored or transmitted, so it is not "collected" in Apple's sense (data sent off the device). Before that version: no Core Location. |
 | Sensitive Info | No | None is asked for or inferred. |
 | Contacts | No | No Contacts framework. |
 | User Content | No | Favorites are a JSON file in Application Support and never leave the phone. No photos, messages or uploads. |
@@ -137,7 +137,7 @@ service the request.
 | Purchases | No | Purchase history stays with Apple; the app keeps one "unlocked" flag on the device and sends it nowhere. |
 | Usage Data (product interaction, advertising data) | No | No analytics SDK and no ads. The website's Google Analytics never runs in the app (no web view; DECISIONS 0011). |
 | Diagnostics (crash, performance) | No | No crash-reporting SDK. Crash reports a user chooses to share with Apple are Apple's, not the developer's collection. |
-| Other Data | No | The only network request downloads the public schedule file. GitHub Pages sees the request's IP address to serve it, gives the developer no access log, and keeps nothing for the developer. |
+| Other Data | No | The app's own network request downloads the public schedule file. From the Map tab version, MapKit loads map tiles from Apple; that is Apple's service, not the developer's collection, and the developer receives nothing from it. GitHub Pages sees the request's IP address to serve it, gives the developer no access log, and keeps nothing for the developer. |
 
 `make appstore` fails if a privacy manifest ever gains a collected data type
 or tracking, or if a Swift file that ships imports a non-Apple module.

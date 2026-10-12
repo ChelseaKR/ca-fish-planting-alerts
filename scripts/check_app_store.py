@@ -81,7 +81,11 @@ ALLOWED_IMPORTS = frozenset(
     {
         "AppIntents",
         "BackgroundTasks",
+        # Near me, on the device only (DECISIONS 0025).
+        "CoreLocation",
         "Foundation",
+        # The Map tab and a water's map (DECISIONS 0025).
+        "MapKit",
         "Observation",
         "OSLog",
         "PlantingCore",

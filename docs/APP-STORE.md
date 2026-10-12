@@ -134,7 +134,10 @@ Checked 2026-09-18 against `origin/main` at `0c53741` plus this branch.
 The App Store answers are **Data Not Collected** and **no tracking**, and
 the code supports both.
 
-**One network request, to one host.**
+**One network request, to one host.** (From the version with the Map tab,
+MapKit also loads Apple Maps tiles from Apple, and Near me uses Core
+Location on the device only. Neither sends anything to the developer; see
+DECISIONS 0025. The answers below still hold: Data Not Collected.)
 - The app has one `URLSession`, made by `SnapshotRefresher.makeSession()`
   (`ios/PlantingCore/Sources/PlantingCore/SnapshotRefresher.swift`). It is
   ephemeral, with no cookie store, no URL cache and no credential store.

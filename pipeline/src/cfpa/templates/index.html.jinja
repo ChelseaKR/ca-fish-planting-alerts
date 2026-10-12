@@ -1,4 +1,5 @@
 {% extends "base.html.jinja" %}
+{% block head_extra %}{% if map_summary and map_summary.placed %}<script type="module" src="{{ root }}map/map.js"></script>{% endif %}{% endblock %}
 {% block content %}
 <h1>This week's California trout planting schedule: {{ source_week_label }}</h1>
 <p class="lede">
@@ -9,6 +10,26 @@
 </p>
 {% if app_store_live %}
 {% with badge_placement = "home" %}{% include "_app_store_badge.html.jinja" %}{% endwith %}
+{% endif %}
+
+{% if map_summary and map_summary.placed %}
+<section class="map-section" aria-labelledby="map-heading" data-map="home" data-root="{{ root }}">
+  <h2 id="map-heading">Map</h2>
+  <p>
+    {{ map_summary.placed }} of all {{ map_summary.total }} waters have a map
+    location{% if map_summary.this_week %}, including {{ map_summary.this_week_placed }} of the {{ map_summary.this_week }} scheduled this week{% endif %}. A water is
+    placed only when federal map data names exactly one water like it in its
+    county, so the tables below list every water, mapped or not.
+  </p>
+  <ul class="map-legend">
+    <li class="this-week">Scheduled this week</li>
+    <li class="other">Other waters</li>
+    <li class="approx">Stream: approximate point</li>
+  </ul>
+  <p><button type="button" data-map-show hidden>Show map</button> <span data-map-status role="status"></span></p>
+  <div data-map-canvas role="region" aria-label="Map of waters with a location; every water is also in the tables below" hidden></div>
+  <noscript><p>The map needs JavaScript. Every water is in the tables below.</p></noscript>
+</section>
 {% endif %}
 
 {% if regions %}

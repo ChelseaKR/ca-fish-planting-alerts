@@ -72,8 +72,14 @@
 </ul>
 {% else %}
 <ul>
+  {% if maps %}
+  <li>Every page is a plain static file. No cookies are set. All
+      JavaScript here is this site's own map code, which does nothing until you
+      press &ldquo;Show map&rdquo; and then loads the map from this site.</li>
+  {% else %}
   <li>Every page is a plain static file. No cookies are set and no JavaScript
       runs.</li>
+  {% endif %}
   <li>No page makes a request to any server other than the one serving it.</li>
   <li>Calendar feeds (.ics) are plain files; your calendar app downloads them
       directly. This site does not know who has subscribed.</li>
@@ -102,6 +108,13 @@
       as with any web request, the host sees the IP address it came from.
       Links to CDFW's map or to this site open in your browser{% if ga4_measurement_id %},
       where this site's Google Analytics applies as described above{% endif %}.</li>
+  <li><strong>Maps and Near me</strong> (versions with a Map tab): the map is
+      Apple Maps, which loads map images from Apple as you look at it, under
+      Apple's own privacy policy. Near me asks for your location only when
+      you tap it, and only while the app is open. Distances to waters are
+      worked out on your device; your location is never saved, and never
+      sent to the developer or anyone else. Directions open the Apple Maps
+      app.</li>
   <li><strong>Notifications:</strong> alerts are local notifications that iOS
       schedules on your device. There is no push service and no device
       token.</li>

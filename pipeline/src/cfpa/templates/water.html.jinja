@@ -1,4 +1,5 @@
 {% extends "base.html.jinja" %}
+{% block head_extra %}{% if location %}<script type="module" src="{{ root }}map/map.js"></script>{% endif %}{% endblock %}
 {% block content %}
 <h1>{{ water.place }} {{ water.species }} stocking schedule and history</h1>
 <p class="lede">
@@ -66,6 +67,20 @@
 {% endif %}
 {% else %}
 <p>No plants observed yet for {{ water.name }}.</p>
+{% endif %}
+
+{% if maps %}
+<section class="map-section" aria-labelledby="location-heading"{% if location %} data-map="water" data-root="{{ root }}" data-focus="{{ water.id }}"{% endif %}>
+  <h2 id="location-heading">Location</h2>
+  {% if location %}
+  <p>{{ location.kind_text }} Coordinates: {{ location.lat }}, {{ location.lon }} (source: {{ location.source }}).</p>
+  <p><a href="{{ location.apple_maps_url }}">Directions in Apple Maps</a></p>
+  <p><button type="button" data-map-show hidden>Show map</button> <span data-map-status role="status"></span></p>
+  <div data-map-canvas role="region" aria-label="Map of {{ water.name }}{% if location.approximate %} (approximate point){% endif %}" hidden></div>
+  {% else %}
+  <p>No map location. Federal map data does not name exactly one water like {{ water.name }} in {{ water.county_phrase }}, or the name is a stretch of a stream, so it is not placed on a map rather than guessed. CDFW's own map is linked below.</p>
+  {% endif %}
+</section>
 {% endif %}
 
 <h2>About this water</h2>

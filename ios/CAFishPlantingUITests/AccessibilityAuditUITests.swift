@@ -62,6 +62,12 @@ final class AccessibilityAuditUITests: XCTestCase {
         // Search, then dismiss the keyboard, so the results are audited
         // rather than the keyboard.
         let search = app.searchFields.firstMatch
+        // iPadOS 26 shrinks search to a toolbar button when the bar is
+        // crowded: on iPad at AX5, once the Map tab made four tabs
+        // (DECISIONS 0025). The button opens the same field.
+        if !search.waitForExistence(timeout: 5), app.buttons["Search"].exists {
+            app.buttons["Search"].tap()
+        }
         XCTAssertTrue(search.waitForExistence(timeout: 10))
         focus(search, in: app)
         search.typeText("Annie Lake\n")
@@ -79,7 +85,21 @@ final class AccessibilityAuditUITests: XCTestCase {
         reveal(year, in: app)
         if year.exists {
             year.tap()
+            // Let the year finish expanding; mid-animation its rows fade in
+            // and the audit samples them half drawn (seen once at AX5 after
+            // the Location section made the page longer, 2026-10-12).
+            Thread.sleep(forTimeInterval: 2)
             try audit("Water detail, a year expanded", app: app, context: context)
+        }
+
+        // The Map tab (DECISIONS 0025). Not on iPad: there the audit of the
+        // map never finished in dark mode ("Audit failed to complete in
+        // time", twice on 2026-10-12), like the floating-tab-bar spin noted
+        // below. The iPhone passes audit the same views.
+        if UIDevice.current.userInterfaceIdiom != .pad {
+            select(tab: "Map", in: app)
+            Thread.sleep(forTimeInterval: 2)  // let the pins settle
+            try audit("Map", app: app, context: context)
         }
 
         select(tab: "Favorites", in: app)
@@ -207,6 +227,11 @@ final class AccessibilityAuditUITests: XCTestCase {
         let frame = element.frame
         if element.elementType == .searchField {
             return .record("iOS's own search field")
+        }
+        // MapKit draws its own "Legal" link on every map (DECISIONS 0025),
+        // at a size the app cannot change. Only that exact link.
+        if issue.auditType == .hitRegion, element.elementType == .link, element.label == "Legal" {
+            return .record("MapKit's own Legal link, which the app cannot resize")
         }
         if !screen.contains(frame) {
             return .record("off screen, or partly: the audit samples pixels it can't see")

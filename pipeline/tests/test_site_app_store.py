@@ -101,7 +101,10 @@ def _off_problems(out: Path) -> list[str]:
     if (out / "assets" / site.APP_STORE_BADGE_FILE).exists():
         problems.append("badge file written")
     css = (out / "assets" / "style.css").read_text(encoding="utf-8")
-    if css != (site.TEMPLATES_DIR / "style.css").read_text(encoding="utf-8"):
+    expected = (site.TEMPLATES_DIR / "style.css").read_text(encoding="utf-8")
+    if (out / "map").is_dir():  # maps (DECISIONS 0025) add their own CSS
+        expected += (site.TEMPLATES_DIR / "map.css").read_text(encoding="utf-8")
+    if css != expected:
         problems.append("style.css differs from the template")
     return problems
 

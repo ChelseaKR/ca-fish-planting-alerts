@@ -25,6 +25,12 @@ import pytest
 
 from cfpa import cli
 
+# The site's own map module (DECISIONS 0025); test_site_analytics.py has the
+# negative control that only this exact tag is exempt.
+MAP_MODULE = re.compile(
+    r'<script type="module" src="(?:\./|(?:\.\./)+)map/map\.js"></script>'
+)
+
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "snapshot.v1.json"
@@ -84,7 +90,7 @@ def tag_js(id_pages: dict[str, str]) -> str:
     # data, and test_site_seo.py covers it.
     scripts = re.findall(
         r'<script\b(?![^>]*\btype="application/ld\+json")[^>]*>(.*?)</script\b[^>]*>',
-        id_pages["index.html"],
+        MAP_MODULE.sub("", id_pages["index.html"]),
         re.S | re.I,
     )
     assert len(scripts) == 1

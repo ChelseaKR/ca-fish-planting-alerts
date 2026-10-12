@@ -26,15 +26,26 @@ send Global Privacy Control or Do Not Track, the tag loads `gtag.js`, which
 measured 154,391 B over brotli on 2026-09-17. The gate run blocks Google
 Analytics, so CI never sends page views to the real property. The
 first-party budget is therefore what's left of the 204,800 B, rounded down
-with some headroom for `gtag.js` growing: 45,056 B. Today the site loads
-no first-party script file at all. Its only script is the small inline GA4
-guard in each page's HTML.
+with some headroom for `gtag.js` growing: 45,056 B. The one first-party
+script file is `map/map.js` (DECISIONS 0025), on the home page and on each
+water page that has a location: 7,102 B, 2,818 B gzipped.
 
-**The baseline's `js_kb_gzip` is 0.** The regression rule allows 10% worse
-than the baseline, and 10% of 0 is 0. So a pull request that adds any
-script file fails PERF-03 until the same PR updates `baseline.json`, which
-is the baseline-update ritual in PERFORMANCE-STANDARD §2. That is
-deliberate: a script file on this site is a decision.
+**The map itself is not in this budget, on purpose.** `map.js` loads
+nothing until a visitor presses "Show map". Then it loads MapLibre GL JS,
+PMTiles and the basemap style from `map/vendor/` (about 330 KB gzipped,
+once, then cached), plus tiles from `map/california.pmtiles` as the map
+moves. Lighthouse loads the page and never presses the button, so none of
+that is measured, and it does not delay the page or count toward the
+Core Web Vitals above. If the owner wants a budget for the map's own load,
+it needs a scripted "press Show map" run; none exists yet.
+
+**The baseline's `js_kb_gzip` is 7.223** (since 2026-10-12, the map
+module; it was 0 before). The test server sends files uncompressed, so this
+is `map.js`'s raw size; GitHub Pages serves it gzipped. The regression rule
+allows 10% worse than the baseline, so a pull request that adds script
+still fails PERF-03 until the same PR updates `baseline.json`, which is the
+baseline-update ritual in PERFORMANCE-STANDARD §2. That is deliberate: a
+script file on this site is a decision.
 
 ## The checkers' own dependencies
 

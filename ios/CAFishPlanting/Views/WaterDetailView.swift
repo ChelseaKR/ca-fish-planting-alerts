@@ -49,6 +49,8 @@ struct WaterDetailView: View {
                 }
             }
 
+            WaterLocationSection(water: water, location: environment.location(for: water))
+
             Section {
                 Link(destination: water.cdfwMapURL) {
                     Label("CDFW schedule for this water", systemImage: "link")

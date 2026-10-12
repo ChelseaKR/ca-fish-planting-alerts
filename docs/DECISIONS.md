@@ -478,3 +478,48 @@ under 0004 ("unknown = not used") it is not a source.
   Geological Survey, National Hydrography Dataset and Geographic Names
   Information System", and the Census Bureau acknowledgement its terms
   require.
+
+## 0025 — Maps on the site and in the app, from confident locations only (2026-10-12; proposed)
+
+The owner approved maps on 2026-10-12 ("make the app and site more
+visual with maps"). 0024 gives each water a point or none; this is how the
+point is shown.
+
+- **Only confident points.** A pin only for a water whose match is
+  `exact` or owner-resolved (`cfpa.locations`). Ambiguous and unmatched
+  waters get no pin and their pages say "No map location", plainly, with
+  the reason. A stream's point is drawn differently (a ring on the site, a
+  wave glyph in the app) and called approximate wherever it appears.
+- **Website: MapLibre GL JS with self-hosted tiles.** A Protomaps basemap
+  cut to California at zoom 10 (18 MB, one PMTiles file), MapLibre GL JS
+  6.11.2, PMTiles 4.5.0, the Protomaps style, fonts and sprites: all served
+  from this site under `map/`. No Google, no other tile host, no tracker.
+  Attribution "© OpenStreetMap contributors" (ODbL) is on every map and
+  the about page. Versions and licenses: `map/licenses/README.md`.
+- **The map loads only when asked.** Pages carry one small first-party
+  module, `map/map.js` (2.8 KB gzipped), which shows a "Show map" button.
+  The map's 330 KB of library loads only when the button is pressed, so
+  page load, Lighthouse scores and Core Web Vitals are unchanged
+  (`perf/README.md`). The tables on the page stay the full list and the
+  text alternative; the map region is labeled, and keyboard pan and zoom
+  work.
+- **The privacy copy changes with it.** With maps, the site no longer says
+  "no JavaScript runs"; it says what `map.js` does: nothing until pressed,
+  then loads the map from this site, sets no cookie, stores nothing and
+  sends nothing. Tests pin that only that exact same-origin module is
+  exempt from the no-script checks.
+- **App: MapKit, no SDK.** A Map tab with clustered pins (this week's in
+  the accent color), a map and Directions (handed to Apple Maps) on each
+  water's page, and an iPad layout with the list beside the map. Snapshot
+  v1 has no locations and must not change, so the app bundles
+  `water-locations.json` (built from `pipeline/data/water_locations.json`
+  by `ios/scripts/sync-water-locations.sh`; a test fails on drift). A
+  snapshot location (v2) wins over the bundled one.
+- **Near me: on the device, When In Use, only when tapped.** The app says
+  what it will do before iOS asks, takes one coarse fix (kilometer
+  accuracy), sorts waters by straight-line distance on the device, and
+  never stores or sends the location. Everything works without it. The
+  App Store answer stays "Data Not Collected": nothing leaves the device
+  for the developer. MapKit loads map tiles from Apple, which is Apple's
+  service; the About screen and privacy page now say so instead of "the
+  only network request".

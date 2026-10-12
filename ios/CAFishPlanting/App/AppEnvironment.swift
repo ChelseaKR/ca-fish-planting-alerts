@@ -116,6 +116,20 @@ final class AppEnvironment {
     // are set from it after init and after every refresh (`syncFromStore`).
     private(set) var snapshot: Snapshot?
     private(set) var snapshotOrigin: SnapshotOrigin?
+
+    /// The confident water locations bundled with the app (DECISIONS 0025).
+    /// Empty if the file is missing or unreadable: then no pins, never a
+    /// guess.
+    let waterLocations: WaterLocationTable = AppEnvironment.loadWaterLocations()
+
+    private static func loadWaterLocations() -> WaterLocationTable {
+        guard let url = Bundle.main.url(forResource: "water-locations", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let table = try? WaterLocationTable.decode(data) else { return .empty }
+        return table
+    }
+
+    func location(for water: Water) -> GeoLocation? { waterLocations.location(for: water) }
     private(set) var refreshMeta: SnapshotMeta?
 
     var isRefreshing: Bool { inFlightRefresh != nil }

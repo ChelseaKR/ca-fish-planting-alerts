@@ -20,12 +20,15 @@ final class AppRouter {
 
     enum Tab: Hashable {
         case browse
+        case map
         case favorites
         case about
     }
 
     var selectedTab: Tab = .browse
     var browsePath: [Water.ID] = []
+    /// A water opened from the map (DECISIONS 0025).
+    var mapPath: [Water.ID] = []
     var favoritesPath: [Water.ID] = []
 
     /// A water asked for by a tapped alert or a link, not opened yet.

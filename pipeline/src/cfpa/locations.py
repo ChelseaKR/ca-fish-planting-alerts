@@ -60,3 +60,26 @@ def location_for(
     """The v2 ``location`` value for one California water, or None."""
     loc = locations.get(stock_id)
     return None if loc is None else dict(loc)
+
+
+APP_SCHEMA = "cfpa-app-water-locations-v1"
+
+
+def app_table(path: Path) -> dict[str, Any]:
+    """The iOS app's bundled copy (``water-locations.json``).
+
+    Snapshot v1 keeps ``location: null`` for installed builds, so the app
+    ships the placed waters itself, keyed by the snapshot's water id.
+    ``ios/scripts/sync-water-locations.sh`` writes it; a test checks the
+    committed copy matches this.
+    """
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    placed = load_locations(path)
+    return {
+        "schema": APP_SCHEMA,
+        "generated_on": doc["generated_on"],
+        "locations": {
+            f"cdfw-{sid}": {k: loc[k] for k in ("lat", "lon", "source", "kind")}
+            for sid, loc in sorted(placed.items())
+        },
+    }

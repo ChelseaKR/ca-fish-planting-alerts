@@ -225,6 +225,10 @@ def test_cname_names_the_domain(domain_build: tuple[Path, Path]) -> None:
     assert (out / "CNAME").read_text(encoding="utf-8") == f"{DOMAIN}\n"
 
 
+# The map's tiles, glyphs and sprite images (DECISIONS 0025) are not text.
+BINARY_SUFFIXES = {".pmtiles", ".pbf", ".png"}
+
+
 def test_no_url_in_the_domain_build_is_on_github_io(
     domain_build: tuple[Path, Path],
 ) -> None:
@@ -233,6 +237,8 @@ def test_no_url_in_the_domain_build_is_on_github_io(
     assert len(files) > 50
     found = 0
     for rel in files:
+        if Path(rel).suffix in BINARY_SUFFIXES:
+            continue
         text = (out / rel).read_text(encoding="utf-8")
         for url in _URL.findall(text):
             found += 1

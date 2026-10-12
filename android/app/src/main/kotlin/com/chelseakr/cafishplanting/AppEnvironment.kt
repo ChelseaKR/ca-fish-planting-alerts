@@ -42,6 +42,8 @@ import java.time.Instant
 
 /** Everything the screens show, in one value. */
 data class AppState(
+    /** True until the snapshot store has opened (or failed to), off the main thread. */
+    val isLoading: Boolean = true,
     val loadError: String? = null,
     val snapshot: Snapshot? = null,
     val origin: SnapshotOrigin? = null,
@@ -84,6 +86,12 @@ class AppEnvironment(
     private val layout = AppStorageLayout(File(context.filesDir, "trout-truck"))
     private val stores = Stores(layout)
     private var store: SnapshotStore? = null
+    private val loader = SnapshotLoader(scope, Dispatchers.Default) {
+        SnapshotStore(layout, BundledSnapshot { context.assets.open("snapshot.json") })
+    }
+
+    /** Completes once the load's result is in [state]; the store, or `null` when it failed to open. */
+    private val loaded = CompletableDeferred<SnapshotStore?>()
     private var alertState = AlertState()
     private var inFlight: CompletableDeferred<RefreshOutcome>? = null
     private val reviewPrompter: ReviewPrompter
@@ -100,24 +108,30 @@ class AppEnvironment(
     val reviewRequests: StateFlow<Int> = _reviewRequests
 
     init {
-        var loadError: String? = null
-        try {
-            store = SnapshotStore(layout, BundledSnapshot { context.assets.open("snapshot.json") })
-        } catch (e: Exception) {
-            // Never a made-up snapshot: an honest error screen instead.
-            loadError = e.message ?: e.toString()
-        }
+        // The small stores are read here; the snapshot opens on [loader], off the main thread.
         alertState = stores.loadAlertState()
         reviewPrompter = ReviewPrompter(stores.loadReviewPrompt())
         _state.value = AppState(
-            loadError = loadError,
             favorites = stores.loadFavorites(),
             muted = stores.loadMuted(),
             entitlements = stores.loadEntitlement().entitlements,
             onboarding = stores.loadOnboarding(),
             notificationsAllowed = notifications.allowed(),
         )
-        syncFromStore()
+        scope.launch {
+            val outcome = loader.await()
+            lock.withLock {
+                when (outcome) {
+                    is SnapshotLoad.Ready -> store = outcome.store
+                    // Never a made-up snapshot: an honest error screen instead.
+                    is SnapshotLoad.Failed -> _state.update { it.copy(loadError = outcome.message) }
+                    SnapshotLoad.Loading -> error("the loader completed while still loading")
+                }
+                _state.update { it.copy(isLoading = false) }
+                syncFromStore()
+            }
+            loaded.complete(store)
+        }
     }
 
     val storageLayout: AppStorageLayout get() = layout
@@ -144,6 +158,8 @@ class AppEnvironment(
 
     /** Favoriting is never gated: everyone may favorite every water (FreeTier). */
     fun toggleFavorite(water: Water) = scope.launch {
+        // Seeding a new favorite's baseline needs the snapshot.
+        loaded.await()
         lock.withLock {
             val st = _state.value
             val wasEmpty = st.favorites.isEmpty
@@ -251,7 +267,7 @@ class AppEnvironment(
 
     /** Launch and return to the foreground: fetches unless a check ran too recently. `null` when it skipped. */
     suspend fun refreshIfDue(now: Instant = Instant.now()): RefreshOutcome? {
-        val s = store ?: return null
+        val s = loaded.await() ?: return null
         if (inFlight == null && !throttle.isDue(s.meta, now)) return null
         return refresh(now)
     }
@@ -282,7 +298,7 @@ class AppEnvironment(
     }
 
     private suspend fun runRefresh(now: Instant): RefreshOutcome {
-        val s = store ?: return RefreshOutcome.Failed("no snapshot store")
+        val s = loaded.await() ?: return RefreshOutcome.Failed("no snapshot store")
         val outcome = withContext(Dispatchers.IO) { refresher.refresh(s, now) }
         // Whatever the outcome: a failure changes only the ledger, and the screen must say so.
         syncFromStore()

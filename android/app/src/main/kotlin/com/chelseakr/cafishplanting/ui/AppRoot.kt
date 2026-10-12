@@ -1,6 +1,17 @@
 package com.chelseakr.cafishplanting.ui
 
 import android.app.Activity
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Map
@@ -9,7 +20,9 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -46,6 +59,11 @@ fun AppRoot(env: AppEnvironment, router: Router, purchases: PurchaseBackend, act
     val state by env.state.collectAsStateWithLifecycle()
     val route by router.state.collectAsStateWithLifecycle()
     val haptics = rememberHaptics()
+
+    if (state.isLoading) {
+        LoadingSchedule()
+        return
+    }
 
     val error = state.loadError
     if (error != null) {
@@ -174,4 +192,18 @@ private fun ListDetail(
             }
         },
     )
+}
+
+/** While the snapshot opens off the main thread: brief on a phone, never an empty screen. */
+@Composable
+private fun LoadingSchedule() {
+    Column(
+        Modifier.fillMaxSize().padding(32.dp).semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        CircularProgressIndicator()
+        Spacer(Modifier.size(16.dp))
+        Text("Loading the stocking schedule…", style = MaterialTheme.typography.bodyMedium, color = secondaryText)
+    }
 }

@@ -117,4 +117,10 @@ dependencies {
     implementation(libs.play.review.ktx)
     implementation(libs.kotlinx.serialization.json)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    testImplementation(libs.junit)
+}
+
+// SnapshotLoaderTest opens the real bundled snapshot, so a new one reruns it.
+tasks.withType<Test>().configureEach {
+    inputs.file(rootProject.layout.projectDirectory.file("../ios/CAFishPlanting/Resources/snapshot.json"))
 }

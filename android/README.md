@@ -18,6 +18,9 @@ From `android/`, with JDK 21:
 
 - `./gradlew :core:test` runs the core tests, including
   `AlertPlannerParityTest`.
+- `./gradlew :app:testDebugUnitTest` runs the app's JVM tests:
+  `SnapshotLoaderTest` opens the real bundled snapshot through the launch
+  path, off the caller's thread.
 - `./gradlew :app:lintDebug` runs Android lint, with warnings as errors.
 - `./gradlew :app:assembleDebug :app:assembleRelease` builds a debug APK
   and an R8-minified, unsigned release APK.
@@ -32,6 +35,11 @@ The app ships the iOS app's bundled snapshot,
 `app/build.gradle.kts` copies it into the APK's assets at build time, so it
 is never committed twice and both apps open on the same week. Refresh it
 with `ios/scripts/sync-bundled-snapshot.sh`, as for iOS.
+
+The app opens it with `SnapshotLoader` on `Dispatchers.Default`, never on
+the main thread, and shows "Loading the stocking schedule…" until it has.
+Refreshes, background work and a new favorite's alert baseline wait for
+that load.
 
 ## The alert planner is held to the Swift one
 

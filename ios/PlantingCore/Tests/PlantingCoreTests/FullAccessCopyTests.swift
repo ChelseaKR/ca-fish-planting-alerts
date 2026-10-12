@@ -18,10 +18,11 @@ final class FullAccessCopyTests: XCTestCase {
         try String(contentsOf: repo.appendingPathComponent(path), encoding: .utf8)
     }
 
-    func testThePurchaseScreenListsAlertsAndTheWidget() {
-        XCTAssertEqual(FreeTier.fullAccessFeatures.count, 2)
+    func testThePurchaseScreenListsAlertsTheWidgetAndTheWatch() {
+        XCTAssertEqual(FreeTier.fullAccessFeatures.count, 3)
         XCTAssertTrue(FreeTier.fullAccessFeatures.contains { $0.localizedCaseInsensitiveContains("alert") })
         XCTAssertTrue(FreeTier.fullAccessFeatures.contains { $0.localizedCaseInsensitiveContains("widget") })
+        XCTAssertTrue(FreeTier.fullAccessFeatures.contains { $0.contains("Apple Watch") })
     }
 
     /// The in-app purchase description: the local StoreKit configuration,

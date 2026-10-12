@@ -46,12 +46,29 @@ public enum FreeTier {
         !widgetsRequireFullAccess || isEntitled
     }
 
+    /// Whether Trout Truck on Apple Watch (the watch app and its
+    /// complications) needs the one-time purchase. It does: the owner asked
+    /// on 2026-10-12 for watch extras as more reasons to buy the same
+    /// purchase (`docs/DECISIONS.md` 0021). The watch never checks a
+    /// purchase itself. It shows only the digest the phone sends
+    /// (`WatchSync`), and the phone builds that digest locked, with no
+    /// favorites in it, unless this allows it.
+    public static let watchRequiresFullAccess = true
+
+    /// Whether the watch may show favorites, given whether the one-time
+    /// purchase is owned. Read in one place: where the phone builds the
+    /// watch's digest (`AppEnvironment.publishWidgetDigest()`).
+    public static func watchAllowed(isEntitled: Bool) -> Bool {
+        !watchRequiresFullAccess || isEntitled
+    }
+
     /// What full access unlocks, in the words the purchase screen lists.
     /// One place, so the screen, About and the App Store copy can't drift
     /// apart (`FullAccessCopyTests` checks the App Store side).
     public static let fullAccessFeatures = [
         "An alert on this device when a favorite is newly on CDFW's weekly schedule",
         "The Favorite waters widget for your Home Screen and Lock Screen",
+        "Your favorite waters on Apple Watch, with a complication",
     ]
 
     // MARK: Per state (DECISIONS 0025)

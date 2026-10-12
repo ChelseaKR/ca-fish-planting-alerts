@@ -340,3 +340,19 @@ def test_an_offline_cli_run_never_fetches_a_state(tmp_path: Path, monkeypatch):
     assert seen["states_dir"] is None
     assert cli.main(["--states", "tn, mi"]) == 0
     assert seen["states_fetch"] == ("TN", "MI")
+
+
+def test_no_sentence_on_a_state_page_runs_into_the_next(built: Path):
+    """Jinja's trim_blocks eats the newline after a block tag, which once
+    printed "week of 2026-10-25.Most recently" on every Tennessee page."""
+    joined = re.compile(r"[a-z0-9)]\.[A-Z][a-z]")
+    pages = [
+        p
+        for code in ("tn", "ma", "mi", "states")
+        for p in (built / "site" / code).rglob("index.html")
+    ]
+    assert len(pages) > 100
+    for p in pages:
+        body = re.sub(r"<script.*?</script>", " ", p.read_text("utf-8"), flags=re.S)
+        text = re.sub(r"<[^>]+>", " ", body)
+        assert not joined.search(text), (p, joined.search(text))

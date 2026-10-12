@@ -3,21 +3,19 @@
 <h1>{{ head }} ({{ place }})</h1>
 <p class="lede">
   {% if schedule %}
-  {{ water.name }} is on the {{ state.agency.name }}'s stocking schedule.
-  {% if next_label %}Next scheduled: {{ next_label }}.{% endif %}
-  {% if last_label %}Most recently scheduled: {{ last_label }}.{% endif %}
-  {% if not next_label %}Nothing later is on {{ state.agency.short_name }}'s schedule right now. That means no date is listed, not that there are no fish.{% endif %}
+  {{ water.name }} is on the {{ state.agency.name }}'s stocking schedule.{% if next_label %} Next scheduled: {{ next_label }}.{% endif %}{% if last_label %} Most recently scheduled: {{ last_label }}.{% endif %}{% if not next_label %} Nothing later is on {{ state.agency.short_name }}'s schedule right now. That means no date is listed, not that there are no fish.{% endif %}
+
   {% else %}
-  {{ water.name }} is in the {{ state.agency.name }}'s stocking report.
-  {% if last_label %}The newest stocking on record: {{ last_label }}.{% endif %}
+  {{ water.name }} is in the {{ state.agency.name }}'s stocking report.{% if last_label %} The newest stocking on record: {{ last_label }}.{% endif %}
+
   {% endif %}
 </p>
 {% if state.recency_note %}
 <p><strong>{{ state.recency_note }}</strong></p>
 {% endif %}
 <p class="muted">
-  {{ state.agency.short_name }}'s data was last read {{ fetched_label }}.
-  {% if attempt_failed %}<strong>The most recent check failed, so this is the data from that last good read.</strong>{% endif %}
+  {{ state.agency.short_name }}'s data was last read {{ fetched_label }}.{% if attempt_failed %} <strong>The most recent check failed, so this is the data from that last good read.</strong>{% endif %}
+
   {% if schedule %}Every date is {{ state.agency.short_name }}'s plan, not a confirmed stocking, shown at the precision {{ state.agency.short_name }} gives it.{% endif %}
 </p>
 {% if water.months_note %}

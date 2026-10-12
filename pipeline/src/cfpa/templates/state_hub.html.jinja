@@ -17,9 +17,8 @@
 </p>
 {% endif %}
 <p class="muted">
-  {{ state.agency.short_name }}'s data was last read {{ fetched_label }}{% if state.source.last_modified %}; {{ state.agency.short_name }} last changed the file {{ state.source.last_modified }}{% endif %}.
-  {% if attempt_failed %}<strong>The most recent check failed, so this is the data from that last good read.</strong>{% endif %}
-  {% if newest_label %}The newest date in it is {{ newest_label }}.{% endif %}
+  {{ state.agency.short_name }}'s data was last read {{ fetched_label }}{% if state.source.last_modified %}; {{ state.agency.short_name }} last changed the file {{ state.source.last_modified }}{% endif %}.{% if attempt_failed %} <strong>The most recent check failed, so this is the data from that last good read.</strong>{% endif %}{% if newest_label %} The newest date in it is {{ newest_label }}.{% endif %}
+
 </p>
 {% if state.recency_note %}
 <p><strong>{{ state.recency_note }}</strong></p>

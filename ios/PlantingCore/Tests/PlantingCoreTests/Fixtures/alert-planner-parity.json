@@ -1,0 +1,1653 @@
+{
+  "about" : [
+    "Shared fixtures for the alert planner. ios/PlantingCore (AlertPlannerParityTests.swift) and android/core (AlertPlannerParityTest.kt) both run every scenario and must produce exactly the 'expect' blocks below: the same alerts (id, title, body, new weeks and species), the same alerts left after mutes, and the same baseline.",
+    "The expectations were recorded from the Swift planner (PARITY_RECORD=1 swift test --filter AlertPlannerParityTests) and are never edited by hand.",
+    "Synthetic snapshots list each water's plants as week (a Sunday), species and status; the rest of each water and snapshot is the test builders' fixed filler.",
+    "alert-parity-real-2026-09-27.json is the bundled snapshot of 2026-10-02 (week of 2026-09-27) cut to eight waters. alert-parity-real-2026-09-13-as-of-2026-09-20.json is the same eight waters as the pipeline knew them at 2026-09-20T00:00:00Z: only plants first observed by then, the week of 2026-09-13 as the source week, last_listed_week recomputed; a water with no plant by then is left out."
+  ],
+  "scenarios" : [
+    {
+      "name" : "a new week notifies once",
+      "steps" : [
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "one-0913",
+          "water" : "cdfw-1"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "one-0913"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-20 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-1.2026-09-20",
+                "new_keys" : [
+                  [
+                    "2026-09-20",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Test Lake is on the stocking schedule",
+                "water_id" : "cdfw-1"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-1.2026-09-20"
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "two-0920"
+        }
+      ]
+    },
+    {
+      "name" : "the same week never notifies twice",
+      "steps" : [
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "two-0920",
+          "water" : "cdfw-1"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "two-0920"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "two-0920"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "two-0920"
+        }
+      ]
+    },
+    {
+      "name" : "an unfavorited water never notifies",
+      "steps" : [
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+
+            }
+          },
+          "favorites" : [
+
+          ],
+          "op" : "plan",
+          "snapshot" : "listed-0920-at-0913"
+        }
+      ]
+    },
+    {
+      "name" : "past plants never notify",
+      "steps" : [
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-1" : [
+
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "past-only",
+          "water" : "cdfw-1"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "past-only"
+        }
+      ]
+    },
+    {
+      "name" : "a removed plant never notifies",
+      "steps" : [
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-1" : [
+
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "removed-0920",
+          "water" : "cdfw-1"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "removed-0920"
+        }
+      ]
+    },
+    {
+      "name" : "removed then relisted notifies again",
+      "steps" : [
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-20 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-1.2026-09-20",
+                "new_keys" : [
+                  [
+                    "2026-09-20",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Test Lake is on the stocking schedule",
+                "water_id" : "cdfw-1"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-1.2026-09-20"
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "listed-0920-at-0913"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "removed-0920"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-20 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-1.2026-09-20",
+                "new_keys" : [
+                  [
+                    "2026-09-20",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Test Lake is on the stocking schedule",
+                "water_id" : "cdfw-1"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-1.2026-09-20"
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "listed-0920-at-0913"
+        }
+      ]
+    },
+    {
+      "name" : "unfavoriting prunes the baseline",
+      "steps" : [
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "one-0913",
+          "water" : "cdfw-1"
+        },
+        {
+          "expect" : {
+            "state" : {
+
+            }
+          },
+          "op" : "prune",
+          "water" : "cdfw-1"
+        }
+      ]
+    },
+    {
+      "name" : "several new weeks in one refresh make one alert naming both",
+      "steps" : [
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "one-0913",
+          "water" : "cdfw-1"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the weeks of 2026-09-20 and 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-1.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-20",
+                    "Trout"
+                  ],
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Test Lake is on the stocking schedule",
+                "water_id" : "cdfw-1"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-1.2026-09-27"
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ],
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "three-weeks"
+        }
+      ]
+    },
+    {
+      "name" : "species order, accents and two waters in favorites order",
+      "steps" : [
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-13 (Catfish). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-2.2026-09-13",
+                "new_keys" : [
+                  [
+                    "2026-09-13",
+                    "Catfish"
+                  ]
+                ],
+                "title" : "Legg Lakes is on the stocking schedule",
+                "water_id" : "cdfw-2"
+              },
+              {
+                "body" : "Scheduled for the weeks of 2026-09-13 and 2026-09-20 and 2026-09-27 (Catfish, Brown trout, Rainbow trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-1.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-13",
+                    "Catfish"
+                  ],
+                  [
+                    "2026-09-20",
+                    "Brown trout"
+                  ],
+                  [
+                    "2026-09-20",
+                    "Rainbow trout"
+                  ],
+                  [
+                    "2026-09-27",
+                    "Rainbow trout"
+                  ]
+                ],
+                "title" : "Río Hondo Pond is on the stocking schedule",
+                "water_id" : "cdfw-1"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-2.2026-09-13",
+              "plant.cdfw-1.2026-09-27"
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Catfish"
+                ],
+                [
+                  "2026-09-20",
+                  "Brown trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Rainbow trout"
+                ],
+                [
+                  "2026-09-27",
+                  "Rainbow trout"
+                ]
+              ],
+              "cdfw-2" : [
+                [
+                  "2026-09-13",
+                  "Catfish"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2",
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "species-mix"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Catfish"
+                ],
+                [
+                  "2026-09-20",
+                  "Brown trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Rainbow trout"
+                ],
+                [
+                  "2026-09-27",
+                  "Rainbow trout"
+                ]
+              ],
+              "cdfw-2" : [
+                [
+                  "2026-09-13",
+                  "Catfish"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2",
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "species-mix"
+        }
+      ]
+    },
+    {
+      "name" : "a muted water's alert is left out and its baseline still moves",
+      "steps" : [
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the weeks of 2026-09-13 and 2026-09-20 and 2026-09-27 (Catfish, Brown trout, Rainbow trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-1.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-13",
+                    "Catfish"
+                  ],
+                  [
+                    "2026-09-20",
+                    "Brown trout"
+                  ],
+                  [
+                    "2026-09-20",
+                    "Rainbow trout"
+                  ],
+                  [
+                    "2026-09-27",
+                    "Rainbow trout"
+                  ]
+                ],
+                "title" : "Río Hondo Pond is on the stocking schedule",
+                "water_id" : "cdfw-1"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-13 (Catfish). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-2.2026-09-13",
+                "new_keys" : [
+                  [
+                    "2026-09-13",
+                    "Catfish"
+                  ]
+                ],
+                "title" : "Legg Lakes is on the stocking schedule",
+                "water_id" : "cdfw-2"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-2.2026-09-13"
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Catfish"
+                ],
+                [
+                  "2026-09-20",
+                  "Brown trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Rainbow trout"
+                ],
+                [
+                  "2026-09-27",
+                  "Rainbow trout"
+                ]
+              ],
+              "cdfw-2" : [
+                [
+                  "2026-09-13",
+                  "Catfish"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1",
+            "cdfw-2"
+          ],
+          "muted" : [
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "species-mix"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Catfish"
+                ],
+                [
+                  "2026-09-20",
+                  "Brown trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Rainbow trout"
+                ],
+                [
+                  "2026-09-27",
+                  "Rainbow trout"
+                ]
+              ],
+              "cdfw-2" : [
+                [
+                  "2026-09-13",
+                  "Catfish"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-1",
+            "cdfw-2"
+          ],
+          "muted" : [
+
+          ],
+          "op" : "plan",
+          "snapshot" : "species-mix"
+        }
+      ]
+    },
+    {
+      "initial_state" : {
+        "cdfw-404" : [
+          [
+            "2026-09-20",
+            "Trout"
+          ]
+        ]
+      },
+      "name" : "a favorite the snapshot lacks keeps its baseline",
+      "steps" : [
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-13 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-1.2026-09-13",
+                "new_keys" : [
+                  [
+                    "2026-09-13",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Test Lake is on the stocking schedule",
+                "water_id" : "cdfw-1"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-1.2026-09-13"
+            ],
+            "state" : {
+              "cdfw-1" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ],
+              "cdfw-404" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-404",
+            "cdfw-1"
+          ],
+          "op" : "plan",
+          "snapshot" : "one-0913"
+        }
+      ]
+    },
+    {
+      "name" : "real data: favorited as of 2026-09-20, refreshed to the week of 2026-09-27",
+      "steps" : [
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "real-0913",
+          "water" : "cdfw-679"
+        },
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "real-0913",
+          "water" : "cdfw-7101"
+        },
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "real-0913",
+          "water" : "cdfw-500762"
+        },
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "real-0913",
+          "water" : "cdfw-500763"
+        },
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7367" : [
+
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "real-0913",
+          "water" : "cdfw-7367"
+        },
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7367" : [
+
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "real-0913",
+          "water" : "cdfw-2227"
+        },
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-3910" : [
+
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7367" : [
+
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "real-0913",
+          "water" : "cdfw-3910"
+        },
+        {
+          "expect" : {
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-3910" : [
+
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7367" : [
+
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "real-0913",
+          "water" : "cdfw-10356"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ],
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-3910" : [
+
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-20",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7367" : [
+
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-13",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-679",
+            "cdfw-7101",
+            "cdfw-500762",
+            "cdfw-500763",
+            "cdfw-7367",
+            "cdfw-2227",
+            "cdfw-3910",
+            "cdfw-10356"
+          ],
+          "op" : "plan",
+          "snapshot" : "real-0913"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-679.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Carrville Pond is on the stocking schedule",
+                "water_id" : "cdfw-679"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-7101.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Big Bear Lake is on the stocking schedule",
+                "water_id" : "cdfw-7101"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-500762.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Kern River, Section 5 is on the stocking schedule",
+                "water_id" : "cdfw-500762"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-500763.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Kern River, Section 6 is on the stocking schedule",
+                "water_id" : "cdfw-500763"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-3910.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Tulloch Lake is on the stocking schedule",
+                "water_id" : "cdfw-3910"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-10356.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Crater Lake is on the stocking schedule",
+                "water_id" : "cdfw-10356"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-679.2026-09-27",
+              "plant.cdfw-500762.2026-09-27",
+              "plant.cdfw-500763.2026-09-27",
+              "plant.cdfw-3910.2026-09-27",
+              "plant.cdfw-10356.2026-09-27"
+            ],
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-2227" : [
+
+              ],
+              "cdfw-3910" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7367" : [
+
+              ],
+              "cdfw-10356" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-679",
+            "cdfw-7101",
+            "cdfw-500762",
+            "cdfw-500763",
+            "cdfw-7367",
+            "cdfw-2227",
+            "cdfw-3910",
+            "cdfw-10356"
+          ],
+          "muted" : [
+            "cdfw-7101"
+          ],
+          "op" : "plan",
+          "snapshot" : "real-0927"
+        },
+        {
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-2227" : [
+
+              ],
+              "cdfw-3910" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7367" : [
+
+              ],
+              "cdfw-10356" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-679",
+            "cdfw-7101",
+            "cdfw-500762",
+            "cdfw-500763",
+            "cdfw-7367",
+            "cdfw-2227",
+            "cdfw-3910",
+            "cdfw-10356"
+          ],
+          "op" : "plan",
+          "snapshot" : "real-0927"
+        }
+      ]
+    },
+    {
+      "name" : "real data: first sighting against an empty baseline",
+      "steps" : [
+        {
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-10356.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Crater Lake is on the stocking schedule",
+                "water_id" : "cdfw-10356"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-3910.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Tulloch Lake is on the stocking schedule",
+                "water_id" : "cdfw-3910"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-500763.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Kern River, Section 6 is on the stocking schedule",
+                "water_id" : "cdfw-500763"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-500762.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Kern River, Section 5 is on the stocking schedule",
+                "water_id" : "cdfw-500762"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-7101.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Big Bear Lake is on the stocking schedule",
+                "water_id" : "cdfw-7101"
+              },
+              {
+                "body" : "Scheduled for the week of 2026-09-27 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-679.2026-09-27",
+                "new_keys" : [
+                  [
+                    "2026-09-27",
+                    "Trout"
+                  ]
+                ],
+                "title" : "Carrville Pond is on the stocking schedule",
+                "water_id" : "cdfw-679"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-10356.2026-09-27",
+              "plant.cdfw-3910.2026-09-27",
+              "plant.cdfw-500763.2026-09-27",
+              "plant.cdfw-500762.2026-09-27",
+              "plant.cdfw-7101.2026-09-27",
+              "plant.cdfw-679.2026-09-27"
+            ],
+            "state" : {
+              "cdfw-679" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-2227" : [
+
+              ],
+              "cdfw-3910" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7101" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-7367" : [
+
+              ],
+              "cdfw-10356" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500762" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ],
+              "cdfw-500763" : [
+                [
+                  "2026-09-27",
+                  "Trout"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-10356",
+            "cdfw-3910",
+            "cdfw-2227",
+            "cdfw-7367",
+            "cdfw-500763",
+            "cdfw-500762",
+            "cdfw-7101",
+            "cdfw-679"
+          ],
+          "op" : "plan",
+          "snapshot" : "real-0927"
+        }
+      ]
+    }
+  ],
+  "snapshots" : {
+    "listed-0920-at-0913" : {
+      "source_week" : "2026-09-13",
+      "waters" : [
+        {
+          "id" : "cdfw-1",
+          "name" : "Test Lake",
+          "plants" : [
+            {
+              "species" : "Trout",
+              "status" : "listed",
+              "week" : "2026-09-20"
+            }
+          ]
+        }
+      ]
+    },
+    "one-0913" : {
+      "source_week" : "2026-09-13",
+      "waters" : [
+        {
+          "id" : "cdfw-1",
+          "name" : "Test Lake",
+          "plants" : [
+            {
+              "species" : "Trout",
+              "status" : "listed",
+              "week" : "2026-09-13"
+            }
+          ]
+        }
+      ]
+    },
+    "past-only" : {
+      "source_week" : "2026-09-13",
+      "waters" : [
+        {
+          "id" : "cdfw-1",
+          "name" : "Test Lake",
+          "plants" : [
+            {
+              "species" : "Trout",
+              "status" : "listed",
+              "week" : "2026-08-01"
+            }
+          ]
+        }
+      ]
+    },
+    "real-0913" : {
+      "file" : "alert-parity-real-2026-09-13-as-of-2026-09-20.json"
+    },
+    "real-0927" : {
+      "file" : "alert-parity-real-2026-09-27.json"
+    },
+    "removed-0920" : {
+      "source_week" : "2026-09-13",
+      "waters" : [
+        {
+          "id" : "cdfw-1",
+          "name" : "Test Lake",
+          "plants" : [
+            {
+              "species" : "Trout",
+              "status" : "removed",
+              "week" : "2026-09-20"
+            }
+          ]
+        }
+      ]
+    },
+    "species-mix" : {
+      "source_week" : "2026-09-13",
+      "waters" : [
+        {
+          "id" : "cdfw-1",
+          "name" : "Río Hondo Pond",
+          "plants" : [
+            {
+              "species" : "Rainbow trout",
+              "status" : "listed",
+              "week" : "2026-09-20"
+            },
+            {
+              "species" : "Brown trout",
+              "status" : "listed",
+              "week" : "2026-09-20"
+            },
+            {
+              "species" : "Rainbow trout",
+              "status" : "listed",
+              "week" : "2026-09-27"
+            },
+            {
+              "species" : "Catfish",
+              "status" : "listed",
+              "week" : "2026-09-13"
+            }
+          ]
+        },
+        {
+          "id" : "cdfw-2",
+          "name" : "Legg Lakes",
+          "plants" : [
+            {
+              "species" : "Catfish",
+              "status" : "listed",
+              "week" : "2026-09-13"
+            }
+          ]
+        }
+      ]
+    },
+    "three-weeks" : {
+      "source_week" : "2026-09-13",
+      "waters" : [
+        {
+          "id" : "cdfw-1",
+          "name" : "Test Lake",
+          "plants" : [
+            {
+              "species" : "Trout",
+              "status" : "listed",
+              "week" : "2026-09-13"
+            },
+            {
+              "species" : "Trout",
+              "status" : "listed",
+              "week" : "2026-09-20"
+            },
+            {
+              "species" : "Trout",
+              "status" : "listed",
+              "week" : "2026-09-27"
+            }
+          ]
+        }
+      ]
+    },
+    "two-0920" : {
+      "source_week" : "2026-09-20",
+      "waters" : [
+        {
+          "id" : "cdfw-1",
+          "name" : "Test Lake",
+          "plants" : [
+            {
+              "species" : "Trout",
+              "status" : "listed",
+              "week" : "2026-09-13"
+            },
+            {
+              "species" : "Trout",
+              "status" : "listed",
+              "week" : "2026-09-20"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

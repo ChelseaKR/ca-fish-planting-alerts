@@ -438,6 +438,55 @@ review, and nothing here changes it.
   Mac"). A version that adds iPad needs iPad 13-inch screenshots before it
   can be submitted. Both are in `docs/app-store/OWNER-STEPS.md`.
 
+## 0022 — A native Android app with the iOS app's features (2026-10-12; proposed)
+
+The owner decided on 2026-10-12 that Trout Truck gets an Android app with
+full parity with the iOS app. It lives in `android/` beside `ios/`.
+
+- **Native, not a wrapper.** Kotlin, Jetpack Compose and Material 3. Two
+  Gradle modules: `core`, plain Kotlin with the same rules as
+  `ios/PlantingCore` (the strict snapshot decoder, the alert planner,
+  freshness, search, the widget digest, the stores and the words the app
+  shows), and `app`. Package name `com.chelseakr.cafishplanting`, the iOS
+  bundle identifier's stem (0010).
+- **Same data, same URL.** It reads
+  `https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json`
+  and nothing else, with the iOS app's request: one GET, `If-None-Match`, a
+  fixed `User-Agent`, no cookies. It ships the iOS app's bundled snapshot
+  (copied into the APK at build time, never committed twice), so both apps
+  open on the same week.
+- **Same rules.** A week, never a day, and "scheduled", never "stocked". No
+  account, no analytics, no crash reporting, no server push. Alerts are
+  local notifications that WorkManager's daily periodic refresh (and the
+  refresh at launch and on swipe down) computes on the device. Favorites,
+  mutes and the alert baseline are files on the device. Cloud backup is
+  off; a device-to-device transfer carries them.
+- **The alert planner is held to the Swift one.** Shared fixtures in
+  `ios/PlantingCore/Tests/PlantingCoreTests/Fixtures/` (synthetic cases and
+  two real-data excerpts) carry expectations recorded from the Swift
+  planner. `AlertPlannerParityTests.swift` and `AlertPlannerParityTest.kt`
+  both run every scenario and must produce the same alerts, ids, words and
+  baselines.
+- **Same free/paid boundary (0009, 0015).** Browsing, history and
+  favorites are free and unlimited. One Google Play one-time in-app
+  product, placeholder ID `fullaccess`, unlocks alerts and the home screen
+  widget. Play Billing only; the app never links to another way to pay.
+  The catalog and the entitlement are per product, so per-state products
+  are new entries, not new code.
+- **Platform words.** Android has a home screen widget (Glance) and no Lock
+  Screen widget, so the copy says "home screen" where iOS says "Home Screen
+  and Lock Screen", and "Swipe down" where iOS says "Pull down". Everything
+  else in the introduction is the iOS copy word for word, which a test
+  checks against `Onboarding.swift`.
+- **Review prompt.** Google Play's in-app review card, with the iOS rating
+  lane's rules (feat/ratings-and-water-seo, not yet on main), and an About
+  row that opens the app's Play Store page.
+- **Not ported.** Shortcuts and Siri (`ScheduleIntents`) and the Apple
+  Watch (0021, in progress) have no direct Android twin in this change.
+
+Owner steps (Play Console app, in-app product, signing, Data safety,
+listing, internal testing) are in `android/README.md`.
+
 ## 0024 — Water locations from federal public-domain data, never guessed (2026-10-12; proposed)
 
 The owner approved maps on 2026-10-12. A map needs a point per water, and

@@ -1,0 +1,1400 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-20T00:00:00Z",
+  "source": {
+    "name": "CDFW Fish Planting Schedule",
+    "url": "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch",
+    "fetched_at": "2026-09-20T00:00:00Z",
+    "stated_today": "2026-09-19",
+    "stated_period": {
+      "start": "2025-09-27",
+      "end": "2026-10-11"
+    },
+    "content_sha256": "cde806d5a389111e8846174cfbdfbaffca87bdb1acbd07add99d8dffadb9db82"
+  },
+  "source_week": {
+    "start": "2026-09-13",
+    "end": "2026-09-19",
+    "label": "week of 2026-09-13"
+  },
+  "attribution": {
+    "text": "Data: California Department of Fish and Wildlife, Fish Planting Schedule (https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch). Schedule is subject to change; treat all plants as scheduled, not confirmed.",
+    "url": "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch"
+  },
+  "licence": {
+    "summary": "CDFW's site-wide Conditions of Use place page content in the public domain with no commercial-use restriction; the related CDFW Fishing Guide dataset on data.ca.gov is explicitly CC-BY. We attribute unconditionally. See docs/LICENSES-AND-ATTRIBUTION.md for the verbatim quotes this is built from.",
+    "sources": [
+      {
+        "name": "CDFW Fish Planting Schedule",
+        "url": "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch",
+        "terms_url": "https://wildlife.ca.gov/Conditions-of-Use",
+        "terms_read_on": "2026-09-13",
+        "commercial_reuse": "permitted",
+        "attribution_required": true
+      },
+      {
+        "name": "CDFW Fishing Guide (data.ca.gov, CC-BY)",
+        "url": "https://data.ca.gov/dataset/cdfw-fishing-guide2",
+        "terms_url": "https://data.ca.gov/dataset/cdfw-fishing-guide2",
+        "terms_read_on": "2026-09-13",
+        "commercial_reuse": "permitted",
+        "attribution_required": true
+      }
+    ]
+  },
+  "regions": [
+    {
+      "code": "R1",
+      "name": "Northern Region (R1)"
+    },
+    {
+      "code": "R2",
+      "name": "North Central Region (R2)"
+    },
+    {
+      "code": "R3",
+      "name": "Bay Delta Region (R3)"
+    },
+    {
+      "code": "R4",
+      "name": "Central Region (R4)"
+    },
+    {
+      "code": "R5",
+      "name": "South Coast Region (R5)"
+    },
+    {
+      "code": "R6",
+      "name": "Inland Deserts Region (R6)"
+    }
+  ],
+  "counties": [
+    {
+      "name": "Alameda",
+      "region": "R3"
+    },
+    {
+      "name": "Alpine",
+      "region": "R2"
+    },
+    {
+      "name": "Amador",
+      "region": "R2"
+    },
+    {
+      "name": "Butte",
+      "region": "R2"
+    },
+    {
+      "name": "Calaveras",
+      "region": "R2"
+    },
+    {
+      "name": "Colusa",
+      "region": "R2"
+    },
+    {
+      "name": "Contra Costa",
+      "region": "R3"
+    },
+    {
+      "name": "Del Norte",
+      "region": "R1"
+    },
+    {
+      "name": "El Dorado",
+      "region": "R2"
+    },
+    {
+      "name": "Fresno",
+      "region": "R4"
+    },
+    {
+      "name": "Glenn",
+      "region": "R2"
+    },
+    {
+      "name": "Humboldt",
+      "region": "R1"
+    },
+    {
+      "name": "Imperial",
+      "region": "R6"
+    },
+    {
+      "name": "Inyo",
+      "region": "R6"
+    },
+    {
+      "name": "Kern",
+      "region": "R4"
+    },
+    {
+      "name": "Kings",
+      "region": "R4"
+    },
+    {
+      "name": "Lake",
+      "region": "R2"
+    },
+    {
+      "name": "Lassen",
+      "region": "R1"
+    },
+    {
+      "name": "Los Angeles",
+      "region": "R5"
+    },
+    {
+      "name": "Madera",
+      "region": "R4"
+    },
+    {
+      "name": "Marin",
+      "region": "R3"
+    },
+    {
+      "name": "Mariposa",
+      "region": "R4"
+    },
+    {
+      "name": "Mendocino",
+      "region": "R1"
+    },
+    {
+      "name": "Merced",
+      "region": "R4"
+    },
+    {
+      "name": "Modoc",
+      "region": "R1"
+    },
+    {
+      "name": "Mono",
+      "region": "R6"
+    },
+    {
+      "name": "Monterey",
+      "region": "R4"
+    },
+    {
+      "name": "Napa",
+      "region": "R3"
+    },
+    {
+      "name": "Nevada",
+      "region": "R2"
+    },
+    {
+      "name": "Orange",
+      "region": "R5"
+    },
+    {
+      "name": "Placer",
+      "region": "R2"
+    },
+    {
+      "name": "Plumas",
+      "region": "R2"
+    },
+    {
+      "name": "Riverside",
+      "region": "R6"
+    },
+    {
+      "name": "Sacramento",
+      "region": "R3"
+    },
+    {
+      "name": "San Benito",
+      "region": "R4"
+    },
+    {
+      "name": "San Bernardino",
+      "region": "R6"
+    },
+    {
+      "name": "San Diego",
+      "region": "R5"
+    },
+    {
+      "name": "San Francisco",
+      "region": "R3"
+    },
+    {
+      "name": "San Joaquin",
+      "region": "R3"
+    },
+    {
+      "name": "San Luis Obispo",
+      "region": "R4"
+    },
+    {
+      "name": "San Mateo",
+      "region": "R3"
+    },
+    {
+      "name": "Santa Barbara",
+      "region": "R5"
+    },
+    {
+      "name": "Santa Clara",
+      "region": "R3"
+    },
+    {
+      "name": "Santa Cruz",
+      "region": "R3"
+    },
+    {
+      "name": "Shasta",
+      "region": "R1"
+    },
+    {
+      "name": "Sierra",
+      "region": "R2"
+    },
+    {
+      "name": "Siskiyou",
+      "region": "R1"
+    },
+    {
+      "name": "Solano",
+      "region": "R3"
+    },
+    {
+      "name": "Sonoma",
+      "region": "R3"
+    },
+    {
+      "name": "Stanislaus",
+      "region": "R4"
+    },
+    {
+      "name": "Sutter",
+      "region": "R2"
+    },
+    {
+      "name": "Tehama",
+      "region": "R1"
+    },
+    {
+      "name": "Trinity",
+      "region": "R1"
+    },
+    {
+      "name": "Tulare",
+      "region": "R4"
+    },
+    {
+      "name": "Tuolumne",
+      "region": "R4"
+    },
+    {
+      "name": "Ventura",
+      "region": "R5"
+    },
+    {
+      "name": "Yolo",
+      "region": "R3"
+    },
+    {
+      "name": "Yuba",
+      "region": "R2"
+    }
+  ],
+  "species": [
+    "Catfish",
+    "Trout"
+  ],
+  "waters": [
+    {
+      "id": "cdfw-679",
+      "cdfw_stock_id": 679,
+      "name": "Carrville Pond",
+      "name_status": "unreviewed",
+      "slug": "carrville-pond",
+      "aliases": [
+        "Carrville Pond"
+      ],
+      "counties": [
+        "Trinity"
+      ],
+      "region": "R1",
+      "cdfw_map_url": "https://apps.wildlife.ca.gov/fishing/?stockid=679",
+      "location": null,
+      "last_listed_week": {
+        "start": "2026-09-13",
+        "end": "2026-09-19",
+        "label": "week of 2026-09-13"
+      },
+      "plants": [
+        {
+          "week": {
+            "start": "2025-09-14",
+            "end": "2025-09-20",
+            "label": "week of 2025-09-14"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-14T03:30:56Z"
+        },
+        {
+          "week": {
+            "start": "2025-09-21",
+            "end": "2025-09-27",
+            "label": "week of 2025-09-21"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-04-12",
+            "end": "2026-04-18",
+            "label": "week of 2026-04-12"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-04-19",
+            "end": "2026-04-25",
+            "label": "week of 2026-04-19"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-03",
+            "end": "2026-05-09",
+            "label": "week of 2026-05-03"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-10",
+            "end": "2026-05-16",
+            "label": "week of 2026-05-10"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-17",
+            "end": "2026-05-23",
+            "label": "week of 2026-05-17"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-31",
+            "end": "2026-06-06",
+            "label": "week of 2026-05-31"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-14",
+            "end": "2026-06-20",
+            "label": "week of 2026-06-14"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-28",
+            "end": "2026-07-04",
+            "label": "week of 2026-06-28"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-07-12",
+            "end": "2026-07-18",
+            "label": "week of 2026-07-12"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-07-26",
+            "end": "2026-08-01",
+            "label": "week of 2026-07-26"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-08-02",
+            "end": "2026-08-08",
+            "label": "week of 2026-08-02"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-08-16",
+            "end": "2026-08-22",
+            "label": "week of 2026-08-16"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-08-30",
+            "end": "2026-09-05",
+            "label": "week of 2026-08-30"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-09-06",
+            "end": "2026-09-12",
+            "label": "week of 2026-09-06"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-09-13",
+            "end": "2026-09-19",
+            "label": "week of 2026-09-13"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-18T03:50:44Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-09-20",
+            "end": "2026-09-26",
+            "label": "week of 2026-09-20"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-18T03:50:44Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cdfw-2227",
+      "cdfw_stock_id": 2227,
+      "name": "Halsey Forebay",
+      "name_status": "unreviewed",
+      "slug": "halsey-forebay",
+      "aliases": [
+        "Halsey Forebay"
+      ],
+      "counties": [
+        "Placer"
+      ],
+      "region": "R2",
+      "cdfw_map_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2227",
+      "location": null,
+      "last_listed_week": {
+        "start": "2026-07-26",
+        "end": "2026-08-01",
+        "label": "week of 2026-07-26"
+      },
+      "plants": [
+        {
+          "week": {
+            "start": "2025-09-14",
+            "end": "2025-09-20",
+            "label": "week of 2025-09-14"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-14T03:30:56Z"
+        },
+        {
+          "week": {
+            "start": "2025-10-19",
+            "end": "2025-10-25",
+            "label": "week of 2025-10-19"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-11-16",
+            "end": "2025-11-22",
+            "label": "week of 2025-11-16"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-01-25",
+            "end": "2026-01-31",
+            "label": "week of 2026-01-25"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-02-08",
+            "end": "2026-02-14",
+            "label": "week of 2026-02-08"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-03-22",
+            "end": "2026-03-28",
+            "label": "week of 2026-03-22"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-21",
+            "end": "2026-06-27",
+            "label": "week of 2026-06-21"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-07-26",
+            "end": "2026-08-01",
+            "label": "week of 2026-07-26"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-09-20",
+            "end": "2026-09-26",
+            "label": "week of 2026-09-20"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cdfw-3910",
+      "cdfw_stock_id": 3910,
+      "name": "Tulloch Lake",
+      "name_status": "unreviewed",
+      "slug": "tulloch-lake",
+      "aliases": [
+        "Tulloch Lake"
+      ],
+      "counties": [
+        "Calaveras",
+        "Tuolumne"
+      ],
+      "region": "R2",
+      "cdfw_map_url": "https://apps.wildlife.ca.gov/fishing/?stockid=3910",
+      "location": null,
+      "last_listed_week": {
+        "start": "2025-10-12",
+        "end": "2025-10-18",
+        "label": "week of 2025-10-12"
+      },
+      "plants": [
+        {
+          "week": {
+            "start": "2025-10-12",
+            "end": "2025-10-18",
+            "label": "week of 2025-10-12"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cdfw-7101",
+      "cdfw_stock_id": 7101,
+      "name": "Big Bear Lake",
+      "name_status": "unreviewed",
+      "slug": "big-bear-lake",
+      "aliases": [
+        "Big Bear Lake"
+      ],
+      "counties": [
+        "San Bernardino"
+      ],
+      "region": "R6",
+      "cdfw_map_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7101",
+      "location": null,
+      "last_listed_week": {
+        "start": "2026-07-26",
+        "end": "2026-08-01",
+        "label": "week of 2026-07-26"
+      },
+      "plants": [
+        {
+          "week": {
+            "start": "2025-09-28",
+            "end": "2025-10-04",
+            "label": "week of 2025-09-28"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-10-05",
+            "end": "2025-10-11",
+            "label": "week of 2025-10-05"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-10-19",
+            "end": "2025-10-25",
+            "label": "week of 2025-10-19"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-11-02",
+            "end": "2025-11-08",
+            "label": "week of 2025-11-02"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-04-05",
+            "end": "2026-04-11",
+            "label": "week of 2026-04-05"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-04-19",
+            "end": "2026-04-25",
+            "label": "week of 2026-04-19"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-10",
+            "end": "2026-05-16",
+            "label": "week of 2026-05-10"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-24",
+            "end": "2026-05-30",
+            "label": "week of 2026-05-24"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-07",
+            "end": "2026-06-13",
+            "label": "week of 2026-06-07"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-28",
+            "end": "2026-07-04",
+            "label": "week of 2026-06-28"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-07-12",
+            "end": "2026-07-18",
+            "label": "week of 2026-07-12"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-07-26",
+            "end": "2026-08-01",
+            "label": "week of 2026-07-26"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-09-20",
+            "end": "2026-09-26",
+            "label": "week of 2026-09-20"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-18T16:48:27Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cdfw-7367",
+      "cdfw_stock_id": 7367,
+      "name": "Legg Lakes",
+      "name_status": "unreviewed",
+      "slug": "legg-lakes",
+      "aliases": [
+        "Legg Lakes"
+      ],
+      "counties": [
+        "Los Angeles"
+      ],
+      "region": "R5",
+      "cdfw_map_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7367",
+      "location": null,
+      "last_listed_week": {
+        "start": "2026-08-09",
+        "end": "2026-08-15",
+        "label": "week of 2026-08-09"
+      },
+      "plants": [
+        {
+          "week": {
+            "start": "2025-09-14",
+            "end": "2025-09-20",
+            "label": "week of 2025-09-14"
+          },
+          "species": "Catfish",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-14T03:30:56Z"
+        },
+        {
+          "week": {
+            "start": "2025-10-12",
+            "end": "2025-10-18",
+            "label": "week of 2025-10-12"
+          },
+          "species": "Catfish",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-11-02",
+            "end": "2025-11-08",
+            "label": "week of 2025-11-02"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-11-30",
+            "end": "2025-12-06",
+            "label": "week of 2025-11-30"
+          },
+          "species": "Catfish",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-12-07",
+            "end": "2025-12-13",
+            "label": "week of 2025-12-07"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-01-18",
+            "end": "2026-01-24",
+            "label": "week of 2026-01-18"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-02-15",
+            "end": "2026-02-21",
+            "label": "week of 2026-02-15"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-03-15",
+            "end": "2026-03-21",
+            "label": "week of 2026-03-15"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-10",
+            "end": "2026-05-16",
+            "label": "week of 2026-05-10"
+          },
+          "species": "Catfish",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-14",
+            "end": "2026-06-20",
+            "label": "week of 2026-06-14"
+          },
+          "species": "Catfish",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-07-12",
+            "end": "2026-07-18",
+            "label": "week of 2026-07-12"
+          },
+          "species": "Catfish",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-08-09",
+            "end": "2026-08-15",
+            "label": "week of 2026-08-09"
+          },
+          "species": "Catfish",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cdfw-500762",
+      "cdfw_stock_id": 500762,
+      "name": "Kern River, Section 5",
+      "name_status": "unreviewed",
+      "slug": "kern-river-section-5",
+      "aliases": [
+        "Kern River, Section 5"
+      ],
+      "counties": [
+        "Kern",
+        "Tulare"
+      ],
+      "region": "R4",
+      "cdfw_map_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500762",
+      "location": null,
+      "last_listed_week": {
+        "start": "2026-09-13",
+        "end": "2026-09-19",
+        "label": "week of 2026-09-13"
+      },
+      "plants": [
+        {
+          "week": {
+            "start": "2025-11-02",
+            "end": "2025-11-08",
+            "label": "week of 2025-11-02"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-11-30",
+            "end": "2025-12-06",
+            "label": "week of 2025-11-30"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-12-14",
+            "end": "2025-12-20",
+            "label": "week of 2025-12-14"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-01-04",
+            "end": "2026-01-10",
+            "label": "week of 2026-01-04"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-01-18",
+            "end": "2026-01-24",
+            "label": "week of 2026-01-18"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-02-01",
+            "end": "2026-02-07",
+            "label": "week of 2026-02-01"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-02-22",
+            "end": "2026-02-28",
+            "label": "week of 2026-02-22"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-03-08",
+            "end": "2026-03-14",
+            "label": "week of 2026-03-08"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-03-22",
+            "end": "2026-03-28",
+            "label": "week of 2026-03-22"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-04-05",
+            "end": "2026-04-11",
+            "label": "week of 2026-04-05"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-04-19",
+            "end": "2026-04-25",
+            "label": "week of 2026-04-19"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-04-26",
+            "end": "2026-05-02",
+            "label": "week of 2026-04-26"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-03",
+            "end": "2026-05-09",
+            "label": "week of 2026-05-03"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-10",
+            "end": "2026-05-16",
+            "label": "week of 2026-05-10"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-05-31",
+            "end": "2026-06-06",
+            "label": "week of 2026-05-31"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-07",
+            "end": "2026-06-13",
+            "label": "week of 2026-06-07"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-28",
+            "end": "2026-07-04",
+            "label": "week of 2026-06-28"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-07-12",
+            "end": "2026-07-18",
+            "label": "week of 2026-07-12"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-09-13",
+            "end": "2026-09-19",
+            "label": "week of 2026-09-13"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cdfw-500763",
+      "cdfw_stock_id": 500763,
+      "name": "Kern River, Section 6",
+      "name_status": "unreviewed",
+      "slug": "kern-river-section-6",
+      "aliases": [
+        "Kern River, Section 6"
+      ],
+      "counties": [
+        "Tulare"
+      ],
+      "region": "R4",
+      "cdfw_map_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500763",
+      "location": null,
+      "last_listed_week": {
+        "start": "2026-09-13",
+        "end": "2026-09-19",
+        "label": "week of 2026-09-13"
+      },
+      "plants": [
+        {
+          "week": {
+            "start": "2025-11-02",
+            "end": "2025-11-08",
+            "label": "week of 2025-11-02"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-11-30",
+            "end": "2025-12-06",
+            "label": "week of 2025-11-30"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2025-12-14",
+            "end": "2025-12-20",
+            "label": "week of 2025-12-14"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-01-04",
+            "end": "2026-01-10",
+            "label": "week of 2026-01-04"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-01-18",
+            "end": "2026-01-24",
+            "label": "week of 2026-01-18"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-02-01",
+            "end": "2026-02-07",
+            "label": "week of 2026-02-01"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-02-22",
+            "end": "2026-02-28",
+            "label": "week of 2026-02-22"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-14",
+            "end": "2026-06-20",
+            "label": "week of 2026-06-14"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-06-28",
+            "end": "2026-07-04",
+            "label": "week of 2026-06-28"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        },
+        {
+          "week": {
+            "start": "2026-09-13",
+            "end": "2026-09-19",
+            "label": "week of 2026-09-13"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "first_observed_at": "2026-09-14T03:30:56Z",
+          "last_observed_at": "2026-09-20T00:00:00Z"
+        }
+      ]
+    }
+  ],
+  "this_week": [
+    {
+      "water_id": "cdfw-679",
+      "species": "Trout"
+    },
+    {
+      "water_id": "cdfw-500762",
+      "species": "Trout"
+    },
+    {
+      "water_id": "cdfw-500763",
+      "species": "Trout"
+    }
+  ],
+  "coverage": {
+    "waters_this_week": 12,
+    "waters_known": 895,
+    "waters_with_history": 387,
+    "names_matched": 379,
+    "names_seen": 380,
+    "rows_parsed": 2000,
+    "weeks_of_history_min": 1,
+    "weeks_of_history_median": 4
+  }
+}

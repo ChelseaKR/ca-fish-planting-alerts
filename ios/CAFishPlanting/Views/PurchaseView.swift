@@ -70,7 +70,7 @@ struct PurchaseView: View {
                             .font(.subheadline)
                             .multilineTextAlignment(textAlignment)
                         VStack(alignment: .leading, spacing: 10) {
-                            ForEach(Array(zip(features, ["bell.badge", "square.grid.2x2"])), id: \.0) { feature, symbol in
+                            ForEach(Array(zip(features, ["bell.badge", "square.grid.2x2", "applewatch"])), id: \.0) { feature, symbol in
                                 Label {
                                     Text(feature).fixedSize(horizontal: false, vertical: true)
                                 } icon: {

@@ -7,6 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A237D8A0D4C3A5AFBA34BB8 /* WatchBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B68E26CE920F94938D33254 /* WatchBridgeTests.swift */; };
+		3D9311E299B81B70AE698424 /* WatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7727D60C2FA7AD87D2672D /* WatchBridge.swift */; };
+		E65BDDA7EF6C361737EFB078 /* TroutTruckWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30407E8D52A471B69C072D63 /* TroutTruckWatchApp.swift */; };
+		B80E17F75E8BDCB78B4EFB92 /* WatchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83349BBEE4D03923065ADC27 /* WatchModel.swift */; };
+		863832F4FC603BCBAEAAF83F /* WatchNotificationResponder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1FC077764FCEF6DD7E75A87 /* WatchNotificationResponder.swift */; };
+		7CF8848E77CCC90BA8898E3E /* WatchViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A218637FBC92ECB33B619D18 /* WatchViews.swift */; };
+		C263C724F01822A2CDB99BF2 /* ComplicationGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B6B1F98B8845717F909028D /* ComplicationGallery.swift */; };
+		EC69572AE584982F45F85248 /* NextFavoriteViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6578226C40ED273EE5316F /* NextFavoriteViews.swift */; };
+		CA210460A0D3BFA401CB43ED /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F003A3669419CED87C9F8011 /* PrivacyInfo.xcprivacy */; };
+		BAEAD837EF1658E8A211650D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7D0B533A7D945FB0D0FA8380 /* Assets.xcassets */; };
+		DC724FCED68EC25AA18D516C /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = AF0C5ACE88E404B373B26593 /* PlantingCore */; };
+		73F93A824B756F3726A7AD46 /* PlantingCore in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AF0C5ACE88E404B373B26593 /* PlantingCore */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D5A01EA92C567FA42718E7D7 /* CAFishPlantingWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4629F949BDC26591BED7AB40 /* CAFishPlantingWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2C38BDE4A75F1991FADB2AA8 /* NextFavoriteWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDA8E931AD3BE1ED04F33A8 /* NextFavoriteWidget.swift */; };
+		4C8D99151F3B2B8C12F82F80 /* NextFavoriteViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6578226C40ED273EE5316F /* NextFavoriteViews.swift */; };
+		EE875A4277A289CED6F57A2E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E1824DCD188AF45F3B350670 /* PrivacyInfo.xcprivacy */; };
+		9CAA7EC49BE12D633BC94EA4 /* PlantingCore in Frameworks */ = {isa = PBXBuildFile; productRef = 982FC0E7438BAE3F29AE9FAA /* PlantingCore */; };
+		C6DCACF1EF1C6D3C38CFE48A /* CAFishPlantingWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C15AFC9036C0363D11CD5594 /* CAFishPlantingWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		957930AAE88B2301316666C5 /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3076F5A9AE46931E33CCE8 /* WidgetBridge.swift */; };
 		BA4D70CA059BA4A5915228C4 /* WidgetBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279A9238A08B48D4E8275E89 /* WidgetBridgeTests.swift */; };
 		16F9E0A05F4F30213A894235 /* TroutTruckWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F441586939DFBD4FD413E3 /* TroutTruckWidgets.swift */; };
@@ -73,6 +91,20 @@
 			remoteGlobalIDString = 4A98613C25606001752A1432;
 			remoteInfo = CAFishPlantingWidgets;
 		};
+		8EBF1A150133EFD2C05B89F1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9BA9C7818A56AC469E0C5329;
+			remoteInfo = CAFishPlantingWatch;
+		};
+		C3E50D5826EC0287DC43C044 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B31DC88D38352B62D2FD971;
+			remoteInfo = CAFishPlantingWatchWidgets;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -96,6 +128,39 @@
 				2C7CC2AA840C71B41C2F821D /* CAFishPlantingWidgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		74EFFA489AF11FD030C80277 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				73F93A824B756F3726A7AD46 /* PlantingCore in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA4176990F411C11A20A0F4F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D5A01EA92C567FA42718E7D7 /* CAFishPlantingWatchWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD37292C3518B3AC33C2EEF7 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				C6DCACF1EF1C6D3C38CFE48A /* CAFishPlantingWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -146,6 +211,24 @@
 		3054F6C342DF00206DE60541 /* CAFishPlanting.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CAFishPlanting.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27400D6F95DB03B111B5BD32 /* CAFishPlantingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CAFishPlantingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		686BFC51DCAA63E9B04E5EC0 /* CAFishPlantingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CAFishPlantingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C7727D60C2FA7AD87D2672D /* WatchBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridge.swift; sourceTree = "<group>"; };
+		30407E8D52A471B69C072D63 /* TroutTruckWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TroutTruckWatchApp.swift; sourceTree = "<group>"; };
+		83349BBEE4D03923065ADC27 /* WatchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchModel.swift; sourceTree = "<group>"; };
+		F1FC077764FCEF6DD7E75A87 /* WatchNotificationResponder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchNotificationResponder.swift; sourceTree = "<group>"; };
+		A218637FBC92ECB33B619D18 /* WatchViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchViews.swift; sourceTree = "<group>"; };
+		0B6B1F98B8845717F909028D /* ComplicationGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationGallery.swift; sourceTree = "<group>"; };
+		DB40B0200099F47BA612B8D3 /* CAFishPlantingWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CAFishPlantingWatch.entitlements; sourceTree = "<group>"; };
+		524CBC143AEA9497EC9994A5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F003A3669419CED87C9F8011 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		7D0B533A7D945FB0D0FA8380 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CDDA8E931AD3BE1ED04F33A8 /* NextFavoriteWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextFavoriteWidget.swift; sourceTree = "<group>"; };
+		3F6578226C40ED273EE5316F /* NextFavoriteViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextFavoriteViews.swift; sourceTree = "<group>"; };
+		6A59F8BBFEE5D9799BFD50B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8975B60075333BF52C6C23E6 /* CAFishPlantingWatchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CAFishPlantingWatchWidgets.entitlements; sourceTree = "<group>"; };
+		E1824DCD188AF45F3B350670 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C15AFC9036C0363D11CD5594 /* CAFishPlantingWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CAFishPlantingWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4629F949BDC26591BED7AB40 /* CAFishPlantingWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CAFishPlantingWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1B68E26CE920F94938D33254 /* WatchBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridgeTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +263,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F7AD9834D3F800A0BD413518 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC724FCED68EC25AA18D516C /* PlantingCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		434003B58C1204433874C3C2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9CAA7EC49BE12D633BC94EA4 /* PlantingCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -190,6 +289,8 @@
 				249ED19B2167022D51E9072C /* CAFishPlantingTests */,
 				AD75229C2852D32F706B6758 /* CAFishPlantingUITests */,
 				9D7D35C77B49C58A1D66C4FB /* CAFishPlantingWidgets */,
+				83512BD6369800F1C354EB26 /* CAFishPlantingWatch */,
+				50AAD39272A7A83F1857384A /* CAFishPlantingWatchWidgets */,
 				328EC33DF3954DC9B83FA285 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -201,6 +302,8 @@
 				27400D6F95DB03B111B5BD32 /* CAFishPlantingTests.xctest */,
 				686BFC51DCAA63E9B04E5EC0 /* CAFishPlantingUITests.xctest */,
 				2DB7B2CD0EB5AD6EADBA4A66 /* CAFishPlantingWidgets.appex */,
+				C15AFC9036C0363D11CD5594 /* CAFishPlantingWatch.app */,
+				4629F949BDC26591BED7AB40 /* CAFishPlantingWatchWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -233,6 +336,7 @@
 			isa = PBXGroup;
 			children = (
 				3A3076F5A9AE46931E33CCE8 /* WidgetBridge.swift */,
+				1C7727D60C2FA7AD87D2672D /* WatchBridge.swift */,
 				6F974BD82B04FC663443931C /* CAFishPlantingApp.swift */,
 				FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */,
 				E04AF963921A2AE834344E4B /* ScheduleIntents.swift */,
@@ -276,6 +380,7 @@
 			isa = PBXGroup;
 			children = (
 				279A9238A08B48D4E8275E89 /* WidgetBridgeTests.swift */,
+				1B68E26CE920F94938D33254 /* WatchBridgeTests.swift */,
 				3E432FE4859DC45CC32A0074 /* HostAllowlistTests.swift */,
 				786DD9D19368F24B4188620E /* AppEnvironmentTests.swift */,
 				2ED61777415BBB89E23AC86C /* ScheduleIntentsTests.swift */,
@@ -298,6 +403,42 @@
 			path = CAFishPlantingUITests;
 			sourceTree = "<group>";
 		};
+		83512BD6369800F1C354EB26 /* CAFishPlantingWatch */ = {
+			isa = PBXGroup;
+			children = (
+				30407E8D52A471B69C072D63 /* TroutTruckWatchApp.swift */,
+				83349BBEE4D03923065ADC27 /* WatchModel.swift */,
+				F1FC077764FCEF6DD7E75A87 /* WatchNotificationResponder.swift */,
+				A218637FBC92ECB33B619D18 /* WatchViews.swift */,
+				0B6B1F98B8845717F909028D /* ComplicationGallery.swift */,
+				E1E296F4FC3D4BABD8D40887 /* Resources */,
+				DB40B0200099F47BA612B8D3 /* CAFishPlantingWatch.entitlements */,
+			);
+			path = CAFishPlantingWatch;
+			sourceTree = "<group>";
+		};
+		E1E296F4FC3D4BABD8D40887 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				524CBC143AEA9497EC9994A5 /* Info.plist */,
+				F003A3669419CED87C9F8011 /* PrivacyInfo.xcprivacy */,
+				7D0B533A7D945FB0D0FA8380 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		50AAD39272A7A83F1857384A /* CAFishPlantingWatchWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				CDDA8E931AD3BE1ED04F33A8 /* NextFavoriteWidget.swift */,
+				3F6578226C40ED273EE5316F /* NextFavoriteViews.swift */,
+				6A59F8BBFEE5D9799BFD50B9 /* Info.plist */,
+				8975B60075333BF52C6C23E6 /* CAFishPlantingWatchWidgets.entitlements */,
+				E1824DCD188AF45F3B350670 /* PrivacyInfo.xcprivacy */,
+			);
+			path = CAFishPlantingWatchWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -310,11 +451,13 @@
 				B681E6ECC54B86FE775FEC3C /* Resources */,
 				5BA2DE8089FD1B011F522833 /* Embed Frameworks */,
 				862DC96E71C653419E455CBE /* Embed Foundation Extensions */,
+				DD37292C3518B3AC33C2EEF7 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				040BF45AFDD31B42AAA287EC /* PBXTargetDependency */,
+				3CF50BE0F15AFB0D2B38BEC5 /* PBXTargetDependency */,
 			);
 			name = CAFishPlanting;
 			packageProductDependencies = (
@@ -381,6 +524,49 @@
 			productReference = 2DB7B2CD0EB5AD6EADBA4A66 /* CAFishPlantingWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		9BA9C7818A56AC469E0C5329 /* CAFishPlantingWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 54087AA9519968224F38E294 /* Build configuration list for PBXNativeTarget "CAFishPlantingWatch" */;
+			buildPhases = (
+				BCC3292FFAEA4B4F0EBAAC6C /* Sources */,
+				F7AD9834D3F800A0BD413518 /* Frameworks */,
+				6A30B4C5FFE85E9238258D20 /* Resources */,
+				74EFFA489AF11FD030C80277 /* Embed Frameworks */,
+				FA4176990F411C11A20A0F4F /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5D6220E4F2A925B337F1F364 /* PBXTargetDependency */,
+			);
+			name = CAFishPlantingWatch;
+			packageProductDependencies = (
+				AF0C5ACE88E404B373B26593 /* PlantingCore */,
+			);
+			productName = CAFishPlantingWatch;
+			productReference = C15AFC9036C0363D11CD5594 /* CAFishPlantingWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		9B31DC88D38352B62D2FD971 /* CAFishPlantingWatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 12A6CBFB617EC8A8275AE1F5 /* Build configuration list for PBXNativeTarget "CAFishPlantingWatchWidgets" */;
+			buildPhases = (
+				C78655123CCDE5EAC1E71E6B /* Sources */,
+				434003B58C1204433874C3C2 /* Frameworks */,
+				31A65054295CFB772F20BB11 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CAFishPlantingWatchWidgets;
+			packageProductDependencies = (
+				982FC0E7438BAE3F29AE9FAA /* PlantingCore */,
+			);
+			productName = CAFishPlantingWatchWidgets;
+			productReference = 4629F949BDC26591BED7AB40 /* CAFishPlantingWatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -405,6 +591,12 @@
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 29C7B681C8D62CBAC94D51C0;
 					};
+					9BA9C7818A56AC469E0C5329 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+					9B31DC88D38352B62D2FD971 = {
+						CreatedOnToolsVersion = 26.6;
+					};
 				};
 			};
 			buildConfigurationList = B0D3B7D22269663DD77FCD84 /* Build configuration list for PBXProject "CAFishPlanting" */;
@@ -427,6 +619,8 @@
 				7EC8F98B7A265120217712DE /* CAFishPlantingTests */,
 				CEFEF1F5CE13C5A04BC4C468 /* CAFishPlantingUITests */,
 				4A98613C25606001752A1432 /* CAFishPlantingWidgets */,
+				9BA9C7818A56AC469E0C5329 /* CAFishPlantingWatch */,
+				9B31DC88D38352B62D2FD971 /* CAFishPlantingWatchWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -450,6 +644,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6A30B4C5FFE85E9238258D20 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA210460A0D3BFA401CB43ED /* PrivacyInfo.xcprivacy in Resources */,
+				BAEAD837EF1658E8A211650D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		31A65054295CFB772F20BB11 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EE875A4277A289CED6F57A2E /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -458,6 +669,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				957930AAE88B2301316666C5 /* WidgetBridge.swift in Sources */,
+				3D9311E299B81B70AE698424 /* WatchBridge.swift in Sources */,
 				4FC3D4E75324FB1C87E2BC58 /* CAFishPlantingApp.swift in Sources */,
 				0B618C0DAC1AD20A1CF5A3B7 /* AppEnvironment.swift in Sources */,
 				1EA443A92DA0D57DF5B3C809 /* ScheduleIntents.swift in Sources */,
@@ -483,6 +695,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA4D70CA059BA4A5915228C4 /* WidgetBridgeTests.swift in Sources */,
+				5A237D8A0D4C3A5AFBA34BB8 /* WatchBridgeTests.swift in Sources */,
 				73DB78A4B671398390946107 /* HostAllowlistTests.swift in Sources */,
 				699F3EA3324CB23619BBF2E3 /* AppEnvironmentTests.swift in Sources */,
 				AA1C3555F8A0BBEE14DB44BB /* ScheduleIntentsTests.swift in Sources */,
@@ -514,6 +727,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BCC3292FFAEA4B4F0EBAAC6C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E65BDDA7EF6C361737EFB078 /* TroutTruckWatchApp.swift in Sources */,
+				B80E17F75E8BDCB78B4EFB92 /* WatchModel.swift in Sources */,
+				863832F4FC603BCBAEAAF83F /* WatchNotificationResponder.swift in Sources */,
+				7CF8848E77CCC90BA8898E3E /* WatchViews.swift in Sources */,
+				C263C724F01822A2CDB99BF2 /* ComplicationGallery.swift in Sources */,
+				EC69572AE584982F45F85248 /* NextFavoriteViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C78655123CCDE5EAC1E71E6B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C38BDE4A75F1991FADB2AA8 /* NextFavoriteWidget.swift in Sources */,
+				4C8D99151F3B2B8C12F82F80 /* NextFavoriteViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -531,6 +766,16 @@
 			isa = PBXTargetDependency;
 			target = 4A98613C25606001752A1432 /* CAFishPlantingWidgets */;
 			targetProxy = 824788BFD2593A0B5CF001C2 /* PBXContainerItemProxy */;
+		};
+		3CF50BE0F15AFB0D2B38BEC5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9BA9C7818A56AC469E0C5329 /* CAFishPlantingWatch */;
+			targetProxy = 8EBF1A150133EFD2C05B89F1 /* PBXContainerItemProxy */;
+		};
+		5D6220E4F2A925B337F1F364 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9B31DC88D38352B62D2FD971 /* CAFishPlantingWatchWidgets */;
+			targetProxy = C3E50D5826EC0287DC43C044 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -822,6 +1067,112 @@
 			};
 			name = Release;
 		};
+		1A788B3D1C733449270F7EB4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CAFishPlantingWatch/CAFishPlantingWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 6X5YH93QNM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CAFishPlantingWatch/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.cafishplanting.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		33A390B8A6B7B7BFF328152A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CAFishPlantingWatch/CAFishPlantingWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 6X5YH93QNM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CAFishPlantingWatch/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.cafishplanting.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		ECD201142B1A74E914BC4A1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CAFishPlantingWatchWidgets/CAFishPlantingWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 6X5YH93QNM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CAFishPlantingWatchWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.cafishplanting.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		00662B1916200357B4FBC427 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CAFishPlantingWatchWidgets/CAFishPlantingWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 6X5YH93QNM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CAFishPlantingWatchWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.cafishplanting.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -870,6 +1221,24 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		54087AA9519968224F38E294 /* Build configuration list for PBXNativeTarget "CAFishPlantingWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A788B3D1C733449270F7EB4 /* Debug */,
+				33A390B8A6B7B7BFF328152A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		12A6CBFB617EC8A8275AE1F5 /* Build configuration list for PBXNativeTarget "CAFishPlantingWatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECD201142B1A74E914BC4A1A /* Debug */,
+				00662B1916200357B4FBC427 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -885,6 +1254,14 @@
 			productName = PlantingCore;
 		};
 		FDD457F5E6EE20F1612EB897 /* PlantingCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlantingCore;
+		};
+		AF0C5ACE88E404B373B26593 /* PlantingCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlantingCore;
+		};
+		982FC0E7438BAE3F29AE9FAA /* PlantingCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlantingCore;
 		};

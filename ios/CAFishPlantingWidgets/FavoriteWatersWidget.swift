@@ -22,7 +22,7 @@ struct FavoriteWatersWidget: Widget {
         }
         .configurationDisplayName("Favorite waters")
         .description("Which of your favorite waters are on CDFW's schedule this week. Part of full access.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
 
@@ -75,6 +75,8 @@ struct FavoriteWatersView: View {
             InlineView(entry: entry)
         case .accessoryRectangular:
             RectangularView(entry: entry)
+        case .accessoryCircular:
+            CircularView(entry: entry)
         default:
             HomeScreenView(entry: entry, family: family, maxRows: Self.maxRows(family))
         }
@@ -363,6 +365,60 @@ private struct RectangularView: View {
         case .scheduledLater: return "later"
         case .notListed: return "not listed"
         }
+    }
+}
+
+/// The Lock Screen's round slot: how many favorites are scheduled this week,
+/// under the fish mark. Once the week ends it shows a calendar and "ended",
+/// never a count that reads as this week. Locked, a lock; no digest yet, the
+/// fish alone. VoiceOver reads the full one-line summary.
+private struct CircularView: View {
+    let entry: FavoriteWatersEntry
+
+    var body: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+            VStack(spacing: 0) {
+                Image(systemName: symbol)
+                    .font(.body.weight(.semibold))
+                    .widgetAccentable()
+                if let caption {
+                    Text(caption)
+                        .font(.system(.title3, design: .rounded).weight(.bold))
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
+                }
+            }
+            .padding(4)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
+        .widgetURL(url)
+    }
+
+    private var symbol: String {
+        guard let digest = entry.digest else { return "fish" }
+        if digest.locked { return "lock.fill" }
+        return digest.isStale(at: entry.date) ? "calendar" : "fish.fill"
+    }
+
+    /// The count of favorites scheduled this week, or "ended". Nothing when
+    /// locked, with no digest, or with no favorites: a "0" there would read
+    /// as nothing scheduled.
+    private var caption: String? {
+        guard let digest = entry.digest, !digest.locked, !digest.favorites.isEmpty else { return nil }
+        return digest.isStale(at: entry.date) ? "ended" : "\(digest.favoritesListedThisWeek)"
+    }
+
+    private var accessibilityText: String {
+        guard let digest = entry.digest else { return "Open Trout Truck to load the schedule" }
+        return digest.summary(at: entry.date)
+    }
+
+    private var url: URL? {
+        guard let digest = entry.digest else { return nil }
+        if digest.locked { return UnlockLink.url }
+        return digest.favoritesByStatus.first.map { WaterLink.url(for: $0.id) }
     }
 }
 

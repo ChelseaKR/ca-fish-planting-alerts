@@ -188,7 +188,7 @@ final class PurchaseManagerTests: XCTestCase {
         center.removeAllPendingNotificationRequests()
     }
 
-    // MARK: - Per-state products (docs/adr/0021), real StoreKit Test purchases
+    // MARK: - Per-state products (DECISIONS 0025), real StoreKit Test purchases
 
     func testEveryStatesProductLoadsFromTheConfiguration() async throws {
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))

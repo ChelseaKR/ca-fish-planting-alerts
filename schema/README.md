@@ -84,7 +84,7 @@ v1 without notice (readers must ignore unknown fields — note the schema is
 `additionalProperties: false` for the pipeline's own validation, which is
 stricter than what a reader should enforce). Anything else is v2 at a new URL.
 
-# Snapshot v2: every state (docs/adr/0021)
+# Snapshot v2: every state (DECISIONS 0025)
 
 | What | URL |
 |---|---|

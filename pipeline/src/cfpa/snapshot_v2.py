@@ -13,13 +13,14 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
 import jsonschema
 
+from .locations import location_for
 from .states.base import Period, StateSource, week_start_containing
 from .states.store import StateHistory, StateRecord
 
@@ -128,7 +129,11 @@ def _ca_state(v1: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _ca_waters(v1: dict[str, Any]) -> list[dict[str, Any]]:
+def _ca_waters(
+    v1: dict[str, Any], locations: Mapping[int, dict[str, Any]] | None
+) -> list[dict[str, Any]]:
+    """v1's waters as v2 waters. ``locations`` (``cfpa.locations``, DECISIONS
+    0024) places a water in v2 only; v1 keeps ``location: null``."""
     source_start = v1["source_week"]["start"]
     out = []
     for w in v1["waters"]:
@@ -154,7 +159,9 @@ def _ca_waters(v1: dict[str, Any]) -> list[dict[str, Any]]:
                 "source_id": str(w["cdfw_stock_id"]),
                 "source_url": w["cdfw_map_url"],
                 "site_path": f"/water/{w['slug']}/",
-                "location": w["location"],
+                "location": location_for(locations, w["cdfw_stock_id"])
+                if locations is not None
+                else w["location"],
                 "last_period": _week_period(w["last_listed_week"])
                 if w["last_listed_week"]
                 else None,
@@ -320,9 +327,10 @@ def build_snapshot_v2(
     histories: Iterable[tuple[StateSource, StateHistory]],
     *,
     generated_at: dt.datetime,
+    locations: Mapping[int, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     states = [_ca_state(v1)]
-    waters = _ca_waters(v1)
+    waters = _ca_waters(v1, locations)
     this_week = list(v1["this_week"])
     others = []
     for source, history in histories:

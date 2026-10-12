@@ -105,7 +105,7 @@ def _not_found(new_base_url: str, legacy_prefix: str) -> str:
 
 
 def _snapshot_files(site_dir: Path) -> list[Path]:
-    """v1 always; v2 (docs/adr/0021) too when the build has it, because new
+    """v1 always; v2 (DECISIONS 0025) too when the build has it, because new
     app builds fetch it from the github.io URL, the same as v1."""
     return [
         p

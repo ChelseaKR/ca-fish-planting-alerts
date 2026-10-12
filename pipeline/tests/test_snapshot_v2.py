@@ -1,4 +1,4 @@
-"""snapshot/v2.json and the state pages (docs/adr/0021).
+"""snapshot/v2.json and the state pages (DECISIONS 0025).
 
 The promise to installed 1.0 builds is that v1 does not change: these tests
 build the same run with and without the other states and compare v1 byte
@@ -356,3 +356,28 @@ def test_no_sentence_on_a_state_page_runs_into_the_next(built: Path):
         body = re.sub(r"<script.*?</script>", " ", p.read_text("utf-8"), flags=re.S)
         text = re.sub(r"<[^>]+>", " ", body)
         assert not joined.search(text), (p, joined.search(text))
+
+
+def test_california_locations_go_into_v2_and_never_into_v1(built: Path):
+    from cfpa import locations as locations_mod
+
+    placed = locations_mod.load_locations(cli.DEFAULT_LOCATIONS_PATH)
+    v1 = json.loads((built / "site/snapshot/v1.json").read_text())
+    v2 = _v2(built)
+    assert all(w["location"] is None for w in v1["waters"])
+    by_id = {w["id"]: w for w in v2["waters"]}
+    hits = [w for w in v1["waters"] if w["cdfw_stock_id"] in placed]
+    assert hits, "the fixture needs at least one water the geocoder placed"
+    for w in hits:
+        assert by_id[w["id"]]["location"] == placed[w["cdfw_stock_id"]]
+    misses = [w for w in v1["waters"] if w["cdfw_stock_id"] not in placed]
+    assert all(by_id[w["id"]]["location"] is None for w in misses)
+    assert all(w["location"] is None for w in v2["waters"] if w["state"] != "CA")
+
+
+def test_a_broken_locations_file_refuses_the_run(tmp_path: Path):
+    bad = tmp_path / "locations.json"
+    bad.write_text('{"schema": "something-else", "waters": []}', encoding="utf-8")
+    assert '"something-else"' in bad.read_text()
+    with pytest.raises(snapshot_v2.SnapshotV2Error, match="water locations"):
+        _run(tmp_path / "run", states=None, locations_path=bad)

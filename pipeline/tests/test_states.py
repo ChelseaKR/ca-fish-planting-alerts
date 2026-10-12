@@ -1,4 +1,4 @@
-"""The non-California state sources (docs/adr/0021): parsing, the strict
+"""The non-California state sources (DECISIONS 0025): parsing, the strict
 robots rule, the append-only state history, and isolation of a failing
 state. Each state has a negative control that changes the fixture and
 asserts both that the change landed and that the feed is refused."""

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-12T19:58:10Z",
+  "generated_at": "2026-10-12T20:31:45Z",
   "states": [
     {
       "code": "CA",
@@ -714,7 +714,13 @@
       "source_id": "125",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=125",
       "site_path": "/water/annie-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.90963,
+        "lon": -120.10696,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "256265"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-22",
@@ -756,7 +762,13 @@
       "source_id": "158",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=158",
       "site_path": "/water/fee-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.83672,
+        "lon": -120.02291,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "223427"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-22",
@@ -798,7 +810,13 @@
       "source_id": "162",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=162",
       "site_path": "/water/juanita-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.81412,
+        "lon": -122.1224,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "262030"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-07",
@@ -853,7 +871,13 @@
       "source_id": "175",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=175",
       "site_path": "/water/dry-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.74257,
+        "lon": -123.87678,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "259583"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-29",
@@ -895,7 +919,13 @@
       "source_id": "193",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=193",
       "site_path": "/water/greenhorn-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.71137,
+        "lon": -122.65277,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1657777"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-26",
@@ -976,7 +1006,13 @@
       "source_id": "202",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=202",
       "site_path": "/water/bass-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.69904,
+        "lon": -122.49439,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1657743"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-10",
@@ -1083,7 +1119,13 @@
       "source_id": "207",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=207",
       "site_path": "/water/trout-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.68553,
+        "lon": -122.47726,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1657835"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-10-19",
@@ -1125,7 +1167,13 @@
       "source_id": "219",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=219",
       "site_path": "/water/orr-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.66279,
+        "lon": -121.99239,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "264405"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-29",
@@ -1167,7 +1215,13 @@
       "source_id": "298",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=298",
       "site_path": "/water/lake-shastina/",
-      "location": null,
+      "location": {
+        "lat": 41.52368,
+        "lon": -122.39021,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "267233"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-26",
@@ -1274,7 +1328,13 @@
       "source_id": "397",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=397",
       "site_path": "/water/pine-creek-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.42314,
+        "lon": -120.42262,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "264752"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-10",
@@ -1329,7 +1389,13 @@
       "source_id": "458",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=458",
       "site_path": "/water/kangaroo-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.33409,
+        "lon": -122.6344,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "226425"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -1462,7 +1528,13 @@
       "source_id": "472",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=472",
       "site_path": "/water/freshwater-lagoon/",
-      "location": null,
+      "location": {
+        "lat": 41.26585,
+        "lon": -124.09339,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "223928"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -1530,7 +1602,13 @@
       "source_id": "485",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=485",
       "site_path": "/water/fish-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.26375,
+        "lon": -123.68296,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "260155"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-24",
@@ -1585,7 +1663,13 @@
       "source_id": "494",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=494",
       "site_path": "/water/siskiyou-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.28116,
+        "lon": -122.33764,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "276818"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -1731,7 +1815,13 @@
       "source_id": "526",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=526",
       "site_path": "/water/bayley-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.26517,
+        "lon": -120.63358,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "218760"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -1787,7 +1877,13 @@
       "source_id": "580",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=580",
       "site_path": "/water/west-valley-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.20187,
+        "lon": -120.40071,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "237535"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-29",
@@ -1897,7 +1993,13 @@
       "source_id": "669",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=669",
       "site_path": "/water/trinity-lake-clair-engle-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.97581,
+        "lon": -122.67452,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "255079"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -2293,7 +2395,13 @@
       "source_id": "689",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=689",
       "site_path": "/water/iron-canyon-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.04804,
+        "lon": -121.98327,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "253142"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-09-28",
@@ -2348,7 +2456,13 @@
       "source_id": "755",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=755",
       "site_path": "/water/dodge-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.97907,
+        "lon": -120.1403,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "222451"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-17",
@@ -2403,7 +2517,13 @@
       "source_id": "783",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=783",
       "site_path": "/water/baum-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.93823,
+        "lon": -121.54542,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "256597"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -2679,7 +2799,13 @@
       "source_id": "784",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=784",
       "site_path": "/water/shasta-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.73595,
+        "lon": -122.41319,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "253897"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-07",
@@ -2864,7 +2990,13 @@
       "source_id": "848",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=848",
       "site_path": "/water/buckhorn-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.85312,
+        "lon": -120.08651,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "220061"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-17",
@@ -2906,7 +3038,13 @@
       "source_id": "859",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=859",
       "site_path": "/water/lewiston-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.7309,
+        "lon": -122.8033,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "254908"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -2974,7 +3112,13 @@
       "source_id": "934",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=934",
       "site_path": "/water/whiskeytown-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.61509,
+        "lon": -122.54001,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "268967"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-02",
@@ -3110,7 +3254,13 @@
       "source_id": "997",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=997",
       "site_path": "/water/mccumber-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.54163,
+        "lon": -121.73257,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "228337"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-14",
@@ -3178,7 +3328,13 @@
       "source_id": "1038",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=1038",
       "site_path": "/water/nora-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.47758,
+        "lon": -121.86238,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "229580"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -3350,7 +3506,13 @@
       "source_id": "1062",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=1062",
       "site_path": "/water/ruth-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.34182,
+        "lon": -123.41229,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "232057"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-02",
@@ -3418,7 +3580,13 @@
       "source_id": "1116",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=1116",
       "site_path": "/water/lake-almanor/",
-      "location": null,
+      "location": {
+        "lat": 40.2723,
+        "lon": -121.19409,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "256197"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -3603,7 +3771,13 @@
       "source_id": "1134",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=1134",
       "site_path": "/water/mountain-meadows-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.27104,
+        "lon": -120.95566,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "229192"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-08",
@@ -3645,7 +3819,13 @@
       "source_id": "1382",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=1382",
       "site_path": "/water/paradise-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.85547,
+        "lon": -121.57397,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "276535"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-22",
@@ -3784,7 +3964,13 @@
       "source_id": "1787",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=1787",
       "site_path": "/water/pillsbury-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.42923,
+        "lon": -122.95287,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "234468"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-10",
@@ -3937,7 +4123,13 @@
       "source_id": "1926",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=1926",
       "site_path": "/water/harry-l-englebright-lake/",
-      "location": null,
+      "location": {
+        "lat": 39.24305,
+        "lon": -121.26925,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "233986"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-08",
@@ -3992,7 +4184,13 @@
       "source_id": "1946",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=1946",
       "site_path": "/water/scotts-flat-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.27539,
+        "lon": -120.91897,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "265944"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-26",
@@ -4193,7 +4391,13 @@
       "source_id": "2055",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2055",
       "site_path": "/water/indian-valley-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.09214,
+        "lon": -122.53592,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "274690"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-10",
@@ -4236,7 +4440,13 @@
       "source_id": "2063",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2063",
       "site_path": "/water/rollins-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.15183,
+        "lon": -120.93812,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "265554"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-22",
@@ -4304,7 +4514,13 @@
       "source_id": "2227",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2227",
       "site_path": "/water/halsey-forebay/",
-      "location": null,
+      "location": {
+        "lat": 38.97229,
+        "lon": -121.03822,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "224822"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -4494,7 +4710,13 @@
       "source_id": "2315",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2315",
       "site_path": "/water/folsom-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.72462,
+        "lon": -121.14948,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "223648"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-15",
@@ -4614,7 +4836,13 @@
       "source_id": "2373",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2373",
       "site_path": "/water/finnon-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 38.79797,
+        "lon": -120.75114,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "260116"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-08",
@@ -4724,7 +4952,13 @@
       "source_id": "2439",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2439",
       "site_path": "/water/indian-creek-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 38.74626,
+        "lon": -119.77941,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "234069"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-24",
@@ -4873,7 +5107,13 @@
       "source_id": "2753",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2753",
       "site_path": "/water/mather-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.55732,
+        "lon": -121.25558,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "228224"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -4967,7 +5207,13 @@
       "source_id": "2848",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=2848",
       "site_path": "/water/ralphine-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.45481,
+        "lon": -122.66708,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "231194"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-05",
@@ -5061,7 +5307,13 @@
       "source_id": "3021",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=3021",
       "site_path": "/water/lake-tabeaud/",
-      "location": null,
+      "location": {
+        "lat": 38.34799,
+        "lon": -120.66517,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "235951"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-12-14",
@@ -5226,7 +5478,13 @@
       "source_id": "3070",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=3070",
       "site_path": "/water/bridgeport-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 38.28779,
+        "lon": -119.22832,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "254662"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -5294,7 +5552,13 @@
       "source_id": "3458",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=3458",
       "site_path": "/water/lake-chabot/",
-      "location": null,
+      "location": {
+        "lat": 38.13541,
+        "lon": -122.23203,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "220871"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-15",
@@ -5362,7 +5626,13 @@
       "source_id": "3508",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=3508",
       "site_path": "/water/lake-herman/",
-      "location": null,
+      "location": {
+        "lat": 38.094,
+        "lon": -122.15387,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "225203"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-15",
@@ -5418,7 +5688,13 @@
       "source_id": "3910",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=3910",
       "site_path": "/water/tulloch-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.87966,
+        "lon": -120.6004,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "255161"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-27",
@@ -5473,7 +5749,13 @@
       "source_id": "3994",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=3994",
       "site_path": "/water/don-pedro-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.73892,
+        "lon": -120.38181,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "253880"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-10-26",
@@ -5528,7 +5810,13 @@
       "source_id": "4014",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4014",
       "site_path": "/water/woodward-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.85338,
+        "lon": -120.87036,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "238176"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-11-02",
@@ -5596,7 +5884,13 @@
       "source_id": "4018",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4018",
       "site_path": "/water/temescal-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.84707,
+        "lon": -122.23113,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "236093"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-01-04",
@@ -5745,7 +6039,13 @@
       "source_id": "4245",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4245",
       "site_path": "/water/mcclure-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.67363,
+        "lon": -120.23021,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "245652"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-10-19",
@@ -5787,7 +6087,13 @@
       "source_id": "4250",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4250",
       "site_path": "/water/modesto-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.66397,
+        "lon": -120.67253,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "263718"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-11-02",
@@ -5855,7 +6161,13 @@
       "source_id": "4320",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4320",
       "site_path": "/water/lake-del-valle/",
-      "location": null,
+      "location": {
+        "lat": 37.61407,
+        "lon": -121.73498,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "254866"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-11-09",
@@ -5910,7 +6222,13 @@
       "source_id": "4368",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4368",
       "site_path": "/water/horseshoe-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.57237,
+        "lon": -122.00519,
+        "source": "USGS Geographic Names Information System",
+        "kind": "named_point",
+        "source_feature_id": "2761818"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -6046,7 +6364,13 @@
       "source_id": "4426",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4426",
       "site_path": "/water/mcswain-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.5185,
+        "lon": -120.29884,
+        "source": "USGS Geographic Names Information System",
+        "kind": "named_point",
+        "source_feature_id": "2831546"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-06",
@@ -6192,7 +6516,13 @@
       "source_id": "4507",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4507",
       "site_path": "/water/pleasant-valley-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.42543,
+        "lon": -118.54352,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1667244"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -6455,7 +6785,13 @@
       "source_id": "4530",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4530",
       "site_path": "/water/yosemite-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.3788,
+        "lon": -120.42828,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "233393"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-11-16",
@@ -6631,7 +6967,13 @@
       "source_id": "4899",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=4899",
       "site_path": "/water/hensley-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.11306,
+        "lon": -119.88021,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1664770"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-15",
@@ -6725,7 +7067,13 @@
       "source_id": "5629",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=5629",
       "site_path": "/water/avocado-lake/",
-      "location": null,
+      "location": {
+        "lat": 36.78641,
+        "lon": -119.41346,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "218479"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-29",
@@ -7069,7 +7417,13 @@
       "source_id": "5970",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=5970",
       "site_path": "/water/diaz-lake/",
-      "location": null,
+      "location": {
+        "lat": 36.56199,
+        "lon": -118.05466,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "259354"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-24",
@@ -7267,7 +7621,13 @@
       "source_id": "6120",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=6120",
       "site_path": "/water/kaweah-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 36.40503,
+        "lon": -118.98136,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "255512"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -7335,7 +7695,13 @@
       "source_id": "6285",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=6285",
       "site_path": "/water/success-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 36.07814,
+        "lon": -118.91332,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "254314"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -7416,7 +7782,13 @@
       "source_id": "6342",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=6342",
       "site_path": "/water/lake-san-antonio/",
-      "location": null,
+      "location": {
+        "lat": 35.8088,
+        "lon": -120.92106,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "254200"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-08",
@@ -7471,7 +7843,13 @@
       "source_id": "6526",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=6526",
       "site_path": "/water/atascadero-lake/",
-      "location": null,
+      "location": {
+        "lat": 35.46475,
+        "lon": -120.66698,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "269606"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-22",
@@ -7565,7 +7943,13 @@
       "source_id": "6540",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=6540",
       "site_path": "/water/ming-lake/",
-      "location": null,
+      "location": {
+        "lat": 35.4385,
+        "lon": -118.86761,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1839119"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-29",
@@ -7698,7 +8082,13 @@
       "source_id": "6595",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=6595",
       "site_path": "/water/santa-margarita-lake/",
-      "location": null,
+      "location": {
+        "lat": 35.33704,
+        "lon": -120.4929,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "273557"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-12-21",
@@ -7740,7 +8130,13 @@
       "source_id": "6664",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=6664",
       "site_path": "/water/lopez-lake/",
-      "location": null,
+      "location": {
+        "lat": 35.19159,
+        "lon": -120.47543,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "255632"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-08",
@@ -7996,7 +8392,13 @@
       "source_id": "7053",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7053",
       "site_path": "/water/jackson-lake/",
-      "location": null,
+      "location": {
+        "lat": 34.39262,
+        "lon": -117.72754,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "271757"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-09",
@@ -8103,7 +8505,13 @@
       "source_id": "7054",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7054",
       "site_path": "/water/casitas-lake/",
-      "location": null,
+      "location": {
+        "lat": 34.38122,
+        "lon": -119.33909,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "240317"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-11-02",
@@ -8145,7 +8553,13 @@
       "source_id": "7101",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7101",
       "site_path": "/water/big-bear-lake/",
-      "location": null,
+      "location": {
+        "lat": 34.25274,
+        "lon": -116.91641,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "269807"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-27",
@@ -8489,7 +8903,13 @@
       "source_id": "7116",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7116",
       "site_path": "/water/gregory-lake/",
-      "location": null,
+      "location": {
+        "lat": 34.24355,
+        "lon": -117.268,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "243030"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-28",
@@ -8635,7 +9055,13 @@
       "source_id": "7121",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7121",
       "site_path": "/water/green-valley-lake/",
-      "location": null,
+      "location": {
+        "lat": 34.23818,
+        "lon": -117.08193,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "271429"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -8862,7 +9288,13 @@
       "source_id": "7180",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7180",
       "site_path": "/water/jenks-lake/",
-      "location": null,
+      "location": {
+        "lat": 34.16438,
+        "lon": -116.88215,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "271781"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -8995,7 +9427,13 @@
       "source_id": "7306",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7306",
       "site_path": "/water/puddingstone-lake/",
-      "location": null,
+      "location": {
+        "lat": 34.08737,
+        "lon": -117.80474,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "247810"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-12",
@@ -9848,7 +10286,13 @@
       "source_id": "7406",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7406",
       "site_path": "/water/laguna-lake/",
-      "location": null,
+      "location": {
+        "lat": 33.90819,
+        "lon": -117.93632,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "244507"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -10289,7 +10733,13 @@
       "source_id": "7453",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7453",
       "site_path": "/water/lake-fulmor/",
-      "location": null,
+      "location": {
+        "lat": 33.80449,
+        "lon": -116.7804,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "271248"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -10542,7 +10992,13 @@
       "source_id": "7498",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7498",
       "site_path": "/water/little-lake/",
-      "location": null,
+      "location": {
+        "lat": 33.72733,
+        "lon": -116.91699,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "272099"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -10675,7 +11131,13 @@
       "source_id": "7515",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7515",
       "site_path": "/water/lake-hemet/",
-      "location": null,
+      "location": {
+        "lat": 33.66619,
+        "lon": -116.68739,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "271544"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -11035,7 +11497,13 @@
       "source_id": "7564",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7564",
       "site_path": "/water/skinner-lake/",
-      "location": null,
+      "location": {
+        "lat": 33.58842,
+        "lon": -117.05503,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "249541"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-08",
@@ -11103,7 +11571,13 @@
       "source_id": "7714",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7714",
       "site_path": "/water/lake-wohlford/",
-      "location": null,
+      "location": {
+        "lat": 33.17259,
+        "lon": -116.99775,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "255889"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -11210,7 +11684,13 @@
       "source_id": "7796",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7796",
       "site_path": "/water/cuyamaca-lake/",
-      "location": null,
+      "location": {
+        "lat": 32.98948,
+        "lon": -116.56517,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "270731"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -11369,7 +11849,13 @@
       "source_id": "7855",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7855",
       "site_path": "/water/lake-jennings/",
-      "location": null,
+      "location": {
+        "lat": 32.85653,
+        "lon": -116.88989,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "244046"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -11476,7 +11962,13 @@
       "source_id": "7887",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7887",
       "site_path": "/water/lake-murray/",
-      "location": null,
+      "location": {
+        "lat": 32.78599,
+        "lon": -117.04432,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "246390"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -11677,7 +12169,13 @@
       "source_id": "7994",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=7994",
       "site_path": "/water/cave-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.98066,
+        "lon": -120.20926,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "258096"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-17",
@@ -11719,7 +12217,13 @@
       "source_id": "8004",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=8004",
       "site_path": "/water/lily-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.97677,
+        "lon": -120.20972,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "262462"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -11787,7 +12291,13 @@
       "source_id": "8630",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=8630",
       "site_path": "/water/briles-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.76725,
+        "lon": -120.35143,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "219839"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-10",
@@ -11829,7 +12339,13 @@
       "source_id": "8789",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=8789",
       "site_path": "/water/reservoir-c/",
-      "location": null,
+      "location": {
+        "lat": 41.66138,
+        "lon": -120.77141,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "231499"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-26",
@@ -11884,7 +12400,13 @@
       "source_id": "8879",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=8879",
       "site_path": "/water/medicine-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.58146,
+        "lon": -121.59476,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "263434"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -11978,7 +12500,13 @@
       "source_id": "8944",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=8944",
       "site_path": "/water/bullseye-lake/",
-      "location": null,
+      "location": {
+        "lat": 41.55522,
+        "lon": -121.57512,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "257681"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -12033,7 +12561,13 @@
       "source_id": "8956",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=8956",
       "site_path": "/water/stough-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.56201,
+        "lon": -120.25435,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "253936"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-26",
@@ -12075,7 +12609,13 @@
       "source_id": "8993",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=8993",
       "site_path": "/water/duncan-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 41.51988,
+        "lon": -120.94461,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "222719"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-22",
@@ -12240,7 +12780,13 @@
       "source_id": "10356",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=10356",
       "site_path": "/water/crater-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.62594,
+        "lon": -121.04833,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "258888"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-27",
@@ -12282,7 +12828,13 @@
       "source_id": "10374",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=10374",
       "site_path": "/water/north-battle-creek-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.60309,
+        "lon": -121.65179,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "229599"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -12363,7 +12915,13 @@
       "source_id": "10726",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=10726",
       "site_path": "/water/caribou-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.50367,
+        "lon": -121.16753,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "257975"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-14",
@@ -12418,7 +12976,13 @@
       "source_id": "10784",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=10784",
       "site_path": "/water/silver-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.49375,
+        "lon": -121.16403,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "277448"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-07",
@@ -12473,7 +13037,13 @@
       "source_id": "10951",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=10951",
       "site_path": "/water/shotoverin-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.48159,
+        "lon": -121.14482,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "233060"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-14",
@@ -12528,7 +13098,13 @@
       "source_id": "10977",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=10977",
       "site_path": "/water/mccoy-flat-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.46631,
+        "lon": -120.94923,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "263327"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -12583,7 +13159,13 @@
       "source_id": "11687",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=11687",
       "site_path": "/water/antelope-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.17894,
+        "lon": -120.59144,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "256274"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-19",
@@ -12638,7 +13220,13 @@
       "source_id": "11748",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=11748",
       "site_path": "/water/round-valley-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.11378,
+        "lon": -120.96218,
+        "source": "USGS Geographic Names Information System",
+        "kind": "named_point",
+        "source_feature_id": "265629"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -12680,7 +13268,13 @@
       "source_id": "11829",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=11829",
       "site_path": "/water/crystal-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.04795,
+        "lon": -120.88412,
+        "source": "USGS Geographic Names Information System",
+        "kind": "named_point",
+        "source_feature_id": "258960"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-10-05",
@@ -12806,7 +13400,13 @@
       "source_id": "12063",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12063",
       "site_path": "/water/frenchman-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.90712,
+        "lon": -120.18458,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "260408"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -12848,7 +13448,13 @@
       "source_id": "12078",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12078",
       "site_path": "/water/lake-davis/",
-      "location": null,
+      "location": {
+        "lat": 39.91206,
+        "lon": -120.50427,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "259098"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -12942,7 +13548,13 @@
       "source_id": "12092",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12092",
       "site_path": "/water/bucks-lake/",
-      "location": null,
+      "location": {
+        "lat": 39.89572,
+        "lon": -121.1952,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "266504"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -13010,7 +13622,13 @@
       "source_id": "12183",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12183",
       "site_path": "/water/little-grass-valley-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.73384,
+        "lon": -120.97962,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "262610"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-26",
@@ -13065,7 +13683,13 @@
       "source_id": "12260",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12260",
       "site_path": "/water/gold-lake/",
-      "location": null,
+      "location": {
+        "lat": 39.67386,
+        "lon": -120.66338,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "260651"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -13133,7 +13757,13 @@
       "source_id": "12309",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12309",
       "site_path": "/water/salmon-lake-upper/",
-      "location": null,
+      "location": {
+        "lat": 39.65791,
+        "lon": -120.65324,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "268636"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -13175,7 +13805,13 @@
       "source_id": "12343",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12343",
       "site_path": "/water/packer-lake/",
-      "location": null,
+      "location": {
+        "lat": 39.62261,
+        "lon": -120.65579,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "230222"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -13219,7 +13855,13 @@
       "source_id": "12347",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12347",
       "site_path": "/water/sly-creek-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.58746,
+        "lon": -121.11171,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "233303"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -13326,7 +13968,13 @@
       "source_id": "12358",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12358",
       "site_path": "/water/sardine-lake-lower/",
-      "location": null,
+      "location": {
+        "lat": 39.61474,
+        "lon": -120.62646,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "266954"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -13381,7 +14029,13 @@
       "source_id": "12364",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12364",
       "site_path": "/water/volcano-lake/",
-      "location": null,
+      "location": {
+        "lat": 39.60731,
+        "lon": -120.62461,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "268716"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-10-12",
@@ -13424,7 +14078,13 @@
       "source_id": "12435",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12435",
       "site_path": "/water/jackson-meadows-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.50266,
+        "lon": -120.55069,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "274655"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-06",
@@ -13479,7 +14139,13 @@
       "source_id": "12470",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=12470",
       "site_path": "/water/weaver-lake/",
-      "location": null,
+      "location": {
+        "lat": 39.46526,
+        "lon": -120.65789,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "268828"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-07",
@@ -13563,7 +14229,13 @@
       "source_id": "13199",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=13199",
       "site_path": "/water/fuller-lake/",
-      "location": null,
+      "location": {
+        "lat": 39.34832,
+        "lon": -120.65142,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "260445"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -13657,7 +14329,13 @@
       "source_id": "13306",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=13306",
       "site_path": "/water/donner-lake/",
-      "location": null,
+      "location": {
+        "lat": 39.32412,
+        "lon": -120.25643,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1654915"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -13767,7 +14445,13 @@
       "source_id": "13421",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=13421",
       "site_path": "/water/lake-valley-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.29442,
+        "lon": -120.57461,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "268656"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-10-19",
@@ -13893,7 +14577,13 @@
       "source_id": "14295",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=14295",
       "site_path": "/water/wrights-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.84992,
+        "lon": -120.23274,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "269322"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-02",
@@ -13935,7 +14625,13 @@
       "source_id": "14296",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=14296",
       "site_path": "/water/dark-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.85048,
+        "lon": -120.24315,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "259063"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-14",
@@ -13977,7 +14673,13 @@
       "source_id": "14535",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=14535",
       "site_path": "/water/caples-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.69778,
+        "lon": -120.0406,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "257959"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-16",
@@ -14126,7 +14828,13 @@
       "source_id": "14544",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=14544",
       "site_path": "/water/red-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.69967,
+        "lon": -119.97293,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "265289"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -14168,7 +14876,13 @@
       "source_id": "14582",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=14582",
       "site_path": "/water/silver-lake-2/",
-      "location": null,
+      "location": {
+        "lat": 38.66319,
+        "lon": -120.11735,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "267250"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -14236,7 +14950,13 @@
       "source_id": "14670",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=14670",
       "site_path": "/water/blue-lake-upper-2/",
-      "location": null,
+      "location": {
+        "lat": 38.63142,
+        "lon": -119.94788,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "268599"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-19",
@@ -14291,7 +15011,13 @@
       "source_id": "14726",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=14726",
       "site_path": "/water/blue-lake-lower/",
-      "location": null,
+      "location": {
+        "lat": 38.61334,
+        "lon": -119.93073,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "263004"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-19",
@@ -14346,7 +15072,13 @@
       "source_id": "15004",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=15004",
       "site_path": "/water/bear-river-reservoir-lower/",
-      "location": null,
+      "location": {
+        "lat": 38.54216,
+        "lon": -120.25187,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "272252"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -14537,7 +15269,13 @@
       "source_id": "15216",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=15216",
       "site_path": "/water/lake-alpine/",
-      "location": null,
+      "location": {
+        "lat": 38.47618,
+        "lon": -119.99948,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "218174"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-19",
@@ -14605,7 +15343,13 @@
       "source_id": "15633",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=15633",
       "site_path": "/water/white-pines-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.26943,
+        "lon": -120.34078,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1675901"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -14764,7 +15508,13 @@
       "source_id": "15944",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=15944",
       "site_path": "/water/pinecrest-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.19647,
+        "lon": -119.98217,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "253755"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -15267,7 +16017,13 @@
       "source_id": "16955",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=16955",
       "site_path": "/water/lyons-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 38.09778,
+        "lon": -120.1658,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "227869"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-16",
@@ -15400,7 +16156,13 @@
       "source_id": "17133",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17133",
       "site_path": "/water/trumbull-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.05335,
+        "lon": -119.25792,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "268442"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -15695,7 +16457,13 @@
       "source_id": "17168",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17168",
       "site_path": "/water/lundy-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.02849,
+        "lon": -119.23431,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "263071"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-16",
@@ -15805,7 +16573,13 @@
       "source_id": "17271",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17271",
       "site_path": "/water/saddlebag-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.97677,
+        "lon": -119.27774,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "232109"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-16",
@@ -15886,7 +16660,13 @@
       "source_id": "17316",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17316",
       "site_path": "/water/ellery-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.93575,
+        "lon": -119.237,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "259868"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -15941,7 +16721,13 @@
       "source_id": "17336",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17336",
       "site_path": "/water/tioga-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.92479,
+        "lon": -119.25294,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "236388"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-16",
@@ -16022,7 +16808,13 @@
       "source_id": "17387",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17387",
       "site_path": "/water/grant-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.84868,
+        "lon": -119.10882,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "260769"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -16129,7 +16921,13 @@
       "source_id": "17431",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17431",
       "site_path": "/water/june-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.78885,
+        "lon": -119.07279,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "262048"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -16262,7 +17060,13 @@
       "source_id": "17432",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17432",
       "site_path": "/water/silver-lake-3/",
-      "location": null,
+      "location": {
+        "lat": 37.77764,
+        "lon": -119.12587,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "267249"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -16408,7 +17212,13 @@
       "source_id": "17467",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17467",
       "site_path": "/water/gull-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.77546,
+        "lon": -119.08299,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "260979"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -16528,7 +17338,13 @@
       "source_id": "17884",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=17884",
       "site_path": "/water/crowley-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.60259,
+        "lon": -118.74466,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "233743"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -16690,7 +17506,13 @@
       "source_id": "18076",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=18076",
       "site_path": "/water/mamie-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.60765,
+        "lon": -119.01068,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "263137"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -16784,7 +17606,13 @@
       "source_id": "18091",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=18091",
       "site_path": "/water/mary-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.60376,
+        "lon": -119.00385,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "263249"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -16904,7 +17732,13 @@
       "source_id": "18110",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=18110",
       "site_path": "/water/george-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.60061,
+        "lon": -119.01188,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "260527"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -16946,7 +17780,13 @@
       "source_id": "18122",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=18122",
       "site_path": "/water/convict-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.58726,
+        "lon": -118.86131,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "258663"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -17131,7 +17971,13 @@
       "source_id": "18767",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=18767",
       "site_path": "/water/rock-creek-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.45399,
+        "lon": -118.7367,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "265501"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -17333,7 +18179,13 @@
       "source_id": "18988",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=18988",
       "site_path": "/water/mammoth-pool-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.33219,
+        "lon": -119.3252,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "266964"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-14",
@@ -17375,7 +18227,13 @@
       "source_id": "19260",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=19260",
       "site_path": "/water/bass-lake-2/",
-      "location": null,
+      "location": {
+        "lat": 37.3186,
+        "lon": -119.56892,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "266417"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-19",
@@ -17482,7 +18340,13 @@
       "source_id": "19303",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=19303",
       "site_path": "/water/portal-forebay/",
-      "location": null,
+      "location": {
+        "lat": 37.31892,
+        "lon": -119.06955,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1667642"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -17615,7 +18479,13 @@
       "source_id": "19474",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=19474",
       "site_path": "/water/ward-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.30077,
+        "lon": -118.98801,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "268775"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-16",
@@ -17748,7 +18618,13 @@
       "source_id": "19697",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=19697",
       "site_path": "/water/florence-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.25631,
+        "lon": -118.95645,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "266715"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-28",
@@ -17803,7 +18679,13 @@
       "source_id": "19904",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=19904",
       "site_path": "/water/huntington-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.24379,
+        "lon": -119.17987,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "266841"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-06",
@@ -17939,7 +18821,13 @@
       "source_id": "19955",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=19955",
       "site_path": "/water/manzanita-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.25117,
+        "lon": -119.51833,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "266965"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-29",
@@ -18046,7 +18934,13 @@
       "source_id": "20117",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=20117",
       "site_path": "/water/north-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.2318,
+        "lon": -118.61408,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "264228"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -18127,7 +19021,13 @@
       "source_id": "20257",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=20257",
       "site_path": "/water/lake-sabrina/",
-      "location": null,
+      "location": {
+        "lat": 37.20387,
+        "lon": -118.62092,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "265702"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -18247,7 +19147,13 @@
       "source_id": "20572",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=20572",
       "site_path": "/water/south-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.16668,
+        "lon": -118.57004,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "267526"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -18367,7 +19273,13 @@
       "source_id": "20744",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=20744",
       "site_path": "/water/corrine-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.15951,
+        "lon": -119.49604,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "258742"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-01",
@@ -18461,7 +19373,13 @@
       "source_id": "20780",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=20780",
       "site_path": "/water/shaver-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.12636,
+        "lon": -119.29434,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "266058"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -18633,7 +19551,13 @@
       "source_id": "20919",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=20919",
       "site_path": "/water/courtright-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.09885,
+        "lon": -118.97213,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "258786"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-06",
@@ -18740,7 +19664,13 @@
       "source_id": "21249",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=21249",
       "site_path": "/water/wishon-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.01414,
+        "lon": -118.96554,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "269260"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-06",
@@ -18873,7 +19803,13 @@
       "source_id": "21340",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=21340",
       "site_path": "/water/black-rock-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 36.92082,
+        "lon": -119.01836,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "257161"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-29",
@@ -18915,7 +19851,13 @@
       "source_id": "21343",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=21343",
       "site_path": "/water/pine-flat-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 36.85415,
+        "lon": -119.31715,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "252091"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-03-29",
@@ -19009,7 +19951,13 @@
       "source_id": "21425",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=21425",
       "site_path": "/water/hume-lake/",
-      "location": null,
+      "location": {
+        "lat": 36.79141,
+        "lon": -118.90367,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "261620"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-06",
@@ -19171,7 +20119,13 @@
       "source_id": "21584",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=21584",
       "site_path": "/water/lake-isabella/",
-      "location": null,
+      "location": {
+        "lat": 35.66183,
+        "lon": -118.407,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "271737"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-26",
@@ -19453,7 +20407,13 @@
       "source_id": "26531",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=26531",
       "site_path": "/water/reservoir-f/",
-      "location": null,
+      "location": {
+        "lat": 41.57766,
+        "lon": -120.87925,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "252576"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-10",
@@ -19521,7 +20481,13 @@
       "source_id": "26875",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=26875",
       "site_path": "/water/sugar-pine-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 39.13377,
+        "lon": -120.79239,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "274923"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-01",
@@ -19590,7 +20556,13 @@
       "source_id": "26882",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=26882",
       "site_path": "/water/new-melones-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 37.982,
+        "lon": -120.53545,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "253643"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-11-16",
@@ -19632,7 +20604,13 @@
       "source_id": "27364",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=27364",
       "site_path": "/water/eagle-lake/",
-      "location": null,
+      "location": {
+        "lat": 40.69967,
+        "lon": -120.70174,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "222812"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-09-21",
@@ -19674,7 +20652,13 @@
       "source_id": "27400",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=27400",
       "site_path": "/water/jenkinson-lake/",
-      "location": null,
+      "location": {
+        "lat": 38.72161,
+        "lon": -120.55501,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "254837"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-02-01",
@@ -19852,7 +20836,13 @@
       "source_id": "27415",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=27415",
       "site_path": "/water/sandy-wool-lake/",
-      "location": null,
+      "location": {
+        "lat": 37.4548,
+        "lon": -121.86188,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1828680"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-05",
@@ -19998,7 +20988,13 @@
       "source_id": "27416",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=27416",
       "site_path": "/water/sawmill-pond/",
-      "location": null,
+      "location": {
+        "lat": 38.88889,
+        "lon": -120.02614,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "275028"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -21405,7 +22401,13 @@
       "source_id": "27445",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=27445",
       "site_path": "/water/doane-pond/",
-      "location": null,
+      "location": {
+        "lat": 33.34007,
+        "lon": -116.90135,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1868464"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -21836,7 +22838,13 @@
       "source_id": "27454",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=27454",
       "site_path": "/water/round-corral-reservoir/",
-      "location": null,
+      "location": {
+        "lat": 40.89699,
+        "lon": -120.01694,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1665900"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-10",
@@ -21878,7 +22886,13 @@
       "source_id": "27460",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=27460",
       "site_path": "/water/lake-emily/",
-      "location": null,
+      "location": {
+        "lat": 39.44692,
+        "lon": -123.39167,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "1724176"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-24",
@@ -23618,7 +24632,13 @@
       "source_id": "500017",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500017",
       "site_path": "/water/american-river-silver-fork/",
-      "location": null,
+      "location": {
+        "lat": 38.70499,
+        "lon": -120.21436,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267248"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -23673,7 +24693,13 @@
       "source_id": "500021",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500021",
       "site_path": "/water/angels-creek/",
-      "location": null,
+      "location": {
+        "lat": 38.11008,
+        "lon": -120.50921,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "266382"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-16",
@@ -23832,7 +24858,13 @@
       "source_id": "500029",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500029",
       "site_path": "/water/antelope-creek/",
-      "location": null,
+      "location": {
+        "lat": 41.57741,
+        "lon": -121.92079,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "256271"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-05",
@@ -23887,7 +24919,13 @@
       "source_id": "500055",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500055",
       "site_path": "/water/baker-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.15736,
+        "lon": -118.40758,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "256440"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -24007,7 +25045,13 @@
       "source_id": "500070",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500070",
       "site_path": "/water/battle-creek-south-fork/",
-      "location": null,
+      "location": {
+        "lat": 40.35787,
+        "lon": -121.74715,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "234966"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -24192,7 +25236,13 @@
       "source_id": "500088",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500088",
       "site_path": "/water/bearskin-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.74918,
+        "lon": -118.9149,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "256748"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-05",
@@ -24234,7 +25284,13 @@
       "source_id": "500091",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500091",
       "site_path": "/water/beaver-creek/",
-      "location": null,
+      "location": {
+        "lat": 38.29373,
+        "lon": -120.19566,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "233480"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -24435,7 +25491,13 @@
       "source_id": "500109",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500109",
       "site_path": "/water/big-meadows-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.7181,
+        "lon": -118.82757,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "256965"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-19",
@@ -24542,7 +25604,13 @@
       "source_id": "500110",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500110",
       "site_path": "/water/big-pine-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.13684,
+        "lon": -118.33292,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "256982"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -24860,7 +25928,13 @@
       "source_id": "500126",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500126",
       "site_path": "/water/bishop-creek-middle-fork/",
-      "location": null,
+      "location": {
+        "lat": 37.20669,
+        "lon": -118.61833,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "228591"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -25668,7 +26742,13 @@
       "source_id": "500206",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500206",
       "site_path": "/water/butte-creek/",
-      "location": null,
+      "location": {
+        "lat": 41.64099,
+        "lon": -122.01755,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "257765"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-05",
@@ -25723,7 +26803,13 @@
       "source_id": "500247",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500247",
       "site_path": "/water/carson-river-east-fork/",
-      "location": null,
+      "location": {
+        "lat": 38.53732,
+        "lon": -119.65792,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "259721"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -25817,7 +26903,13 @@
       "source_id": "500248",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500248",
       "site_path": "/water/carson-river-west-fork/",
-      "location": null,
+      "location": {
+        "lat": 38.76677,
+        "lon": -119.86878,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "237467"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -25898,7 +26990,13 @@
       "source_id": "500276",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500276",
       "site_path": "/water/chiquito-creek-west-fork/",
-      "location": null,
+      "location": {
+        "lat": 37.38305,
+        "lon": -119.39811,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "268890"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -26219,7 +27317,13 @@
       "source_id": "500293",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500293",
       "site_path": "/water/coffee-creek/",
-      "location": null,
+      "location": {
+        "lat": 41.11378,
+        "lon": -122.85985,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "258510"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-27",
@@ -26537,7 +27641,13 @@
       "source_id": "500306",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500306",
       "site_path": "/water/convict-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.59665,
+        "lon": -118.84745,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "258662"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -26709,7 +27819,13 @@
       "source_id": "500361",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500361",
       "site_path": "/water/deadman-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.73815,
+        "lon": -118.99403,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "259131"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-28",
@@ -27108,7 +28224,13 @@
       "source_id": "500392",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500392",
       "site_path": "/water/dinkey-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.03597,
+        "lon": -119.14121,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "270877"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -27241,7 +28363,13 @@
       "source_id": "500415",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500415",
       "site_path": "/water/dry-meadow-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.03278,
+        "lon": -118.51508,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "270929"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-04-19",
@@ -27283,7 +28411,13 @@
       "source_id": "500430",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500430",
       "site_path": "/water/east-walker-river/",
-      "location": null,
+      "location": {
+        "lat": 38.30008,
+        "lon": -119.2229,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "859636"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -27464,7 +28598,13 @@
       "source_id": "500522",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500522",
       "site_path": "/water/freeman-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.1395,
+        "lon": -118.48365,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "271219"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-14",
@@ -27613,7 +28753,13 @@
       "source_id": "500555",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500555",
       "site_path": "/water/glass-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.74411,
+        "lon": -119.02755,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "271304"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-28",
@@ -27668,7 +28814,13 @@
       "source_id": "500561",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500561",
       "site_path": "/water/goodale-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.97488,
+        "lon": -118.31591,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "260694"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -27908,7 +29060,13 @@
       "source_id": "500569",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500569",
       "site_path": "/water/granite-creek-west-fork/",
-      "location": null,
+      "location": {
+        "lat": 37.57544,
+        "lon": -119.32294,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "253629"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-05",
@@ -28515,7 +29673,13 @@
       "source_id": "500626",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500626",
       "site_path": "/water/hatchet-creek/",
-      "location": null,
+      "location": {
+        "lat": 40.85677,
+        "lon": -121.8137,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "261150"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -28596,7 +29760,13 @@
       "source_id": "500644",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500644",
       "site_path": "/water/herring-creek/",
-      "location": null,
+      "location": {
+        "lat": 38.24388,
+        "lon": -119.93289,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "261283"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-05",
@@ -28677,7 +29847,13 @@
       "source_id": "500709",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500709",
       "site_path": "/water/independence-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.78113,
+        "lon": -118.25201,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "261697"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -28810,7 +29986,13 @@
       "source_id": "500757",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500757",
       "site_path": "/water/kern-river-south-fork/",
-      "location": null,
+      "location": {
+        "lat": 36.22875,
+        "lon": -118.18332,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "273825"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-17",
@@ -30431,7 +31613,13 @@
       "source_id": "500822",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500822",
       "site_path": "/water/lee-vining-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.94501,
+        "lon": -119.22102,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "262402"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-06",
@@ -30713,7 +31901,13 @@
       "source_id": "500850",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500850",
       "site_path": "/water/little-walker-river/",
-      "location": null,
+      "location": {
+        "lat": 38.283,
+        "lon": -119.45659,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "266931"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-26",
@@ -30755,7 +31949,13 @@
       "source_id": "500860",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500860",
       "site_path": "/water/lone-pine-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.59802,
+        "lon": -118.18073,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "262802"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -30966,7 +32166,13 @@
       "source_id": "500891",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500891",
       "site_path": "/water/lyons-canal-columbia-ditch/",
-      "location": null,
+      "location": {
+        "lat": 38.05611,
+        "lon": -120.28032,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "221411"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -31255,7 +32461,13 @@
       "source_id": "500902",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500902",
       "site_path": "/water/mammoth-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.63379,
+        "lon": -118.96057,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "263140"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -31375,7 +32587,13 @@
       "source_id": "500910",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500910",
       "site_path": "/water/markleeville-creek/",
-      "location": null,
+      "location": {
+        "lat": 38.69814,
+        "lon": -119.77454,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "263218"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -31712,7 +32930,13 @@
       "source_id": "500979",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500979",
       "site_path": "/water/mono-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.416,
+        "lon": -118.89626,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267025"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -31832,7 +33056,13 @@
       "source_id": "500984",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=500984",
       "site_path": "/water/montgomery-creek/",
-      "location": null,
+      "location": {
+        "lat": 40.83997,
+        "lon": -121.92651,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "263770"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -31913,7 +33143,13 @@
       "source_id": "501015",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501015",
       "site_path": "/water/nelder-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.40507,
+        "lon": -119.59376,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "264039"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -32770,7 +34006,13 @@
       "source_id": "501096",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501096",
       "site_path": "/water/pit-river-south-fork/",
-      "location": null,
+      "location": {
+        "lat": 41.23827,
+        "lon": -120.45568,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267488"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-17",
@@ -33101,7 +34343,13 @@
       "source_id": "501146",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501146",
       "site_path": "/water/reyes-creek/",
-      "location": null,
+      "location": {
+        "lat": 34.66843,
+        "lon": -119.29062,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "273269"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-09",
@@ -33234,7 +34482,13 @@
       "source_id": "501150",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501150",
       "site_path": "/water/robinson-creek/",
-      "location": null,
+      "location": {
+        "lat": 38.18264,
+        "lon": -119.32354,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "253596"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -33341,7 +34595,13 @@
       "source_id": "501151",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501151",
       "site_path": "/water/rock-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.30402,
+        "lon": -119.37698,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "265481"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-02",
@@ -33831,7 +35091,13 @@
       "source_id": "501185",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501185",
       "site_path": "/water/rush-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.82151,
+        "lon": -119.11764,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267199"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-19",
@@ -33912,7 +35178,13 @@
       "source_id": "501199",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501199",
       "site_path": "/water/sacramento-river/",
-      "location": null,
+      "location": {
+        "lat": 40.91461,
+        "lon": -122.37905,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "1654949"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -34123,7 +35395,13 @@
       "source_id": "501200",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501200",
       "site_path": "/water/sacramento-river-2/",
-      "location": null,
+      "location": {
+        "lat": 41.26531,
+        "lon": -122.3084,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "1654949"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -34347,7 +35625,13 @@
       "source_id": "501205",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501205",
       "site_path": "/water/saddlebag-creek-lee-vining-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.94501,
+        "lon": -119.22102,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "262402"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-06",
@@ -34441,7 +35725,13 @@
       "source_id": "501229",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501229",
       "site_path": "/water/san-joaquin-river-south-fork/",
-      "location": null,
+      "location": {
+        "lat": 37.26332,
+        "lon": -118.96197,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267501"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-23",
@@ -34613,7 +35903,13 @@
       "source_id": "501243",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501243",
       "site_path": "/water/santa-ana-river/",
-      "location": null,
+      "location": {
+        "lat": 34.16311,
+        "lon": -116.9801,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "273539"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -34746,7 +36042,13 @@
       "source_id": "501244",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501244",
       "site_path": "/water/santa-ana-river-south-fork/",
-      "location": null,
+      "location": {
+        "lat": 34.14508,
+        "lon": -116.84765,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "273838"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-20",
@@ -34879,7 +36181,13 @@
       "source_id": "501293",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501293",
       "site_path": "/water/sherwin-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.60805,
+        "lon": -118.94271,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267239"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -34963,7 +36271,13 @@
       "source_id": "501333",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501333",
       "site_path": "/water/spanish-creek/",
-      "location": null,
+      "location": {
+        "lat": 39.94955,
+        "lon": -121.01668,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267548"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-07",
@@ -35468,7 +36782,13 @@
       "source_id": "501361",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501361",
       "site_path": "/water/stanislaus-river-north-fork/",
-      "location": null,
+      "location": {
+        "lat": 38.3287,
+        "lon": -120.20605,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "234375"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-16",
@@ -35627,7 +36947,13 @@
       "source_id": "501362",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501362",
       "site_path": "/water/stanislaus-river-south-fork/",
-      "location": null,
+      "location": {
+        "lat": 38.15984,
+        "lon": -120.10723,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267509"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-30",
@@ -35864,7 +37190,13 @@
       "source_id": "501379",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501379",
       "site_path": "/water/stony-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.66839,
+        "lon": -118.83182,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267778"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-05",
@@ -36159,7 +37491,13 @@
       "source_id": "501414",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501414",
       "site_path": "/water/taboose-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.0063,
+        "lon": -118.31133,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "268057"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -36253,7 +37591,13 @@
       "source_id": "501416",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501416",
       "site_path": "/water/tamarack-creek/",
-      "location": null,
+      "location": {
+        "lat": 37.18271,
+        "lon": -119.15403,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "268075"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-12",
@@ -37100,7 +38444,13 @@
       "source_id": "501474",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501474",
       "site_path": "/water/tule-river-middle-fork/",
-      "location": null,
+      "location": {
+        "lat": 36.14344,
+        "lon": -118.76007,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "245865"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -37570,7 +38920,13 @@
       "source_id": "501483",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501483",
       "site_path": "/water/tuolumne-river-south-fork/",
-      "location": null,
+      "location": {
+        "lat": 37.82149,
+        "lon": -119.89482,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267514"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-08-09",
@@ -37729,7 +39085,13 @@
       "source_id": "501487",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501487",
       "site_path": "/water/tuttle-creek/",
-      "location": null,
+      "location": {
+        "lat": 36.56241,
+        "lon": -118.16372,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "268506"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-13",
@@ -37823,7 +39185,13 @@
       "source_id": "501535",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501535",
       "site_path": "/water/wagon-creek/",
-      "location": null,
+      "location": {
+        "lat": 41.33553,
+        "lon": -122.361,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "268736"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-07-05",
@@ -38040,7 +39408,13 @@
       "source_id": "501572",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501572",
       "site_path": "/water/willow-creek-north-fork/",
-      "location": null,
+      "location": {
+        "lat": 37.35898,
+        "lon": -119.54369,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "264220"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-06-21",
@@ -38134,7 +39508,13 @@
       "source_id": "501573",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501573",
       "site_path": "/water/willow-creek-south-fork/",
-      "location": null,
+      "location": {
+        "lat": 37.25771,
+        "lon": -119.49974,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "267519"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-05-31",
@@ -38286,7 +39666,13 @@
       "source_id": "501743",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501743",
       "site_path": "/water/trinity-river-east-fork/",
-      "location": null,
+      "location": {
+        "lat": 41.1176,
+        "lon": -122.56143,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "222903"
+      },
       "last_period": {
         "precision": "week",
         "start": "2026-09-27",
@@ -38630,7 +40016,13 @@
       "source_id": "501831",
       "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=501831",
       "site_path": "/water/big-grizzly-creek/",
-      "location": null,
+      "location": {
+        "lat": 39.91098,
+        "lon": -120.50475,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "stream_point",
+        "source_feature_id": "256938"
+      },
       "last_period": {
         "precision": "week",
         "start": "2025-09-21",

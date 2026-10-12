@@ -25,6 +25,7 @@ from . import aliases as aliases_mod
 from . import fetch as fetch_mod
 from . import history as history_mod
 from . import legacy as legacy_mod
+from . import locations as locations_mod
 from . import parse as parse_mod
 from . import site as site_mod
 from . import snapshot as snapshot_mod
@@ -43,6 +44,7 @@ DEFAULT_SPECIES_ALIASES_PATH = PIPELINE_DIR / "data" / "species_aliases.json"
 DEFAULT_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v1.json"
 DEFAULT_V2_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v2.json"
 DEFAULT_STATES_DIR = PIPELINE_DIR / "data" / "states"
+DEFAULT_LOCATIONS_PATH = PIPELINE_DIR / "data" / "water_locations.json"
 DEFAULT_SITE_OUT = REPO_ROOT / "site"
 DEFAULT_BASE_URL = site_mod.LEGACY_BASE_URL
 
@@ -90,6 +92,19 @@ def print_unlisted_report(unlisted: Sequence[snapshot_mod.UnlistedWater]) -> Non
         )
 
 
+def _load_locations(path: Path | None) -> dict[int, dict[str, Any]] | None:
+    """The committed coordinates, or None. A file that fails its own checks
+    refuses the run like any other bad input, before anything is written."""
+    if path is None:
+        return None
+    try:
+        return locations_mod.load_locations(path)
+    except (OSError, ValueError, KeyError) as exc:
+        raise snapshot_v2_mod.SnapshotV2Error(
+            f"water locations at {path} could not be read: {exc}"
+        ) from exc
+
+
 def run(
     *,
     fixture_path: str | None,
@@ -112,6 +127,7 @@ def run(
     states_fetch: Sequence[str] = (),
     states_fixtures: Path | None = None,
     v2_schema_path: Path = DEFAULT_V2_SCHEMA_PATH,
+    locations_path: Path | None = DEFAULT_LOCATIONS_PATH,
 ) -> dict[str, Any]:
     """Execute one full run. Returns the built snapshot dict. Raises on any
     of: fetch failure, stale page, wrong Time Period view, parse error,
@@ -128,7 +144,7 @@ def run(
     writes the github.io site that keeps the snapshot and the calendar feeds
     and redirects every page to the domain (``cfpa.legacy``, DECISIONS 0019).
 
-    ``states_dir`` turns on the other states (docs/adr/0021): their histories
+    ``states_dir`` turns on the other states (DECISIONS 0025): their histories
     are read from it, the states in ``states_fetch`` are fetched (from
     ``states_fixtures`` when given, else live), and ``snapshot/v2.json`` and
     the state pages are built. A state that fails keeps its last good data
@@ -242,10 +258,13 @@ def run(
             else dt.datetime.now(dt.UTC),
             fixtures_dir=states_fixtures,
         )
+    # California's coordinates go into v2 only (DECISIONS 0024); v1 above
+    # keeps location null byte for byte.
     snap_v2 = snapshot_v2_mod.build_snapshot_v2(
         snap,
         [(r.source, r.history) for r in state_runs],
         generated_at=generated_at,
+        locations=_load_locations(locations_path),
     )
     snapshot_v2_mod.validate_snapshot_v2(snap_v2, v2_schema_path)
 
@@ -317,7 +336,7 @@ def main(argv: list[str] | None = None) -> int:
         "--states-dir",
         type=Path,
         default=DEFAULT_STATES_DIR,
-        help="where each other state's history file lives (docs/adr/0021)",
+        help="where each other state's history file lives (DECISIONS 0025)",
     )
     parser.add_argument(
         "--states",

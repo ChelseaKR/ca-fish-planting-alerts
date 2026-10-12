@@ -68,7 +68,7 @@ final class ScheduleWordingTests: XCTestCase {
                 continue
             }
             // ReportWording.swift holds the report states' "stocked" words
-            // (docs/adr/0021), and nothing else is exempt.
+            // (DECISIONS 0025), and nothing else is exempt.
             for case let file as URL in files where file.pathExtension == "swift" && file.lastPathComponent != "ReportWording.swift" {
                 let source = try String(contentsOf: file, encoding: .utf8)
                 for line in source.components(separatedBy: .newlines) {

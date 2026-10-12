@@ -355,14 +355,14 @@ favorites. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
 which is the one call site that checks it before
 `NotificationScheduler.schedule(_:)`.
 
-### Per-state in-app purchases (docs/adr/0021)
+### Per-state in-app purchases (DECISIONS 0025)
 
 Each state beyond California is its own Non-Consumable in the same app
 (Guideline 4.3(a): one app, variations as in-app purchases). California's
 product above is unchanged. Create a state's product only when that state
 has data in the published snapshot: on 2026-10-12 that is Tennessee alone;
 Massachusetts and Michigan stay off until their data hosts can be read
-(see the ADR). The ids and prices are placeholders the owner may change
+(see DECISIONS 0025). The ids and prices are placeholders the owner may change
 before creating them; a changed id must also change
 `StateAccess.productIDsByState` and `Configuration.storekit`.
 

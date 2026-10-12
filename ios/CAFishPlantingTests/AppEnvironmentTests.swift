@@ -218,7 +218,7 @@ final class AppEnvironmentTests: XCTestCase {
         center.removeAllPendingNotificationRequests()
     }
 
-    // MARK: - Per-state purchases (docs/adr/0021)
+    // MARK: - Per-state purchases (DECISIONS 0025)
 
     /// A California buyer favorites a Tennessee water whose schedule then
     /// gains a date: nothing is scheduled, because Tennessee isn't bought.
@@ -435,7 +435,7 @@ func updatedSnapshotFixture(addingListingTo waterID: Water.ID, after sourceWeek:
     var water = waters[index]
     var plants = (water["plants"] as? [[String: Any]]) ?? []
     if (json["schema_version"] as? Int) == 2 {
-        // The bundled snapshot is v2 (docs/adr/0021): a period, not a week.
+        // The bundled snapshot is v2 (DECISIONS 0025): a period, not a week.
         plants.append([
             "period": ["precision": "week", "start": startISO, "end": endISO, "label": "week of \(startISO)"],
             "species": "Trout",

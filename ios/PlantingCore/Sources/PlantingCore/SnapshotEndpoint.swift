@@ -9,7 +9,7 @@ import Foundation
 /// follows redirects for a plain GET by default, so no code change is
 /// needed when that happens — only this constant, if the path also moves.
 public enum SnapshotEndpoint {
-    /// v2: California plus every other state (docs/adr/0021). Builds 1.0
+    /// v2: California plus every other state (DECISIONS 0025). Builds 1.0
     /// keep reading `snapshot/v1.json`, which stays byte for byte what it was.
     public static let url = URL(string: "https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v2.json")!
     public static var host: String { url.host! }

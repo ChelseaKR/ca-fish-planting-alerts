@@ -50,7 +50,7 @@ test:
 
 # The offline end-to-end run: fixture -> history -> schema-validated
 # snapshot -> site, with no network and nothing written inside the repo. The
-# other states read their fixtures (docs/adr/0021); MA and MI are synthetic.
+# other states read their fixtures (DECISIONS 0025); MA and MI are synthetic.
 smoke:
 	cd $(PIPELINE) && $(UV_RUN) cfpa \
 		--fixture tests/fixtures/schedule-fresh-2026-09-13.html \

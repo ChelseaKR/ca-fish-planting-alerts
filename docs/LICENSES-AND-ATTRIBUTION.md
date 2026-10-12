@@ -96,7 +96,7 @@ before every fetch regardless (see `pipeline/src/cfpa/fetch.py`).
   page states its week, not its day (see `fetch.py`), and is the source of
   `pipeline/tests/fixtures/schedule-midweek-2026-09-17.html`.
 
-## Other states (docs/adr/0021)
+## Other states (DECISIONS 0025)
 
 Read before any fetch, 2026-10-11 (research) and re-read 2026-10-12. The
 verbatim clauses live in code next to each source (`pipeline/src/cfpa/states/tn.py`,

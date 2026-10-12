@@ -79,7 +79,7 @@ final class ParityScreenshotsUITests: XCTestCase {
     }
 
     /// The state picker, a Tennessee water and Tennessee's purchase sheet
-    /// (docs/adr/0021).
+    /// (DECISIONS 0025).
     func testCaptureStates() throws {
         let isPad = UIDevice.current.userInterfaceIdiom == .pad
         let suffix = isPad ? "ipad" : "iphone"

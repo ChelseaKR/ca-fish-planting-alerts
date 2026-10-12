@@ -938,7 +938,7 @@ def build_site(
 
     ``snapshot_v2`` (``cli.run`` passes it) adds the other states' pages,
     ``/states/``, their sitemap entries, and an "Other states" link in the
-    California pages' header (docs/adr/0021). Without it, or with a v2 that
+    California pages' header (DECISIONS 0025). Without it, or with a v2 that
     has California alone, the build is byte for byte what it was before.
 
     ``ga4_measurement_id`` defaults to None (no analytics) rather than to
@@ -1227,7 +1227,7 @@ def build_site(
     )
     counties_index_lastmod = max(first_seen.values(), default=source_week_start)
 
-    # ---- the other states (docs/adr/0021), from v2. Their pages carry their
+    # ---- the other states (DECISIONS 0025), from v2. Their pages carry their
     # own attribution, disclaimer and header; nothing here changes a
     # California page beyond the header link above.
     state_entries = site_states.render_states(

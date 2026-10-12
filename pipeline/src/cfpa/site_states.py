@@ -1,4 +1,4 @@
-"""The site's pages for states other than California (docs/adr/0021).
+"""The site's pages for states other than California (DECISIONS 0025).
 
 Every California URL stays where it was. Each other state gets
 ``/<code>/`` (its hub: this week, what is coming or what was recently

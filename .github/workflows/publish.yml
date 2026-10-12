@@ -69,7 +69,7 @@ jobs:
         # integrity violation, schema violation) exits non-zero here and the
         # job stops: no commit, no artifact upload, no deploy. Nothing is
         # ever published from a run that didn't fully succeed. The other
-        # states (docs/adr/0021) are fetched in the same run: one that fails
+        # states (DECISIONS 0025) are fetched in the same run: one that fails
         # keeps its last good data, logs a ::warning, and stops nothing.
         working-directory: pipeline
         # Owner-set repository variables (Settings -> Secrets and variables ->

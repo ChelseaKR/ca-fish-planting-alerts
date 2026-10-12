@@ -1,7 +1,7 @@
 import XCTest
 @testable import PlantingCore
 
-/// Snapshot v2 and the per-state rules (docs/adr/0021). The fixture is real
+/// Snapshot v2 and the per-state rules (DECISIONS 0025). The fixture is real
 /// pipeline output: California from the 2026-09-13 CDFW fixture, Tennessee
 /// from TWRA's real 2026-10-12 file, and Massachusetts and Michigan from the
 /// pipeline's labeled synthetic fixtures (their hosts' robots.txt could not

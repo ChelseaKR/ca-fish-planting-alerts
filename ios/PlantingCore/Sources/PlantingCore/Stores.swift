@@ -123,7 +123,7 @@ public struct PurchaseEntitlement: Codable, Equatable, Sendable {
     /// California's Full Access, the only product before states. Kept so a
     /// cache written by 1.0 still unlocks California at once.
     public var isPurchased: Bool
-    /// Every owned product id (docs/adr/0021). nil in a cache from 1.0.
+    /// Every owned product id (DECISIONS 0025). nil in a cache from 1.0.
     public var productIDs: [String]?
     public init(isPurchased: Bool = false, productIDs: [String]? = nil) {
         self.isPurchased = isPurchased; self.productIDs = productIDs

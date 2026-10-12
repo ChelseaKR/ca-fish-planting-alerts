@@ -1,7 +1,7 @@
 import Foundation
 
 /// Which in-app purchase unlocks alerts and the widget in which state
-/// (docs/adr/0021). Pure, so `swift test` checks the rule that matters most:
+/// (DECISIONS 0025). Pure, so `swift test` checks the rule that matters most:
 /// California is the original Full Access product, unchanged, so nobody who
 /// bought it loses anything.
 ///

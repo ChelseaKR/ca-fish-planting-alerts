@@ -54,7 +54,7 @@ public enum FreeTier {
         "The Favorite waters widget for your Home Screen and Lock Screen",
     ]
 
-    // MARK: Per state (docs/adr/0021)
+    // MARK: Per state (DECISIONS 0025)
 
     /// Alerts for a water need its state's purchase. California's is the
     /// original Full Access (`StateAccess.californiaProductID`).

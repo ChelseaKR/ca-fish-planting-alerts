@@ -1,7 +1,7 @@
 import SwiftUI
 import PlantingCore
 
-/// The state picker (docs/adr/0021): every state in the snapshot, what its
+/// The state picker (DECISIONS 0025): every state in the snapshot, what its
 /// agency publishes, and whether this device has its full access. Browsing
 /// and history are free everywhere; each state's alerts and widget are a
 /// one-time purchase. California's is the original Full Access, so anyone

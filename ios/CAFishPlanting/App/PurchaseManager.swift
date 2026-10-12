@@ -4,7 +4,7 @@ import Observation
 import PlantingCore
 
 /// The app's purchases: one non-consumable product per state
-/// (docs/adr/0021). California's is the original Full Access,
+/// (DECISIONS 0025). California's is the original Full Access,
 /// `com.chelseakr.cafishplanting.fullaccess`, unchanged, so everyone who
 /// bought it keeps exactly what they bought. Tennessee, Massachusetts and
 /// Michigan each have their own (`StateAccess.productIDsByState`). StoreKit 2

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Every phrase that says "stocked", in one place (docs/adr/0021).
+/// Every phrase that says "stocked", in one place (DECISIONS 0025).
 ///
 /// California's rule stands: CDFW publishes a *schedule*, so nothing about
 /// California may say "stocked" or "planted" (`ScheduleWordingTests` scans

@@ -214,7 +214,7 @@ final class AppEnvironment {
 
     // MARK: States
 
-    /// Each alert needs its own water's state's purchase (docs/adr/0021): a
+    /// Each alert needs its own water's state's purchase (DECISIONS 0025): a
     /// California buyer gets no Tennessee alert, and the reverse. A water the
     /// snapshot no longer has is treated as California's, where every alert
     /// before states came from.

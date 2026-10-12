@@ -437,3 +437,44 @@ review, and nothing here changes it.
   checkbox under Pricing and Availability ("Make this app available on
   Mac"). A version that adds iPad needs iPad 13-inch screenshots before it
   can be submitted. Both are in `docs/app-store/OWNER-STEPS.md`.
+
+## 0024 — Water locations from federal public-domain data, never guessed (2026-10-12; proposed)
+
+The owner approved maps on 2026-10-12. A map needs a point per water, and
+every water in the snapshot has had `location: null`. The state's own
+fishing map has coordinates, but its terms and robots.txt are unknown, so
+under 0004 ("unknown = not used") it is not a source.
+
+- **Sources.** USGS GNIS (names, classes, counties) and the USGS National
+  Hydrography Dataset (lake polygons and stream lines, each tagged with its
+  GNIS id), both U.S. Public Domain, with Census TIGER/Line county polygons
+  to check that a point lies in the county CDFW lists. Each was downloaded
+  once, by hand. Terms, quotes and robots.txt findings are in
+  `docs/LICENSES-AND-ATTRIBUTION.md`.
+- **Offline, not daily.** `cfpa-geocode` is run by hand and writes
+  `pipeline/data/water_locations.json`, which is committed. The daily run
+  only reads it. A new water gets no point until someone reruns it.
+- **Three classes, no guessing.** `exact`: exactly one GNIS lake,
+  reservoir, stream or canal with the water's name (or alias, or a
+  mechanical variant of either: "Blue Lake Upper" is "Upper Blue Lake",
+  "Pine Flat Reservoir" is "Pine Flat Lake") in the listed county.
+  `ambiguous`: several; none is picked, all are listed for the owner.
+  `none`: no feature, or the CDFW name is a reach of a stream ("Section 2",
+  "below the dam"), which no federal dataset marks. Only `exact` and
+  owner-resolved waters get a point.
+- **Where the point goes.** A lake: the interior point of its NHD polygon
+  farthest from shore (never the centroid, which can fall on land for a
+  crescent-shaped reservoir); without a polygon, GNIS's own point. A
+  stream: a vertex of its NHD line central to its course in the listed
+  county, labeled approximate everywhere it is shown (`kind:
+  stream_point`), because CDFW plants along a stream, not at a spot.
+- **Owner overrides.** `pipeline/data/water_location_overrides.json`
+  names a GNIS feature (or none) per water, with who decided, when and
+  why. An override that points outside the listed county is an error.
+- **v1 never changes.** Points go only into snapshot v2's
+  `waters[].location` (`{lat, lon, source, kind, source_feature_id}`).
+  `snapshot/v1.json` keeps `location: null` for installed 1.0 builds.
+- **Attribution.** The about page carries "Source of water locations: U.S.
+  Geological Survey, National Hydrography Dataset and Geographic Names
+  Information System", and the Census Bureau acknowledgement its terms
+  require.

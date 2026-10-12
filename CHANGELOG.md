@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Water locations for maps, from public-domain USGS data (GNIS and the
+  National Hydrography Dataset), matched by name and county and never
+  guessed: a water with several same-name candidates, or none, has no
+  location. `cfpa-geocode` builds `pipeline/data/water_locations.json`
+  offline; the owner can settle ambiguous waters in
+  `pipeline/data/water_location_overrides.json`. Snapshot v1 is unchanged.
+  The about page credits the USGS and the Census Bureau (DECISIONS 0024).
 - A four-page introduction on first launch: what the app is, finding
   waters, favorites and what full access adds, and why it says a week and
   "scheduled". Swipe or tap Continue, or skip it. About can show it again.

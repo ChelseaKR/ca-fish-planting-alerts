@@ -77,6 +77,29 @@ Both are written only through their module's `save()`, which is where the
 append-only guarantee (history) and the ever-growing spelling list (aliases)
 actually live -- there's no other write path.
 
+- `data/water_locations.json` — one point per water, or none, written by
+  `cfpa-geocode` (below) and read by snapshot v2 through
+  `cfpa.locations`. Never written by the daily run.
+- `data/water_location_overrides.json` — the owner's picks for ambiguous
+  or wrong matches: a GNIS feature id (or `null` for no location), who
+  decided, when, and why.
+
+### Water locations (`cfpa-geocode`, by hand)
+
+Download the three public-domain inputs once (URLs and terms in
+`docs/LICENSES-AND-ATTRIBUTION.md`), unzip each into its own empty
+directory, then:
+
+    uv run cfpa-geocode --snapshot v1.json --gnis DomesticNames_CA.txt \
+      --nhd NHD_H_California_State_GPKG.gpkg --counties tl_2024_us_county.shp \
+      --overrides data/water_location_overrides.json \
+      --out data/water_locations.json --report MATCH-REPORT.md \
+      --generated-on YYYY-MM-DD --terms-read-on YYYY-MM-DD --downloaded-on YYYY-MM-DD
+
+It scans the 2 GB NHD file once (a few minutes) and prints the counts per
+status. The report lists every ambiguous water with its candidates; to
+settle one, add an override and run it again.
+
 ## Coverage report
 
 Every run prints one line, always as paired numbers:

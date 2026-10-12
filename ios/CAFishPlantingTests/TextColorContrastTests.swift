@@ -82,6 +82,22 @@ final class TextColorContrastTests: XCTestCase {
         XCTAssertLessThan(Self.contrast(.tertiaryLabel, on: .systemBackground, traits: light), Self.aa)
     }
 
+    /// White text on a main button's fill, in light and dark mode, base and
+    /// elevated (the purchase sheet).
+    func testWhiteOnTheProminentButtonFillMeetsAA() {
+        for (traitName, traits) in allTraits {
+            let ratio = Self.contrast(.white, on: .prominentButtonFill, traits: traits)
+            XCTAssertGreaterThanOrEqual(ratio, Self.aa, "white on prominentButtonFill, \(traitName): \(String(format: "%.2f", ratio)):1")
+        }
+    }
+
+    /// Negative control: white on the dark-mode accent, which the buttons
+    /// used before, fails the same check.
+    func testWhiteOnTheDarkModeAccentFails() throws {
+        let accent = try XCTUnwrap(UIColor(named: "AccentColor"))
+        XCTAssertLessThan(Self.contrast(.white, on: accent, traits: traits(.dark)), Self.aa)
+    }
+
     // MARK: - WCAG 2 relative luminance and contrast
 
     /// Composites `text` (which may be translucent, like `secondaryLabel`)

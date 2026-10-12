@@ -34,6 +34,13 @@ extension UIColor {
         }
     }
 
+    /// The fill of a main button with white text (the introduction's
+    /// Continue, the purchase sheet's buy button): the light-mode accent
+    /// green in both modes. White on it is 5.5:1. The dark-mode accent is
+    /// lighter, so it can stand out on black, and white on it is 3.4:1,
+    /// below AA.
+    static let prominentButtonFill = UIColor(rgb: 0x0F784B)
+
     convenience init(rgb: UInt32) {
         self.init(red: CGFloat((rgb >> 16) & 0xFF) / 255,
                   green: CGFloat((rgb >> 8) & 0xFF) / 255,
@@ -48,6 +55,12 @@ extension ShapeStyle where Self == Color {
 
     /// Use instead of `.tertiary` for text. See `UIColor.tertiaryText`.
     static var tertiaryText: Color { Color(uiColor: .tertiaryText) }
+}
+
+extension Color {
+    /// See `UIColor.prominentButtonFill`. Use with `.tint` on a
+    /// `.borderedProminent` button.
+    static let prominentButtonFill = Color(uiColor: .prominentButtonFill)
 }
 
 /// A list section header in `secondaryText`. The system header gray is

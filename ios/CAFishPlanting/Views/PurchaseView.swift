@@ -92,7 +92,11 @@ struct PurchaseView: View {
             .navigationTitle("Full access")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .presentationDetents(dynamicTypeSize.isAccessibilitySize ? [.large] : [.medium, .large])
+        // Half height on iPhone. Not on iPad (or a Mac), where iPadOS 26
+        // makes the medium detent a short card that hides the buy button
+        // below its edge. The idiom, not the size class: inside a sheet on
+        // iPad the size class is compact.
+        .presentationDetents(dynamicTypeSize.isAccessibilitySize || UIDevice.current.userInterfaceIdiom == .pad ? [.large] : [.medium, .large])
         // The unlock landing, from a purchase or a restore. iOS skips it when
         // system haptics are off.
         .sensoryFeedback(.success, trigger: purchases.isEntitled) { wasEntitled, isEntitled in !wasEntitled && isEntitled }
@@ -114,6 +118,8 @@ struct PurchaseView: View {
             }
         }
         .buttonStyle(.borderedProminent)
+        .tint(.prominentButtonFill)
+        .foregroundStyle(.white)
         .disabled(purchases.uiState == .purchasing || purchases.product == nil)
         .accessibilityHint("Shows the App Store payment sheet")
     }

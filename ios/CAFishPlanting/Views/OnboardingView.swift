@@ -55,12 +55,16 @@ struct OnboardingView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .tint(.prominentButtonFill)
+            .foregroundStyle(.white)
             .accessibilityHint(isLast ? "Closes the introduction" : "Page \(index + 2) of \(pages.count)")
             // As wide as the page's text on iPad, not the whole screen.
             .frame(maxWidth: 560)
             .padding()
         }
-        .background(OnboardingBackground())
+        // Plain, so every word sits on a solid background. A gradient
+        // behind the text failed the contrast audit on iPad.
+        .background(Color(uiColor: .systemBackground).ignoresSafeArea())
         // A light tick for each page, swiped or stepped. iOS skips it when
         // system haptics are off.
         .sensoryFeedback(.selection, trigger: selection)
@@ -134,17 +138,8 @@ private struct OnboardingPageView: View {
             .frame(width: size, height: size)
             .background(Circle().fill(Color.accentColor.gradient))
             .shadow(color: Color.accentColor.opacity(0.35), radius: 16, y: 8)
+            // A soft halo, kept clear of the title below it.
+            .background(Circle().fill(Color.accentColor.opacity(0.12)).padding(-14))
             .accessibilityHidden(true)
-    }
-}
-
-/// The accent color washing down from the top into the system background,
-/// in light and dark mode.
-private struct OnboardingBackground: View {
-    var body: some View {
-        LinearGradient(colors: [Color.accentColor.opacity(0.22), Color(uiColor: .systemBackground)],
-                       startPoint: .top, endPoint: .center)
-            .background(Color(uiColor: .systemBackground))
-            .ignoresSafeArea()
     }
 }

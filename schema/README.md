@@ -83,3 +83,39 @@ in place.
 v1 without notice (readers must ignore unknown fields — note the schema is
 `additionalProperties: false` for the pipeline's own validation, which is
 stricter than what a reader should enforce). Anything else is v2 at a new URL.
+
+# Snapshot v2: every state (docs/adr/0021)
+
+| What | URL |
+|---|---|
+| Snapshot v2 | `https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v2.json` |
+| Its schema | `schema/snapshot.v2.json` |
+
+v1 above is unchanged and keeps being published byte-compatible for the
+builds that read it. v2 is built by the same run.
+
+- **Top level:** `schema_version` (2), `generated_at`, `states[]`,
+  `waters[]`, `this_week[]`. Source, attribution, license, regions and
+  counties moved into each state.
+- **California** comes from the finished v1: the same water ids
+  (`cdfw-<id>`), weeks, statuses and `this_week` entries, and its
+  `current_week` is v1's `source_week`.
+- **A state appears only once it has a record.** Never assume a fixed list.
+- **`semantics`:** `schedule` (California, Tennessee: planned stockings,
+  subject to change; say "scheduled"; `removed` can appear) or `report`
+  (Massachusetts, Michigan: stockings done; say "stocked"; every plant is
+  `reported`).
+- **`period.precision`:** `day` (`YYYY-MM-DD`), `week` (`week of
+  YYYY-MM-DD`, a Sunday; for Tennessee the stocking falls within five days
+  after it), or `month` (`December 2026`: Tennessee's "TBD 12/2026").
+  Render the label as given and never finer than its precision.
+- **`months_note`:** Tennessee's one-letter month list, verbatim. Not dates.
+  A water may have no plants and only this note.
+- **`checks`:** a failed fetch keeps the last good data;
+  `last_attempt_ok: false` means show that the newest check failed.
+- **`recency_note`:** show it beside the state's data (Michigan's lag).
+- **`site_path`:** the water's page on the site. California keeps
+  `/water/<slug>/`.
+- **`location`:** null or `{lat, lon, source}`, with optional `kind`
+  (`waterbody`, `named_point`, `stream_point`) and `source_feature_id`
+  for a coordinates lane to fill. Never guessed.

@@ -506,9 +506,10 @@ publishes something different:
 1.0 shipped, `com.chelseakr.cafishplanting.fullaccess`, unchanged in id,
 price and meaning: alerts and the widget for California waters. Nobody who
 bought it loses anything, and it is not repointed to "all states". Each
-other state is its own non-consumable: `com.chelseakr.cafishplanting.state.tn`,
-`.state.ma`, `.state.mi` (placeholders until created in App Store
-Connect), $9.99 each (placeholder). Browsing, every water's history and
+other state is its own non-consumable. Tennessee's is
+`com.chelseakr.cafishplanting.state.tn` at USD 9.99, one time (confirmed by
+the owner, 2026-10-12). `.state.ma` and `.state.mi` are placeholders, at a
+placeholder $9.99, and are not created while those states are off. Browsing, every water's history and
 favorites stay free in every state, as in California (0009). A state's
 purchase unlocks alerts for that state's favorites and adds them to the
 widget (0015); the widget unlocks with any state and counts, never shows,
@@ -535,10 +536,17 @@ its last good data; its `checks` say when it was last read and that the
 newest check failed, and California and the other states carry on. A state
 with no record is left out of v2 and the site, never shown empty.
 
-**Robots: unreadable means off-limits** (the owner's rule). The state
-fetchers read `robots.txt` first and go no further unless it is an HTTP 200
-`text/plain` file on the same host that allows the path. Never a browser
-User-Agent. On 2026-10-12:
+**Robots** (the owner's rulings, 2026-10-12). The state fetchers read
+`robots.txt` first, never follow a redirect, and never send a browser
+User-Agent:
+
+- an HTTP 200 `text/plain` file on the same host: its rules apply;
+- an HTTP 404 (no file): "no rules", and the fetch may go ahead;
+- anything else is off-limits, and nothing more on the host is requested:
+  a 403, a redirect to a page that is not a robots file, any other 4xx, a
+  5xx, a timeout, or a 200 that is not `text/plain`.
+
+On 2026-10-12:
 
 - `www.tn.gov/robots.txt`: 200, `Allow: /`. Tennessee is fetched daily.
 - `services1.arcgis.com/robots.txt` (Massachusetts): **403**.
@@ -548,8 +556,9 @@ User-Agent. On 2026-10-12:
 So Massachusetts and Michigan are built and tested against labeled
 synthetic fixtures, but `ENABLED_STATES` is `("TN",)`: they are not
 fetched, have no data, and do not appear in v2, the site or the app. Their
-products exist in the StoreKit configuration only. Enabling either needs an
-owner ruling (or a readable robots file) and a first real fetch checked
+products exist in the StoreKit configuration only. The owner confirmed on
+2026-10-12 that both stay off. Enabling either later needs its host to
+serve a readable robots.txt (or none, a 404) and a first real fetch checked
 against the field names in `ma.py` / `mi.py`, which come from the research
 description, not from the layers.
 
@@ -570,5 +579,8 @@ another state has data.
   app's download small; history keeps whatever was fetched.
 - The App Store listing (name, subtitle "CA trout stocking alerts",
   screenshots) still says California. It changes when a state goes on sale.
-- Open owner questions are in the hand-off: MA/MI robots, Michigan's
-  indemnity clause and all-species data, and the $9.99 placeholder price.
+- **Owner answers, 2026-10-12.** (1) Massachusetts and Michigan stay off: a
+  robots.txt that answers 403, or redirects to a page that is not a robots
+  file, is off-limits; a 404 counts as "no rules". (2) Tennessee is USD
+  9.99, one time, product id `com.chelseakr.cafishplanting.state.tn`.
+  Michigan's indemnity clause and species scope are moot while it is off.

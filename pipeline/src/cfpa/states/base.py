@@ -2,11 +2,14 @@
 honest HTTP client, and the strict robots.txt rule.
 
 The robots rule here is stricter than California's (``cfpa.fetch``), on the
-owner's ruling of 2026-10-12: a host whose robots.txt cannot be read is
-off-limits. "Read" means an HTTP 200 for ``/robots.txt`` on the same host
-(redirects followed only within that host), served as ``text/plain``. A 403,
-a 404, a 5xx, a timeout, or a redirect to some other page all leave the host
-alone, and nothing else on it is requested.
+owner's rulings of 2026-10-12 (DECISIONS 0025):
+
+- HTTP 200 ``text/plain`` on the same host: its rules apply.
+- HTTP 404, no file: "no rules", so the fetch may go ahead.
+- Anything else is off-limits, and nothing else on the host is requested:
+  a 403 (Massachusetts' host), a redirect to a page that is not a robots
+  file (Michigan's host), any other 4xx, a 5xx, a timeout, or a 200 that is
+  not ``text/plain``. Redirects are never followed.
 """
 
 from __future__ import annotations
@@ -260,6 +263,9 @@ def check_robots_strict(client: httpx.Client, data_url: str, user_agent: str) ->
             f"robots.txt at {robots_url} could not be fetched ({exc}); the host "
             "is off-limits"
         ) from exc
+    if resp.status_code == 404:
+        # The owner's ruling: no file means no rules.
+        return
     if resp.status_code != 200:
         where = resp.headers.get("location")
         detail = f" (redirects to {where})" if where else ""

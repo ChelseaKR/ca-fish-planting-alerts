@@ -14,7 +14,9 @@ public enum StateAccess {
     /// California). Never renamed, never repointed.
     public static let californiaProductID = "com.chelseakr.cafishplanting.fullaccess"
 
-    /// Placeholder ids until the owner creates the products in App Store
+    /// Tennessee's id is confirmed (DECISIONS 0025, 2026-10-12, USD 9.99).
+    /// Massachusetts' and Michigan's are placeholders, unused while those
+    /// states are off. Every product must exist in App Store
     /// Connect (docs/app-store/OWNER-STEPS.md).
     public static let productIDsByState: [String: String] = [
         "CA": californiaProductID,

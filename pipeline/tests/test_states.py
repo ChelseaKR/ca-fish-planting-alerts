@@ -248,7 +248,6 @@ def test_robots_readable_and_allowing_lets_the_fetch_go_ahead():
     [
         (403, {"content-type": "text/plain"}, "Invalid URL"),  # services1.arcgis.com
         (301, {"location": "https://www.arcgis.com"}, ""),  # utility.arcgis.com
-        (404, {"content-type": "text/html"}, "<html>"),
         (500, {}, ""),
         (200, {"content-type": "text/html"}, "<html>home</html>"),
     ],
@@ -263,6 +262,15 @@ def test_an_unreadable_robots_txt_puts_the_host_off_limits(status, headers, body
         ma.fetch(client, UA, no_sleep)
     assert robots.called
     assert not data.called  # nothing else on the host is asked for
+
+
+@respx.mock
+def test_a_missing_robots_txt_404_means_no_rules():
+    """The owner's ruling (DECISIONS 0025): no file is "no rules"."""
+    robots = respx.get("https://www.tn.gov/robots.txt").respond(404, text="<html>")
+    with httpx.Client() as client:
+        check_robots_strict(client, tn.DATA_URL, UA)
+    assert robots.called
 
 
 @respx.mock

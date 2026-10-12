@@ -110,6 +110,8 @@ in `snapshot/v2.json`.
 | MI | ArcGIS `DNR/FishStockingReportGISAGO/MapServer/0` | Dataset license, read 2026-10-12 from `www.arcgis.com` item metadata: "there are no restrictions on the use, reproduction, or distribution of this dataset", with an indemnity clause (owner question). | "Data: Michigan Department of Natural Resources, Fish Stocking Database (https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f)." | `utility.arcgis.com`: **301 to the arcgis.com home page**. Off-limits. | No |
 
 The state fetchers identify themselves with the same User-Agent as the
-California fetch, never a browser's, and are stricter about robots.txt: a
-host whose robots.txt is not an HTTP 200 `text/plain` file on that host is
-not contacted further (the owner's rule, 2026-10-12).
+California fetch, never a browser's, and are stricter about robots.txt (the
+owner's rulings, 2026-10-12, DECISIONS 0025): an HTTP 200 `text/plain` file
+on that host applies; a 404 (no file) means no rules; anything else (a 403,
+a redirect to a page that is not a robots file, a 5xx, a timeout) puts the
+host off-limits and it is not contacted further.

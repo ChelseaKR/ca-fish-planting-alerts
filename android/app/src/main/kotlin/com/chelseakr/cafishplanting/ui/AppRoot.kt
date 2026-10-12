@@ -1,6 +1,8 @@
 package com.chelseakr.cafishplanting.ui
 
 import android.app.Activity
+import androidx.compose.ui.focus.focusTarget
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.unit.dp
@@ -170,7 +172,14 @@ private fun ListDetail(
         navigator = navigator,
         listPane = {
             AnimatedPane {
-                list(ListOpen(if (twoPanes) selected else null) { id -> scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, id) } })
+                // The scaffold moves focus into the pane it shows, which keyboard users
+                // want. Without this target, that focus went on to Browse's search field,
+                // and the keyboard opened over the list at every launch and every return
+                // from a water's page. A plain focus target has no semantics and draws
+                // nothing; a tap still focuses the field.
+                Box(Modifier.focusTarget()) {
+                    list(ListOpen(if (twoPanes) selected else null) { id -> scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, id) } })
+                }
             }
         },
         detailPane = {

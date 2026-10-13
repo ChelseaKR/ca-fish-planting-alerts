@@ -584,3 +584,37 @@ another state has data.
   file, is off-limits; a 404 counts as "no rules". (2) Tennessee is USD
   9.99, one time, product id `com.chelseakr.cafishplanting.state.tn`.
   Michigan's indemnity clause and species scope are moot while it is off.
+
+## 0027 — Ask for App Store ratings only at the end of a task (2026-10-12)
+
+**Context.** Every stocking app in App Store search has 0 to 6 ratings
+(`_agent-tools/remediate-2026-10-12/seamline/COMPETE.md`, move 3), so the
+first honest ratings matter. The owner approved asking for them: "do 3 and
+5. do 3 across my ios apps". App Review Guideline 5.6.1 allows only the
+system prompt, with no reward and no step that sorts people by whether
+they like the app.
+
+**Decision.** The app calls `AppStore.requestReview` (StoreKit) and has no
+prompt of its own. It asks only when someone goes back from a water's page:
+after opening a planting alert (second launch on), or from the third launch
+on with at least one favorite. Both are state-agnostic: an alert exists
+only for a state the person unlocked, whichever state that is, and a
+favorite in any state counts. Nothing is tied to California's product
+(0025). It never asks on the first launch, over a sheet, the introduction
+or a refresh, more than once per app version, within 120 days of the last
+ask, or more than three times in 365 days. iOS has the same yearly cap,
+but the app counts the asks iOS chose not to show. Debug builds never ask
+unless launched with `-ReviewPrompt allow`. About has a "Rate Trout Truck"
+row that opens the App Store's write-review page.
+
+The state (`review-prompt.json`: launch count, ask dates, versions asked)
+lives in Application Support, like favorites, so the app still calls no
+required-reason API and its privacy manifest is unchanged. The rules are
+in PlantingCore (`ReviewPromptPolicy`, `ReviewPrompter`) behind an
+injectable clock.
+
+**Consequences.** iPad users are asked less often: choosing another water
+beside the list is not "going back". A rating prompt cannot be tested on
+TestFlight (Apple never shows it there), so only the trigger logic is
+tested. `HostAllowlistTests` allows `apps.apple.com` in one file, as a
+link the system opens rather than a request the app makes.

@@ -63,7 +63,11 @@ found these gaps:
   2026-10-12 it read "<water> (<county> County) <species> planting
   schedule | Trout Truck"; "stocking" is the word most anglers search with.)
   The h1 reads "... <species> stocking & planting schedule and history", so
-  the page carries both of the words people search with. The meta description gives
+  the page carries both of the words people search with. Water pages for
+  other states (DECISIONS 0025) follow the same 60-character rule: "<water>
+  <species> stocking schedule (<county> County, Tennessee)", or "..., TN)"
+  when the state's name would not fit. Their h1 keeps the state's name, and
+  every page keeps its own agency's attribution. The meta description gives
   the county, "stocking", and the week that answers the question (this
   week, the next week, or the last week with "none listed this week or
   later"). The species wording comes from the data: "trout", "catfish" or

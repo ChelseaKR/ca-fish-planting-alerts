@@ -284,8 +284,15 @@ def test_report_states_say_stocked_and_michigan_says_how_late_it_is(built: Path)
 def test_state_titles_put_stocking_first_and_structured_data_parses(built: Path):
     page = _page(built, "tn/water/tellico-river-monroe-county/index.html")
     title = re.search(r"<title>(.*?)</title>", page).group(1)
-    assert title.startswith(
-        "Tellico River trout stocking schedule (Monroe County, Tennessee)"
+    # "(Monroe County, Tennessee)" would make the part before the brand 63
+    # characters, over the 60 a results page shows, so the title uses "TN";
+    # the h1 keeps the state's name.
+    assert title == (
+        "Tellico River trout stocking schedule (Monroe County, TN) | Trout Truck"
+    )
+    assert (
+        "<h1>Tellico River trout stocking schedule (Monroe County, Tennessee)</h1>"
+        in page
     )
     ld = json.loads(
         re.search(
@@ -381,3 +388,38 @@ def test_a_broken_locations_file_refuses_the_run(tmp_path: Path):
     assert '"something-else"' in bad.read_text()
     with pytest.raises(snapshot_v2.SnapshotV2Error, match="water locations"):
         _run(tmp_path / "run", states=None, locations_path=bad)
+
+
+def test_every_state_water_title_follows_the_shared_length_rule(built: Path):
+    """Every non-California water page: the water's name, species and
+    "stocking" first; the state's name when it fits in the 60 characters a
+    results page shows, else its postal code; the brand last. And each page
+    carries its own agency's attribution, never CDFW's."""
+    v2 = _v2(built)
+    states = {s["code"]: s for s in v2["states"]}
+    checked = {"name": 0, "code": 0}
+    for w in v2["waters"]:
+        if w["state"] == "CA":
+            continue
+        state = states[w["state"]]
+        page = _page(built, w["site_path"].strip("/") + "/index.html")
+        title = re.search(r"<title>(.*?)</title>", page).group(1)
+        title = title.replace("&amp;", "&").replace("&#39;", "'")
+        visible, brand = title.rsplit(" | ", 1)
+        assert brand == "Trout Truck"
+        assert visible.startswith(f"{w['name']} ") and " stocking " in visible
+        if visible.endswith(f"{state['name']})"):
+            assert len(visible) <= site.TITLE_VISIBLE_CHARS, title
+            checked["name"] += 1
+        else:
+            assert visible.endswith(f", {state['code']})") or visible.endswith(
+                f"({state['code']})"
+            ), title
+            longer = visible[: visible.rindex(state["code"])] + state["name"] + ")"
+            assert len(longer) > site.TITLE_VISIBLE_CHARS, title
+            checked["code"] += 1
+        assert state["attribution"]["text"].replace("'", "&#39;") in page or (
+            state["attribution"]["text"] in page
+        ), w["site_path"]
+        assert "not affiliated with or endorsed by CDFW" not in page
+    assert checked["name"] and checked["code"]  # the fixtures exercise both

@@ -31,6 +31,30 @@ import jinja2
 UPCOMING_DAYS = 60
 RECENT_DAYS = 45
 
+# How much of a title a results page shows: Google cuts titles at about 600
+# pixels, roughly 60 characters. Every water title puts the words a searcher
+# types first (the water, the species, "stocking"), so a cut, when there is
+# one, falls on the place or the brand. California's and every other
+# state's water pages share this rule.
+TITLE_VISIBLE_CHARS = 60
+
+
+def fit_title(candidates: list[str], site_name: str) -> str:
+    """The first candidate that fits in ``TITLE_VISIBLE_CHARS`` before
+    " | <site name>", else the last (shortest) one, which may still run over:
+    a title never drops the water's name or the words that tell two waters
+    apart to get under the limit."""
+    chosen = next(
+        (c for c in candidates if len(c) <= TITLE_VISIBLE_CHARS), candidates[-1]
+    )
+    return f"{chosen} | {site_name}"
+
+
+def short_place_phrase(w: dict[str, Any], state: dict[str, Any]) -> str:
+    """``place_phrase`` with the state's postal code for its name: "Perry
+    County, TN". Only for a title that would not fit otherwise."""
+    return place_phrase(w, state["code"])
+
 
 @dataclasses.dataclass(frozen=True)
 class StatesContext:
@@ -364,7 +388,10 @@ def _render_water(
     )
     noun = "stocking schedule" if schedule else "stocking history"
     head = f"{w['name']} {species} {noun}"
-    title = f"{head} ({place}) | {ctx.site_name}"
+    title = fit_title(
+        [f"{head} ({place})", f"{head} ({short_place_phrase(w, state)})"],
+        ctx.site_name,
+    )
     if schedule:
         if w["next_period"]:
             status = f"next scheduled {when_label(w['next_period'])}."

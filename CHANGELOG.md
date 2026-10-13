@@ -55,12 +55,15 @@ This repository was republished with a new history on 2026-09-18
   alert, or from the third launch on with at least one favorite. Never on
   the first launch, never over another screen, at most once per app
   version, 120 days apart and three times a year. Nothing is offered for a
-  rating. About has a "Rate Trout Truck" row that opens the App Store's
-  review page.
+  rating. Any state's alerts and favorites count; nothing depends on which
+  state was bought. About has a "Rate Trout Truck" row that opens the App
+  Store's review page (DECISIONS 0027).
 - Website: water page titles lead with the water, the species and
   "stocking", and add "& planting" when that still fits in 60 characters,
   for example "Nora Lake trout stocking & planting schedule (Shasta County)
   | Trout Truck". The h1 says "stocking & planting schedule and history".
+  Tennessee water titles follow the same 60-character rule, with "TN" in
+  place of "Tennessee" when the name would not fit.
 - Website: when CDFW lists nothing for the current week, the home page
   leads with the waters scheduled for a later week and the waters
   scheduled most recently, each with its own week, instead of an empty

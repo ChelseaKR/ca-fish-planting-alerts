@@ -29,6 +29,7 @@ from urllib.parse import urlsplit
 import jinja2
 
 from . import site_states
+from .site_states import TITLE_VISIBLE_CHARS as TITLE_VISIBLE_CHARS  # re-exported
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
@@ -370,13 +371,6 @@ def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
     }
 
 
-# How much of a title a results page shows: Google cuts titles at about 600
-# pixels, roughly 60 characters. The words a searcher typed (the water, the
-# species, "stocking") come first so the cut, when there is one, falls on the
-# county or the brand, never on them.
-TITLE_VISIBLE_CHARS = 60
-
-
 def water_title(view: dict[str, Any]) -> str:
     """A water page's <title>: "Collins Lake trout stocking & planting
     schedule (Yuba County) | Trout Truck".
@@ -389,13 +383,13 @@ def water_title(view: dict[str, Any]) -> str:
     """
     lead = f"{view['name']} {view['species']}"
     where = f"({view['county_phrase']})"
-    both = f"{lead} stocking & planting schedule {where}"
-    chosen = (
-        both
-        if len(both) <= TITLE_VISIBLE_CHARS
-        else f"{lead} stocking schedule {where}"
+    return site_states.fit_title(
+        [
+            f"{lead} stocking & planting schedule {where}",
+            f"{lead} stocking schedule {where}",
+        ],
+        SITE_NAME,
     )
-    return f"{chosen} | {SITE_NAME}"
 
 
 def _water_description(view: dict[str, Any], *, source_week_label: str) -> str:

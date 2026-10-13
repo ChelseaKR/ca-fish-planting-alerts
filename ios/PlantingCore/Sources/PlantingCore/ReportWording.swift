@@ -23,6 +23,11 @@ public enum ReportWording {
 
     public static let rowStatus = "Stocked"
 
+    /// The watch's short tag and inline complication for a report water
+    /// stocked in the current week.
+    public static let stockedThisWeekTag = "Stocked this week"
+    public static func stockedThisWeekInline(_ waterName: String) -> String { "\(waterName) stocked this week" }
+
     public static func alertTitle(_ waterName: String) -> String { "\(waterName) was stocked" }
 
     public static func alertBody(periods: [String], species: String, agencyShortName: String, lagging: Bool) -> String {

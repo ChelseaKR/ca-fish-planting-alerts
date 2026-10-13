@@ -69,7 +69,13 @@ extension WidgetDigest {
 
     /// A few words for a small space, relative to the digest's week:
     /// "This week", "Scheduled that week" (once that week has ended), "Next: week of …" or "Not listed".
+    /// A report state's water (DECISIONS 0025) says "stocked", never
+    /// "scheduled", and has no next week.
     public func shortStatus(of favorite: Favorite, at now: Date) -> String {
+        if favorite.isReport {
+            if favorite.isListedThisWeek, !isStale(at: now) { return ReportWording.stockedThisWeekTag }
+            return favorite.lastListedWeek.map(ReportWording.lastStocked) ?? ReportWording.noStockingOnRecord
+        }
         switch status(of: favorite, at: now) {
         case .scheduledThisWeek: return "This week"
         case .scheduledForEndedWeek: return "Scheduled that week"
@@ -83,13 +89,18 @@ extension WidgetDigest {
     /// the digest's week: the next-scheduled line already says that, and a
     /// "last" week in the future would read as a contradiction.
     public func lastScheduledLine(of favorite: Favorite) -> String? {
+        if favorite.isReport {
+            return favorite.lastListedWeek.map(ReportWording.lastStocked) ?? ReportWording.noStockingOnRecord
+        }
         guard let last = favorite.lastListedWeek else { return "No earlier week on record" }
         guard last <= week else { return nil }
         return "Last scheduled: \(last.label)"
     }
 
-    /// The next listed week after the digest's week, in words.
-    public func nextScheduledLine(of favorite: Favorite) -> String {
+    /// The next listed week after the digest's week, in words. `nil` for a
+    /// report state's water: a stocking report has no future weeks.
+    public func nextScheduledLine(of favorite: Favorite) -> String? {
+        if favorite.isReport { return nil }
         guard let next = favorite.nextWeek else { return "No later week listed yet" }
         return "Next scheduled: \(next.label)"
     }
@@ -97,6 +108,14 @@ extension WidgetDigest {
     /// The locked watch's one line. The purchase is made on the phone; the
     /// watch has no purchase screen of its own.
     public static let watchLockedMessage = "Part of full access, a one-time purchase in Trout Truck on your iPhone."
+
+    /// Favorites in states this device hasn't bought: counted, never shown.
+    public var otherStatesLine: String? {
+        guard favoritesInOtherStates > 0 else { return nil }
+        return favoritesInOtherStates == 1
+            ? "1 favorite is in a state not unlocked. Unlock it in Trout Truck on your iPhone."
+            : "\(favoritesInOtherStates) favorites are in states not unlocked. Unlock them in Trout Truck on your iPhone."
+    }
 
     /// What the watch says before the phone has sent anything.
     public static let watchNoDigestMessage = "Open Trout Truck on your iPhone to load the schedule here."

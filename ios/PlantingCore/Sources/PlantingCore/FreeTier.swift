@@ -49,17 +49,19 @@ public enum FreeTier {
     /// Whether Trout Truck on Apple Watch (the watch app and its
     /// complications) needs the one-time purchase. It does: the owner asked
     /// on 2026-10-12 for watch extras as more reasons to buy the same
-    /// purchase (`docs/DECISIONS.md` 0021). The watch never checks a
+    /// purchase (`docs/DECISIONS.md` 0026). The watch never checks a
     /// purchase itself. It shows only the digest the phone sends
     /// (`WatchSync`), and the phone builds that digest locked, with no
     /// favorites in it, unless this allows it.
     public static let watchRequiresFullAccess = true
 
-    /// Whether the watch may show favorites, given whether the one-time
-    /// purchase is owned. Read in one place: where the phone builds the
-    /// watch's digest (`AppEnvironment.publishWidgetDigest()`).
-    public static func watchAllowed(isEntitled: Bool) -> Bool {
-        !watchRequiresFullAccess || isEntitled
+    /// Whether the watch may show favorites at all, given the states this
+    /// device owns. The same rule as the widget (DECISIONS 0025): any
+    /// state's purchase unlocks it, and the digest then lists only the
+    /// favorites in owned states. Read in one place: where the phone builds
+    /// the watch's digest (`AppEnvironment.publishWidgetDigest()`).
+    public static func watchAllowed(entitledStates: Set<String>) -> Bool {
+        !watchRequiresFullAccess || !entitledStates.isEmpty
     }
 
     /// What full access unlocks, in the words the purchase screen lists.
@@ -91,6 +93,6 @@ public enum FreeTier {
         let alert = semantics == .schedule
             ? "An alert on this device when a \(stateName) favorite is newly on \(agencyShortName)'s schedule"
             : ReportWording.alertFeature(stateName: stateName, agencyShortName: agencyShortName)
-        return [alert, "\(stateName) favorites in the Favorite waters widget"]
+        return [alert, "\(stateName) favorites in the Favorite waters widget", "\(stateName) favorites on Apple Watch"]
     }
 }

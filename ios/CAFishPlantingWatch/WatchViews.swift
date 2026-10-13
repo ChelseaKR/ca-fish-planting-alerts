@@ -51,6 +51,8 @@ struct WatchRootView: View {
             if let digest = model.digest {
                 if digest.locked {
                     LockedView(digest: digest)
+                } else if digest.favorites.isEmpty, let other = digest.otherStatesLine {
+                    MessageView(symbol: "lock.fill", message: other, footnote: digest.subheadline(at: context.date))
                 } else if digest.favorites.isEmpty {
                     MessageView(symbol: "star",
                                 message: digest.missingFavorites > 0
@@ -85,6 +87,9 @@ private struct FavoritesList: View {
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(digest.subheadline(at: now))
+                    if let other = digest.otherStatesLine {
+                        Text(other)
+                    }
                     if digest.missingFavorites > 0 {
                         Text(digest.missingFavorites == 1
                              ? "1 favorite isn't in this schedule. Open Trout Truck on your iPhone to check it."
@@ -107,7 +112,7 @@ private struct FavoriteRow: View {
                 .font(.headline)
                 .lineLimit(2)
             if case .scheduledThisWeek = digest.status(of: favorite, at: now) {
-                Text("This week")
+                Text(favorite.isReport ? ReportWording.stockedThisWeekTag : "This week")
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 1)
@@ -139,8 +144,10 @@ struct FavoriteDetailView: View {
                     Divider()
                     Text(digest.statusLine(of: favorite, at: context.date))
                         .font(.body)
-                    Text(digest.nextScheduledLine(of: favorite))
-                        .font(.footnote)
+                    if let next = digest.nextScheduledLine(of: favorite) {
+                        Text(next)
+                            .font(.footnote)
+                    }
                     if let last = digest.lastScheduledLine(of: favorite) {
                         Text(last)
                             .font(.footnote)

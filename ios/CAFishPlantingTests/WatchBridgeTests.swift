@@ -43,6 +43,26 @@ final class WatchBridgeTests: XCTestCase {
         XCTAssertEqual(watch.latest?.locked, true)
     }
 
+    /// Per state (DECISIONS 0025): another state's purchase unlocks the watch
+    /// but not this California favorite, which is counted, never shown.
+    func testAnotherStatesPurchaseDoesNotShowThisStatesFavorites() throws {
+        let watch = WatchBridge(session: nil)
+        let env = environment(watch)
+        let snapshot = try XCTUnwrap(env.snapshot)
+        let water = try XCTUnwrap(snapshot.waters.first { $0.state == "CA" })
+        env.toggleFavorite(water)
+        env.dismissNotificationExplainer()
+
+        env.purchases.setEntitled(states: ["TN"])
+        let tn = try XCTUnwrap(watch.latest)
+        XCTAssertFalse(tn.locked)
+        XCTAssertEqual(tn.favorites, [])
+        XCTAssertEqual(tn.favoritesInOtherStates, 1)
+
+        env.purchases.setEntitled(states: ["CA", "TN"])
+        XCTAssertEqual(watch.latest?.favorites.map(\.id), [water.id])
+    }
+
     func testAMuteFromTheWatchMutesThatWaterOnThePhone() throws {
         let watch = WatchBridge(session: nil)
         let env = environment(watch)

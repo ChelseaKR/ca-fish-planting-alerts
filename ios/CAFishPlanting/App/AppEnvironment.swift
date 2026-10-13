@@ -218,9 +218,10 @@ final class AppEnvironment {
                                   locked: !FreeTier.widgetsAllowed(entitledStates: entitled),
                                   entitledStates: entitled)
         widgetBridge.publish(digest)
-        let watchLocked = !FreeTier.watchAllowed(isEntitled: purchases.isEntitled)
+        let watchLocked = !FreeTier.watchAllowed(entitledStates: entitled)
         watchBridge?.publish(watchLocked == digest.locked ? digest
-            : WidgetDigest(snapshot: snapshot, meta: refreshMeta, favorites: favorites.ids, locked: watchLocked))
+            : WidgetDigest(snapshot: snapshot, meta: refreshMeta, favorites: favorites.ids, locked: watchLocked,
+                           entitledStates: entitled))
     }
 
     // MARK: States

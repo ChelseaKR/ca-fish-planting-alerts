@@ -56,7 +56,7 @@ final class WatchSyncTests: XCTestCase {
     /// The watch shows only what the phone sends. Locked, the phone sends
     /// no favorites, so there is nothing on the wire for the watch to show.
     func testALockedDigestCarriesNoFavoritesToTheWatch() throws {
-        let locked = digest(["cdfw-1", "cdfw-2"], locked: !FreeTier.watchAllowed(isEntitled: false))
+        let locked = digest(["cdfw-1", "cdfw-2"], locked: !FreeTier.watchAllowed(entitledStates: []))
         XCTAssertTrue(locked.locked)
         let received = try XCTUnwrap(WatchSync.digest(fromApplicationContext: try WatchSync.applicationContext(for: locked)))
         XCTAssertTrue(received.favorites.isEmpty)
@@ -67,8 +67,15 @@ final class WatchSyncTests: XCTestCase {
 
     func testTheWatchIsPartOfFullAccess() {
         XCTAssertTrue(FreeTier.watchRequiresFullAccess)
-        XCTAssertFalse(FreeTier.watchAllowed(isEntitled: false))
-        XCTAssertTrue(FreeTier.watchAllowed(isEntitled: true))
+        XCTAssertFalse(FreeTier.watchAllowed(entitledStates: []))
+        XCTAssertTrue(FreeTier.watchAllowed(entitledStates: ["CA"]))
+        XCTAssertTrue(FreeTier.watchAllowed(entitledStates: ["TN"]), "any state's purchase, like the widget (DECISIONS 0025)")
+        for states in [Set<String>(), ["CA"], ["TN"], ["CA", "TN"]] {
+            XCTAssertEqual(FreeTier.watchAllowed(entitledStates: states), FreeTier.widgetsAllowed(entitledStates: states),
+                           "the watch never unlocks anything the widget doesn't")
+        }
+        XCTAssertTrue(FreeTier.stateFeatures(stateName: "Tennessee", agencyShortName: "TWRA", semantics: .schedule)
+            .contains("Tennessee favorites on Apple Watch"))
         XCTAssertTrue(FreeTier.fullAccessFeatures.contains { $0.contains("Apple Watch") })
     }
 
@@ -107,5 +114,45 @@ final class WatchSyncTests: XCTestCase {
         XCTAssertEqual(WatchSync.waterIDToMute(fromUserInfo: request), "cdfw-125")
         XCTAssertNil(WatchSync.waterIDToMute(fromUserInfo: [:]))
         XCTAssertNil(WatchSync.waterIDToMute(fromUserInfo: [WatchSync.muteWaterIDKey: ""]))
+    }
+
+    // MARK: Per state (DECISIONS 0025), on the real v2 fixture
+
+    private func v2() throws -> Snapshot {
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures/v2-all-states.json")
+        return try SnapshotDecoder().decode(Data(contentsOf: url))
+    }
+
+    /// A Tennessee buyer's watch shows Tennessee favorites only; the rest
+    /// are counted and said, never shown and never dropped silently.
+    func testTheWatchListsOnlyFavoritesInOwnedStates() throws {
+        let s = try v2()
+        let ids = ["tn-monroe-tellico-river", "ma-swift-belch", s.waters[0].id]
+        let tn = WidgetDigest(snapshot: s, meta: meta, favorites: ids,
+                              locked: !FreeTier.watchAllowed(entitledStates: ["TN"]), entitledStates: ["TN"])
+        let received = try XCTUnwrap(WatchSync.digest(fromApplicationContext: try WatchSync.applicationContext(for: tn)))
+        XCTAssertEqual(received.favorites.map(\.id), ["tn-monroe-tellico-river"])
+        XCTAssertEqual(received.favoritesInOtherStates, 2)
+        XCTAssertEqual(received.otherStatesLine, "2 favorites are in states not unlocked. Unlock them in Trout Truck on your iPhone.")
+        let bytes = try XCTUnwrap(WatchSync.applicationContext(for: tn)[WatchSync.digestKey] as? Data)
+        XCTAssertFalse(String(decoding: bytes, as: UTF8.self).contains("ma-swift-belch"), "an unowned state's favorite is not sent")
+
+        let none = WidgetDigest(snapshot: s, meta: meta, favorites: ids,
+                                locked: !FreeTier.watchAllowed(entitledStates: []), entitledStates: [])
+        XCTAssertTrue(none.locked)
+        XCTAssertEqual(none.favorites, [])
+    }
+
+    /// A report state's water says "stocked" and has no next week.
+    func testAReportStateWaterSaysStockedOnTheWatch() throws {
+        let s = try v2()
+        let d = WidgetDigest(snapshot: s, meta: meta, favorites: ["ma-swift-belch"], locked: false, entitledStates: ["MA"])
+        let swift = try XCTUnwrap(d.favorites.first)
+        XCTAssertTrue(swift.isReport)
+        XCTAssertNil(d.nextScheduledLine(of: swift))
+        XCTAssertEqual(d.lastScheduledLine(of: swift), "Last stocked on 2026-10-09")
+        let short = d.shortStatus(of: swift, at: Date())
+        XCTAssertTrue(short.hasPrefix("Stocked") || short.hasPrefix("Last stocked"), short)
+        XCTAssertFalse(short.localizedCaseInsensitiveContains("scheduled"), short)
     }
 }

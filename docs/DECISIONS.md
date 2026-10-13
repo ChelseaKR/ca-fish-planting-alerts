@@ -604,12 +604,16 @@ review and doesn't change; this is for a later version.
 - **A round Lock Screen widget on the phone** (`accessoryCircular`): how
   many favorites are scheduled this week. The widget had the rectangular
   and inline Lock Screen sizes already.
-- **Part of full access.** `FreeTier.watchRequiresFullAccess` is `true`.
+- **Part of full access, per state (0025).** `FreeTier.watchRequiresFullAccess`
+  is `true`, and `FreeTier.watchAllowed(entitledStates:)` is the widget's
+  rule: any state's purchase unlocks the watch, which then lists only the
+  favorites in states this device owns. Favorites in other states are
+  counted and said ("2 favorites are in states not unlocked"), never shown.
   The phone decides, in one place (`AppEnvironment.publishWidgetDigest`),
-  and sends the watch the same digest the widget reads, locked and without
-  favorites unless full access is owned. The watch never checks a purchase
-  and never sees a product ID, so per-state purchases later change only the
-  phone. Locked, the watch says the content is part of full access, bought
+  and sends the watch the same digest the widget reads. The watch never
+  checks a purchase and never sees a product ID. A report state's water
+  says "stocked" on the watch too (`ReportWording`), never "scheduled".
+  Each state's purchase screen lists "<State> favorites on Apple Watch". Locked, the watch says the content is part of full access, bought
   in Trout Truck on the iPhone, and shows the published week and its count.
 - **No new data path.** The digest travels phone to watch over
   WatchConnectivity's application context, with no server, no account and

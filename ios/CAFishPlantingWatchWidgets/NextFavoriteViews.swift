@@ -68,9 +68,9 @@ private struct RectangularView: View {
                 title("Trout Truck")
                 Text("Part of full access. Unlock it on your iPhone.")
                     .font(.caption).lineLimit(2)
-            case .noFavorites:
+            case .noFavorites(let digest):
                 title("Trout Truck")
-                Text("Star a water on your iPhone")
+                Text(digest.favoritesInOtherStates > 0 ? "Unlock their state on your iPhone" : "Star a water on your iPhone")
                     .font(.caption).lineLimit(2)
             case .noneScheduled(let digest):
                 title(digest.isStale(at: entry.date) ? digest.week.label : "This week")
@@ -152,7 +152,7 @@ private struct InlineView: View {
             Label("Unlock on iPhone", systemImage: "lock")
         case .favorite(let digest, let favorite):
             if case .scheduledThisWeek = digest.status(of: favorite, at: entry.date) {
-                Label("\(favorite.name) this week", systemImage: "fish.fill")
+                Label(favorite.isReport ? ReportWording.stockedThisWeekInline(favorite.name) : "\(favorite.name) this week", systemImage: "fish.fill")
             } else {
                 Label(digest.summary(at: entry.date), systemImage: "fish.fill")
             }
@@ -178,7 +178,7 @@ private struct CornerView: View {
     private var label: String {
         guard let digest = entry.digest else { return "Open on iPhone" }
         if digest.locked { return "Unlock on iPhone" }
-        if digest.favorites.isEmpty { return "No favorites" }
+        if digest.favorites.isEmpty { return digest.favoritesInOtherStates > 0 ? "Unlock on iPhone" : "No favorites" }
         if digest.isStale(at: entry.date) { return "Week ended" }
         return "\(digest.favoritesListedThisWeek) this week"
     }

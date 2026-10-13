@@ -66,7 +66,9 @@ over, and no number at all when locked or empty.
   App Group container (same identifier, the watch's own copy) and reloads
   the complication. No server, no network request on the watch.
 - **Gate.** The phone builds the watch's digest locked unless
-  `FreeTier.watchAllowed`. The watch has no StoreKit code and never sees a
+  `FreeTier.watchAllowed(entitledStates:)` (any state's purchase, as for
+  the widget), and with only the favorites in owned states
+  (DECISIONS 0025). The watch has no StoreKit code and never sees a
   product ID; it can only show what the phone sent.
 - **Alerts.** The phone's local notifications reach the watch the usual
   way (when the phone is locked). The watch app registers the same

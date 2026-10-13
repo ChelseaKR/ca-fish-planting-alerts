@@ -101,26 +101,45 @@ age = datetime.datetime.now(datetime.timezone.utc) - generated
 if age > datetime.timedelta(days=7) and os.environ.get("ALLOW_STALE_SNAPSHOT") != "1":
     sys.exit(f"the bundled snapshot is {age.days} days old; run ios/scripts/sync-bundled-snapshot.sh "
              "first (or set ALLOW_STALE_SNAPSHOT=1)")
-this_week = {t["water_id"] for t in s["this_week"]}
+# v2 (DECISIONS 0025) carries every state; the frames stay California's,
+# the state Browse opens on, so the picks read California's regions, week
+# and waters only. A v1 file is California alone.
+if s.get("schema_version") == 2:
+    ca = next((st for st in s["states"] if st["code"] == "CA"), None)
+    if ca is None:
+        sys.exit("the bundled v2 snapshot has no California state")
+    regions = ca["regions"]
+    week_label = ca["current_week"]["label"]
+    ca_waters = [w for w in s["waters"] if w["state"] == "CA"]
+else:
+    regions = s.get("regions", [])
+    week_label = s["source_week"]["label"]
+    ca_waters = s["waters"]
+if not regions:
+    sys.exit("no California regions in the bundled snapshot; the region frame can't be picked")
+ca_ids = {w["id"] for w in ca_waters}
+this_week = {t["water_id"] for t in s["this_week"]} & ca_ids
 if not this_week:
-    sys.exit("the bundled snapshot has nothing scheduled this week; refresh it first")
-names = collections.Counter(w["name"] for w in s["waters"])
-waters = sorted((w for w in s["waters"] if names[w["name"]] == 1),
+    sys.exit("the bundled snapshot has nothing scheduled in California this week; refresh it first")
+names = collections.Counter(w["name"] for w in ca_waters)
+waters = sorted((w for w in ca_waters if names[w["name"]] == 1),
                 key=lambda w: (-len(w["plants"]), w["name"]))
 by_region = collections.Counter(w["region"] for w in waters if w["id"] in this_week)
 region = max(by_region, key=lambda code: (by_region[code], code))
 history = next(w for w in waters if w["id"] in this_week and len(w["name"]) <= 18)
 in_region = [w for w in waters if w["id"] in this_week and w["region"] == region and w is not history][:3]
 not_this_week = next(w for w in waters if w["id"] not in this_week)
-region_name = next(r["name"] for r in s["regions"] if r["code"] == region)
-in_region_all = [w for w in s["waters"] if w["region"] == region]
+region_name = next((r["name"] for r in regions if r["code"] == region), None)
+if region_name is None:
+    sys.exit(f"region {region!r} is not among California's regions in the snapshot")
+in_region_all = [w for w in ca_waters if w["region"] == region]
 county_listed = collections.Counter(c for w in in_region_all if w["id"] in this_week for c in w["counties"])
 county_size = collections.Counter(c for w in in_region_all for c in w["counties"])
 county = max(county_listed, key=lambda c: (county_listed[c], -county_size[c], c))
 print(region_name)
 print(history["name"])
 print("|".join(w["name"] for w in in_region + [not_this_week]))
-print(s["generated_at"], s["source_week"]["label"])
+print(s["generated_at"], week_label)
 print(county)
 PY
 )"

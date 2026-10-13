@@ -55,6 +55,26 @@ class SnapshotStoreTest {
         assertEquals("\"e1\"", store.meta.etag)
     }
 
+    @Test fun readsV2AndFallsBackToV1OnlyWhenV2IsNotThere() {
+        val layout = AppStorageLayout(tmp.newFolder())
+        val store = SnapshotStore(layout, bundled(older))
+        val asked = mutableListOf<String>()
+        fun refresher(v2Status: Int) = SnapshotRefresher({ url, _, _ ->
+            asked += url
+            if (url == SnapshotEndpoint.URL) HttpResponse(v2Status, null, ByteArray(0)) else HttpResponse(200, "\"v1\"", newer.toByteArray())
+        })
+        assertTrue(SnapshotEndpoint.URL.endsWith("/snapshot/v2.json"))
+        assertTrue(SnapshotEndpoint.V1_URL.endsWith("/snapshot/v1.json"))
+
+        assertEquals(RefreshOutcome.Updated, refresher(404).refresh(store, now))
+        assertEquals(listOf(SnapshotEndpoint.URL, SnapshotEndpoint.V1_URL), asked)
+
+        // Any other failure of v2 is a failure, never a quiet switch to v1.
+        asked.clear()
+        assertTrue(refresher(500).refresh(store, now) is RefreshOutcome.Failed)
+        assertEquals(listOf(SnapshotEndpoint.URL), asked)
+    }
+
     @Test fun refreshOutcomesAndAFailureKeepsTheSnapshot() {
         val layout = AppStorageLayout(tmp.newFolder())
         val store = SnapshotStore(layout, bundled(older))

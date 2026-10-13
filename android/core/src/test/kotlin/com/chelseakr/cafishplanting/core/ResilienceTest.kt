@@ -48,7 +48,7 @@ class ResilienceTest {
         assertFalse(stores.saveAlertState(AlertState()))
         assertFalse(stores.saveMuted(MutedWaters()))
         assertFalse(stores.saveOnboarding(OnboardingState()))
-        assertFalse(stores.saveEntitlement(PurchaseEntitlement.of(Entitlements(setOf(ProductCatalog.CALIFORNIA_FULL_ACCESS)))))
+        assertFalse(stores.saveEntitlement(PurchaseEntitlement.of(Entitlements(setOf(StateProducts.CALIFORNIA)))))
         assertFalse(stores.saveReviewPrompt(ReviewPromptState()))
     }
 

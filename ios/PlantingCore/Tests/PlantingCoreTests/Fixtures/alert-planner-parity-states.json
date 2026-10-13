@@ -1,0 +1,1852 @@
+{
+  "about" : "Multi-state alert planner and widget parity (DECISIONS 0025). Each scenario runs against v2-all-states.json, real pipeline output for California and Tennessee and labeled synthetic fixtures for Massachusetts and Michigan. A key is [start, species, precision]. A plan step's 'entitled' lists the states this device has bought; 'shown' is what may be posted: unmuted, and only for a water whose state is bought (a water the snapshot lacks counts as California). A widget step builds the digest at 'now', locked unless some state is bought. The expect blocks are recorded from the Swift planner (MultiStateParityTests.swift, PARITY_RECORD=1) and checked by both apps.",
+  "scenarios" : [
+    {
+      "name" : "every state from an empty baseline, then nothing new",
+      "steps" : [
+        {
+          "entitled" : [
+            "CA",
+            "TN",
+            "MA",
+            "MI"
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-20 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-2227.2026-09-20",
+                "new_keys" : [
+                  [
+                    "2026-09-20",
+                    "Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Halsey Forebay is on the stocking schedule",
+                "water_id" : "cdfw-2227"
+              },
+              {
+                "body" : "Scheduled for the weeks of 2026-10-11 and 2026-10-25 and 2026-11-08 and 2026-11-22 and 2026-12-06 (Rainbow Trout). Plans can change; TWRA gives the week, not the day.",
+                "id" : "plant.tn-monroe-tellico-river.2026-12-06",
+                "new_keys" : [
+                  [
+                    "2026-10-11",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-10-25",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-08",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-22",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-12-06",
+                    "Rainbow Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Tellico River is on the stocking schedule",
+                "water_id" : "tn-monroe-tellico-river"
+              },
+              {
+                "body" : "Scheduled for November 2026 and December 2026 (Rainbow Trout). TWRA hasn't set the day yet. Plans can change.",
+                "id" : "plant.tn-blount-pistol-creek-greenbelt-lake.2026-12-01",
+                "new_keys" : [
+                  [
+                    "2026-11-01",
+                    "Rainbow Trout",
+                    "month"
+                  ],
+                  [
+                    "2026-12-01",
+                    "Rainbow Trout",
+                    "month"
+                  ]
+                ],
+                "title" : "Pistol Creek/Greenbelt Lake is on the stocking schedule",
+                "water_id" : "tn-blount-pistol-creek-greenbelt-lake"
+              },
+              {
+                "body" : "Stocked on 2026-10-06 and 2026-10-09 (RT), per MassWildlife's report.",
+                "id" : "plant.ma-swift-belch.2026-10-09",
+                "new_keys" : [
+                  [
+                    "2026-10-06",
+                    "RT",
+                    "day"
+                  ],
+                  [
+                    "2026-10-09",
+                    "RT",
+                    "day"
+                  ]
+                ],
+                "title" : "Swift River was stocked",
+                "water_id" : "ma-swift-belch"
+              },
+              {
+                "body" : "Stocked on 2026-07-29 (Rainbow Trout), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-1234.2026-07-29",
+                "new_keys" : [
+                  [
+                    "2026-07-29",
+                    "Rainbow Trout",
+                    "day"
+                  ]
+                ],
+                "title" : "Au Sable River was stocked",
+                "water_id" : "mi-1234"
+              },
+              {
+                "body" : "Stocked on 2026-09-18 (Walleye), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-9012.2026-09-18",
+                "new_keys" : [
+                  [
+                    "2026-09-18",
+                    "Walleye",
+                    "day"
+                  ]
+                ],
+                "title" : "Houghton Lake was stocked",
+                "water_id" : "mi-9012"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-2227.2026-09-20",
+              "plant.tn-monroe-tellico-river.2026-12-06",
+              "plant.tn-blount-pistol-creek-greenbelt-lake.2026-12-01",
+              "plant.ma-swift-belch.2026-10-09",
+              "plant.mi-1234.2026-07-29",
+              "plant.mi-9012.2026-09-18"
+            ],
+            "state" : {
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout",
+                  "week"
+                ]
+              ],
+              "ma-swift-belch" : [
+                [
+                  "2026-10-06",
+                  "RT",
+                  "day"
+                ],
+                [
+                  "2026-10-09",
+                  "RT",
+                  "day"
+                ]
+              ],
+              "mi-1234" : [
+                [
+                  "2026-07-29",
+                  "Rainbow Trout",
+                  "day"
+                ]
+              ],
+              "mi-9012" : [
+                [
+                  "2026-09-18",
+                  "Walleye",
+                  "day"
+                ]
+              ],
+              "tn-anderson-norris-tailwater-clinch-river" : [
+
+              ],
+              "tn-blount-pistol-creek-greenbelt-lake" : [
+                [
+                  "2026-11-01",
+                  "Rainbow Trout",
+                  "month"
+                ],
+                [
+                  "2026-12-01",
+                  "Rainbow Trout",
+                  "month"
+                ]
+              ],
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        },
+        {
+          "entitled" : [
+            "CA",
+            "TN",
+            "MA",
+            "MI"
+          ],
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout",
+                  "week"
+                ]
+              ],
+              "ma-swift-belch" : [
+                [
+                  "2026-10-06",
+                  "RT",
+                  "day"
+                ],
+                [
+                  "2026-10-09",
+                  "RT",
+                  "day"
+                ]
+              ],
+              "mi-1234" : [
+                [
+                  "2026-07-29",
+                  "Rainbow Trout",
+                  "day"
+                ]
+              ],
+              "mi-9012" : [
+                [
+                  "2026-09-18",
+                  "Walleye",
+                  "day"
+                ]
+              ],
+              "tn-anderson-norris-tailwater-clinch-river" : [
+
+              ],
+              "tn-blount-pistol-creek-greenbelt-lake" : [
+                [
+                  "2026-11-01",
+                  "Rainbow Trout",
+                  "month"
+                ],
+                [
+                  "2026-12-01",
+                  "Rainbow Trout",
+                  "month"
+                ]
+              ],
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "name" : "each alert needs its own state's purchase",
+      "steps" : [
+        {
+          "entitled" : [
+            "TN"
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-20 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-2227.2026-09-20",
+                "new_keys" : [
+                  [
+                    "2026-09-20",
+                    "Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Halsey Forebay is on the stocking schedule",
+                "water_id" : "cdfw-2227"
+              },
+              {
+                "body" : "Scheduled for the weeks of 2026-10-11 and 2026-10-25 and 2026-11-08 and 2026-11-22 and 2026-12-06 (Rainbow Trout). Plans can change; TWRA gives the week, not the day.",
+                "id" : "plant.tn-monroe-tellico-river.2026-12-06",
+                "new_keys" : [
+                  [
+                    "2026-10-11",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-10-25",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-08",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-22",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-12-06",
+                    "Rainbow Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Tellico River is on the stocking schedule",
+                "water_id" : "tn-monroe-tellico-river"
+              },
+              {
+                "body" : "Scheduled for November 2026 and December 2026 (Rainbow Trout). TWRA hasn't set the day yet. Plans can change.",
+                "id" : "plant.tn-blount-pistol-creek-greenbelt-lake.2026-12-01",
+                "new_keys" : [
+                  [
+                    "2026-11-01",
+                    "Rainbow Trout",
+                    "month"
+                  ],
+                  [
+                    "2026-12-01",
+                    "Rainbow Trout",
+                    "month"
+                  ]
+                ],
+                "title" : "Pistol Creek/Greenbelt Lake is on the stocking schedule",
+                "water_id" : "tn-blount-pistol-creek-greenbelt-lake"
+              },
+              {
+                "body" : "Stocked on 2026-10-06 and 2026-10-09 (RT), per MassWildlife's report.",
+                "id" : "plant.ma-swift-belch.2026-10-09",
+                "new_keys" : [
+                  [
+                    "2026-10-06",
+                    "RT",
+                    "day"
+                  ],
+                  [
+                    "2026-10-09",
+                    "RT",
+                    "day"
+                  ]
+                ],
+                "title" : "Swift River was stocked",
+                "water_id" : "ma-swift-belch"
+              },
+              {
+                "body" : "Stocked on 2026-07-29 (Rainbow Trout), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-1234.2026-07-29",
+                "new_keys" : [
+                  [
+                    "2026-07-29",
+                    "Rainbow Trout",
+                    "day"
+                  ]
+                ],
+                "title" : "Au Sable River was stocked",
+                "water_id" : "mi-1234"
+              },
+              {
+                "body" : "Stocked on 2026-09-18 (Walleye), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-9012.2026-09-18",
+                "new_keys" : [
+                  [
+                    "2026-09-18",
+                    "Walleye",
+                    "day"
+                  ]
+                ],
+                "title" : "Houghton Lake was stocked",
+                "water_id" : "mi-9012"
+              }
+            ],
+            "shown" : [
+              "plant.tn-monroe-tellico-river.2026-12-06",
+              "plant.tn-blount-pistol-creek-greenbelt-lake.2026-12-01"
+            ],
+            "state" : {
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout",
+                  "week"
+                ]
+              ],
+              "ma-swift-belch" : [
+                [
+                  "2026-10-06",
+                  "RT",
+                  "day"
+                ],
+                [
+                  "2026-10-09",
+                  "RT",
+                  "day"
+                ]
+              ],
+              "mi-1234" : [
+                [
+                  "2026-07-29",
+                  "Rainbow Trout",
+                  "day"
+                ]
+              ],
+              "mi-9012" : [
+                [
+                  "2026-09-18",
+                  "Walleye",
+                  "day"
+                ]
+              ],
+              "tn-anderson-norris-tailwater-clinch-river" : [
+
+              ],
+              "tn-blount-pistol-creek-greenbelt-lake" : [
+                [
+                  "2026-11-01",
+                  "Rainbow Trout",
+                  "month"
+                ],
+                [
+                  "2026-12-01",
+                  "Rainbow Trout",
+                  "month"
+                ]
+              ],
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "name" : "no purchase posts nothing, and the baseline still moves",
+      "steps" : [
+        {
+          "entitled" : [
+
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-20 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-2227.2026-09-20",
+                "new_keys" : [
+                  [
+                    "2026-09-20",
+                    "Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Halsey Forebay is on the stocking schedule",
+                "water_id" : "cdfw-2227"
+              },
+              {
+                "body" : "Scheduled for the weeks of 2026-10-11 and 2026-10-25 and 2026-11-08 and 2026-11-22 and 2026-12-06 (Rainbow Trout). Plans can change; TWRA gives the week, not the day.",
+                "id" : "plant.tn-monroe-tellico-river.2026-12-06",
+                "new_keys" : [
+                  [
+                    "2026-10-11",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-10-25",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-08",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-22",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-12-06",
+                    "Rainbow Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Tellico River is on the stocking schedule",
+                "water_id" : "tn-monroe-tellico-river"
+              },
+              {
+                "body" : "Scheduled for November 2026 and December 2026 (Rainbow Trout). TWRA hasn't set the day yet. Plans can change.",
+                "id" : "plant.tn-blount-pistol-creek-greenbelt-lake.2026-12-01",
+                "new_keys" : [
+                  [
+                    "2026-11-01",
+                    "Rainbow Trout",
+                    "month"
+                  ],
+                  [
+                    "2026-12-01",
+                    "Rainbow Trout",
+                    "month"
+                  ]
+                ],
+                "title" : "Pistol Creek/Greenbelt Lake is on the stocking schedule",
+                "water_id" : "tn-blount-pistol-creek-greenbelt-lake"
+              },
+              {
+                "body" : "Stocked on 2026-10-06 and 2026-10-09 (RT), per MassWildlife's report.",
+                "id" : "plant.ma-swift-belch.2026-10-09",
+                "new_keys" : [
+                  [
+                    "2026-10-06",
+                    "RT",
+                    "day"
+                  ],
+                  [
+                    "2026-10-09",
+                    "RT",
+                    "day"
+                  ]
+                ],
+                "title" : "Swift River was stocked",
+                "water_id" : "ma-swift-belch"
+              },
+              {
+                "body" : "Stocked on 2026-07-29 (Rainbow Trout), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-1234.2026-07-29",
+                "new_keys" : [
+                  [
+                    "2026-07-29",
+                    "Rainbow Trout",
+                    "day"
+                  ]
+                ],
+                "title" : "Au Sable River was stocked",
+                "water_id" : "mi-1234"
+              },
+              {
+                "body" : "Stocked on 2026-09-18 (Walleye), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-9012.2026-09-18",
+                "new_keys" : [
+                  [
+                    "2026-09-18",
+                    "Walleye",
+                    "day"
+                  ]
+                ],
+                "title" : "Houghton Lake was stocked",
+                "water_id" : "mi-9012"
+              }
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout",
+                  "week"
+                ]
+              ],
+              "ma-swift-belch" : [
+                [
+                  "2026-10-06",
+                  "RT",
+                  "day"
+                ],
+                [
+                  "2026-10-09",
+                  "RT",
+                  "day"
+                ]
+              ],
+              "mi-1234" : [
+                [
+                  "2026-07-29",
+                  "Rainbow Trout",
+                  "day"
+                ]
+              ],
+              "mi-9012" : [
+                [
+                  "2026-09-18",
+                  "Walleye",
+                  "day"
+                ]
+              ],
+              "tn-anderson-norris-tailwater-clinch-river" : [
+
+              ],
+              "tn-blount-pistol-creek-greenbelt-lake" : [
+                [
+                  "2026-11-01",
+                  "Rainbow Trout",
+                  "month"
+                ],
+                [
+                  "2026-12-01",
+                  "Rainbow Trout",
+                  "month"
+                ]
+              ],
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        },
+        {
+          "entitled" : [
+            "CA",
+            "TN",
+            "MA",
+            "MI"
+          ],
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout",
+                  "week"
+                ]
+              ],
+              "ma-swift-belch" : [
+                [
+                  "2026-10-06",
+                  "RT",
+                  "day"
+                ],
+                [
+                  "2026-10-09",
+                  "RT",
+                  "day"
+                ]
+              ],
+              "mi-1234" : [
+                [
+                  "2026-07-29",
+                  "Rainbow Trout",
+                  "day"
+                ]
+              ],
+              "mi-9012" : [
+                [
+                  "2026-09-18",
+                  "Walleye",
+                  "day"
+                ]
+              ],
+              "tn-anderson-norris-tailwater-clinch-river" : [
+
+              ],
+              "tn-blount-pistol-creek-greenbelt-lake" : [
+                [
+                  "2026-11-01",
+                  "Rainbow Trout",
+                  "month"
+                ],
+                [
+                  "2026-12-01",
+                  "Rainbow Trout",
+                  "month"
+                ]
+              ],
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "name" : "California's purchase never posts another state's alert",
+      "steps" : [
+        {
+          "entitled" : [
+            "CA"
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the week of 2026-09-20 (Trout). Plans can change; CDFW gives the week, not the day.",
+                "id" : "plant.cdfw-2227.2026-09-20",
+                "new_keys" : [
+                  [
+                    "2026-09-20",
+                    "Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Halsey Forebay is on the stocking schedule",
+                "water_id" : "cdfw-2227"
+              },
+              {
+                "body" : "Scheduled for the weeks of 2026-10-11 and 2026-10-25 and 2026-11-08 and 2026-11-22 and 2026-12-06 (Rainbow Trout). Plans can change; TWRA gives the week, not the day.",
+                "id" : "plant.tn-monroe-tellico-river.2026-12-06",
+                "new_keys" : [
+                  [
+                    "2026-10-11",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-10-25",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-08",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-22",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-12-06",
+                    "Rainbow Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Tellico River is on the stocking schedule",
+                "water_id" : "tn-monroe-tellico-river"
+              },
+              {
+                "body" : "Scheduled for November 2026 and December 2026 (Rainbow Trout). TWRA hasn't set the day yet. Plans can change.",
+                "id" : "plant.tn-blount-pistol-creek-greenbelt-lake.2026-12-01",
+                "new_keys" : [
+                  [
+                    "2026-11-01",
+                    "Rainbow Trout",
+                    "month"
+                  ],
+                  [
+                    "2026-12-01",
+                    "Rainbow Trout",
+                    "month"
+                  ]
+                ],
+                "title" : "Pistol Creek/Greenbelt Lake is on the stocking schedule",
+                "water_id" : "tn-blount-pistol-creek-greenbelt-lake"
+              },
+              {
+                "body" : "Stocked on 2026-10-06 and 2026-10-09 (RT), per MassWildlife's report.",
+                "id" : "plant.ma-swift-belch.2026-10-09",
+                "new_keys" : [
+                  [
+                    "2026-10-06",
+                    "RT",
+                    "day"
+                  ],
+                  [
+                    "2026-10-09",
+                    "RT",
+                    "day"
+                  ]
+                ],
+                "title" : "Swift River was stocked",
+                "water_id" : "ma-swift-belch"
+              },
+              {
+                "body" : "Stocked on 2026-07-29 (Rainbow Trout), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-1234.2026-07-29",
+                "new_keys" : [
+                  [
+                    "2026-07-29",
+                    "Rainbow Trout",
+                    "day"
+                  ]
+                ],
+                "title" : "Au Sable River was stocked",
+                "water_id" : "mi-1234"
+              },
+              {
+                "body" : "Stocked on 2026-09-18 (Walleye), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-9012.2026-09-18",
+                "new_keys" : [
+                  [
+                    "2026-09-18",
+                    "Walleye",
+                    "day"
+                  ]
+                ],
+                "title" : "Houghton Lake was stocked",
+                "water_id" : "mi-9012"
+              }
+            ],
+            "shown" : [
+              "plant.cdfw-2227.2026-09-20"
+            ],
+            "state" : {
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout",
+                  "week"
+                ]
+              ],
+              "ma-swift-belch" : [
+                [
+                  "2026-10-06",
+                  "RT",
+                  "day"
+                ],
+                [
+                  "2026-10-09",
+                  "RT",
+                  "day"
+                ]
+              ],
+              "mi-1234" : [
+                [
+                  "2026-07-29",
+                  "Rainbow Trout",
+                  "day"
+                ]
+              ],
+              "mi-9012" : [
+                [
+                  "2026-09-18",
+                  "Walleye",
+                  "day"
+                ]
+              ],
+              "tn-anderson-norris-tailwater-clinch-river" : [
+
+              ],
+              "tn-blount-pistol-creek-greenbelt-lake" : [
+                [
+                  "2026-11-01",
+                  "Rainbow Trout",
+                  "month"
+                ],
+                [
+                  "2026-12-01",
+                  "Rainbow Trout",
+                  "month"
+                ]
+              ],
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "name" : "a seeded Tennessee favorite isn't announced",
+      "steps" : [
+        {
+          "expect" : {
+            "state" : {
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "op" : "seed",
+          "snapshot" : "v2",
+          "water" : "tn-monroe-tellico-river"
+        },
+        {
+          "entitled" : [
+            "TN"
+          ],
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "tn-monroe-tellico-river"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "initial_state" : {
+        "tn-monroe-tellico-river" : [
+          [
+            "2026-10-25",
+            "Rainbow Trout",
+            "week"
+          ]
+        ]
+      },
+      "name" : "Tennessee weeks after a partial baseline",
+      "steps" : [
+        {
+          "entitled" : [
+            "TN"
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the weeks of 2026-10-11 and 2026-11-08 and 2026-11-22 and 2026-12-06 (Rainbow Trout). Plans can change; TWRA gives the week, not the day.",
+                "id" : "plant.tn-monroe-tellico-river.2026-12-06",
+                "new_keys" : [
+                  [
+                    "2026-10-11",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-08",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-22",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-12-06",
+                    "Rainbow Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Tellico River is on the stocking schedule",
+                "water_id" : "tn-monroe-tellico-river"
+              }
+            ],
+            "shown" : [
+              "plant.tn-monroe-tellico-river.2026-12-06"
+            ],
+            "state" : {
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "tn-monroe-tellico-river"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "initial_state" : {
+        "tn-blount-pistol-creek-greenbelt-lake" : [
+          [
+            "2026-11-01",
+            "Rainbow Trout",
+            "month"
+          ]
+        ]
+      },
+      "name" : "a month with the day not set",
+      "steps" : [
+        {
+          "entitled" : [
+            "TN"
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for December 2026 (Rainbow Trout). TWRA hasn't set the day yet. Plans can change.",
+                "id" : "plant.tn-blount-pistol-creek-greenbelt-lake.2026-12-01",
+                "new_keys" : [
+                  [
+                    "2026-12-01",
+                    "Rainbow Trout",
+                    "month"
+                  ]
+                ],
+                "title" : "Pistol Creek/Greenbelt Lake is on the stocking schedule",
+                "water_id" : "tn-blount-pistol-creek-greenbelt-lake"
+              }
+            ],
+            "shown" : [
+              "plant.tn-blount-pistol-creek-greenbelt-lake.2026-12-01"
+            ],
+            "state" : {
+              "tn-blount-pistol-creek-greenbelt-lake" : [
+                [
+                  "2026-11-01",
+                  "Rainbow Trout",
+                  "month"
+                ],
+                [
+                  "2026-12-01",
+                  "Rainbow Trout",
+                  "month"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "tn-blount-pistol-creek-greenbelt-lake"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "name" : "a report says stocked, and a lagging one says so",
+      "steps" : [
+        {
+          "entitled" : [
+            "MA",
+            "MI"
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Stocked on 2026-10-06 and 2026-10-09 (RT), per MassWildlife's report.",
+                "id" : "plant.ma-swift-belch.2026-10-09",
+                "new_keys" : [
+                  [
+                    "2026-10-06",
+                    "RT",
+                    "day"
+                  ],
+                  [
+                    "2026-10-09",
+                    "RT",
+                    "day"
+                  ]
+                ],
+                "title" : "Swift River was stocked",
+                "water_id" : "ma-swift-belch"
+              },
+              {
+                "body" : "Stocked on 2026-07-29 (Rainbow Trout), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-1234.2026-07-29",
+                "new_keys" : [
+                  [
+                    "2026-07-29",
+                    "Rainbow Trout",
+                    "day"
+                  ]
+                ],
+                "title" : "Au Sable River was stocked",
+                "water_id" : "mi-1234"
+              },
+              {
+                "body" : "Stocked on 2026-09-18 (Walleye), per Michigan DNR's report. Records can appear weeks after the stocking.",
+                "id" : "plant.mi-9012.2026-09-18",
+                "new_keys" : [
+                  [
+                    "2026-09-18",
+                    "Walleye",
+                    "day"
+                  ]
+                ],
+                "title" : "Houghton Lake was stocked",
+                "water_id" : "mi-9012"
+              }
+            ],
+            "shown" : [
+              "plant.ma-swift-belch.2026-10-09",
+              "plant.mi-1234.2026-07-29",
+              "plant.mi-9012.2026-09-18"
+            ],
+            "state" : {
+              "ma-swift-belch" : [
+                [
+                  "2026-10-06",
+                  "RT",
+                  "day"
+                ],
+                [
+                  "2026-10-09",
+                  "RT",
+                  "day"
+                ]
+              ],
+              "mi-1234" : [
+                [
+                  "2026-07-29",
+                  "Rainbow Trout",
+                  "day"
+                ]
+              ],
+              "mi-9012" : [
+                [
+                  "2026-09-18",
+                  "Walleye",
+                  "day"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "name" : "a muted favorite moves its baseline without an alert",
+      "steps" : [
+        {
+          "entitled" : [
+            "TN",
+            "MA"
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the weeks of 2026-10-11 and 2026-10-25 and 2026-11-08 and 2026-11-22 and 2026-12-06 (Rainbow Trout). Plans can change; TWRA gives the week, not the day.",
+                "id" : "plant.tn-monroe-tellico-river.2026-12-06",
+                "new_keys" : [
+                  [
+                    "2026-10-11",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-10-25",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-08",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-22",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-12-06",
+                    "Rainbow Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Tellico River is on the stocking schedule",
+                "water_id" : "tn-monroe-tellico-river"
+              },
+              {
+                "body" : "Stocked on 2026-10-06 and 2026-10-09 (RT), per MassWildlife's report.",
+                "id" : "plant.ma-swift-belch.2026-10-09",
+                "new_keys" : [
+                  [
+                    "2026-10-06",
+                    "RT",
+                    "day"
+                  ],
+                  [
+                    "2026-10-09",
+                    "RT",
+                    "day"
+                  ]
+                ],
+                "title" : "Swift River was stocked",
+                "water_id" : "ma-swift-belch"
+              }
+            ],
+            "shown" : [
+              "plant.tn-monroe-tellico-river.2026-12-06"
+            ],
+            "state" : {
+              "ma-swift-belch" : [
+                [
+                  "2026-10-06",
+                  "RT",
+                  "day"
+                ],
+                [
+                  "2026-10-09",
+                  "RT",
+                  "day"
+                ]
+              ],
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "tn-monroe-tellico-river",
+            "ma-swift-belch"
+          ],
+          "muted" : [
+            "ma-swift-belch"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "initial_state" : {
+        "cdfw-2227" : [
+          [
+            "2026-09-20",
+            "Trout"
+          ]
+        ]
+      },
+      "name" : "a California baseline stored before states still matches",
+      "steps" : [
+        {
+          "entitled" : [
+            "CA"
+          ],
+          "expect" : {
+            "notifications" : [
+
+            ],
+            "shown" : [
+
+            ],
+            "state" : {
+              "cdfw-2227" : [
+                [
+                  "2026-09-20",
+                  "Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-2227"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "initial_state" : {
+        "cdfw-999999999" : [
+          [
+            "2026-09-20",
+            "Trout"
+          ]
+        ]
+      },
+      "name" : "a favorite the snapshot lacks keeps its baseline and counts as California",
+      "steps" : [
+        {
+          "entitled" : [
+            "TN"
+          ],
+          "expect" : {
+            "notifications" : [
+              {
+                "body" : "Scheduled for the weeks of 2026-10-11 and 2026-10-25 and 2026-11-08 and 2026-11-22 and 2026-12-06 (Rainbow Trout). Plans can change; TWRA gives the week, not the day.",
+                "id" : "plant.tn-monroe-tellico-river.2026-12-06",
+                "new_keys" : [
+                  [
+                    "2026-10-11",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-10-25",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-08",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-11-22",
+                    "Rainbow Trout",
+                    "week"
+                  ],
+                  [
+                    "2026-12-06",
+                    "Rainbow Trout",
+                    "week"
+                  ]
+                ],
+                "title" : "Tellico River is on the stocking schedule",
+                "water_id" : "tn-monroe-tellico-river"
+              }
+            ],
+            "shown" : [
+              "plant.tn-monroe-tellico-river.2026-12-06"
+            ],
+            "state" : {
+              "cdfw-999999999" : [
+                [
+                  "2026-09-20",
+                  "Trout",
+                  "week"
+                ]
+              ],
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "favorites" : [
+            "cdfw-999999999",
+            "tn-monroe-tellico-river"
+          ],
+          "op" : "plan",
+          "snapshot" : "v2"
+        },
+        {
+          "expect" : {
+            "state" : {
+              "tn-monroe-tellico-river" : [
+                [
+                  "2026-10-11",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-10-25",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-08",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-11-22",
+                  "Rainbow Trout",
+                  "week"
+                ],
+                [
+                  "2026-12-06",
+                  "Rainbow Trout",
+                  "week"
+                ]
+              ]
+            }
+          },
+          "op" : "prune",
+          "water" : "cdfw-999999999"
+        }
+      ]
+    },
+    {
+      "name" : "the widget lists only favorites in bought states",
+      "steps" : [
+        {
+          "entitled" : [
+            "TN"
+          ],
+          "expect" : {
+            "favorites" : [
+              "tn-monroe-tellico-river",
+              "tn-blount-pistol-creek-greenbelt-lake",
+              "tn-anderson-norris-tailwater-clinch-river"
+            ],
+            "favorites_in_other_states" : 4,
+            "locked" : false,
+            "missing_favorites" : 1,
+            "status_lines" : [
+              "Scheduled for the week of 2026-09-13: Rainbow Trout",
+              "Next scheduled for November 2026",
+              "Not listed for the week of 2026-09-13"
+            ],
+            "summary" : "1 favorite listed for the week of 2026-09-13"
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012",
+            "cdfw-999999999"
+          ],
+          "now" : "2026-10-12T19:00:00Z",
+          "op" : "widget",
+          "snapshot" : "v2"
+        },
+        {
+          "entitled" : [
+            "CA",
+            "TN",
+            "MA",
+            "MI"
+          ],
+          "expect" : {
+            "favorites" : [
+              "tn-monroe-tellico-river",
+              "cdfw-2227",
+              "tn-blount-pistol-creek-greenbelt-lake",
+              "tn-anderson-norris-tailwater-clinch-river",
+              "ma-swift-belch",
+              "mi-1234",
+              "mi-9012"
+            ],
+            "favorites_in_other_states" : 0,
+            "locked" : false,
+            "missing_favorites" : 0,
+            "status_lines" : [
+              "Scheduled for the week of 2026-09-13: Rainbow Trout",
+              "Next scheduled for the week of 2026-09-20",
+              "Next scheduled for November 2026",
+              "Not listed for the week of 2026-09-13",
+              "Last stocked on 2026-10-09",
+              "Last stocked on 2026-07-29",
+              "Last stocked on 2026-09-18"
+            ],
+            "summary" : "1 favorite listed for the week of 2026-09-13"
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "now" : "2026-10-12T19:00:00Z",
+          "op" : "widget",
+          "snapshot" : "v2"
+        },
+        {
+          "entitled" : [
+            "MA"
+          ],
+          "expect" : {
+            "favorites" : [
+              "ma-swift-belch"
+            ],
+            "favorites_in_other_states" : 6,
+            "locked" : false,
+            "missing_favorites" : 0,
+            "status_lines" : [
+              "Last stocked on 2026-10-09"
+            ],
+            "summary" : "0 favorites listed for the week of 2026-09-13"
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "now" : "2026-10-12T19:00:00Z",
+          "op" : "widget",
+          "snapshot" : "v2"
+        }
+      ]
+    },
+    {
+      "name" : "the widget is locked with no purchase",
+      "steps" : [
+        {
+          "entitled" : [
+
+          ],
+          "expect" : {
+            "favorites" : [
+
+            ],
+            "favorites_in_other_states" : 0,
+            "locked" : true,
+            "missing_favorites" : 0,
+            "status_lines" : [
+
+            ],
+            "summary" : "Unlock full access in Trout Truck"
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch",
+            "mi-1234",
+            "mi-9012"
+          ],
+          "now" : "2026-10-12T19:00:00Z",
+          "op" : "widget",
+          "snapshot" : "v2"
+        }
+      ]
+    }
+  ],
+  "snapshots" : {
+    "v2" : {
+      "file" : "v2-all-states.json"
+    }
+  }
+}

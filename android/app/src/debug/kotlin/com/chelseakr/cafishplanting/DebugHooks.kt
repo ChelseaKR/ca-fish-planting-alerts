@@ -6,7 +6,7 @@ import android.util.Log
 import com.chelseakr.cafishplanting.core.Entitlements
 import com.chelseakr.cafishplanting.core.HttpResponse
 import com.chelseakr.cafishplanting.core.HttpTransport
-import com.chelseakr.cafishplanting.core.ProductCatalog
+import com.chelseakr.cafishplanting.core.StateProducts
 import com.chelseakr.cafishplanting.core.UrlConnectionTransport
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,7 +45,7 @@ object DebugHooks {
 
     private class FakeBackend(private val dir: File) : PurchaseBackend {
         private val owned = File(dir, "fake-billing-owned")
-        private val _ui = MutableStateFlow(PurchaseUi(prices = ProductCatalog.productIDs.associateWith { "$9.99" }))
+        private val _ui = MutableStateFlow(PurchaseUi(prices = StateProducts.allProductIDs.associateWith { "$9.99" }))
         override val ui: StateFlow<PurchaseUi> = _ui
         private var report: (Entitlements) -> Unit = {}
 

@@ -50,20 +50,21 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onShowIntroduction: () -> Unit) {
+fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onShowStates: () -> Unit, onShowIntroduction: () -> Unit) {
     val context = LocalContext.current
     val uri = LocalUriHandler.current
     var priming by remember { mutableStateOf(false) }
+    val manyStates = (state.snapshot?.states?.size ?: 1) > 1
 
     Scaffold(topBar = { TopAppBar(title = { Text("About") }) }) { padding ->
         Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
             SectionHeader("Full access", ReadableWidth.fillMaxWidth())
             Card(ReadableWidth) {
-                if (state.isEntitled) {
+                if (state.isEntitled("CA")) {
                     Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         // Green on the seal only: green text on white is below 4.5:1.
                         Icon(Icons.Filled.Verified, null, tint = Color(0xFF34C759))
-                        Text("Unlocked", Modifier.padding(start = 12.dp))
+                        Text("California unlocked", Modifier.padding(start = 12.dp))
                     }
                 } else {
                     Para(
@@ -72,6 +73,14 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
                         secondary = true,
                     )
                     ButtonRow("Unlock full access", onUnlock)
+                }
+                if (manyStates) {
+                    Para(
+                        "Full access is a one-time purchase for each state. California's is the original purchase, and it stays what it was.",
+                        secondary = true,
+                        small = true,
+                    )
+                    ButtonRow("States and full access", onShowStates)
                 }
             }
 
@@ -82,6 +91,12 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
                         "when a favorite appears in the California Department of Fish and Wildlife's weekly stocking schedule, and a home screen widget with your favorites.",
                 )
                 Para("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
+                if (manyStates) {
+                    Para(
+                        "Other states come from their own wildlife agencies. Each date is shown as precisely as the agency gives it: a day, a week, or a month. " +
+                            "Where an agency reports stockings after they happen instead of scheduling them, the app says so and shows how recent its newest record is.",
+                    )
+                }
                 ButtonRow("Show the introduction", onShowIntroduction)
             }
 
@@ -141,6 +156,17 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
                     snapshot.license.sources.forEach { source -> ButtonRow(source.name) { uri.openUri(source.termsURL) } }
                 }
 
+                snapshot.states.filter { it.code != "CA" }.forEach { other ->
+                    SectionHeader("${other.name}: data source and license", ReadableWidth.fillMaxWidth())
+                    Card(ReadableWidth) {
+                        Para(other.attribution.text)
+                        Para(other.disclaimer)
+                        ButtonRow(other.sourceName) { uri.openUri(other.attribution.url) }
+                        Para(other.license.summary, secondary = true, small = true)
+                        other.license.sources.forEach { source -> ButtonRow(source.name) { uri.openUri(source.termsURL) } }
+                    }
+                }
+
                 SectionHeader("This snapshot", ReadableWidth.fillMaxWidth())
                 Card(ReadableWidth) {
                     Labeled("Schedule week", snapshot.sourceWeek.label)
@@ -154,7 +180,7 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
         }
     }
     if (priming) {
-        PrimingSheet(context as Activity, env, waterName = null, isEntitled = state.isEntitled, onDone = { priming = false })
+        PrimingSheet(context as Activity, env, waterName = null, isEntitled = state.hasAnyAccess, onDone = { priming = false })
     }
 }
 

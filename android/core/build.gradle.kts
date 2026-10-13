@@ -27,7 +27,7 @@ dependencies {
 tasks.test {
     // The parity tests read the Swift package's fixtures, so both planners
     // are held to the same files; the decoder test reads the app's bundled
-    // v1 snapshot. Both come from the repository itself.
+    // v2 snapshot. Both come from the repository itself.
     systemProperty("repoRoot", rootProject.projectDir.parentFile.absolutePath)
     inputs.dir(rootProject.projectDir.parentFile.resolve("ios/PlantingCore/Tests/PlantingCoreTests/Fixtures"))
     inputs.file(rootProject.projectDir.resolve("app/src/main/assets/snapshot.json"))

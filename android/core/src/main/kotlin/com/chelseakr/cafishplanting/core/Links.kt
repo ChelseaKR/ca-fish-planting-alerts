@@ -4,18 +4,32 @@ import java.net.URI
 import java.net.URISyntaxException
 
 /**
- * The one host this app ever fetches from, and the only URL it fetches.
- * The same constant as `SnapshotEndpoint.swift`; `HostAllowlistTest` fails
- * if any other host appears in the app's own source.
+ * The one host this app ever fetches from, and the only URLs it fetches,
+ * as `SnapshotEndpoint.swift`. `HostAllowlistTest` fails if any other host
+ * appears in the app's own source.
+ *
+ * [URL] is snapshot v2, California plus every other state (DECISIONS 0025).
+ * [V1_URL] is California alone, which stays byte for byte what it was; the
+ * app reads it only when v2 isn't there ([SnapshotRefresher]).
  */
 object SnapshotEndpoint {
-    const val URL = "https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json"
+    const val URL = "https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v2.json"
+    const val V1_URL = "https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json"
     const val HOST = "chelseakr.github.io"
 
-    /** The per-water site page, derived from the snapshot's own origin. */
+    /** A California water's site page, derived from the snapshot's own origin. */
     fun siteWaterURL(slug: String): String? {
         if (slug.isEmpty() || slug.any { !(it.isLetterOrDigit() || it == '-' || it == '_') }) return null
-        return "https://$HOST/ca-fish-planting-alerts/water/$slug/"
+        return sitePageURL("/water/$slug/")
+    }
+
+    /** A water's page from its v2 `site_path` (`/tn/water/<slug>/`), or the California path when the snapshot gave none. */
+    fun siteWaterURL(water: Water): String? = water.sitePath?.let(::sitePageURL) ?: siteWaterURL(water.slug)
+
+    internal fun sitePageURL(path: String): String? {
+        if (!path.startsWith("/") || path.contains("..")) return null
+        if (path.any { !(it.isLetterOrDigit() || it == '-' || it == '_' || it == '/') }) return null
+        return "https://$HOST/ca-fish-planting-alerts$path"
     }
 }
 

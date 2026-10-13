@@ -28,8 +28,32 @@ object PlainDateSerializer : KSerializer<PlainDate> {
 data class PlantKey(
     @Serializable(with = PlainDateSerializer::class) val weekStart: PlainDate,
     val species: String,
+    /**
+     * `null` for a week, so every baseline stored before precision existed
+     * (California's, all weeks) still matches; a day or a month otherwise.
+     */
+    val precision: DatePrecision? = null,
 ) : Comparable<PlantKey> {
-    constructor(plant: Plant) : this(plant.week.start, plant.species)
+    constructor(plant: Plant) : this(
+        plant.week.start,
+        plant.species,
+        plant.week.precision.takeIf { it != DatePrecision.WEEK },
+    )
+
+    /** The period the key names: "the week of 2026-10-11", "2026-10-14", or "December 2026". */
+    val phrase: String
+        get() = when (precision ?: DatePrecision.WEEK) {
+            DatePrecision.WEEK -> "the week of ${weekStart.isoDate}"
+            DatePrecision.DAY -> weekStart.isoDate
+            DatePrecision.MONTH -> "${MONTH_NAMES[weekStart.month - 1]} ${weekStart.year}"
+        }
+
+    companion object {
+        val MONTH_NAMES = listOf(
+            "January", "February", "March", "April", "May", "June", "July",
+            "August", "September", "October", "November", "December",
+        )
+    }
 
     /** Week first, then species, as `PlannedNotification` sorts in Swift. */
     override fun compareTo(other: PlantKey): Int =
@@ -42,10 +66,20 @@ data class AlertState(val lastListed: Map<String, Set<PlantKey>> = emptyMap())
 
 /**
  * One alert. The words and the identifier are the same as
- * `PlannedNotification` in ios/PlantingCore: a week, never a day, and
- * "scheduled", never "stocked".
+ * `PlannedNotification` in ios/PlantingCore. A schedule's alert says
+ * "scheduled" and names each period at the agency's precision; California's
+ * words are exactly as before. A report's alert says "stocked", in
+ * [ReportWording].
  */
-class PlannedNotification(val waterID: String, val waterName: String, newKeys: Collection<PlantKey>) {
+class PlannedNotification(
+    val waterID: String,
+    val waterName: String,
+    newKeys: Collection<PlantKey>,
+    val semantics: StateSemantics = StateSemantics.SCHEDULE,
+    val agencyShortName: String = "CDFW",
+    /** The state's lag note (Michigan), shortened into the alert. */
+    val lagging: Boolean = false,
+) {
     /** Ascending. Usually one; more when a refresh reveals several new weeks at once. */
     val newKeys: List<PlantKey>
 
@@ -62,22 +96,33 @@ class PlannedNotification(val waterID: String, val waterName: String, newKeys: C
         id = "plant.$waterID.${this.newKeys.last().weekStart.isoDate}"
     }
 
-    val title: String get() = "$waterName is on the stocking schedule"
+    val title: String
+        get() = if (semantics == StateSemantics.REPORT) ReportWording.alertTitle(waterName) else "$waterName is on the stocking schedule"
 
     fun body(): String {
-        val weeks = newKeys.map { it.weekStart }.distinct().sorted()
-        val whenText = if (weeks.size == 1) {
-            "Scheduled for the week of ${weeks[0].isoDate}"
-        } else {
-            "Scheduled for the weeks of " + weeks.joinToString(" and ") { it.isoDate }
-        }
         val species = newKeys.map { it.species }.distinct()
         val what = if (species.isEmpty()) "species not stated" else species.joinToString(", ")
-        return "$whenText ($what). Plans can change; CDFW gives the week, not the day."
+        if (semantics == StateSemantics.REPORT) {
+            return ReportWording.alertBody(newKeys.map { it.phrase }.distinct(), what, agencyShortName, lagging)
+        }
+        if (newKeys.all { it.precision == null }) {
+            // Weeks only: California's words, exactly as before.
+            val weeks = newKeys.map { it.weekStart }.distinct().sorted()
+            val whenText = if (weeks.size == 1) {
+                "Scheduled for the week of ${weeks[0].isoDate}"
+            } else {
+                "Scheduled for the weeks of " + weeks.joinToString(" and ") { it.isoDate }
+            }
+            return "$whenText ($what). Plans can change; $agencyShortName gives the week, not the day."
+        }
+        val periods = newKeys.map { it.phrase }.distinct()
+        val unset = if (newKeys.any { it.precision == DatePrecision.MONTH }) " $agencyShortName hasn't set the day yet." else ""
+        return "Scheduled for ${periods.joinToString(" and ")} ($what).$unset Plans can change."
     }
 
     override fun equals(other: Any?): Boolean =
-        other is PlannedNotification && other.waterID == waterID && other.waterName == waterName && other.newKeys == newKeys
+        other is PlannedNotification && other.waterID == waterID && other.waterName == waterName && other.newKeys == newKeys &&
+            other.semantics == semantics && other.agencyShortName == agencyShortName && other.lagging == lagging
 
     override fun hashCode(): Int = id.hashCode()
 
@@ -91,8 +136,9 @@ data class AlertPlan(val notifications: List<PlannedNotification>, val state: Al
  * `AlertPlanner.swift`, held to the same shared fixtures
  * (`AlertPlannerParityTest`):
  *
- * - For each favorite, take its listed plants at or after the snapshot's
- *   week (current and future weeks, never past ones).
+ * - For each favorite, take its alert basis ([Snapshot.alertBasis]): a
+ *   schedule's listed periods from its state's current week on, or a
+ *   report's recent stockings.
  * - Any (week, species) not in the water's stored baseline is new: one
  *   notification per water, naming every new (week, species).
  * - The baseline is replaced, not accumulated, so a removed week drops out
@@ -110,10 +156,16 @@ object AlertPlanner {
                 state.lastListed[id]?.let { next[id] = it }
                 continue
             }
-            val current = water.listedPlants(snapshot.sourceWeek).map(::PlantKey).toSet()
+            val current = snapshot.alertBasis(water).map(::PlantKey).toSet()
             val previous = state.lastListed[id] ?: emptySet()
             val newKeys = current - previous
-            if (newKeys.isNotEmpty()) notifications += PlannedNotification(id, water.name, newKeys)
+            if (newKeys.isNotEmpty()) {
+                notifications += PlannedNotification(
+                    id, water.name, newKeys,
+                    semantics = water.semantics, agencyShortName = water.agencyShortName,
+                    lagging = snapshot.stateOf(water)?.recencyNote != null,
+                )
+            }
             next[id] = current
         }
         return AlertPlan(notifications, AlertState(next))
@@ -122,7 +174,7 @@ object AlertPlanner {
     /** On favoriting: seed the baseline at what is visible now, so it is not announced. */
     fun seeding(state: AlertState, favoriting: String, snapshot: Snapshot): AlertState {
         val water = snapshot.water(favoriting) ?: return state
-        return AlertState(state.lastListed + (favoriting to water.listedPlants(snapshot.sourceWeek).map(::PlantKey).toSet()))
+        return AlertState(state.lastListed + (favoriting to snapshot.alertBasis(water).map(::PlantKey).toSet()))
     }
 
     fun pruning(state: AlertState, unfavoriting: String): AlertState = AlertState(state.lastListed - unfavoriting)

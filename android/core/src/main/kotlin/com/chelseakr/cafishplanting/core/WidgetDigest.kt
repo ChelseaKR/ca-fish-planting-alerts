@@ -9,11 +9,13 @@ data class DigestWeek(
     @Serializable(with = PlainDateSerializer::class) val start: PlainDate,
     @Serializable(with = PlainDateSerializer::class) val end: PlainDate,
     val label: String,
+    /** A digest written before precision existed reads as a week, which is what it was. */
+    val precision: DatePrecision = DatePrecision.WEEK,
 ) {
-    fun toWeek(): Week = Week(start, end, label)
+    fun toWeek(): Week = Week(start, end, label, precision)
 
     companion object {
-        fun of(week: Week): DigestWeek = DigestWeek(week.start, week.end, week.label)
+        fun of(week: Week): DigestWeek = DigestWeek(week.start, week.end, week.label, week.precision)
     }
 }
 
@@ -38,6 +40,8 @@ data class WidgetDigest(
     val favorites: List<Favorite>,
     val missingFavorites: Int,
     val locked: Boolean,
+    /** Favorites in states this device hasn't bought. Counted and said, never shown and never dropped silently. */
+    val favoritesInOtherStates: Int = 0,
 ) {
     @Serializable
     data class Favorite(
@@ -47,6 +51,8 @@ data class WidgetDigest(
         val speciesThisWeek: List<String>,
         val nextWeek: DigestWeek? = null,
         val lastListedWeek: DigestWeek? = null,
+        /** A report state's water: its rows say "stocked", never "scheduled". */
+        val isReport: Boolean = false,
     ) {
         val isListedThisWeek: Boolean get() = speciesThisWeek.isNotEmpty()
     }
@@ -90,13 +96,19 @@ data class WidgetDigest(
         return Status.NotListed(week.toWeek(), favorite.lastListedWeek?.toWeek())
     }
 
-    fun statusLine(favorite: Favorite, now: Instant): String = when (val s = status(favorite, now)) {
-        is Status.ScheduledThisWeek -> "Scheduled this week: ${s.species.joinToString(", ")}"
-        is Status.ScheduledForEndedWeek -> "Scheduled for the ${s.week.label}: ${s.species.joinToString(", ")}"
-        is Status.ScheduledLater -> "Next scheduled for the ${s.week.label}"
-        is Status.NotListed -> {
-            val listed = "Not listed for the ${s.week.label}"
-            if (s.lastListed == null) listed else "$listed. Last scheduled for the ${s.lastListed.label}"
+    fun statusLine(favorite: Favorite, now: Instant): String {
+        if (favorite.isReport) {
+            if (favorite.isListedThisWeek && !isStale(now)) return ReportWording.stockedThisWeek(favorite.speciesThisWeek)
+            return favorite.lastListedWeek?.let { ReportWording.lastStocked(it.toWeek()) } ?: ReportWording.NO_STOCKING_ON_RECORD
+        }
+        return when (val s = status(favorite, now)) {
+            is Status.ScheduledThisWeek -> "Scheduled this week: ${s.species.joinToString(", ")}"
+            is Status.ScheduledForEndedWeek -> "Scheduled for ${s.week.phrase}: ${s.species.joinToString(", ")}"
+            is Status.ScheduledLater -> "Next scheduled for ${s.week.phrase}"
+            is Status.NotListed -> {
+                val listed = "Not listed for ${s.week.phrase}"
+                if (s.lastListed == null) listed else "$listed. Last scheduled for ${s.lastListed.phrase}"
+            }
         }
     }
 
@@ -115,7 +127,13 @@ data class WidgetDigest(
 
     fun summary(now: Instant): String {
         if (locked) return "Unlock full access in Trout Truck"
-        if (favorites.isEmpty()) return if (missingFavorites > 0) "Favorites not in this schedule" else "No favorite waters yet"
+        if (favorites.isEmpty()) {
+            return when {
+                missingFavorites > 0 -> "Favorites not in this schedule"
+                favoritesInOtherStates > 0 -> "Favorites are in states not unlocked"
+                else -> "No favorite waters yet"
+            }
+        }
         val count = favoritesListedThisWeek
         val noun = if (count == 1) "favorite" else "favorites"
         return if (isStale(now)) "$count $noun listed for the ${week.label}" else "$count $noun scheduled this week"
@@ -136,14 +154,30 @@ data class WidgetDigest(
     }
 
     companion object {
-        const val CURRENT_VERSION = 1
+        /**
+         * 2: favorites carry their state's words ([Favorite.isReport]), and
+         * favorites in a state without its purchase are counted, never shown.
+         */
+        const val CURRENT_VERSION = 2
 
         /** No digest yet: the widget says to open the app, never "nothing scheduled". */
         const val NO_DIGEST_MESSAGE = "Open Trout Truck to load the schedule here."
 
-        fun build(snapshot: Snapshot, meta: SnapshotMeta, favoriteIDs: List<String>, locked: Boolean): WidgetDigest {
+        /**
+         * Builds the digest from what the app holds, favorites in the order
+         * added. [entitledStates] `null` means every state (the shape before
+         * states, kept for callers and tests that predate them).
+         */
+        fun build(
+            snapshot: Snapshot,
+            meta: SnapshotMeta,
+            favoriteIDs: List<String>,
+            locked: Boolean,
+            entitledStates: Set<String>? = null,
+        ): WidgetDigest {
             val favorites = mutableListOf<Favorite>()
             var missing = 0
+            var otherStates = 0
             if (!locked) {
                 for (id in favoriteIDs) {
                     val water = snapshot.water(id)
@@ -151,11 +185,20 @@ data class WidgetDigest(
                         missing += 1
                         continue
                     }
+                    if (entitledStates != null && water.state !in entitledStates) {
+                        otherStates += 1
+                        continue
+                    }
+                    val week = snapshot.currentWeek(water)
                     val species = water.plants
-                        .filter { it.status == PlantStatus.LISTED && it.week == snapshot.sourceWeek }
+                        .filter { it.status != PlantStatus.REMOVED && it.week.precision != DatePrecision.MONTH && it.week.overlaps(week) }
                         .map { it.species }
                         .distinct()
-                    val next = water.plants.firstOrNull { it.status == PlantStatus.LISTED && it.week > snapshot.sourceWeek }?.week
+                    val next = if (water.semantics == StateSemantics.SCHEDULE) {
+                        water.plants.firstOrNull { it.status == PlantStatus.LISTED && it.week.start > week.end }?.week
+                    } else {
+                        null
+                    }
                     favorites += Favorite(
                         id = water.id,
                         name = water.name,
@@ -163,6 +206,7 @@ data class WidgetDigest(
                         speciesThisWeek = species,
                         nextWeek = next?.let(DigestWeek::of),
                         lastListedWeek = water.lastListedWeek?.let(DigestWeek::of),
+                        isReport = water.semantics == StateSemantics.REPORT,
                     )
                 }
             }
@@ -175,6 +219,7 @@ data class WidgetDigest(
                 favorites = favorites,
                 missingFavorites = missing,
                 locked = locked,
+                favoritesInOtherStates = otherStates,
             )
         }
 

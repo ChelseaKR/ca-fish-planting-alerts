@@ -12,7 +12,7 @@ name: ci
 # - android: the Android app (android/, docs/DECISIONS.md 0022): the
 #   Gradle wrapper checked against Gradle's published checksums, then the
 #   core module's JVM tests (including the alert-planner parity fixtures
-#   shared with the Swift package, and a decode of the committed v1
+#   shared with the Swift package, and a decode of the committed v2
 #   snapshot the app bundles), the app's JVM test of the off-main-thread
 #   snapshot load, Android lint with warnings as errors, and a debug and an
 #   R8-minified release build, each checked to carry that same snapshot byte

@@ -34,7 +34,7 @@ public struct ReviewPromptState: Codable, Equatable, Sendable {
 /// they leave a water's page, not while it is open.
 ///
 /// Neither depends on which state's purchase the person owns (DECISIONS
-/// 0025, 0027): an alert only exists for a state they unlocked, whichever
+/// 0025, 0028): an alert only exists for a state they unlocked, whichever
 /// it is, and a favorite in any state counts.
 public enum ReviewMoment: Equatable, Sendable {
     /// They opened a planting alert and then left that water's page.

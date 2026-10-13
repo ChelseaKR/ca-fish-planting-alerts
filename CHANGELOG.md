@@ -57,7 +57,7 @@ This repository was republished with a new history on 2026-09-18
   version, 120 days apart and three times a year. Nothing is offered for a
   rating. Any state's alerts and favorites count; nothing depends on which
   state was bought. About has a "Rate Trout Truck" row that opens the App
-  Store's review page (DECISIONS 0027).
+  Store's review page (DECISIONS 0028).
 - Website: water page titles lead with the water, the species and
   "stocking", and add "& planting" when that still fits in 60 characters,
   for example "Nora Lake trout stocking & planting schedule (Shasta County)

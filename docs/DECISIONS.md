@@ -585,7 +585,7 @@ another state has data.
   9.99, one time, product id `com.chelseakr.cafishplanting.state.tn`.
   Michigan's indemnity clause and species scope are moot while it is off.
 
-## 0027 — Ask for App Store ratings only at the end of a task (2026-10-12)
+## 0028 — Ask for App Store ratings only at the end of a task (2026-10-12)
 
 **Context.** Every stocking app in App Store search has 0 to 6 ratings
 (`_agent-tools/remediate-2026-10-12/seamline/COMPETE.md`, move 3), so the

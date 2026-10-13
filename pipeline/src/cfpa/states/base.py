@@ -26,8 +26,14 @@ from urllib.parse import urlsplit
 
 import httpx
 
-Precision = Literal["day", "week", "month"]
-Semantics = Literal["schedule", "report"]
+# "approximate": the agency's own words for when, such as New York's
+# "April - third week" or "Spring". Shown verbatim, never as a date; start
+# and end only bound it, for ordering and for reminders.
+Precision = Literal["day", "week", "month", "approximate"]
+# "plan": a once-a-year plan (New York). Like a schedule it looks forward,
+# but it is one publication a year, so no removal is ever inferred from it,
+# and the words are "planned for".
+Semantics = Literal["schedule", "report", "plan"]
 Status = Literal["listed", "removed", "reported"]
 
 USER_AGENT_TEMPLATE = (
@@ -71,6 +77,10 @@ class StateFormatError(ValueError):
     """The feed no longer looks the way this code reads it. Refused whole."""
 
 
+class NotModified(Exception):
+    """The server answered 304: the file has not changed since the last read."""
+
+
 def week_start_containing(day: dt.date) -> dt.date:
     """The Sunday that begins the Sunday..Saturday week containing ``day``."""
     return day - dt.timedelta(days=(day.weekday() + 1) % 7)
@@ -84,6 +94,14 @@ class Period:
     start: dt.date
     end: dt.date
     precision: Precision
+    # The agency's words, for an "approximate" period only.
+    text: str | None = None
+
+    @classmethod
+    def approximate(cls, start: dt.date, end: dt.date, text: str) -> Period:
+        if not text.strip() or end < start:
+            raise StateFormatError(f"bad approximate period {text!r} {start}..{end}")
+        return cls(start, end, "approximate", text.strip())
 
     @classmethod
     def day(cls, d: dt.date) -> Period:
@@ -107,6 +125,8 @@ class Period:
             return self.start.isoformat()
         if self.precision == "week":
             return f"week of {self.start.isoformat()}"
+        if self.precision == "approximate":
+            return str(self.text)
         return f"{_MONTHS[self.start.month - 1]} {self.start.year}"
 
     def to_json(self) -> dict[str, str]:
@@ -120,12 +140,14 @@ class Period:
     @classmethod
     def from_json(cls, d: Mapping[str, Any]) -> Period:
         precision = d["precision"]
-        if precision not in ("day", "week", "month"):
+        if precision not in ("day", "week", "month", "approximate"):
             raise StateFormatError(f"unknown precision {precision!r}")
         return cls(
             dt.date.fromisoformat(d["start"]),
             dt.date.fromisoformat(d["end"]),
             precision,
+            # History stores "text"; a v2 period carries it as its label.
+            (d.get("text") or d.get("label")) if precision == "approximate" else None,
         )
 
 
@@ -172,6 +194,7 @@ class ParsedFeed:
     content_sha256: str
     last_modified: str | None
     skipped: int = 0
+    etag: str | None = None
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -180,10 +203,21 @@ class FetchedBody:
     text: str
     fetched_at: dt.datetime
     last_modified: str | None
+    etag: str | None = None
 
     @property
     def sha256(self) -> str:
         return hashlib.sha256(self.text.encode("utf-8")).hexdigest()
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class FetchContext:
+    """What the last good read left behind, for a polite next read: the
+    newest record on file, and the validators for a conditional GET."""
+
+    newest: dt.date | None = None
+    etag: str | None = None
+    last_modified: str | None = None
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -228,9 +262,10 @@ class StateSource:
     # Records before this date are kept in history but left out of the
     # snapshot and the site, to keep the app's download small. None = all.
     publish_since: dt.date | None
-    # (client, user agent, sleep, newest record already on file) -> bodies.
+    # (client, user agent, sleep, what the last read left) -> bodies. Raises
+    # NotModified when the server says the file has not changed.
     fetch: Callable[
-        [httpx.Client, str, Callable[[float], None], dt.date | None],
+        [httpx.Client, str, Callable[[float], None], FetchContext],
         list[FetchedBody],
     ]
     parse: Callable[[list[FetchedBody]], ParsedFeed]
@@ -239,7 +274,8 @@ class StateSource:
     def removal_inference(self) -> bool:
         # docs/DECISIONS.md 0016: a missing row only means "dropped" for a
         # source that publishes its whole forward schedule. A report of past
-        # stockings that ages rows off says nothing about a removal.
+        # stockings that ages rows off says nothing about a removal, and a
+        # once-a-year plan is one publication, not a rolling schedule.
         return self.semantics == "schedule"
 
     @property
@@ -247,8 +283,11 @@ class StateSource:
         return self.code.lower()
 
 
-def check_robots_strict(client: httpx.Client, data_url: str, user_agent: str) -> None:
-    """Refuse unless the data host's robots.txt is readable and allows us."""
+def check_robots_strict(
+    client: httpx.Client, data_url: str, user_agent: str
+) -> float | None:
+    """Refuse unless the data host's robots.txt is readable and allows us.
+    Returns the host's Crawl-delay in seconds, if it declares one."""
     parts = urlsplit(data_url)
     robots_url = f"{parts.scheme}://{parts.netloc}/robots.txt"
     try:
@@ -265,7 +304,7 @@ def check_robots_strict(client: httpx.Client, data_url: str, user_agent: str) ->
         ) from exc
     if resp.status_code == 404:
         # The owner's ruling: no file means no rules.
-        return
+        return None
     if resp.status_code != 200:
         where = resp.headers.get("location")
         detail = f" (redirects to {where})" if where else ""
@@ -285,6 +324,16 @@ def check_robots_strict(client: httpx.Client, data_url: str, user_agent: str) ->
         raise RobotsDisallowedError(
             f"robots.txt at {robots_url} disallows {data_url} for {user_agent!r}"
         )
+    delay = parser.crawl_delay(user_agent)
+    return float(delay) if delay is not None else None
+
+
+def polite_delay(crawl_delay: float | None) -> float:
+    """Seconds between two requests to one host: the host's Crawl-delay
+    (plus a second) when it declares one, else ``POLITE_DELAY_SECONDS``."""
+    if crawl_delay is None:
+        return POLITE_DELAY_SECONDS
+    return max(POLITE_DELAY_SECONDS, crawl_delay + 1)
 
 
 def get_text(
@@ -294,16 +343,21 @@ def get_text(
     *,
     params: Mapping[str, str] | None = None,
     accept: str = "application/json",
+    since: FetchContext | None = None,
 ) -> FetchedBody:
-    """One honest GET. Never a browser User-Agent, never a cache buster."""
+    """One honest GET. Never a browser User-Agent, never a cache buster.
+    With ``since``, the GET is conditional, and a 304 raises NotModified."""
+    headers = {"User-Agent": user_agent, "Accept": accept}
+    if since is not None and since.etag:
+        headers["If-None-Match"] = since.etag
+    if since is not None and since.last_modified:
+        headers["If-Modified-Since"] = since.last_modified
     try:
         resp = client.get(
-            url,
-            params=params,
-            headers={"User-Agent": user_agent, "Accept": accept},
-            timeout=60,
-            follow_redirects=False,
+            url, params=params, headers=headers, timeout=120, follow_redirects=False
         )
+        if resp.status_code == 304:
+            raise NotModified(url)
         resp.raise_for_status()
     except httpx.HTTPError as exc:
         raise StateFetchError(f"fetch of {url} failed: {exc}") from exc
@@ -312,6 +366,7 @@ def get_text(
         text=resp.text,
         fetched_at=dt.datetime.now(dt.UTC),
         last_modified=resp.headers.get("last-modified"),
+        etag=resp.headers.get("etag"),
     )
 
 

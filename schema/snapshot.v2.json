@@ -56,19 +56,20 @@
       "additionalProperties": false,
       "required": ["precision", "start", "end", "label"],
       "properties": {
-        "precision": { "enum": ["day", "week", "month"] },
+        "precision": { "enum": ["day", "week", "month", "approximate"] },
         "start": { "$ref": "#/$defs/date" },
         "end": { "$ref": "#/$defs/date" },
         "label": {
           "type": "string",
           "minLength": 1,
-          "description": "day: 'YYYY-MM-DD'. week: 'week of YYYY-MM-DD' (a Sunday). month: '<Month> YYYY'. Display it as given; never shorten a week or month to a day."
+          "description": "day: 'YYYY-MM-DD'. week: 'week of YYYY-MM-DD' (a Sunday). month: '<Month> YYYY'. approximate: the agency's own words and the year, verbatim ('April - third week, 2026', 'Spring, 2026'); start and end only bound it. Display it as given; never shorten any of them to a day."
         }
       },
       "allOf": [
         { "if": { "properties": { "precision": { "const": "day" } } }, "then": { "properties": { "label": { "pattern": "^\\d{4}-\\d{2}-\\d{2}$" } } } },
         { "if": { "properties": { "precision": { "const": "week" } } }, "then": { "properties": { "label": { "pattern": "^week of \\d{4}-\\d{2}-\\d{2}$" } } } },
-        { "if": { "properties": { "precision": { "const": "month" } } }, "then": { "properties": { "label": { "pattern": "^(January|February|March|April|May|June|July|August|September|October|November|December) \\d{4}$" } } } }
+        { "if": { "properties": { "precision": { "const": "month" } } }, "then": { "properties": { "label": { "pattern": "^(January|February|March|April|May|June|July|August|September|October|November|December) \\d{4}$" } } } },
+        { "if": { "properties": { "precision": { "const": "approximate" } } }, "then": { "properties": { "label": { "pattern": ", \\d{4}$" } } } }
       ]
     },
     "license_source": {
@@ -107,14 +108,14 @@
           }
         },
         "semantics": {
-          "enum": ["schedule", "report"],
-          "description": "schedule: the agency says when fish will be stocked, and plans can change; say 'scheduled'. report: the agency reports stockings already done; say 'stocked on'."
+          "enum": ["schedule", "report", "plan"],
+          "description": "schedule: the agency says when fish will be stocked, and plans can change; say 'scheduled'. report: the agency reports stockings already done; say 'stocked on'. plan: a once-a-year plan in the agency's own words (New York); say 'planned for', never infer a removal."
         },
         "date_precisions": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": { "enum": ["day", "week", "month"] }
+          "items": { "enum": ["day", "week", "month", "approximate"] }
         },
         "removal_inference": { "type": "boolean", "description": "True only for schedule states (docs/DECISIONS.md 0016)." },
         "current_week": { "$ref": "#/$defs/week", "description": "What 'this week' means for this state. California: CDFW's stated week. Others: the week containing as_of." },
@@ -192,7 +193,7 @@
         "species": { "type": "string", "minLength": 1 },
         "status": {
           "enum": ["listed", "removed", "reported"],
-          "description": "listed: on the agency's schedule as of the latest fetch. removed: was on the schedule, then dropped before its period ended (schedule states only). reported: the agency reports this stocking as done (report states only)."
+          "description": "listed: on the agency's schedule or plan as of the latest fetch. removed: was on the schedule, then dropped before its period ended (schedule states only). reported: the agency reports this stocking as done (report states only)."
         },
         "count": { "type": ["integer", "null"], "minimum": 0 },
         "first_observed_at": { "$ref": "#/$defs/datetime" },

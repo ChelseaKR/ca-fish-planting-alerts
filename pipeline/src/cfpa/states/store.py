@@ -62,6 +62,7 @@ class StateRecord:
                 "precision": self.period.precision,
                 "start": self.period.start.isoformat(),
                 "end": self.period.end.isoformat(),
+                **({"text": self.period.text} if self.period.text else {}),
             },
             "species": self.species,
             "status": self.status,
@@ -93,6 +94,7 @@ class Checks:
     last_error: str | None = None
     content_sha256: str | None = None
     last_modified: str | None = None
+    etag: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -106,6 +108,7 @@ class Checks:
             "last_error": self.last_error,
             "content_sha256": self.content_sha256,
             "last_modified": self.last_modified,
+            **({"etag": self.etag} if self.etag else {}),
         }
 
     @classmethod
@@ -121,6 +124,7 @@ class Checks:
             last_error=d.get("last_error"),
             content_sha256=d.get("content_sha256"),
             last_modified=d.get("last_modified"),
+            etag=d.get("etag"),
         )
 
 
@@ -247,7 +251,7 @@ def merge(
       follow the agency's newest spelling, and old names are kept as aliases.
     """
     fetched_at = feed.fetched_at
-    status = "listed" if source.semantics == "schedule" else "reported"
+    status = "reported" if source.semantics == "report" else "listed"
     by_key = {r.key(): r for r in history.records}
     seen: set[RecordKey] = set()
     for rec in feed.records:
@@ -300,8 +304,24 @@ def merge(
             last_error=None,
             content_sha256=feed.content_sha256,
             last_modified=feed.last_modified,
+            etag=feed.etag,
         ),
         aliases=aliases,
+    )
+
+
+def record_unchanged(history: StateHistory, *, checked_at: dt.datetime) -> StateHistory:
+    """The server said the file has not changed (304): the data on file is
+    current as of now. Nothing but the checks changes."""
+    return dataclasses.replace(
+        history,
+        checks=dataclasses.replace(
+            history.checks,
+            last_attempt_at=checked_at,
+            last_success_at=checked_at,
+            last_attempt_ok=True,
+            last_error=None,
+        ),
     )
 
 

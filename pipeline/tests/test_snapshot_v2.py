@@ -11,6 +11,7 @@ import datetime as dt
 import hashlib
 import json
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 import jsonschema
@@ -235,6 +236,54 @@ def test_a_state_with_no_data_is_left_out_not_shown_empty(tmp_path: Path):
 # ---- the state pages
 
 
+class _Page(HTMLParser):
+    """A page read with a real HTML parser, not a regex tag filter: the
+    visible text (script and style contents left out), the <title>, and each
+    JSON-LD block's payload."""
+
+    def __init__(self, html: str) -> None:
+        super().__init__(convert_charrefs=True)
+        self.text: list[str] = []
+        self.title = ""
+        self.json_ld: list[str] = []
+        self._skip: str | None = None
+        self._ld = False
+        self._in_title = False
+        self.feed(html)
+        self.close()
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in ("script", "style"):
+            self._skip = tag
+            self._ld = tag == "script" and ("type", "application/ld+json") in attrs
+            if self._ld:
+                self.json_ld.append("")
+        elif tag == "title":
+            self._in_title = True
+        # A tag separates words, as the browser's layout would.
+        self.text.append(" ")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == self._skip:
+            self._skip = None
+            self._ld = False
+        elif tag == "title":
+            self._in_title = False
+        self.text.append(" ")
+
+    def handle_data(self, data: str) -> None:
+        if self._ld:
+            self.json_ld[-1] += data
+        elif self._skip is None:
+            self.text.append(data)
+            if self._in_title:
+                self.title += data
+
+    @property
+    def visible_text(self) -> str:
+        return "".join(self.text)
+
+
 def _page(built: Path, rel: str) -> str:
     return (built / "site" / rel).read_text(encoding="utf-8")
 
@@ -282,16 +331,12 @@ def test_report_states_say_stocked_and_michigan_says_how_late_it_is(built: Path)
 
 
 def test_state_titles_put_stocking_first_and_structured_data_parses(built: Path):
-    page = _page(built, "tn/water/tellico-river-monroe-county/index.html")
-    title = re.search(r"<title>(.*?)</title>", page).group(1)
-    assert title.startswith(
+    page = _Page(_page(built, "tn/water/tellico-river-monroe-county/index.html"))
+    assert page.title.startswith(
         "Tellico River trout stocking schedule (Monroe County, Tennessee)"
     )
-    ld = json.loads(
-        re.search(
-            r'<script type="application/ld\+json">(.*?)</script>', page, re.S
-        ).group(1)
-    )
+    assert len(page.json_ld) == 1
+    ld = json.loads(page.json_ld[0])
     types = {n["@type"] for n in ld["@graph"]}
     assert {"WebPage", "BreadcrumbList", "BodyOfWater"} <= types
     assert "Event" not in json.dumps(ld)
@@ -346,6 +391,11 @@ def test_no_sentence_on_a_state_page_runs_into_the_next(built: Path):
     """Jinja's trim_blocks eats the newline after a block tag, which once
     printed "week of 2026-10-25.Most recently" on every Tennessee page."""
     joined = re.compile(r"[a-z0-9)]\.[A-Z][a-z]")
+    # Negative control: the check flags the bug it guards against, and the
+    # parser leaves script contents out of the text it checks.
+    bad = _Page("<p>Next: week of 2026-10-25.Most recently scheduled</p>")
+    assert joined.search(bad.visible_text)
+    assert not joined.search(_Page("<script>a.Bc</script><p>ok.</p>").visible_text)
     pages = [
         p
         for code in ("tn", "ma", "mi", "states")
@@ -353,8 +403,7 @@ def test_no_sentence_on_a_state_page_runs_into_the_next(built: Path):
     ]
     assert len(pages) > 100
     for p in pages:
-        body = re.sub(r"<script.*?</script>", " ", p.read_text("utf-8"), flags=re.S)
-        text = re.sub(r"<[^>]+>", " ", body)
+        text = _Page(p.read_text("utf-8")).visible_text
         assert not joined.search(text), (p, joined.search(text))
 
 

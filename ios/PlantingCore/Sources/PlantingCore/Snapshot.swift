@@ -102,7 +102,7 @@ public struct Snapshot: Equatable, Sendable {
     public func alertBasis(for water: Water) -> [Plant] {
         let week = currentWeek(for: water)
         switch water.semantics {
-        case .schedule:
+        case .schedule, .plan:
             return water.listedPlants(onOrAfter: week)
         case .report:
             let since = week.start.adding(days: -Self.reportLookbackDays)
@@ -120,6 +120,9 @@ public enum StateSemantics: String, Sendable, Equatable, Codable {
     case schedule
     /// The agency reports stockings already done. Say "stocked".
     case report
+    /// A once-a-year plan in the agency's own words (New York). Say
+    /// "planned for"; nothing is ever inferred as removed from it.
+    case plan
 }
 
 /// One state's source, terms and freshness (`$defs/state`, schema v2).
@@ -183,7 +186,13 @@ public struct StateInfo: Equatable, Sendable, Identifiable {
     }
 
     /// "Schedule" or "Stocking report", for a list of states.
-    public var kindLabel: String { semantics == .schedule ? "Stocking schedule" : "Stocking report" }
+    public var kindLabel: String {
+        switch semantics {
+        case .schedule: return "Stocking schedule"
+        case .report: return "Stocking report"
+        case .plan: return "Spring stocking plan"
+        }
+    }
 }
 
 public struct SourceInfo: Equatable, Sendable {

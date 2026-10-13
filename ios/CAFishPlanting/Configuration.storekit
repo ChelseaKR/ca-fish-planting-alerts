@@ -61,6 +61,21 @@
       "productID" : "com.chelseakr.cafishplanting.state.mi",
       "referenceName" : "Michigan access",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "5E24F71AD304",
+      "localizations" : [
+        {
+          "description" : "Alerts and widget for New York waters",
+          "displayName" : "New York",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.chelseakr.cafishplanting.state.ny",
+      "referenceName" : "New York access",
+      "type" : "NonConsumable"
     }
   ],
   "settings" : {

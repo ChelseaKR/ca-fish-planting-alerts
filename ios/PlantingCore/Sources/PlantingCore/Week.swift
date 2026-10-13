@@ -5,6 +5,9 @@ import Foundation
 /// day not set yet. Massachusetts and Michigan report the day.
 public enum DatePrecision: String, Hashable, Sendable, Codable {
     case day, week, month
+    /// The agency's own words for when, verbatim (New York: "April - third
+    /// week, 2026", "Spring, 2026"). Never shown or treated as a date.
+    case approximate
 }
 
 /// The unit of truth: a period exactly as precise as the agency made it.
@@ -37,6 +40,12 @@ public struct Week: Hashable, Comparable, Sendable, Codable {
     /// 2026-10-11", "2026-10-14", or "December 2026".
     public var phrase: String {
         precision == .week ? "the \(label)" : label
+    }
+
+    /// Days the period spans, counting both ends.
+    public var spanDays: Int {
+        let cal = PlainDate.gregorianUTC
+        return (cal.dateComponents([.day], from: start.noonUTC, to: end.noonUTC).day ?? 0) + 1
     }
 
     /// True when the period overlaps `other` (a state's current week).

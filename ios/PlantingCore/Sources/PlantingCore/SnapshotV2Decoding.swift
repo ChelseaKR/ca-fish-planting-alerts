@@ -134,6 +134,11 @@ enum SnapshotV2Decoding {
             guard start.day == 1, start.month == end.month, !d.label.contains("-") else {
                 throw SnapshotDecodingError.malformed("\(field) is a month but reads \(d.label)")
             }
+        case .approximate:
+            // The agency's words and the year, verbatim: "April - third week, 2026".
+            guard d.label.hasSuffix(", \(start.year)"), d.label.count > 6 else {
+                throw SnapshotDecodingError.malformed("\(field) is approximate but reads \(d.label)")
+            }
         }
         return Week(start: start, end: end, label: d.label, precision: precision)
     }
@@ -159,7 +164,12 @@ enum SnapshotV2Decoding {
             guard let status = PlantStatus(rawValue: p.status) else {
                 throw SnapshotDecodingError.malformed("waters[\(id)].plants has an unrecognized status: \(p.status)")
             }
-            let fits = state.semantics == .report ? status == .reported : status != .reported
+            let fits: Bool
+            switch state.semantics {
+            case .report: fits = status == .reported
+            case .schedule: fits = status != .reported
+            case .plan: fits = status == .listed
+            }
             guard fits else {
                 throw SnapshotDecodingError.malformed("waters[\(id)] has a \(p.status) plant in a \(state.semantics.rawValue) state")
             }

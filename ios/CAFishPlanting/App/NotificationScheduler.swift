@@ -64,6 +64,32 @@ struct NotificationScheduler {
         }
     }
 
+    /// Replaces every pending planned-period reminder with `reminders`
+    /// (`ReminderPlanner`, New York). Each shows at 9 a.m. local time on the
+    /// first day of its period, and carries its water like an alert does.
+    func scheduleReminders(_ reminders: [PlannedReminder]) async {
+        let pending = await center.pendingNotificationRequests()
+        let stale = pending.map(\.identifier).filter { $0.hasPrefix(PlannedReminder.idPrefix) }
+        if !stale.isEmpty { center.removePendingNotificationRequests(withIdentifiers: stale) }
+        for reminder in reminders {
+            var when = DateComponents()
+            when.year = reminder.fireOn.year
+            when.month = reminder.fireOn.month
+            when.day = reminder.fireOn.day
+            when.hour = 9
+            let content = UNMutableNotificationContent()
+            content.title = reminder.title
+            content.body = reminder.body
+            content.sound = .default
+            content.userInfo = [WaterLink.notificationWaterIDKey: reminder.waterID]
+            content.threadIdentifier = reminder.waterID
+            content.categoryIdentifier = PlantingAlertAction.categoryIdentifier
+            let request = UNNotificationRequest(identifier: reminder.id, content: content,
+                                                trigger: UNCalendarNotificationTrigger(dateMatching: when, repeats: false))
+            try? await center.add(request)
+        }
+    }
+
     /// The alert for one water. It carries that water's ID so a tap opens
     /// it (`NotificationResponder`), and alerts for the same water group
     /// together in Notification Center.

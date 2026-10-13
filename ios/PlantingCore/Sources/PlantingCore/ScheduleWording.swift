@@ -20,9 +20,9 @@ public enum ScheduleWording {
     /// "Next scheduled: the week of 2026-09-20", or nil if nothing upcoming
     /// (and always nil for a report, which has no future).
     public static func nextScheduledLine(for water: Water, sourceWeek: Week) -> String? {
-        guard water.semantics == .schedule else { return nil }
+        guard water.semantics != .report else { return nil }
         guard let next = water.listedPlants(onOrAfter: sourceWeek).first?.week else { return nil }
-        return "Next scheduled: \(next.phrase)"
+        return water.semantics == .plan ? "Planned for \(next.phrase)" : "Next scheduled: \(next.phrase)"
     }
 
     /// "Last scheduled for the week of 2026-09-06", "Last stocked on
@@ -30,6 +30,12 @@ public enum ScheduleWording {
     public static func lastScheduledLine(for water: Water, sourceWeek: Week) -> String {
         if water.semantics == .report {
             return water.lastListedWeek.map(ReportWording.lastStocked) ?? noStockingOnRecord
+        }
+        if water.semantics == .plan {
+            // A plan's future comes first: it is a reminder, not a record.
+            if let next = nextScheduledLine(for: water, sourceWeek: sourceWeek) { return next }
+            if let week = water.lastListedWeek { return "Last planned for \(week.phrase)" }
+            return noScheduledWeekYet
         }
         if let week = water.lastListedWeek {
             return "Last scheduled for \(week.phrase)"

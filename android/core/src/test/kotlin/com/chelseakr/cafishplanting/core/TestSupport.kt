@@ -56,7 +56,7 @@ object TS {
 
     val swiftFixtures: File get() = File(repoRoot, "ios/PlantingCore/Tests/PlantingCoreTests/Fixtures")
 
-    /** The v1 snapshot the Android app ships (android/scripts/sync-bundled-snapshot.sh). */
+    /** The v2 snapshot the Android app ships (android/scripts/sync-bundled-snapshot.sh). */
     val bundledSnapshot: File get() = File(repoRoot, "android/app/src/main/assets/snapshot.json")
 
     /** The one-water fixture `Fixture.minimalValid` in the Swift tests. */

@@ -25,8 +25,16 @@ fun interface HttpTransport {
  * The app's entire network surface, the same as `SnapshotRefresher.swift`:
  * one plain GET of the snapshot URL with `If-None-Match`. No cookies, no
  * cache, no credentials, no identifiers, no other host.
+ *
+ * It reads snapshot v2. Only when v2 isn't there (HTTP 404 or 410) does it
+ * make one more GET, of v1 ([fallback]), California alone, so the app keeps
+ * working while v2 is unpublished. The decoder reads both.
  */
-class SnapshotRefresher(private val transport: HttpTransport = UrlConnectionTransport, val endpoint: String = SnapshotEndpoint.URL) {
+class SnapshotRefresher(
+    private val transport: HttpTransport = UrlConnectionTransport,
+    val endpoint: String = SnapshotEndpoint.URL,
+    val fallback: String? = SnapshotEndpoint.V1_URL,
+) {
     /** Pure, so the headers can be asserted. */
     fun requestHeaders(etag: String?): Map<String, String> = buildMap {
         put("Accept", "application/json")
@@ -36,9 +44,16 @@ class SnapshotRefresher(private val transport: HttpTransport = UrlConnectionTran
     }
 
     fun refresh(store: SnapshotStore, now: Instant): RefreshOutcome {
-        check(WaterLink.parse(endpoint)?.host == SnapshotEndpoint.HOST) { "refresh is only ever against the snapshot host" }
+        for (url in listOfNotNull(endpoint, fallback)) {
+            check(WaterLink.parse(url)?.host == SnapshotEndpoint.HOST) { "refresh is only ever against the snapshot host" }
+        }
         val response = try {
-            transport.get(endpoint, requestHeaders(store.meta.etag), MAXIMUM_BODY_BYTES)
+            val first = transport.get(endpoint, requestHeaders(store.meta.etag), MAXIMUM_BODY_BYTES)
+            if (first.status in NOT_THERE && fallback != null) {
+                transport.get(fallback, requestHeaders(store.meta.etag), MAXIMUM_BODY_BYTES)
+            } else {
+                first
+            }
         } catch (e: IOException) {
             val message = e.message ?: e.javaClass.simpleName
             store.recordFailure(message, now)
@@ -70,6 +85,9 @@ class SnapshotRefresher(private val transport: HttpTransport = UrlConnectionTran
 
     companion object {
         const val MAXIMUM_BODY_BYTES = 32 * 1024 * 1024
+
+        /** The statuses that mean v2 isn't published, so v1 is read instead. */
+        val NOT_THERE: Set<Int> = setOf(404, 410)
     }
 }
 

@@ -20,6 +20,7 @@ class AppStorageLayout(val directory: File) {
     val onboardingFile: File get() = File(directory, "onboarding.json")
     val reviewPromptFile: File get() = File(directory, "review-prompt.json")
     val widgetDigestFile: File get() = File(directory, "widget-digest.json")
+    val browseStateFile: File get() = File(directory, "browse-state.json")
 
     fun ensureDirectory() {
         if (!directory.isDirectory && !directory.mkdirs()) throw IOException("could not create $directory")
@@ -102,13 +103,17 @@ data class PurchaseEntitlement(
     val ownedProducts: Set<String> = emptySet(),
 ) {
     val entitlements: Entitlements
-        get() = Entitlements(if (isPurchased) ownedProducts + ProductCatalog.CALIFORNIA_FULL_ACCESS else ownedProducts)
+        get() = Entitlements(if (isPurchased) ownedProducts + StateProducts.CALIFORNIA else ownedProducts)
 
     companion object {
         fun of(entitlements: Entitlements) =
             PurchaseEntitlement(entitlements.californiaFullAccess, entitlements.ownedProducts)
     }
 }
+
+/** Which state Browse shows: a file like favorites, California until the person picks another. */
+@Serializable
+data class BrowseChoice(val state: String = "CA")
 
 /** The stores the app keeps, each reading a missing or corrupt file as its empty value. */
 class Stores(val layout: AppStorageLayout) {
@@ -118,6 +123,10 @@ class Stores(val layout: AppStorageLayout) {
     private val onboarding = JsonFileStore(layout.onboardingFile, OnboardingState.serializer())
     private val entitlement = JsonFileStore(layout.entitlementFile, PurchaseEntitlement.serializer())
     private val reviewPrompt = JsonFileStore(layout.reviewPromptFile, ReviewPromptState.serializer())
+    private val browseChoice = JsonFileStore(layout.browseStateFile, BrowseChoice.serializer())
+
+    fun loadBrowseChoice(): BrowseChoice = browseChoice.loadOrNull() ?: BrowseChoice()
+    fun saveBrowseChoice(value: BrowseChoice) = browseChoice.save(value)
 
     fun loadFavorites(): Favorites = favorites.loadOrNull()?.let { Favorites.of(it.ids) } ?: Favorites()
     fun saveFavorites(value: Favorites) = favorites.save(value)

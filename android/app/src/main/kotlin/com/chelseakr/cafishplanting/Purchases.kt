@@ -13,7 +13,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.chelseakr.cafishplanting.core.Entitlements
-import com.chelseakr.cafishplanting.core.ProductCatalog
+import com.chelseakr.cafishplanting.core.StateProducts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -35,7 +35,7 @@ data class PurchaseUi(
  * The store behind the purchase screen. One implementation talks to Google
  * Play Billing; debug builds can swap in a local one for tests and
  * screenshots (src/debug), the way the iOS app uses a local StoreKit file.
- * Every product in [ProductCatalog] is a one-time (non-consumable) product,
+ * Every product in [StateProducts] is a one-time (non-consumable) product,
  * so a second state's purchase is one more ID, not new code.
  */
 interface PurchaseBackend {
@@ -83,7 +83,7 @@ class PlayBillingBackend(context: Context) : PurchaseBackend {
 
     private fun loadProducts() {
         val params = QueryProductDetailsParams.newBuilder().setProductList(
-            ProductCatalog.productIDs.map {
+            StateProducts.allProductIDs.map {
                 QueryProductDetailsParams.Product.newBuilder().setProductId(it).setProductType(BillingClient.ProductType.INAPP).build()
             },
         ).build()

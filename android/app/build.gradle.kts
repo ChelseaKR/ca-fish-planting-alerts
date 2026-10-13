@@ -6,9 +6,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// The snapshot the app ships with is a committed v1 snapshot in
+// The snapshot the app ships with is a committed v2 snapshot (every state) in
 // src/main/assets/snapshot.json, refreshed by scripts/sync-bundled-snapshot.sh.
-// Android reads v1 (California only); the iOS app bundles v2.
 
 android {
     namespace = "com.chelseakr.cafishplanting"

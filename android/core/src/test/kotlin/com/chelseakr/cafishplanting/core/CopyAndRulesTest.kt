@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 /** The app's wording rules, the same as the iOS app's copy tests. */
 class CopyAndRulesTest {
@@ -27,40 +28,26 @@ class CopyAndRulesTest {
     }
 
     /**
-     * Pinned word for word. This is the iOS app's California introduction as it
-     * was before more states (DECISIONS 0025), with Android's two platform words.
-     * The iOS app now says "Pick a state" and sells each state; this app reads
-     * v1, California only, so its words stay these until it gains states too.
+     * Every word of the introduction is the iOS app's (`Onboarding.swift`,
+     * with more states, DECISIONS 0025), except Android's two platform phrases.
      */
-    @Test fun theIntroductionIsTheCaliforniaCopyWithOnlyThePlatformWordsChanged() {
-        val pinned = listOf(
-            listOf(
-                "Welcome to Trout Truck",
-                "California's fish planting schedule from the Department of Fish and Wildlife, a week at a time.",
-                "Every water on CDFW's weekly schedule",
-                "Each water's week-by-week history, which CDFW's own page doesn't keep",
-            ),
-            listOf(
-                "Find your waters",
-                "Browse by region and county, or search by a water's name, a name CDFW used before, or its county.",
-                "Waters on the current week's schedule are tagged This week",
-                "Swipe down on a list to check for a newer schedule",
-            ),
-            listOf(
-                "Star the waters you fish",
-                "Favorites, browsing and history are free and unlimited.",
-                "Full access, a one-time purchase, adds an alert when a favorite is newly on the schedule",
-                "It also adds a Favorite waters widget for your home screen",
-                "Mute one water's alerts from the alert itself, and keep it as a favorite",
-            ),
-            listOf(
-                "A week, never a day",
-                "CDFW schedules plants by the week and says plans can change, so the app shows the week and says \"scheduled\".",
-                "If the app can't check for a newer schedule, it says so and keeps the last one, labeled with its week",
-                "No account and no tracking. Favorites stay on this device",
-            ),
+    @Test fun theIntroductionIsTheIosCopyWithOnlyThePlatformWordsChanged() {
+        val swift = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/Onboarding.swift").readText()
+        val androidOnly = mapOf(
+            "Swipe down on a list to check for a newer schedule" to "Pull down on a list to check for a newer schedule",
+            "It also adds that state's favorites to a Favorite waters widget for your home screen" to
+                "It also adds that state's favorites to a Favorite waters widget for your Home Screen and Lock Screen",
         )
-        assertEquals(pinned, OnboardingCopy.pages.map { listOf(it.title, it.body) + it.points })
+        var checked = 0
+        for (page in OnboardingCopy.pages) {
+            for (line in listOf(page.title, page.body.replace("\"", "\\\"")) + page.points) {
+                val ios = androidOnly[line] ?: line
+                assertTrue("not in the iOS copy: $ios", swift.contains("\"$ios\""))
+                checked += 1
+            }
+        }
+        assertEquals(17, checked)
+        assertTrue("the introduction names states", OnboardingCopy.pages.any { it.body.startsWith("Pick a state") })
     }
 
     @Test fun showsOnAFirstLaunchOnly() {
@@ -117,14 +104,26 @@ class CopyAndRulesTest {
     }
 }
 
-class ProductCatalogTest {
-    @Test fun californiaIsTheOnlyStateTodayAndItsProductUnlocksOnlyIt() {
-        assertEquals(listOf("CA"), ProductCatalog.states.map { it.code })
-        assertEquals(SnapshotEndpoint.URL, ProductCatalog.california.snapshotURL)
-        assertEquals(listOf("fullaccess"), ProductCatalog.productIDs)
+class StateProductsTest {
+    @Test fun californiaKeepsTheOriginalProductAndEachProductUnlocksOnlyItsState() {
+        assertEquals("fullaccess", StateProducts.productID("CA"))
+        assertEquals("state_tn", StateProducts.productID("TN"))
         assertTrue(Entitlements(setOf("fullaccess")).californiaFullAccess)
         assertFalse("another state's product never unlocks California", Entitlements(setOf("state_tn")).californiaFullAccess)
+        assertEquals(setOf("TN"), Entitlements(setOf("state_tn", "unknown")).entitledStates)
         assertTrue(PurchaseEntitlement(isPurchased = true).entitlements.californiaFullAccess)
         assertEquals(PurchaseEntitlement(true, setOf("fullaccess")), PurchaseEntitlement.of(Entitlements(setOf("fullaccess"))))
+    }
+
+    /** Every Play product maps to the App Store product `StateAccess.swift` names for the same state. */
+    @Test fun thePlayCatalogMatchesTheAppStoreCatalogStateForState() {
+        val swift = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/StateAccess.swift").readText()
+        assertEquals(StateProducts.productIDsByState.keys, StateProducts.appStoreProductIDsByState.keys)
+        for ((state, appStoreID) in StateProducts.appStoreProductIDsByState) {
+            val line = if (state == "CA") "californiaProductID = \"$appStoreID\"" else "\"$state\": \"$appStoreID\""
+            assertTrue("StateAccess.swift has no $line", swift.contains(line))
+        }
+        // Play product IDs: lowercase letters, digits, underscores and periods, starting with a letter or digit.
+        StateProducts.allProductIDs.forEach { assertTrue(it, Regex("^[a-z0-9][a-z0-9_.]*$").matches(it)) }
     }
 }

@@ -72,10 +72,10 @@ fun FavoritesList(env: AppEnvironment, state: AppState, selected: String?, onOpe
         // Favorites the snapshot no longer has. Said plainly, never folded into "no favorites".
         val missing = ids.filter { snapshot.water(it) == null }
         if (present.isEmpty() && missing.isEmpty()) {
-            val alerts = if (state.isEntitled) {
-                "You'll get an alert when one appears in a new week's schedule."
+            val alerts = if (state.hasAnyAccess) {
+                "You'll get an alert when one in a state you unlocked is newly on the schedule."
             } else {
-                "With full access, you also get an alert when one appears in a new week's schedule, and a widget with your favorites."
+                "With full access for a state, you also get an alert when one there is newly on the schedule, and a widget with your favorites."
             }
             Column(Modifier.padding(padding).fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Box(Modifier.weight(1f, fill = false)) {
@@ -145,7 +145,7 @@ fun FavoritesList(env: AppEnvironment, state: AppState, selected: String?, onOpe
                     }
                 }
                 items(shown, key = { it.id }) { water ->
-                    FavoriteRow(env, state, water, if (water.id in thisWeek) freshness else null, water.id == selected) { onOpen(water.id) }
+                    FavoriteRow(env, state, water, if (water.state == "CA" && water.id in thisWeek) freshness else null, water.id == selected) { onOpen(water.id) }
                 }
                 if (missing.isNotEmpty() && search.isEmpty) {
                     item { SectionHeader("Not in this schedule") }
@@ -173,7 +173,7 @@ fun FavoritesList(env: AppEnvironment, state: AppState, selected: String?, onOpe
 @Composable
 private fun FavoriteRow(env: AppEnvironment, state: AppState, water: Water, listed: com.chelseakr.cafishplanting.core.SnapshotFreshness?, selected: Boolean, onOpen: () -> Unit) {
     val muted = state.muted.contains(water.id)
-    val canMute = state.isEntitled || muted
+    val canMute = state.isEntitled(water.state) || muted
     val haptics = rememberHaptics()
     val toggleMute = {
         env.setMutedAsync(!muted, water.id)

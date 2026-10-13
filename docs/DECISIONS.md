@@ -449,12 +449,14 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
   freshness, search, the widget digest, the stores and the words the app
   shows), and `app`. Package name `com.chelseakr.cafishplanting`, the iOS
   bundle identifier's stem (0010).
-- **Same data, same URL.** It reads
+- **California, from v1.** It reads
   `https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json`
   and nothing else, with the iOS app's request: one GET, `If-None-Match`, a
-  fixed `User-Agent`, no cookies. It ships the iOS app's bundled snapshot
-  (copied into the APK at build time, never committed twice), so both apps
-  open on the same week.
+  fixed `User-Agent`, no cookies. v1 stays byte-compatible beside v2 (0025),
+  so this app is California only until it gains states too. It ships its
+  own committed v1 snapshot (`android/app/src/main/assets/snapshot.json`,
+  refreshed by `android/scripts/sync-bundled-snapshot.sh`, which checks it
+  against `schema/snapshot.v1.json`), since the iOS app now bundles v2.
 - **Same rules.** A week, never a day, and "scheduled", never "stocked". No
   account, no analytics, no crash reporting, no server push. Alerts are
   local notifications that WorkManager's daily periodic refresh (and the
@@ -476,8 +478,8 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
 - **Platform words.** Android has a home screen widget (Glance) and no Lock
   Screen widget, so the copy says "home screen" where iOS says "Home Screen
   and Lock Screen", and "Swipe down" where iOS says "Pull down". Everything
-  else in the introduction is the iOS copy word for word, which a test
-  checks against `Onboarding.swift`.
+  else in the introduction is the iOS app's California copy from before
+  more states (0025), word for word, and a test pins it.
 - **Review prompt.** Google Play's in-app review card, with the iOS rating
   lane's rules (feat/ratings-and-water-seo, not yet on main), and an About
   row that opens the app's Play Store page.

@@ -11,10 +11,12 @@ data class OnboardingState(val completedVersion: Int = 0) {
 }
 
 /**
- * The words of the introduction: the iOS app's `OnboardingCopy`, page for
- * page. Three phrases name Android's own surfaces where the iOS words name
- * Apple's: "home screen" for "Home Screen and Lock Screen", and "Swipe down"
- * for "Pull down". `OnboardingCopyTest` holds them to the same rules.
+ * The words of the introduction: the iOS app's California copy (its
+ * `OnboardingCopy` before more states, docs/DECISIONS.md 0025), page for
+ * page. This app reads v1, California only, so it keeps that copy. Two
+ * phrases name Android's own surfaces where the iOS words name Apple's:
+ * "home screen" for "Home Screen and Lock Screen", and "Swipe down" for
+ * "Pull down". `CopyAndRulesTest` pins every word.
  */
 object OnboardingCopy {
     const val VERSION = 1

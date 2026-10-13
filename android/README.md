@@ -26,15 +26,23 @@ From `android/`, with JDK 21:
   and an R8-minified, unsigned release APK.
 
 CI's `android` job runs all of these on pull requests, then checks that
-both APKs carry `assets/snapshot.json`.
+both APKs carry `assets/snapshot.json` and that it is the committed file,
+byte for byte.
 
 ## The bundled snapshot
 
-The app ships the iOS app's bundled snapshot,
-`ios/CAFishPlanting/Resources/snapshot.json`. The `bundleSnapshot` task in
-`app/build.gradle.kts` copies it into the APK's assets at build time, so it
-is never committed twice and both apps open on the same week. Refresh it
-with `ios/scripts/sync-bundled-snapshot.sh`, as for iOS.
+The app reads `snapshot/v1.json`, California only, which stays
+byte-compatible beside v2 (docs/DECISIONS.md 0025). It ships a committed v1
+snapshot, `app/src/main/assets/snapshot.json`, so a fresh install opens on
+a real week with no network. The iOS app bundles v2, so the two files are
+separate.
+
+Refresh it before a release build with `scripts/sync-bundled-snapshot.sh`.
+The script downloads the live v1 snapshot, checks it against
+`schema/snapshot.v1.json`, refuses one older than the bundled copy, and
+replaces the file. It needs `curl` and `uv`, like the iOS script.
+`SnapshotDecoderTest` decodes the committed file, so a file the app can't
+read fails the build.
 
 The app opens it with `SnapshotLoader` on `Dispatchers.Default`, never on
 the main thread, and shows "Loading the stocking schedule…" until it has.

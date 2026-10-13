@@ -6,27 +6,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// The snapshot the app ships with is the iOS app's bundled one
-// (ios/CAFishPlanting/Resources/snapshot.json, refreshed by
-// ios/scripts/sync-bundled-snapshot.sh): one file, so both apps open on the
-// same week. Copied into the APK's assets at build time, never committed twice.
-abstract class BundleSnapshot : DefaultTask() {
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val source: RegularFileProperty
-
-    @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
-
-    @TaskAction
-    fun copy() {
-        source.get().asFile.copyTo(outputDir.get().file("snapshot.json").asFile, overwrite = true)
-    }
-}
-
-val bundleSnapshot by tasks.registering(BundleSnapshot::class) {
-    source.set(rootProject.layout.projectDirectory.file("../ios/CAFishPlanting/Resources/snapshot.json"))
-}
+// The snapshot the app ships with is a committed v1 snapshot in
+// src/main/assets/snapshot.json, refreshed by scripts/sync-bundled-snapshot.sh.
+// Android reads v1 (California only); the iOS app bundles v2.
 
 android {
     namespace = "com.chelseakr.cafishplanting"
@@ -81,12 +63,6 @@ android {
     }
 }
 
-androidComponents {
-    onVariants { variant ->
-        variant.sources.assets?.addGeneratedSourceDirectory(bundleSnapshot, BundleSnapshot::outputDir)
-    }
-}
-
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
@@ -122,5 +98,5 @@ dependencies {
 
 // SnapshotLoaderTest opens the real bundled snapshot, so a new one reruns it.
 tasks.withType<Test>().configureEach {
-    inputs.file(rootProject.layout.projectDirectory.file("../ios/CAFishPlanting/Resources/snapshot.json"))
+    inputs.file(layout.projectDirectory.file("src/main/assets/snapshot.json"))
 }

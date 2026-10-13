@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 
 /** The app's wording rules, the same as the iOS app's copy tests. */
 class CopyAndRulesTest {
@@ -27,19 +26,41 @@ class CopyAndRulesTest {
         alertLines.forEach { assertTrue("alerts are named with full access: $it", it.contains("Full access")) }
     }
 
-    @Test fun theIntroductionIsTheIosCopyWithOnlyThePlatformWordsChanged() {
-        val swift = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/Onboarding.swift").readText()
-        val androidOnly = mapOf(
-            "Swipe down on a list to check for a newer schedule" to "Pull down on a list to check for a newer schedule",
-            "It also adds a Favorite waters widget for your home screen" to
-                "It also adds a Favorite waters widget for your Home Screen and Lock Screen",
+    /**
+     * Pinned word for word. This is the iOS app's California introduction as it
+     * was before more states (DECISIONS 0025), with Android's two platform words.
+     * The iOS app now says "Pick a state" and sells each state; this app reads
+     * v1, California only, so its words stay these until it gains states too.
+     */
+    @Test fun theIntroductionIsTheCaliforniaCopyWithOnlyThePlatformWordsChanged() {
+        val pinned = listOf(
+            listOf(
+                "Welcome to Trout Truck",
+                "California's fish planting schedule from the Department of Fish and Wildlife, a week at a time.",
+                "Every water on CDFW's weekly schedule",
+                "Each water's week-by-week history, which CDFW's own page doesn't keep",
+            ),
+            listOf(
+                "Find your waters",
+                "Browse by region and county, or search by a water's name, a name CDFW used before, or its county.",
+                "Waters on the current week's schedule are tagged This week",
+                "Swipe down on a list to check for a newer schedule",
+            ),
+            listOf(
+                "Star the waters you fish",
+                "Favorites, browsing and history are free and unlimited.",
+                "Full access, a one-time purchase, adds an alert when a favorite is newly on the schedule",
+                "It also adds a Favorite waters widget for your home screen",
+                "Mute one water's alerts from the alert itself, and keep it as a favorite",
+            ),
+            listOf(
+                "A week, never a day",
+                "CDFW schedules plants by the week and says plans can change, so the app shows the week and says \"scheduled\".",
+                "If the app can't check for a newer schedule, it says so and keeps the last one, labeled with its week",
+                "No account and no tracking. Favorites stay on this device",
+            ),
         )
-        for (page in OnboardingCopy.pages) {
-            for (line in listOf(page.title, page.body.replace("\"", "\\\"")) + page.points) {
-                val ios = androidOnly[line] ?: line
-                assertTrue("not in the iOS copy: $ios", swift.contains("\"$ios\""))
-            }
-        }
+        assertEquals(pinned, OnboardingCopy.pages.map { listOf(it.title, it.body) + it.points })
     }
 
     @Test fun showsOnAFirstLaunchOnly() {

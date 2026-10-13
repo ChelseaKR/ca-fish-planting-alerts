@@ -25,12 +25,12 @@ dependencies {
 }
 
 tasks.test {
-    // The parity tests read the Swift package's fixtures and the bundled
-    // snapshot from the repository itself, so both platforms are held to
-    // the same files.
+    // The parity tests read the Swift package's fixtures, so both planners
+    // are held to the same files; the decoder test reads the app's bundled
+    // v1 snapshot. Both come from the repository itself.
     systemProperty("repoRoot", rootProject.projectDir.parentFile.absolutePath)
     inputs.dir(rootProject.projectDir.parentFile.resolve("ios/PlantingCore/Tests/PlantingCoreTests/Fixtures"))
-    inputs.file(rootProject.projectDir.parentFile.resolve("ios/CAFishPlanting/Resources/snapshot.json"))
+    inputs.file(rootProject.projectDir.resolve("app/src/main/assets/snapshot.json"))
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

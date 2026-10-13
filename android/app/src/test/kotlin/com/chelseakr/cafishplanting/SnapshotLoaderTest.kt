@@ -35,7 +35,7 @@ class SnapshotLoaderTest {
     private val repoRoot: File by lazy {
         generateSequence(File("").absoluteFile) { it.parentFile }.first { File(it, "ios/PlantingCore").isDirectory }
     }
-    private val bundledFile: File get() = File(repoRoot, "ios/CAFishPlanting/Resources/snapshot.json")
+    private val bundledFile: File get() = File(repoRoot, "android/app/src/main/assets/snapshot.json")
 
     @Before
     fun setUp() {

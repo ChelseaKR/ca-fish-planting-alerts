@@ -49,7 +49,7 @@ public enum FreeTier {
     /// Whether Trout Truck on Apple Watch (the watch app and its
     /// complications) needs the one-time purchase. It does: the owner asked
     /// on 2026-10-12 for watch extras as more reasons to buy the same
-    /// purchase (`docs/DECISIONS.md` 0026). The watch never checks a
+    /// purchase (`docs/DECISIONS.md` 0027). The watch never checks a
     /// purchase itself. It shows only the digest the phone sends
     /// (`WatchSync`), and the phone builds that digest locked, with no
     /// favorites in it, unless this allows it.

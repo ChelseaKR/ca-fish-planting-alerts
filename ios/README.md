@@ -58,7 +58,7 @@ over, and no number at all when locked or empty.
 `WKRunsIndependentlyOfCompanionApp` false), embedded in the iPhone app.
 `CAFishPlantingWatchWidgets/` is its WidgetKit extension with one widget,
 "Next favorite", for watch faces and the Smart Stack. Part of full access
-(`FreeTier.watchRequiresFullAccess`, `docs/DECISIONS.md` 0026).
+(`FreeTier.watchRequiresFullAccess`, `docs/DECISIONS.md` 0027).
 
 - **Data.** The phone sends the same `WidgetDigest` the widget reads, as
   WatchConnectivity's application context (`App/WatchBridge.swift`,

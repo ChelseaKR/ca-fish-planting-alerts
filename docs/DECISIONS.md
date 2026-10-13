@@ -585,7 +585,7 @@ another state has data.
   9.99, one time, product id `com.chelseakr.cafishplanting.state.tn`.
   Michigan's indemnity clause and species scope are moot while it is off.
 
-## 0026 — Apple Watch and a round Lock Screen widget, in full access (2026-10-12; proposed)
+## 0027 — Apple Watch and a round Lock Screen widget, in full access (2026-10-12; proposed, pending owner)
 
 The owner asked on 2026-10-12 for Apple Watch and Lock Screen extras, as
 more reasons to buy the same one-time purchase. 1.0.0 (build 2) is in
@@ -620,5 +620,10 @@ review and doesn't change; this is for a later version.
   no network request. The watch sends back only a water ID to mute, when
   "Mute this water" is tapped on the wrist and watchOS gives that button
   to the watch app.
+- **Listing copy.** Each in-app purchase's description and the promotional
+  text name Apple Watch, as part of a state's purchase ("Alerts, widget,
+  Watch: Tennessee waters").
+- **Follow-up:** check "Mute this water" from the wrist on a paired iPhone
+  and Apple Watch.
 - **Not built:** a Control Center or Lock Screen control (iOS 18). It
   would only open the app, which the icon already does.

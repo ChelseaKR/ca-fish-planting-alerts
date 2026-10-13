@@ -13,7 +13,7 @@ Two modes:
     from those build settings;
   - every iOS target runs on iPhone and iPad (TARGETED_DEVICE_FAMILY = "1,2",
     DECISIONS 0020; a Mac runs the iPad app), every watchOS target
-    (SDKROOT = watchos) on Apple Watch only ("4", DECISIONS 0026), and every
+    (SDKROOT = watchos) on Apple Watch only ("4", DECISIONS 0027), and every
     target signs with team 6X5YH93QNM, never the enrollment ID;
   - the project has no remote Swift package, and no Swift file imports a
     module outside Apple's SDK and the local PlantingCore package, so no

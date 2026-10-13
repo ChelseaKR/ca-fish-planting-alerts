@@ -8,7 +8,7 @@
       "internalID" : "1380ACD8358C",
       "localizations" : [
         {
-          "description" : "Alerts and a widget for your favorite waters",
+          "description" : "Alerts, widget, Watch: your favorite waters",
           "displayName" : "Full Access",
           "locale" : "en_US"
         }
@@ -23,7 +23,7 @@
       "internalID" : "2B91C4E7A0D1",
       "localizations" : [
         {
-          "description" : "Alerts and widget for Tennessee waters",
+          "description" : "Alerts, widget, Watch: Tennessee waters",
           "displayName" : "Tennessee",
           "locale" : "en_US"
         }
@@ -38,7 +38,7 @@
       "internalID" : "3C02D5F8B1E2",
       "localizations" : [
         {
-          "description" : "Alerts and widget for Massachusetts waters",
+          "description" : "Alerts, widget, Watch: Massachusetts waters",
           "displayName" : "Massachusetts",
           "locale" : "en_US"
         }
@@ -53,7 +53,7 @@
       "internalID" : "4D13E609C2F3",
       "localizations" : [
         {
-          "description" : "Alerts and widget for Michigan waters",
+          "description" : "Alerts, widget, Watch: Michigan waters",
           "displayName" : "Michigan",
           "locale" : "en_US"
         }

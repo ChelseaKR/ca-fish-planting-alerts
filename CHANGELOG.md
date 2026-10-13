@@ -13,6 +13,14 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- States wave 2 (DECISIONS 0028), each its own one-time purchase:
+  Michigan (the DNR's stocking data, trout stocked into public water since
+  2021, with the DNR's reporting lag said beside it), Massachusetts
+  (MassWildlife's report of stockings done, read through ArcGIS Hub), and
+  New York (DEC's spring stocking plan in DEC's own words, such as "April -
+  third week", never turned into dates). New York favorites get a reminder
+  when a planned period begins.
+
 - Water locations for maps, from public-domain USGS data (GNIS and the
   National Hydrography Dataset), matched by name and county and never
   guessed: a water with several same-name candidates, or none, has no

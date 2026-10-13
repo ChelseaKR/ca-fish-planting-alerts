@@ -355,28 +355,27 @@ favorites. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
 which is the one call site that checks it before
 `NotificationScheduler.schedule(_:)`.
 
-### Per-state in-app purchases (DECISIONS 0025)
+### Per-state in-app purchases (DECISIONS 0025, 0028)
 
 Each state beyond California is its own Non-Consumable in the same app
 (Guideline 4.3(a): one app, variations as in-app purchases). California's
-product above is unchanged. Create a state's product only when that state
-has data in the published snapshot: on 2026-10-12 that is Tennessee alone;
-Massachusetts and Michigan stay off until their data hosts can be read
-(see DECISIONS 0025; the owner confirmed on 2026-10-12 that both stay off).
-Tennessee's id and price are confirmed (2026-10-12). Massachusetts' and
-Michigan's are placeholders; a changed id must also change
-`StateAccess.productIDsByState` and `Configuration.storekit`.
+product above is unchanged. A state is sold only once it has data in the
+published snapshot. Tennessee has since 2026-10-12; Michigan,
+Massachusetts and New York since their live fetches worked on 2026-10-13.
+All four ids and the USD 9.99 price are the owner's (DECISIONS 0025 and
+0028). A changed id must also change `StateAccess.productIDsByState` and
+`Configuration.storekit`.
 
-| Field | Tennessee | Massachusetts (hold) | Michigan (hold) |
-|---|---|---|---|
-| Type | Non-Consumable | Non-Consumable | Non-Consumable |
-| Product ID | `com.chelseakr.cafishplanting.state.tn` | `com.chelseakr.cafishplanting.state.ma` | `com.chelseakr.cafishplanting.state.mi` |
-| Reference Name | `Tennessee access` | `Massachusetts access` | `Michigan access` |
-| Price | USD 9.99, one time (confirmed 2026-10-12) | USD 9.99 (placeholder) | USD 9.99 (placeholder) |
-| Display Name | `Tennessee` | `Massachusetts` | `Michigan` |
-| Description (45 max) | `Alerts and widget for Tennessee waters` (38) | `Alerts and widget for Massachusetts waters` (42) | `Alerts and widget for Michigan waters` (37) |
-| Review screenshot | The Tennessee purchase sheet: Browse > map button (States) > Tennessee > "Unlock alerts and widget" | the same for Massachusetts | the same for Michigan |
-| Review notes (draft) | "Tennessee is a one-time purchase that adds alerts and the Favorite waters widget for Tennessee waters. Browsing and every water's history stay free. To reach it: Browse, the map button at the top left, Tennessee, Unlock alerts and widget. Restore purchases is on the same screen." | same, naming Massachusetts | same, naming Michigan |
+| Field | Tennessee | Michigan | Massachusetts | New York |
+|---|---|---|---|---|
+| Type | Non-Consumable | Non-Consumable | Non-Consumable | Non-Consumable |
+| Product ID | `com.chelseakr.cafishplanting.state.tn` | `com.chelseakr.cafishplanting.state.mi` | `com.chelseakr.cafishplanting.state.ma` | `com.chelseakr.cafishplanting.state.ny` |
+| Reference Name | `Tennessee access` | `Michigan access` | `Massachusetts access` | `New York access` |
+| Price | USD 9.99, one time | USD 9.99, one time | USD 9.99, one time | USD 9.99, one time |
+| Display Name | `Tennessee` | `Michigan` | `Massachusetts` | `New York` |
+| Description (45 max) | `Alerts and widget for Tennessee waters` (38) | `Alerts and widget for Michigan waters` (37) | `Alerts and widget for Massachusetts waters` (42) | `Alerts and widget for New York waters` (37) |
+| Review screenshot | The state's purchase sheet: Browse > map button (States) > the state > "Unlock alerts and widget" | the same for Michigan | the same for Massachusetts | the same for New York |
+| Review notes (draft) | "Tennessee is a one-time purchase that adds alerts and the Favorite waters widget for Tennessee waters. Browsing and every water's history stay free. To reach it: Browse, the map button at the top left, Tennessee, Unlock alerts and widget. Restore purchases is on the same screen." | Same, naming Michigan, plus: "Michigan's records are stockings the DNR reports after the fact, often weeks later; the app says so." | Same, naming Massachusetts, plus: "Massachusetts' records are stockings MassWildlife reports as done." | Same, naming New York, plus: "New York publishes a spring plan once a year in its own words, such as 'April - third week'. The app shows those words, never a date, and reminds the buyer when a favorite's planned period begins." |
 
 Each review screenshot must show that state's sheet, so take it after the
 product exists in App Store Connect or from the local StoreKit

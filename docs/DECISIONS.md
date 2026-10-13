@@ -584,3 +584,75 @@ another state has data.
   file, is off-limits; a 404 counts as "no rules". (2) Tennessee is USD
   9.99, one time, product id `com.chelseakr.cafishplanting.state.tn`.
   Michigan's indemnity clause and species scope are moot while it is off.
+
+## 0028 — States wave 2: Michigan, Massachusetts and New York (2026-10-13)
+
+**Owner answers, 2026-10-13** (multiple choice, recorded as given):
+
+1. **Michigan:** the owner accepts the dataset's indemnity and release
+   clauses. Read the DNR's own CSV,
+   `https://michigandnr.com/publications/PDFS/Fishing/FishStocking/FishStockingData.csv`
+   (robots.txt 404, which DECISIONS 0025 counts as "no rules"), with one
+   conditional download a day instead of ArcGIS paging. Water ids come
+   from county + water + site name; trout only; report semantics, with the
+   DNR's lag said beside the data.
+2. **Massachusetts:** the owner accepts the ArcGIS Hub download route.
+   `hub.arcgis.com` serves a readable robots.txt (200, `Crawl-delay: 60`,
+   `/api/` allowed). `services1.arcgis.com`, the layer's own host (robots
+   403), is never touched. The run asks Hub for the CSV, waits the
+   Crawl-delay on a 202, and reads the `resultUrl` only on Hub's host: two
+   or three requests a day, 61 s apart.
+3. **New York:** NYS DEC's spring plan from OPEN-NY, as planned-period
+   reminders plus the plans' history, in DEC's own words ("April - third
+   week", "Spring"), never turned into dates, with "planned for" wording.
+4. Each state is its own $9.99 non-consumable:
+   `com.chelseakr.cafishplanting.state.mi`, `.state.ma`, `.state.ny`.
+   A state is enabled only once its fetch works on live data.
+
+**What was built.**
+
+- **Michigan** (`cfpa/states/mi.py`). One GET with `If-None-Match` and
+  `If-Modified-Since`; a 304 records "checked, unchanged" and nothing else.
+  The server answers `Accept: text/csv` with 406 (measured), so the request
+  accepts `application/octet-stream`. Kept: species whose name contains
+  "trout" (brown, rainbow, brook, lake), stockings into public water only
+  (State, Federal, Tribal, Tribal/DNR and IN DNR/DNR coop, Public and
+  Mitigation plants; private ponds under permit, research, school,
+  rearing-pond and out-of-state rows are left out), and 2021 onward. The
+  site name, when it differs from the water, is part of the water's name.
+- **Massachusetts** (`cfpa/states/ma.py`). The real field is
+  `Stocked_Date` (`2026/09/25 22:00:00+00`), not the guessed `Date`.
+  Species codes are mapped with MassWildlife's own legend, the layer's
+  coded-value domain `cvd_FishSpecies` read from Hub's metadata: BT Brown
+  Trout (verified there), EBT Eastern Brook Trout, RT Rainbow Trout, S
+  Broodstock Salmon, TT Tiger Trout. A code outside the legend refuses the
+  feed rather than being guessed. "Lake Wyola - Shutesbury" is shown as
+  "Lake Wyola" with its town beside it. An empty file (the season is over)
+  is not an error: a report never infers a removal.
+- **New York** (`cfpa/states/ny.py`). A new semantics, `plan`: it looks
+  forward like a schedule, says "planned for", and never infers a removal
+  (one publication a year). A new precision, `approximate`: the label is
+  DEC's words and the year, verbatim ("April - third week, 2026"); start
+  and end only bound it, for ordering and reminders. The 25 forms in the
+  2026 file are read; any other form refuses the feed.
+- **Reminders** (iOS). For a New York favorite in a bought state and not
+  muted, the app schedules a local reminder at 9 a.m. on the first day of
+  each planned period no longer than 31 days ("April - third week",
+  "May", "Mid April"), saying the period in DEC's words and that it is a
+  plan, not a date. "Spring" and two-month ranges are too loose and get
+  none. The notification priming copy says so.
+- **Crawl-delay** is honored: requests to a host that declares one wait it
+  plus a second.
+- The ArcGIS paging module is removed; no source uses it.
+
+**Live check, 2026-10-13.** Each fetch ran through the production code on
+live data before its state was enabled: Michigan 3,406 public trout
+stockings at 604 waters from 2021 on (and a second request answered 304);
+Massachusetts 150 stockings at 123 waters through Hub; New York 889
+planned stockings at 582 waters. Their histories are seeded from those
+fetches. `ENABLED_STATES` is now TN, MI, MA, NY.
+
+**Compatibility.** v1 is unchanged. v2 gains the `plan` semantics and the
+`approximate` precision; a reader built before this (no app release has
+one) would refuse a v2 with New York in it, so the v2 reader ships in the
+same app release as these states.

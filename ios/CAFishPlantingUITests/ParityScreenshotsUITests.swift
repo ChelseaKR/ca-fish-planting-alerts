@@ -78,6 +78,51 @@ final class ParityScreenshotsUITests: XCTestCase {
         }
     }
 
+    /// The state picker, a Tennessee water and Tennessee's purchase sheet
+    /// (DECISIONS 0025).
+    func testCaptureStates() throws {
+        let isPad = UIDevice.current.userInterfaceIdiom == .pad
+        let suffix = isPad ? "ipad" : "iphone"
+        let app = XCUIApplication.troutTruck()
+        app.launch()
+        XCTAssertTrue(app.collectionViews.firstMatch.waitForExistence(timeout: 30))
+        let states = app.buttons["states-button"]
+        XCTAssertTrue(states.waitForExistence(timeout: 10))
+        states.tap()
+        XCTAssertTrue(app.navigationBars["States"].waitForExistence(timeout: 10))
+        settle()
+        shot("states-\(suffix)", app)
+        app.buttons["Browse Tennessee"].tap()
+        settle()
+        shot("browse-tn-\(suffix)", app)
+
+        let search = app.searchFields.firstMatch
+        if search.waitForExistence(timeout: 10) {
+            for _ in 0..<3 where !app.keyboards.firstMatch.exists {
+                search.tap()
+                _ = app.keyboards.firstMatch.waitForExistence(timeout: 5)
+            }
+            search.typeText("Tellico River\n")
+            let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Tellico River,")).firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: 10))
+            row.tap()
+            XCTAssertTrue(app.navigationBars["Tellico River"].waitForExistence(timeout: 10))
+            if app.buttons["Add Tellico River to favorites"].exists {
+                app.buttons["Add Tellico River to favorites"].tap()
+                if app.buttons["Not now"].waitForExistence(timeout: 3) { app.buttons["Not now"].tap() }
+            }
+            settle()
+            shot("water-tn-\(suffix)", app)
+            let unlock = app.buttons["unlock-state"]
+            if unlock.waitForExistence(timeout: 5) {
+                unlock.tap()
+                settle()
+                shot("purchase-tn-\(suffix)", app)
+            }
+        }
+        app.terminate()
+    }
+
     private func settle() { Thread.sleep(forTimeInterval: 1.5) }
 
     private func shot(_ name: String, _ app: XCUIApplication) {

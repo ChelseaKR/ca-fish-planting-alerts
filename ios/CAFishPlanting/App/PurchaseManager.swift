@@ -3,21 +3,22 @@ import StoreKit
 import Observation
 import PlantingCore
 
-/// The app's one purchase: a single non-consumable "unlock full access".
-/// StoreKit 2 only (no `SKPaymentQueue`/transaction-observer code) — see
-/// `docs/APP-STORE.md` for what has to exist in App Store Connect to match
-/// this identifier, and `docs/DECISIONS.md` 0007 for why this replaced the
-/// original "no StoreKit, paid-app-price" plan in 0003.
+/// The app's purchases: one non-consumable product per state
+/// (DECISIONS 0025). California's is the original Full Access,
+/// `com.chelseakr.cafishplanting.fullaccess`, unchanged, so everyone who
+/// bought it keeps exactly what they bought. Tennessee, Massachusetts and
+/// Michigan each have their own (`StateAccess.productIDsByState`). StoreKit 2
+/// only; see `docs/APP-STORE.md` and `docs/app-store/OWNER-STEPS.md` for what
+/// has to exist in App Store Connect.
 ///
-/// `Transaction.currentEntitlements` is always asked and is always the
-/// truth this settles on; the on-disk `EntitlementStore` cache only avoids
-/// a locked-looking flash before that async answer comes back.
+/// `Transaction.currentEntitlements` is always asked and is always the truth
+/// this settles on; the on-disk `EntitlementStore` cache only avoids a
+/// locked-looking flash before that async answer comes back.
 @MainActor
 @Observable
 final class PurchaseManager {
-    /// Must match exactly the product Chelsea creates in App Store
-    /// Connect — see docs/APP-STORE.md.
-    static let productID = "com.chelseakr.cafishplanting.fullaccess"
+    /// California's product. Must match App Store Connect exactly.
+    static let productID = StateAccess.californiaProductID
 
     enum UIState: Equatable {
         case idle
@@ -26,35 +27,44 @@ final class PurchaseManager {
         case failed(String)
     }
 
-    private(set) var isEntitled: Bool
-    private(set) var product: Product?
+    /// Every product this device owns.
+    private(set) var ownedProductIDs: Set<String>
+    /// Loaded products by id. A state whose product isn't configured yet has
+    /// none, and its purchase button says so.
+    private(set) var products: [String: Product] = [:]
     private(set) var productLoadError: String?
     private(set) var uiState: UIState = .idle
 
-    /// Called on the main actor every time the entitlement is set: at
+    /// California's Full Access. The name every screen used before states.
+    var isEntitled: Bool { ownedProductIDs.contains(Self.productID) }
+    /// California's product, as before.
+    var product: Product? { products[Self.productID] }
+
+    var entitledStates: Set<String> { StateAccess.entitledStates(fromProductIDs: ownedProductIDs) }
+    var hasAnyAccess: Bool { !entitledStates.isEmpty }
+    func isEntitled(state code: String) -> Bool { entitledStates.contains(code) }
+    func product(forState code: String) -> Product? {
+        StateAccess.productID(forState: code).flatMap { products[$0] }
+    }
+
+    /// Called on the main actor every time the entitlements are set: at
     /// launch, after a purchase, a restore, a purchase from another device,
-    /// or a refund. `AppEnvironment` uses it to redraw the widget, which is
-    /// part of full access, so it unlocks (or locks) without waiting for
-    /// the next refresh.
+    /// or a refund. `AppEnvironment` redraws the widget with it.
     var onEntitlementChange: (@MainActor (Bool) -> Void)?
 
     private let entitlementStore: EntitlementStore?
-    // `deinit` on a `@MainActor` class is itself non-isolated (it may run
-    // on any thread), so it cannot touch a main-actor-isolated stored
-    // property directly. This is written once, in `init`, and read once,
-    // in `deinit`, to cancel the listener — never concurrently.
     nonisolated(unsafe) private var transactionListener: Task<Void, Never>?
 
     init(entitlementStore: EntitlementStore?) {
         self.entitlementStore = entitlementStore
-        // Cached answer first, so a returning purchaser never sees a
-        // paywall flash before StoreKit responds.
-        self.isEntitled = entitlementStore?.load().isPurchased ?? false
+        // Cached answer first, so a returning purchaser never sees a paywall
+        // flash before StoreKit responds. A 1.0 cache reads as California.
+        self.ownedProductIDs = entitlementStore?.load().ownedProductIDs ?? []
 
         transactionListener = Task { [weak self] in
             await self?.observeTransactionUpdates()
         }
-        Task { [weak self] in await self?.loadProduct() }
+        Task { [weak self] in await self?.loadProducts() }
         Task { [weak self] in await self?.refreshEntitlement() }
     }
 
@@ -62,14 +72,13 @@ final class PurchaseManager {
         transactionListener?.cancel()
     }
 
-    /// Fetches the product's live price/title from the App Store (or the
-    /// local `.storekit` configuration in development — see
-    /// `ios/CAFishPlanting/Configuration.storekit`).
-    func loadProduct() async {
+    /// Fetches every state's product (or the local `.storekit` configuration
+    /// in development: `ios/CAFishPlanting/Configuration.storekit`).
+    func loadProducts() async {
         do {
-            let products = try await Product.products(for: [Self.productID])
-            product = products.first
-            productLoadError = products.first == nil
+            let loaded = try await Product.products(for: StateAccess.allProductIDs)
+            products = Dictionary(uniqueKeysWithValues: loaded.map { ($0.id, $0) })
+            productLoadError = products[Self.productID] == nil
                 ? "Product \(Self.productID) is not configured yet."
                 : nil
         } catch {
@@ -77,36 +86,39 @@ final class PurchaseManager {
         }
     }
 
-    /// The launch-time entitlement check: walks every currently-valid
-    /// transaction StoreKit knows about for this Apple ID/device and looks
-    /// for this app's product. This — not the disk cache — is what decides
-    /// whether the purchase is real.
+    /// Kept for callers from before states.
+    func loadProduct() async { await loadProducts() }
+
+    /// The launch-time check: every currently valid, verified transaction
+    /// for one of this app's products. Revoked (refunded) ones are not in
+    /// `currentEntitlements`, so a refund locks that state again.
     func refreshEntitlement() async {
-        var entitled = false
+        var owned: Set<String> = []
         for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result, transaction.productID == Self.productID else { continue }
-            entitled = true
+            guard case .verified(let transaction) = result,
+                  StateAccess.allProductIDs.contains(transaction.productID) else { continue }
+            owned.insert(transaction.productID)
         }
-        setEntitled(entitled)
+        setOwned(owned)
     }
 
-    /// Buys the one product this app sells. Safe to call repeatedly; a
-    /// purchase already in flight is a no-op rather than a second sheet.
-    func purchase() async {
+    /// Buys California's Full Access, as before states.
+    func purchase() async { await purchase(state: "CA") }
+
+    /// Buys one state's product. A purchase already in flight is a no-op.
+    func purchase(state code: String) async {
         guard uiState != .purchasing else { return }
         uiState = .purchasing
-
         do {
-            let product = try await resolvedProduct()
+            let product = try await resolvedProduct(forState: code)
             let result = try await product.purchase()
             switch result {
             case .success(.verified(let transaction)):
-                setEntitled(true)
+                setOwned(ownedProductIDs.union([transaction.productID]))
                 await transaction.finish()
                 uiState = .idle
             case .success(.unverified(_, let error)):
-                // StoreKit itself could not verify the transaction (e.g. a
-                // JWS signature it doesn't trust) — never unlock on this.
+                // Never unlock on a transaction StoreKit could not verify.
                 uiState = .failed("Purchase could not be verified: \(error.localizedDescription)")
             default:
                 uiState = Self.nextUIState(forNonSuccess: result) ?? .idle
@@ -116,9 +128,8 @@ final class PurchaseManager {
         }
     }
 
-    /// Required by Apple for non-consumable IAP: re-derives entitlement
-    /// from the Apple ID's purchase history, for a reinstall or a new
-    /// device where the on-disk cache is empty.
+    /// Required by Apple for non-consumables: re-derives every state's
+    /// entitlement from the Apple ID's purchase history.
     func restorePurchases() async {
         uiState = .restoring
         do {
@@ -131,58 +142,56 @@ final class PurchaseManager {
         if uiState == .restoring { uiState = .idle }
     }
 
-    /// Pure mapping for the two non-error, non-success outcomes — factored
-    /// out of `purchase()` so it is directly unit-testable: `.userCancelled`
-    /// and `.pending` carry no payload, so a test can construct them
-    /// without a live product or a real purchase sheet and assert neither
-    /// one is treated as a failure.
+    /// `.userCancelled` and `.pending` are not failures.
     static func nextUIState(forNonSuccess result: Product.PurchaseResult) -> UIState? {
         switch result {
-        case .userCancelled:
-            // Not an error: the person chose not to buy. No alert.
-            return .idle
-        case .pending:
-            // Ask to Buy / family approval etc. Transaction.updates will
-            // deliver the entitlement later if it is approved.
-            return .idle
-        default:
-            return nil
+        case .userCancelled: return .idle
+        case .pending: return .idle
+        default: return nil
         }
     }
 
     // MARK: -
 
-    private func resolvedProduct() async throws -> Product {
-        if let product { return product }
-        await loadProduct()
-        guard let product else { throw PurchaseManagerError.productUnavailable }
+    private func resolvedProduct(forState code: String) async throws -> Product {
+        if let product = product(forState: code) { return product }
+        await loadProducts()
+        guard let product = product(forState: code) else { throw PurchaseManagerError.productUnavailable }
         return product
     }
 
-    /// Catches entitlements granted outside an in-process `purchase()`
-    /// call — a renewal-style delivery, a purchase completed after a
-    /// `.pending` result, or a purchase made on another device that
-    /// StoreKit syncs in.
+    /// Purchases finished outside `purchase(state:)`: after `.pending`, on
+    /// another device, or a refund. Re-reads the whole set, so a revocation
+    /// locks its state again.
     private func observeTransactionUpdates() async {
         for await update in Transaction.updates {
             guard case .verified(let transaction) = update else { continue }
-            if transaction.productID == Self.productID {
-                setEntitled(true)
-            }
             await transaction.finish()
+            await refreshEntitlement()
         }
     }
 
     /// Internal, not private, so hosted tests can stand in for StoreKit,
     /// which can't run on the iOS 26.5 simulator (`ios/README.md`).
+    /// `true` owns California's product; `false` owns nothing.
     func setEntitled(_ value: Bool) {
-        isEntitled = value
-        try? entitlementStore?.save(PurchaseEntitlement(isPurchased: value))
-        onEntitlementChange?(value)
+        setOwned(value ? [Self.productID] : [])
+    }
+
+    /// Hosted tests: own exactly these states' products.
+    func setEntitled(states: Set<String>) {
+        setOwned(Set(states.compactMap(StateAccess.productID(forState:))))
+    }
+
+    private func setOwned(_ ids: Set<String>) {
+        ownedProductIDs = ids
+        try? entitlementStore?.save(PurchaseEntitlement(isPurchased: ids.contains(Self.productID),
+                                                        productIDs: ids.sorted()))
+        onEntitlementChange?(!ids.isEmpty)
     }
 }
 
 enum PurchaseManagerError: LocalizedError {
     case productUnavailable
-    var errorDescription: String? { "The full-access product isn't available right now." }
+    var errorDescription: String? { "That purchase isn't available right now." }
 }

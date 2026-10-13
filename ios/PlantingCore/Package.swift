@@ -29,7 +29,9 @@ let package = Package(
         .testTarget(
             name: "PlantingCoreTests",
             dependencies: ["PlantingCore"],
-            path: "Tests/PlantingCoreTests"
+            path: "Tests/PlantingCoreTests",
+            // Read by path (#filePath), like the bundled app snapshot.
+            exclude: ["Fixtures"]
         ),
     ]
 )

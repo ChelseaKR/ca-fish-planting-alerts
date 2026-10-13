@@ -20,6 +20,22 @@ This repository was republished with a new history on 2026-09-18
   offline; the owner can settle ambiguous waters in
   `pipeline/data/water_location_overrides.json`. Snapshot v1 is unchanged.
   The about page credits the USGS and the Census Bureau (DECISIONS 0024).
+- More states, each a one-time purchase in the one app (DECISIONS 0025).
+  Tennessee's trout stocking schedule from TWRA is on the site and in the
+  app, with each date as precise as TWRA gives it: a day, the week of a
+  Sunday, or a month with the day not set. Browsing and history are free in
+  every state; alerts and the widget are a purchase per state. California's
+  Full Access is unchanged, so buyers keep everything they have.
+  Massachusetts and Michigan are built but not fetched: their data hosts'
+  robots.txt files could not be read.
+- `snapshot/v2.json` and `schema/snapshot.v2.json`: every state, what its
+  records mean (a schedule or a report) and their precision.
+  `snapshot/v1.json` is unchanged for installed 1.0 builds.
+- Site: `/states/`, a hub page per state and a page per water under
+  `/<state>/water/<slug>/`. Every California URL is unchanged.
+- App: a state picker in Browse, a States screen with each state's
+  purchase, restore, and per-state alerts and widget.
+
 - A four-page introduction on first launch: what the app is, finding
   waters, favorites and what full access adds, and why it says a week and
   "scheduled". Swipe or tap Continue, or skip it. About can show it again.

@@ -355,6 +355,33 @@ favorites. See `PlantingCore/Sources/PlantingCore/FreeTier.swift`
 which is the one call site that checks it before
 `NotificationScheduler.schedule(_:)`.
 
+### Per-state in-app purchases (DECISIONS 0025)
+
+Each state beyond California is its own Non-Consumable in the same app
+(Guideline 4.3(a): one app, variations as in-app purchases). California's
+product above is unchanged. Create a state's product only when that state
+has data in the published snapshot: on 2026-10-12 that is Tennessee alone;
+Massachusetts and Michigan stay off until their data hosts can be read
+(see DECISIONS 0025; the owner confirmed on 2026-10-12 that both stay off).
+Tennessee's id and price are confirmed (2026-10-12). Massachusetts' and
+Michigan's are placeholders; a changed id must also change
+`StateAccess.productIDsByState` and `Configuration.storekit`.
+
+| Field | Tennessee | Massachusetts (hold) | Michigan (hold) |
+|---|---|---|---|
+| Type | Non-Consumable | Non-Consumable | Non-Consumable |
+| Product ID | `com.chelseakr.cafishplanting.state.tn` | `com.chelseakr.cafishplanting.state.ma` | `com.chelseakr.cafishplanting.state.mi` |
+| Reference Name | `Tennessee access` | `Massachusetts access` | `Michigan access` |
+| Price | USD 9.99, one time (confirmed 2026-10-12) | USD 9.99 (placeholder) | USD 9.99 (placeholder) |
+| Display Name | `Tennessee` | `Massachusetts` | `Michigan` |
+| Description (45 max) | `Alerts and widget for Tennessee waters` (38) | `Alerts and widget for Massachusetts waters` (42) | `Alerts and widget for Michigan waters` (37) |
+| Review screenshot | The Tennessee purchase sheet: Browse > map button (States) > Tennessee > "Unlock alerts and widget" | the same for Massachusetts | the same for Michigan |
+| Review notes (draft) | "Tennessee is a one-time purchase that adds alerts and the Favorite waters widget for Tennessee waters. Browsing and every water's history stay free. To reach it: Browse, the map button at the top left, Tennessee, Unlock alerts and widget. Restore purchases is on the same screen." | same, naming Massachusetts | same, naming Michigan |
+
+Each review screenshot must show that state's sheet, so take it after the
+product exists in App Store Connect or from the local StoreKit
+configuration (`docs/app-store/screenshots/states/`).
+
 ### Local testing without an App Store Connect product
 
 `ios/CAFishPlanting/Configuration.storekit` is a local StoreKit testing

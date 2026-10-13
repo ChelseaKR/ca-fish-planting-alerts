@@ -1,0 +1,75 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>{{ head }} ({{ place }})</h1>
+<p class="lede">
+  {% if schedule %}
+  {{ water.name }} is on the {{ state.agency.name }}'s stocking schedule.{% if next_label %} Next scheduled: {{ next_label }}.{% endif %}{% if last_label %} Most recently scheduled: {{ last_label }}.{% endif %}{% if not next_label %} Nothing later is on {{ state.agency.short_name }}'s schedule right now. That means no date is listed, not that there are no fish.{% endif %}
+
+  {% else %}
+  {{ water.name }} is in the {{ state.agency.name }}'s stocking report.{% if last_label %} The newest stocking on record: {{ last_label }}.{% endif %}
+
+  {% endif %}
+</p>
+{% if state.recency_note %}
+<p><strong>{{ state.recency_note }}</strong></p>
+{% endif %}
+<p class="muted">
+  {{ state.agency.short_name }}'s data was last read {{ fetched_label }}.{% if attempt_failed %} <strong>The most recent check failed, so this is the data from that last good read.</strong>{% endif %}
+
+  {% if schedule %}Every date is {{ state.agency.short_name }}'s plan, not a confirmed stocking, shown at the precision {{ state.agency.short_name }} gives it.{% endif %}
+</p>
+{% if water.months_note %}
+<p>
+  {{ state.agency.short_name }} also lists {{ water.name }} by month:
+  <strong>{{ water.months_note }}</strong>. {{ state.agency.short_name }}
+  writes each month as one letter, so "M" may be March or May and "J" may be
+  January, June or July. It says the dates vary through the months it lists.
+</p>
+{% endif %}
+
+<h2>{{ "Stocking schedule and history" if schedule else "Stocking history" }}</h2>
+{% if not plants %}
+<p>{{ state.agency.short_name }} has not given {{ water.name }} a day or a week in the time this site has recorded{% if water.months_note %}, only the months above{% endif %}.</p>
+{% else %}
+<table{% if has_removed %} aria-describedby="status-note"{% endif %}>
+  <caption class="visually-hidden">Every date on record for {{ water.name }}, most recent first</caption>
+  <thead>
+    <tr><th scope="col">When</th><th scope="col">Species</th>{% if has_counts %}<th scope="col">Fish</th>{% endif %}<th scope="col">Status</th></tr>
+  </thead>
+  <tbody>
+    {% for p in plants %}
+    <tr><td>{{ p.when }}</td><td>{{ p.species }}</td>{% if has_counts %}<td>{{ p.count if p.count is not none else "" }}</td>{% endif %}<td>{{ p.status }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if has_removed %}
+<p class="muted" id="status-note">
+  "Schedule changed" means {{ state.agency.short_name }} listed that date and
+  later took it off its schedule. A month that is later given a day shows
+  this way too, next to the new day.
+</p>
+{% endif %}
+{% endif %}
+
+<h2>About this water</h2>
+<dl>
+  {% if water.counties %}<dt>{{ "County" if water.counties|length == 1 else "Counties" }}</dt><dd>{{ water.counties|join(", ") }}</dd>{% endif %}
+  {% if water.towns %}<dt>{{ "Town" if water.towns|length == 1 else "Towns" }}</dt><dd>{{ water.towns|join(", ") }}</dd>{% endif %}
+  <dt>Source</dt><dd><a href="{{ water.source_url }}">{{ state.source.name }}</a></dd>
+  {% if water.aliases|length > 1 %}<dt>Also listed as</dt><dd>{{ water.aliases|join(", ") }}</dd>{% endif %}
+</dl>
+
+{% if neighbors %}
+<h2>{{ neighbors_heading }}</h2>
+<ul class="water-index">
+  {% for n in neighbors %}
+  <li><a href="../{{ n.slug }}/">{{ n.name }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+<p><a href="{{ root }}{{ state.code|lower }}/">Every {{ state.name }} water</a></p>
+
+<h2>Source and terms</h2>
+<p>{{ state.attribution.text }}</p>
+<p>{{ state.disclaimer }}</p>
+{% endblock %}

@@ -188,6 +188,40 @@ final class PurchaseManagerTests: XCTestCase {
         center.removeAllPendingNotificationRequests()
     }
 
+    // MARK: - Per-state products (DECISIONS 0025), real StoreKit Test purchases
+
+    func testEveryStatesProductLoadsFromTheConfiguration() async throws {
+        let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
+        try await waitForProductToLoad(manager)
+        for code in ["CA", "TN", "MA", "MI"] {
+            XCTAssertNotNil(manager.product(forState: code), "\(code)'s product must be in Configuration.storekit")
+        }
+        XCTAssertEqual(manager.product(forState: "TN")?.displayPrice, "$9.99")
+    }
+
+    func testBuyingTennesseeUnlocksTennesseeOnly() async throws {
+        let store = EntitlementStore(layout: AppStorageLayout(directory: tempDir))
+        let manager = PurchaseManager(entitlementStore: store)
+        try await waitForProductToLoad(manager)
+        await manager.purchase(state: "TN")
+        XCTAssertEqual(manager.entitledStates, ["TN"])
+        XCTAssertFalse(manager.isEntitled, "Tennessee doesn't unlock California")
+        XCTAssertEqual(store.load().ownedProductIDs, ["com.chelseakr.cafishplanting.state.tn"])
+    }
+
+    func testACaliforniaBuyerKeepsCaliforniaAfterBuyingAnotherStateAndAfterRestore() async throws {
+        let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir.appendingPathComponent("a"))))
+        try await waitForProductToLoad(manager)
+        await manager.purchase()
+        await manager.purchase(state: "MI")
+        XCTAssertEqual(manager.entitledStates, ["CA", "MI"])
+
+        let fresh = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir.appendingPathComponent("b"))))
+        try await waitForProductToLoad(fresh)
+        await fresh.restorePurchases()
+        XCTAssertEqual(fresh.entitledStates, ["CA", "MI"], "restore must recover every state bought")
+    }
+
     // MARK: -
 
     private func waitForProductToLoad(_ manager: PurchaseManager, timeout: TimeInterval = 8) async throws {

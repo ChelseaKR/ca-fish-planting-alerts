@@ -28,6 +28,8 @@ from urllib.parse import urlsplit
 
 import jinja2
 
+from . import site_states
+
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 # The product name (DECISIONS 0010). It says nothing a searcher types, so
@@ -926,12 +928,18 @@ def build_site(
     google_site_verification: str | None = None,
     dataset_license_url: str | None = DATASET_LICENSE_URL,
     cname: str | None = None,
+    snapshot_v2: dict[str, Any] | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
 
     ``cname`` (``custom_domain(base_url)``, passed by ``cli.run``) writes a
     ``CNAME`` file naming the custom domain. None writes no file, so a build
     without a custom domain is byte for byte what it was before.
+
+    ``snapshot_v2`` (``cli.run`` passes it) adds the other states' pages,
+    ``/states/``, their sitemap entries, and an "Other states" link in the
+    California pages' header (DECISIONS 0025). Without it, or with a v2 that
+    has California alone, the build is byte for byte what it was before.
 
     ``ga4_measurement_id`` defaults to None (no analytics) rather than to
     ``GA4_MEASUREMENT_ID``, so a caller gets the tag only by asking for it;
@@ -978,6 +986,9 @@ def build_site(
         "ga4_measurement_id": ga4_measurement_id,
         "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
     }
+    # The header's "Other states" link, only when v2 has another state, so a
+    # California-only build keeps its header byte for byte.
+    common["states_nav"] = snapshot_v2 is not None and len(snapshot_v2["states"]) > 1
 
     # ---- assets/
     _write_assets(out_dir, written, app_store_live=app_store_live)
@@ -1216,6 +1227,26 @@ def build_site(
     )
     counties_index_lastmod = max(first_seen.values(), default=source_week_start)
 
+    # ---- the other states (DECISIONS 0025), from v2. Their pages carry their
+    # own attribution, disclaimer and header; nothing here changes a
+    # California page beyond the header link above.
+    state_entries = site_states.render_states(
+        site_states.StatesContext(
+            env=env,
+            out_dir=out_dir,
+            written=written,
+            base_url=base_url,
+            common=common,
+            site_name=SITE_NAME,
+            write_page=_write_page,
+            ld_graph=_ld_graph,
+            ld_breadcrumb=_ld_breadcrumb,
+            ld_page=_ld_page,
+            relative_trail=_relative_trail,
+        ),
+        snapshot_v2,
+    )
+
     # ---- sitemap.xml -- lastmod is when a page's substance last changed
     # (see _water_data_lastmod), not the daily build date. The about,
     # privacy and support pages carry no per-page data date, so no lastmod.
@@ -1227,6 +1258,7 @@ def build_site(
         (f"{base_url}/support/", None),
         *county_lastmods.items(),
         *water_lastmods.items(),
+        *state_entries,
     ]
     sitemap_items = "\n".join(
         f"  <url><loc>{u}</loc><lastmod>{m}</lastmod></url>"

@@ -16,7 +16,9 @@ import Foundation
 public struct WidgetDigest: Codable, Equatable, Sendable {
     /// Bumped when the shape changes, so a widget never misreads a digest
     /// written by a different version of the app.
-    public static let currentVersion = 1
+    /// 2: favorites carry their state's words (`isReport`), and favorites in
+    /// a state without its purchase are counted, never shown.
+    public static let currentVersion = 2
 
     public let version: Int
     /// The snapshot's week (`source_week`).
@@ -37,6 +39,9 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
     /// The widget needs full access and this device doesn't have it
     /// (`FreeTier.widgetsAllowed`). Then `favorites` is empty.
     public let locked: Bool
+    /// Favorites in states this device hasn't bought. Counted and said,
+    /// never shown and never dropped silently.
+    public let favoritesInOtherStates: Int
 
     public struct Favorite: Codable, Equatable, Sendable, Identifiable {
         public let id: Water.ID
@@ -50,43 +55,56 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
         public let nextWeek: Week?
         /// The newest listed week that isn't in the future (`last_listed_week`).
         public let lastListedWeek: Week?
+        /// A report state's water: its rows say "stocked", never "scheduled".
+        public let isReport: Bool
 
-        public init(id: Water.ID, name: String, countyLabel: String, speciesThisWeek: [String], nextWeek: Week?, lastListedWeek: Week?) {
+        public init(id: Water.ID, name: String, countyLabel: String, speciesThisWeek: [String], nextWeek: Week?, lastListedWeek: Week?, isReport: Bool = false) {
             self.id = id; self.name = name; self.countyLabel = countyLabel
             self.speciesThisWeek = speciesThisWeek; self.nextWeek = nextWeek; self.lastListedWeek = lastListedWeek
+            self.isReport = isReport
         }
 
         public var isListedThisWeek: Bool { !speciesThisWeek.isEmpty }
     }
 
-    public init(version: Int = WidgetDigest.currentVersion, week: Week, snapshotGeneratedAt: Date, lastCheckFailed: Bool, lastSuccessfulCheck: Date?, watersListed: Int, favorites: [Favorite], missingFavorites: Int, locked: Bool) {
+    public init(version: Int = WidgetDigest.currentVersion, week: Week, snapshotGeneratedAt: Date, lastCheckFailed: Bool, lastSuccessfulCheck: Date?, watersListed: Int, favorites: [Favorite], missingFavorites: Int, locked: Bool, favoritesInOtherStates: Int = 0) {
         self.version = version; self.week = week; self.snapshotGeneratedAt = snapshotGeneratedAt
         self.lastCheckFailed = lastCheckFailed; self.lastSuccessfulCheck = lastSuccessfulCheck
         self.watersListed = watersListed; self.favorites = favorites
         self.missingFavorites = missingFavorites; self.locked = locked
+        self.favoritesInOtherStates = favoritesInOtherStates
     }
 
     /// Builds the digest from what the app holds. `favorites` in the order
     /// they were added.
-    public init(snapshot: Snapshot, meta: SnapshotMeta, favorites ids: [Water.ID], locked: Bool) {
+    /// `entitledStates` nil means every state (the single-product shape
+    /// before states, kept for callers and tests that predate them).
+    public init(snapshot: Snapshot, meta: SnapshotMeta, favorites ids: [Water.ID], locked: Bool, entitledStates: Set<String>? = nil) {
         var favorites: [Favorite] = []
         var missing = 0
+        var otherStates = 0
         if !locked {
             for id in ids {
                 guard let water = snapshot.water(id: id) else { missing += 1; continue }
+                if let entitledStates, !entitledStates.contains(water.state) { otherStates += 1; continue }
+                let week = snapshot.currentWeek(for: water)
                 var species: [String] = []
-                for plant in water.plants where plant.status == .listed && plant.week == snapshot.sourceWeek {
+                for plant in water.plants where plant.status != .removed && plant.week.precision != .month && plant.week.overlaps(week) {
                     if !species.contains(plant.species) { species.append(plant.species) }
                 }
-                let next = water.plants.first { $0.status == .listed && $0.week > snapshot.sourceWeek }?.week
+                let next = water.semantics == .schedule
+                    ? water.plants.first { $0.status == .listed && $0.week.start > week.end }?.week
+                    : nil
                 favorites.append(Favorite(id: water.id, name: water.name, countyLabel: water.countyLabel,
-                                          speciesThisWeek: species, nextWeek: next, lastListedWeek: water.lastListedWeek))
+                                          speciesThisWeek: species, nextWeek: next, lastListedWeek: water.lastListedWeek,
+                                          isReport: water.semantics == .report))
             }
         }
         self.init(week: snapshot.sourceWeek, snapshotGeneratedAt: snapshot.generatedAt,
                   lastCheckFailed: meta.lastAttemptFailed, lastSuccessfulCheck: meta.lastSuccessAt,
                   watersListed: Set(snapshot.thisWeek.map(\.waterID)).count,
-                  favorites: favorites, missingFavorites: missing, locked: locked)
+                  favorites: favorites, missingFavorites: missing, locked: locked,
+                  favoritesInOtherStates: otherStates)
     }
 
     // MARK: What to say
@@ -151,17 +169,23 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
 
     /// The short words for a favorite's status, for a widget row.
     public func statusLine(of favorite: Favorite, at now: Date) -> String {
+        if favorite.isReport {
+            if favorite.isListedThisWeek, !isStale(at: now) {
+                return ReportWording.stockedThisWeek(favorite.speciesThisWeek)
+            }
+            return favorite.lastListedWeek.map(ReportWording.lastStocked) ?? ReportWording.noStockingOnRecord
+        }
         switch status(of: favorite, at: now) {
         case .scheduledThisWeek(let species):
             return "Scheduled this week: \(species.joined(separator: ", "))"
         case .scheduledForEndedWeek(let week, let species):
-            return "Scheduled for the \(week.label): \(species.joined(separator: ", "))"
+            return "Scheduled for \(week.phrase): \(species.joined(separator: ", "))"
         case .scheduledLater(let week):
-            return "Next scheduled for the \(week.label)"
+            return "Next scheduled for \(week.phrase)"
         case .notListed(let week, let lastListed):
-            let listed = "Not listed for the \(week.label)"
+            let listed = "Not listed for \(week.phrase)"
             guard let lastListed else { return listed }
-            return "\(listed). Last scheduled for the \(lastListed.label)"
+            return "\(listed). Last scheduled for \(lastListed.phrase)"
         }
     }
 
@@ -185,7 +209,9 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
     public func summary(at now: Date) -> String {
         if locked { return "Unlock full access in Trout Truck" }
         if favorites.isEmpty {
-            return missingFavorites > 0 ? "Favorites not in this schedule" : "No favorite waters yet"
+            if missingFavorites > 0 { return "Favorites not in this schedule" }
+            if favoritesInOtherStates > 0 { return "Favorites are in states not unlocked" }
+            return "No favorite waters yet"
         }
         let count = favoritesListedThisWeek
         let noun = count == 1 ? "favorite" : "favorites"

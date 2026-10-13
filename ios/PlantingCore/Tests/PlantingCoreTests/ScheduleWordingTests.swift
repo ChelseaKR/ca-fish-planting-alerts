@@ -67,7 +67,9 @@ final class ScheduleWordingTests: XCTestCase {
                 XCTFail("missing source directory \(directory.path)")
                 continue
             }
-            for case let file as URL in files where file.pathExtension == "swift" {
+            // ReportWording.swift holds the report states' "stocked" words
+            // (DECISIONS 0025), and nothing else is exempt.
+            for case let file as URL in files where file.pathExtension == "swift" && file.lastPathComponent != "ReportWording.swift" {
                 let source = try String(contentsOf: file, encoding: .utf8)
                 for line in source.components(separatedBy: .newlines) {
                     let code = line.trimmingCharacters(in: .whitespaces)

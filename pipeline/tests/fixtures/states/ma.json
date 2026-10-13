@@ -1,0 +1,112 @@
+{
+ "_fixture_note": "SYNTHETIC FIXTURE, not captured from the layer: on 2026-10-12 the host's robots.txt was unreadable, so no live response was taken. Built to the field names cfpa.states.ma expects, from RESEARCH.md's description (2026-10-11). Water names are real Massachusetts waters; dates, codes and counts are illustrative.",
+ "objectIdFieldName": "OBJECTID",
+ "fields": [
+  {
+   "name": "OBJECTID",
+   "type": "esriFieldTypeOID"
+  },
+  {
+   "name": "Waterbody",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "Town",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "Species",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "Water_Town_Code",
+   "type": "esriFieldTypeString"
+  },
+  {
+   "name": "Date",
+   "type": "esriFieldTypeDate"
+  }
+ ],
+ "features": [
+  {
+   "attributes": {
+    "OBJECTID": 1,
+    "Waterbody": "Lake Quinsigamond",
+    "Town": "Worcester",
+    "Species": "RT",
+    "Water_Town_Code": "QUINSIG-WORC",
+    "Date": 1790222400000
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 2,
+    "Waterbody": "Lake Quinsigamond",
+    "Town": "Worcester",
+    "Species": "BT",
+    "Water_Town_Code": "QUINSIG-WORC",
+    "Date": 1791432000000
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 3,
+    "Waterbody": "Quabbin Reservoir",
+    "Town": "Belchertown",
+    "Species": "RT",
+    "Water_Town_Code": "QUABBIN-BELCH",
+    "Date": 1790827200000
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 4,
+    "Waterbody": "Swift River",
+    "Town": "Belchertown",
+    "Species": "RT",
+    "Water_Town_Code": "SWIFT-BELCH",
+    "Date": 1791259200000
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 5,
+    "Waterbody": "Swift River",
+    "Town": "Belchertown",
+    "Species": "RT",
+    "Water_Town_Code": "SWIFT-BELCH",
+    "Date": 1791518400000
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 6,
+    "Waterbody": "Deerfield River",
+    "Town": "Charlemont",
+    "Species": "BT",
+    "Water_Town_Code": "DEERF-CHARL",
+    "Date": 1791345600000
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 7,
+    "Waterbody": "Walden Pond",
+    "Town": "Concord",
+    "Species": "RT",
+    "Water_Town_Code": "WALDEN-CONC",
+    "Date": 1791172800000
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 8,
+    "Waterbody": "Walden Pond",
+    "Town": "Concord",
+    "Species": "RT",
+    "Water_Town_Code": "WALDEN-CONC",
+    "Date": null
+   }
+  }
+ ]
+}

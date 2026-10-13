@@ -9,6 +9,7 @@ struct AboutView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showingPurchaseSheet = false
     @State private var showingNotificationPriming = false
+    @State private var showingStates = false
 
     var body: some View {
         List {
@@ -16,7 +17,7 @@ struct AboutView: View {
                 if environment.purchases.isEntitled {
                     // Green on the seal only: green text on white is below 4.5:1.
                     Label {
-                        Text("Unlocked")
+                        Text("California unlocked")
                     } icon: {
                         Image(systemName: "checkmark.seal.fill").foregroundStyle(.green)
                     }
@@ -26,6 +27,12 @@ struct AboutView: View {
                         .foregroundStyle(.secondaryText)
                     Button("Unlock full access") { showingPurchaseSheet = true }
                 }
+                if (environment.snapshot?.states.count ?? 1) > 1 {
+                    Text("Full access is a one-time purchase for each state. California's is the original purchase, and it stays what it was.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondaryText)
+                    Button("States and full access") { showingStates = true }
+                }
             } header: {
                 SectionHeader("Full access")
             }
@@ -33,6 +40,9 @@ struct AboutView: View {
             Section {
                 Text("Favorite any California water for free and browse its full schedule history. With full access, also get a notification on this device when a favorite appears in the California Department of Fish and Wildlife's weekly stocking schedule, and a Home Screen and Lock Screen widget with your favorites.")
                 Text("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
+                if (environment.snapshot?.states.count ?? 1) > 1 {
+                    Text("Other states come from their own wildlife agencies. Each date is shown as precisely as the agency gives it: a day, a week, or a month. Where an agency reports stockings after they happen instead of scheduling them, the app says so and shows how recent its newest record is.")
+                }
                 Button("Show the introduction") { router.showingOnboarding = true }
             } header: {
                 SectionHeader("What this app does")
@@ -72,6 +82,23 @@ struct AboutView: View {
                     SectionHeader("Data source and license")
                 }
 
+                ForEach(snapshot.states.filter { $0.code != "CA" }) { state in
+                    Section {
+                        Text(state.attribution.text)
+                        Text(state.disclaimer)
+                        Link(state.sourceName, destination: state.attribution.url)
+                        Text(state.license.summary)
+                            .font(.footnote)
+                            .foregroundStyle(.secondaryText)
+                        ForEach(state.license.sources) { source in
+                            Link(source.name, destination: source.termsURL)
+                                .font(.footnote)
+                        }
+                    } header: {
+                        SectionHeader("\(state.name): data source and license")
+                    }
+                }
+
                 Section {
                     LabeledContent("Schedule week", value: snapshot.sourceWeek.label)
                     LabeledContent("Built", value: snapshot.generatedAt.formatted(date: .abbreviated, time: .shortened))
@@ -92,8 +119,11 @@ struct AboutView: View {
         .sheet(isPresented: $showingPurchaseSheet) {
             PurchaseView()
         }
+        .sheet(isPresented: $showingStates) {
+            StatesView()
+        }
         .sheet(isPresented: $showingNotificationPriming) {
-            NotificationPrimingView(copy: NotificationPrimingCopy(waterName: nil, isEntitled: environment.purchases.isEntitled)) {
+            NotificationPrimingView(copy: NotificationPrimingCopy(waterName: nil, isEntitled: environment.purchases.hasAnyAccess)) {
                 await environment.requestNotificationAuthorization()
                 showingNotificationPriming = false
             } notNow: {

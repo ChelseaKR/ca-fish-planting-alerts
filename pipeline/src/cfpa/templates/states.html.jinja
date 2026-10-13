@@ -1,0 +1,39 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>Trout stocking schedules by state</h1>
+<p class="lede">
+  {{ site_name }} carries each state's own stocking data, from the state
+  wildlife agency that publishes it. Some agencies publish a schedule of
+  planned stockings; others report stockings after they happen. Each page
+  says which, and shows every date at the precision the agency gives it: a
+  day, a week, or a month.
+</p>
+<table>
+  <caption class="visually-hidden">States {{ site_name }} carries, with each agency and when its data was last checked</caption>
+  <thead>
+    <tr>
+      <th scope="col">State</th>
+      <th scope="col">Agency</th>
+      <th scope="col">What it publishes</th>
+      <th scope="col">Waters</th>
+      <th scope="col">Last checked</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr>
+      <td><a href="{{ r.href }}">{{ r.name }}</a></td>
+      <td>{{ r.agency }}</td>
+      <td>{{ r.kind }}</td>
+      <td>{{ r.waters }}</td>
+      <td>{{ r.checked }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p>
+  Browsing and every water's history are free on this site and in the app.
+  In the iOS app, alerts and the widget are a one-time purchase for each
+  state. <a href="{{ root }}about/">About &amp; attribution</a>.
+</p>
+{% endblock %}

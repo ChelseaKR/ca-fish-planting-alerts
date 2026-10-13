@@ -11,6 +11,7 @@ struct BrowseView: View {
     @State private var selectedRegion: String? // nil = all regions
     @State private var selectedCounty: String? // nil = all counties
     @State private var refreshFeedback: RefreshFeedback?
+    @State private var showingStates = false
 
     var body: some View {
         Group {
@@ -26,29 +27,52 @@ struct BrowseView: View {
 
     @ViewBuilder
     private func content(for snapshot: Snapshot) -> some View {
+        let code = environment.browseState
+        let state = snapshot.state(code: code)
         let thisWeekIDs = Set(snapshot.thisWeek.map(\.waterID))
-        let waters = filtered(snapshot.waters, thisWeekIDs: thisWeekIDs)
+        let waters = filtered(snapshot.waters(inState: code), thisWeekIDs: thisWeekIDs)
         let freshness = environment.freshness()
+        let regions = snapshot.regionsWithWaters(inState: code)
         SelectableList(selection: selection) {
             Section {
-                Picker("Region", selection: $selectedRegion) {
-                    Text("All regions").tag(String?.none)
-                    ForEach(snapshot.regionsWithWaters) { region in
-                        Text(region.name).tag(String?.some(region.code))
+                if snapshot.states.count > 1 {
+                    Picker("State", selection: Binding(get: { environment.browseState },
+                                                        set: { environment.setBrowseState($0) })) {
+                        ForEach(snapshot.states) { s in
+                            Text(s.name).tag(s.code)
+                        }
                     }
+                    .pickerStyle(.menu)
+                    .onChange(of: environment.browseState) {
+                        selectedRegion = nil
+                        selectedCounty = nil
+                    }
+                    .accessibilityIdentifier("state-picker")
                 }
-                .pickerStyle(.menu)
+                if !regions.isEmpty {
+                    Picker("Region", selection: $selectedRegion) {
+                        Text("All regions").tag(String?.none)
+                        ForEach(regions) { region in
+                            Text(region.name).tag(String?.some(region.code))
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
                 // Only the counties that have a water in the chosen region.
-                Picker("County", selection: $selectedCounty) {
-                    Text("All counties").tag(String?.none)
-                    ForEach(WaterSearch.counties(of: regionWaters(snapshot)), id: \.self) { county in
+                Picker(code == "MA" ? "Town" : "County", selection: $selectedCounty) {
+                    Text(code == "MA" ? "All towns" : "All counties").tag(String?.none)
+                    ForEach(WaterSearch.counties(of: regionWaters(snapshot, state: code)), id: \.self) { county in
                         Text(county).tag(String?.some(county))
                     }
                 }
                 .pickerStyle(.menu)
                 .onChange(of: selectedRegion) { selectedCounty = nil }
-                if let freshness {
-                    FreshnessRow(freshness: freshness)
+                if code == "CA" {
+                    if let freshness {
+                        FreshnessRow(freshness: freshness)
+                    }
+                } else if let state {
+                    StateFreshnessRow(state: state)
                 }
             }
             Section {
@@ -57,7 +81,9 @@ struct BrowseView: View {
                 } else {
                     ForEach(waters) { water in
                         NavigationLink(value: water.id) {
-                            WaterRow(water: water, listed: thisWeekIDs.contains(water.id) ? freshness : nil)
+                            // The "This week" tag reads California's week; another state's
+                            // rows show their dates on the water's page instead.
+                            WaterRow(water: water, listed: water.state == "CA" && thisWeekIDs.contains(water.id) ? freshness : nil)
                         }
                     }
                 }
@@ -65,15 +91,27 @@ struct BrowseView: View {
         }
         .waterDestinations(in: snapshot, enabled: selection == nil)
         .toolbar { RefreshToolbarButton(shown: horizontalSizeClass == .regular) { refreshFeedback = RefreshFeedback(await environment.refreshNow()) } }
+        .toolbar {
+            if snapshot.states.count > 1 {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showingStates = true } label: {
+                        Label("States and full access", systemImage: "map")
+                    }
+                    .accessibilityIdentifier("states-button")
+                }
+            }
+        }
+        .sheet(isPresented: $showingStates) { StatesView() }
         // Pull down to check for a newer schedule now, past the throttle.
         // The freshness row above says how it went, and a tap says it too.
         .refreshable { refreshFeedback = RefreshFeedback(await environment.refreshNow()) }
         .sensoryFeedback(trigger: refreshFeedback) { _, feedback in feedback?.haptic }
     }
 
-    private func regionWaters(_ snapshot: Snapshot) -> [Water] {
-        guard let selectedRegion else { return snapshot.waters }
-        return snapshot.waters(inRegion: selectedRegion)
+    private func regionWaters(_ snapshot: Snapshot, state code: String) -> [Water] {
+        let waters = snapshot.waters(inState: code)
+        guard let selectedRegion else { return waters }
+        return waters.filter { $0.region == selectedRegion }
     }
 
     /// Region, then county, then the search text: a water's name, any name
@@ -177,7 +215,7 @@ extension View {
         if enabled {
             navigationDestination(for: Water.ID.self) { id in
                 if let water = snapshot.water(id: id) {
-                    WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek)
+                    WaterDetailView(water: water, sourceWeek: snapshot.currentWeek(for: water))
                 }
             }
         } else {
@@ -225,6 +263,40 @@ struct RefreshFeedback: Equatable {
     }
 
     var haptic: SensoryFeedback { failed ? .warning : .success }
+}
+
+/// Another state's freshness: when its agency's data was last read, whether
+/// the newest check failed, and how recent its newest record is. Michigan's
+/// lag note shows here, next to the data.
+struct StateFreshnessRow: View {
+    let state: StateInfo
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text("\(state.agencyShortName) \(state.semantics == .schedule ? "stocking schedule" : "stocking report")")
+                .font(.footnote.weight(.semibold))
+            if let newest = state.newestRecord {
+                Text("Newest date in it: \(newest.label)")
+                    .font(.caption)
+            }
+            if let note = state.recencyNote {
+                Text(note).font(.caption)
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                if !state.lastAttemptOK {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .accessibilityHidden(true)
+                }
+                Text(state.lastAttemptOK
+                     ? "Read \(state.lastSuccessAt.formatted(.relative(presentation: .named)))"
+                     : "The newest check failed. Showing the data read \(state.lastSuccessAt.formatted(.relative(presentation: .named))).")
+            }
+            .font(.caption2)
+            .foregroundStyle(state.lastAttemptOK ? Color.secondaryText : Color.primary)
+        }
+        .accessibilityElement(children: .combine)
+    }
 }
 
 /// The offline-first promise made visible: which week's schedule the app

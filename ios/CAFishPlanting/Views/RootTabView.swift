@@ -114,7 +114,7 @@ struct WaterDetailColumn: View {
 
     var body: some View {
         if let id, let snapshot = environment.snapshot, let water = snapshot.water(id: id) {
-            WaterDetailView(water: water, sourceWeek: snapshot.sourceWeek)
+            WaterDetailView(water: water, sourceWeek: snapshot.currentWeek(for: water))
                 .readableWidth()
                 .id(id)
         } else {

@@ -95,3 +95,23 @@ before every fetch regardless (see `pipeline/src/cfpa/fetch.py`).
   scheduled run since 2026-09-15 had been refused as stale. It showed the
   page states its week, not its day (see `fetch.py`), and is the source of
   `pipeline/tests/fixtures/schedule-midweek-2026-09-17.html`.
+
+## Other states (DECISIONS 0025)
+
+Read before any fetch, 2026-10-11 (research) and re-read 2026-10-12. The
+verbatim clauses live in code next to each source (`pipeline/src/cfpa/states/tn.py`,
+`ma.py`, `mi.py`) and are published in each state's `license.sources[].terms_quote`
+in `snapshot/v2.json`.
+
+| State | Source we read | Terms | Attribution shown | robots.txt (2026-10-12) | Fetched |
+|---|---|---|---|---|---|
+| TN | TWRA schedule JSON behind `https://www.tn.gov/twra/fishing/trout-information-stockings.html` | TN.gov Linking Policy, `https://www.tn.gov/web-policies/linking-policy.html`: "The information posted on a TN.gov Web site may be copied so long as it is presented in a non-misleading way and does not imply that either the site owner or the information, as it is presented on the site owner's Web site, is endorsed by the State. Use of the information must identify the state agency that is the source of the information, and the agency's Web address." | "Data: Tennessee Wildlife Resources Agency (TWRA), trout stocking schedule (https://www.tn.gov/twra/fishing/trout-information-stockings.html)." plus "not endorsed by TWRA or the State of Tennessee" | 200, `User-agent: *` / `Allow: /` | Daily, one request each for robots.txt and the file |
+| MA | ArcGIS `StockedFish_View/FeatureServer/0` (never the mass.gov page, which is fair use only) | Item license (research, 2026-10-11): "All maps and other material provided herein are protected by copyright. Permission is granted to copy and use the materials herein." | "Data: Massachusetts Division of Fisheries and Wildlife (MassWildlife), trout stocking report (https://www.mass.gov/info-details/trout-stocking-report)." | `services1.arcgis.com`: **403**. Off-limits. | No |
+| MI | ArcGIS `DNR/FishStockingReportGISAGO/MapServer/0` | Dataset license, read 2026-10-12 from `www.arcgis.com` item metadata: "there are no restrictions on the use, reproduction, or distribution of this dataset", with an indemnity clause (owner question). | "Data: Michigan Department of Natural Resources, Fish Stocking Database (https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f)." | `utility.arcgis.com`: **301 to the arcgis.com home page**. Off-limits. | No |
+
+The state fetchers identify themselves with the same User-Agent as the
+California fetch, never a browser's, and are stricter about robots.txt (the
+owner's rulings, 2026-10-12, DECISIONS 0025): an HTTP 200 `text/plain` file
+on that host applies; a 404 (no file) means no rules; anything else (a 403,
+a redirect to a page that is not a robots file, a 5xx, a timeout) puts the
+host off-limits and it is not contacted further.

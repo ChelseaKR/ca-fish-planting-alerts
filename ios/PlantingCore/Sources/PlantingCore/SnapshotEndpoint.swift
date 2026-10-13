@@ -9,7 +9,9 @@ import Foundation
 /// follows redirects for a plain GET by default, so no code change is
 /// needed when that happens — only this constant, if the path also moves.
 public enum SnapshotEndpoint {
-    public static let url = URL(string: "https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json")!
+    /// v2: California plus every other state (DECISIONS 0025). Builds 1.0
+    /// keep reading `snapshot/v1.json`, which stays byte for byte what it was.
+    public static let url = URL(string: "https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v2.json")!
     public static var host: String { url.host! }
 
     /// The per-water site page. `schema/README.md` defines the path
@@ -20,11 +22,22 @@ public enum SnapshotEndpoint {
     /// pipeline/site lane later adds an explicit `site_url` to the schema,
     /// prefer that field over this derivation.
     public static func siteWaterURL(slug: String) -> URL? {
+        sitePageURL(path: "/water/\(slug)/")
+    }
+
+    /// A water's page from its v2 `site_path` (`/tn/water/<slug>/`), or the
+    /// California path when the snapshot gave none.
+    public static func siteWaterURL(for water: Water) -> URL? {
+        sitePageURL(path: water.sitePath ?? "/water/\(water.slug)/")
+    }
+
+    static func sitePageURL(path: String) -> URL? {
+        guard path.hasPrefix("/"), !path.contains("..") else { return nil }
         var components = URLComponents()
         components.scheme = url.scheme
         components.host = url.host
         components.port = url.port
-        components.path = "/ca-fish-planting-alerts/water/\(slug)/"
+        components.path = "/ca-fish-planting-alerts\(path)"
         return components.url
     }
 }

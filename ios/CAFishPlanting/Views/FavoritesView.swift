@@ -39,9 +39,9 @@ struct FavoritesView: View {
     }
 
     private var emptyDescription: String {
-        let alerts = environment.purchases.isEntitled
-            ? "You'll get an alert when one appears in a new week's schedule."
-            : "With full access, you also get an alert when one appears in a new week's schedule, and a widget with your favorites."
+        let alerts = environment.purchases.hasAnyAccess
+            ? "You'll get an alert when one in a state you unlocked is newly on the schedule."
+            : "With full access for a state, you also get an alert when one there is newly on the schedule, and a widget with your favorites."
         return "Tap the star on any water in Browse to keep its schedule here. \(alerts)"
     }
 
@@ -65,11 +65,11 @@ struct FavoritesView: View {
                     ForEach(shown) { water in
                         let muted = environment.alertsMuted(for: water.id)
                         NavigationLink(value: water.id) {
-                            WaterRow(water: water, listed: thisWeekIDs.contains(water.id) ? freshness : nil, alertsMuted: muted)
+                            WaterRow(water: water, listed: water.state == "CA" && thisWeekIDs.contains(water.id) ? freshness : nil, alertsMuted: muted)
                         }
                         .swipeActions(edge: .leading) {
                             // Alerts come with full access; a mute can always be undone.
-                            if environment.purchases.isEntitled || muted {
+                            if environment.purchases.isEntitled(state: water.state) || muted {
                                 Button {
                                     environment.setAlertsMuted(!muted, for: water.id)
                                 } label: {

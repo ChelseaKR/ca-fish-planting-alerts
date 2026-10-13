@@ -352,7 +352,8 @@ def test_the_github_io_site_holds_only_data_redirects_404_and_sitemap(
         assert (
             rel.name == "index.html"
             or rel.suffix == ".ics"
-            or rel.as_posix() in {"snapshot/v1.json", "404.html", "sitemap.xml"}
+            or rel.as_posix()
+            in {"snapshot/v1.json", "snapshot/v2.json", "404.html", "sitemap.xml"}
         ), rel
     assert not (old / "CNAME").exists()
     assert not (old / "robots.txt").exists()

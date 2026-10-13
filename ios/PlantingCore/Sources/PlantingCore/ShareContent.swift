@@ -30,7 +30,8 @@ public enum ShareContent {
 
     /// The full share-sheet message: water name, real status, real link.
     public static func message(for water: Water, siteURL: URL?, sourceWeek: Week) -> String {
-        var parts = ["\(water.name) — \(productName), CA fish planting alerts.", statusLine(for: water, sourceWeek: sourceWeek)]
+        let tagline = water.state == "CA" ? "CA fish planting alerts" : "fish stocking alerts"
+        var parts = ["\(water.name) — \(productName), \(tagline).", statusLine(for: water, sourceWeek: sourceWeek)]
         if let siteURL {
             parts.append("Schedule history: \(siteURL.absoluteString)")
         }

@@ -5,7 +5,11 @@ struct WaterDetailView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let water: Water
+    /// The water's own state's current week (`Snapshot.currentWeek(for:)`).
     let sourceWeek: Week
+    @State private var showingPurchase = false
+
+    private var state: StateInfo? { environment.snapshot?.state(of: water) }
 
     private var isFavorite: Bool { environment.isFavorite(water.id) }
     private var alertsMuted: Bool { environment.alertsMuted(for: water.id) }
@@ -14,7 +18,7 @@ struct WaterDetailView: View {
     /// access), and for a muted one whatever the purchase, so a mute can
     /// always be undone.
     private var showsAlertsSwitch: Bool {
-        isFavorite && (environment.purchases.isEntitled || alertsMuted)
+        isFavorite && (environment.purchases.isEntitled(state: water.state) || alertsMuted)
     }
 
     var body: some View {
@@ -29,6 +33,26 @@ struct WaterDetailView: View {
                         Text("Species seen: \(water.speciesSeen.joined(separator: ", "))")
                             .font(.subheadline)
                     }
+                    if let note = water.monthsNote {
+                        Text("\(water.agencyShortName) also lists this water by month: \(note). It writes each month as one letter, so \"M\" may be March or May, and says the dates vary through those months.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondaryText)
+                    }
+                    if let note = state?.recencyNote {
+                        Text(note)
+                            .font(.footnote)
+                            .foregroundStyle(.secondaryText)
+                    }
+                }
+            }
+
+            if isFavorite && !environment.purchases.isEntitled(state: water.state) && !alertsMuted, let state {
+                Section {
+                    Button("Unlock alerts for \(state.name)") { showingPurchase = true }
+                        .accessibilityIdentifier("unlock-state")
+                } footer: {
+                    Text("Alerts and the widget for \(state.name) waters are a one-time purchase. Browsing and history stay free.")
+                        .foregroundStyle(.secondaryText)
                 }
             }
 
@@ -44,16 +68,20 @@ struct WaterDetailView: View {
                 } footer: {
                     Text(alertsMuted
                          ? "Muted. \(water.name) stays in Favorites and the widget, with no alert when it is newly on the schedule."
-                         : "An alert on this device when \(water.name) is newly on CDFW's weekly schedule.")
+                         : water.state == "CA"
+                         ? "An alert on this device when \(water.name) is newly on CDFW's weekly schedule."
+                         : water.semantics == .report
+                         ? "An alert on this device when \(water.name) is new in \(water.agencyShortName)'s stocking report."
+                         : "An alert on this device when \(water.name) is newly on \(water.agencyShortName)'s schedule.")
                         .foregroundStyle(.secondaryText)
                 }
             }
 
             Section {
                 Link(destination: water.cdfwMapURL) {
-                    Label("CDFW schedule for this water", systemImage: "link")
+                    Label(water.state == "CA" ? "CDFW schedule for this water" : "\(water.agencyShortName) source for this water", systemImage: "link")
                 }
-                if let siteURL = SnapshotEndpoint.siteWaterURL(slug: water.slug) {
+                if let siteURL = SnapshotEndpoint.siteWaterURL(for: water) {
                     Link(destination: siteURL) {
                         Label("Full history on the site", systemImage: "safari")
                     }
@@ -76,9 +104,21 @@ struct WaterDetailView: View {
                     }
                 }
             } header: {
-                SectionHeader("Schedule history")
+                SectionHeader(water.semantics == .report ? "Stocking history" : "Schedule history")
+            }
+
+            if water.state != "CA", let state {
+                Section {
+                    Text(state.attribution.text)
+                    Text(state.disclaimer)
+                        .font(.footnote)
+                        .foregroundStyle(.secondaryText)
+                } header: {
+                    SectionHeader("Source")
+                }
             }
         }
+        .sheet(isPresented: $showingPurchase) { PurchaseView(state: water.state) }
         .navigationTitle(water.name)
         .navigationBarTitleDisplayMode(.large)
         // Opened, from an alert or anywhere else: its alerts in Notification
@@ -114,7 +154,7 @@ struct WaterDetailView: View {
     /// The real, grounded share message — see `ShareContent` in
     /// `PlantingCore` for what it does and doesn't claim.
     private var shareText: String {
-        ShareContent.message(for: water, siteURL: SnapshotEndpoint.siteWaterURL(slug: water.slug), sourceWeek: sourceWeek)
+        ShareContent.message(for: water, siteURL: SnapshotEndpoint.siteWaterURL(for: water), sourceWeek: sourceWeek)
     }
 
     /// "Last scheduled for the week of …": CDFW publishes scheduled plants
@@ -133,9 +173,11 @@ private struct PlantRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                // Never a day — the pipeline's own label, verbatim.
-                Text(plant.week.label)
-                Text(plant.species).font(.caption).foregroundStyle(.secondaryText)
+                // The pipeline's own label, verbatim: a week is never shown
+                // as a day, and a month says its day isn't set.
+                Text(plant.week.precision == .month ? "\(plant.week.label), day not set" : plant.week.label)
+                Text(plant.count.map { "\(plant.species), \($0.formatted()) fish" } ?? plant.species)
+                    .font(.caption).foregroundStyle(.secondaryText)
             }
             Spacer()
             if plant.status == .removed {

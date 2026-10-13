@@ -10,8 +10,21 @@ struct PurchaseView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// The state this sheet sells. California's is the original Full Access.
+    var state: String = "CA"
 
     private var purchases: PurchaseManager { environment.purchases }
+    private var info: StateInfo? { environment.snapshot?.state(code: state) }
+    private var isCalifornia: Bool { state == "CA" }
+    private var stateName: String { info?.name ?? (isCalifornia ? "California" : state) }
+    private var unlocked: Bool { purchases.isEntitled(state: state) }
+
+    /// California keeps its words (`FreeTier.fullAccessFeatures`, which the
+    /// App Store copy is checked against); another state names itself.
+    private var features: [String] {
+        guard !isCalifornia, let info else { return FreeTier.fullAccessFeatures }
+        return FreeTier.stateFeatures(stateName: info.name, agencyShortName: info.agencyShortName, semantics: info.semantics)
+    }
 
     /// Centered at the usual sizes; ragged-right at the accessibility sizes,
     /// where a few words per line read more easily from a fixed left edge.
@@ -25,12 +38,20 @@ struct PurchaseView: View {
             // the sheet.
             ScrollView {
                 VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .center, spacing: 20) {
-                    Image(systemName: purchases.isEntitled ? "checkmark.seal.fill" : "star.circle")
+                    Image(systemName: unlocked ? "checkmark.seal.fill" : "star.circle")
                         .font(.system(size: 48))
-                        .foregroundStyle(purchases.isEntitled ? Color.green : Color.accentColor)
+                        .foregroundStyle(unlocked ? Color.green : Color.accentColor)
                         .accessibilityHidden(true)
 
-                    if purchases.isEntitled {
+                    if unlocked && !isCalifornia {
+                        Text("\(stateName) unlocked")
+                            .font(.title2.bold())
+                            .multilineTextAlignment(textAlignment)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text("Thank you. Your \(stateName) favorites now get alerts, and they show in the Favorite waters widget.")
+                            .font(.subheadline)
+                            .multilineTextAlignment(textAlignment)
+                    } else if unlocked {
                         Text("Full access unlocked")
                             .font(.title2.bold())
                             .multilineTextAlignment(textAlignment)
@@ -39,15 +60,17 @@ struct PurchaseView: View {
                             .font(.subheadline)
                             .multilineTextAlignment(textAlignment)
                     } else {
-                        Text("Unlock full access")
+                        Text(isCalifornia ? "Unlock full access" : "Unlock \(stateName)")
                             .font(.title2.bold())
                             .multilineTextAlignment(textAlignment)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text("Browsing and favoriting are always free. Full access adds:")
+                        Text(isCalifornia
+                             ? "Browsing and favoriting are always free. Full access for California adds:"
+                             : "Browsing, history and favorites in \(stateName) are always free. \(stateName) full access adds:")
                             .font(.subheadline)
                             .multilineTextAlignment(textAlignment)
                         VStack(alignment: .leading, spacing: 10) {
-                            ForEach(Array(zip(FreeTier.fullAccessFeatures, ["bell.badge", "square.grid.2x2"])), id: \.0) { feature, symbol in
+                            ForEach(Array(zip(features, ["bell.badge", "square.grid.2x2"])), id: \.0) { feature, symbol in
                                 Label {
                                     Text(feature).fixedSize(horizontal: false, vertical: true)
                                 } icon: {
@@ -59,7 +82,7 @@ struct PurchaseView: View {
                         }
                         .font(.subheadline)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("One payment, forever. No subscription, no account.")
+                        Text("One payment, forever, for this state. No subscription, no account. Each state is its own purchase.")
                             .font(.footnote)
                             .foregroundStyle(.secondaryText)
                             .multilineTextAlignment(textAlignment)
@@ -82,14 +105,14 @@ struct PurchaseView: View {
                         }
                     }
 
-                    Button(purchases.isEntitled ? "Done" : "Not now") { dismiss() }
+                    Button(unlocked ? "Done" : "Not now") { dismiss() }
                         .buttonStyle(.plain)
                         .padding(.top, 8)
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .center)
             }
-            .navigationTitle("Full access")
+            .navigationTitle(isCalifornia ? "Full access" : stateName)
             .navigationBarTitleDisplayMode(.inline)
         }
         // Half height on iPhone. Not on iPad (or a Mac), where iPadOS 26
@@ -99,7 +122,7 @@ struct PurchaseView: View {
         .presentationDetents(dynamicTypeSize.isAccessibilitySize || UIDevice.current.userInterfaceIdiom == .pad ? [.large] : [.medium, .large])
         // The unlock landing, from a purchase or a restore. iOS skips it when
         // system haptics are off.
-        .sensoryFeedback(.success, trigger: purchases.isEntitled) { wasEntitled, isEntitled in !wasEntitled && isEntitled }
+        .sensoryFeedback(.success, trigger: unlocked) { wasEntitled, isEntitled in !wasEntitled && isEntitled }
         // Opaque, so text contrast doesn't depend on what the half-height
         // glass sheet happens to cover.
         .presentationBackground(Color(uiColor: .systemBackground))
@@ -108,7 +131,7 @@ struct PurchaseView: View {
     @ViewBuilder
     private var purchaseButton: some View {
         Button {
-            Task { await purchases.purchase() }
+            Task { await purchases.purchase(state: state) }
         } label: {
             HStack {
                 if purchases.uiState == .purchasing {
@@ -120,13 +143,13 @@ struct PurchaseView: View {
         .buttonStyle(.borderedProminent)
         .tint(.prominentButtonFill)
         .foregroundStyle(.white)
-        .disabled(purchases.uiState == .purchasing || purchases.product == nil)
+        .disabled(purchases.uiState == .purchasing || purchases.product(forState: state) == nil)
         .accessibilityHint("Shows the App Store payment sheet")
     }
 
     private var purchaseLabel: String {
-        if let product = purchases.product {
-            return "Unlock full access — \(product.displayPrice)"
+        if let product = purchases.product(forState: state) {
+            return isCalifornia ? "Unlock full access — \(product.displayPrice)" : "Unlock \(stateName) — \(product.displayPrice)"
         }
         return purchases.productLoadError == nil ? "Loading price…" : "Not available right now"
     }

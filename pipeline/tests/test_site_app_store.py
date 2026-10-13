@@ -287,7 +287,12 @@ def test_off_build_is_identical_to_a_build_without_the_argument(tmp_path):
     files_a = {p.relative_to(a): p for p in a.rglob("*") if p.is_file()}
     files_b = {p.relative_to(b): p for p in b.rglob("*") if p.is_file()}
     assert sorted(files_a) == sorted(files_b)
-    noisy = {Path("snapshot/v1.json"), Path("index.html"), Path("about/index.html")}
+    noisy = {
+        Path("snapshot/v1.json"),
+        Path("snapshot/v2.json"),
+        Path("index.html"),
+        Path("about/index.html"),
+    }
     for rel, path in files_a.items():
         if rel in noisy:
             continue  # carry generated_at, which is the wall clock

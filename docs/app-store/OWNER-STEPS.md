@@ -293,6 +293,31 @@ adds iPad and Apple silicon Macs. Before submitting that version:
 4. **Review notes.** Add one line: "Runs on iPhone and iPad; on iPad,
    Browse and Favorites show the list beside the water."
 
+## For a version with Apple Watch (DECISIONS 0026)
+
+1. **Register the watch identifiers** (Certificates, Identifiers &
+   Profiles), each **Explicit** with **App Groups** and
+   `group.com.chelseakr.cafishplanting`: `com.chelseakr.cafishplanting.watchkitapp`
+   (Description `Trout Truck Watch`) and
+   `com.chelseakr.cafishplanting.watchkitapp.widgets` (Description
+   `Trout Truck Watch Widget`). Xcode's automatic signing can create them
+   on the first archive instead.
+2. **Run it on your own watch once** before submitting: with full access
+   on the iPhone, open the watch app and check that your favorites appear,
+   add the "Next favorite" complication to a face, and, with the iPhone
+   locked, check that a planting alert reaches the watch and that **Mute
+   this water** on it mutes that water on the iPhone (the agent could not
+   test a paired device).
+3. **Apple Watch screenshots.** App Store Connect asks for them on the
+   version that first ships a watch app. Take them from a Release build on
+   a watch simulator; the agent's set from 2026-10-12 is a Debug build.
+4. **Review notes.** Add: "The Apple Watch app and its complication are
+   part of the one-time full access purchase, made in the iPhone app.
+   Without it the watch says so and shows the week's schedule count."
+5. **Listing.** The in-app purchase description and the promotional text
+   still name alerts and the widget only. Both remain true; decide whether
+   to mention Apple Watch (the description has a 45-character limit).
+
 ## What is already done
 
 Checked 2026-10-01 against the code on this branch; `make appstore` re-checks

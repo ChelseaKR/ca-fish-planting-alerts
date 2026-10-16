@@ -9,6 +9,15 @@ name: ci
 #   ran pytest and the offline fixture build without the lint, type,
 #   coverage or security stages.
 #
+# - android: the Android app (android/, docs/DECISIONS.md 0022): the
+#   Gradle wrapper checked against Gradle's published checksums, then the
+#   core module's JVM tests (including the alert-planner parity fixtures
+#   shared with the Swift package, and a decode of the committed v1
+#   snapshot the app bundles), the app's JVM test of the off-main-thread
+#   snapshot load, Android lint with warnings as errors, and a debug and an
+#   R8-minified release build, each checked to carry that same snapshot byte
+#   for byte. Runs on pull requests only, like `ios`.
+#
 # - ios: `swift test` on the ios/PlantingCore Swift package (the app's
 #   Foundation-only data layer -- see its Package.swift for why it's a
 #   dynamic library). Deliberately NOT `xcodebuild`: building/testing the
@@ -137,3 +146,66 @@ jobs:
         if: steps.present.outputs.present == 'true'
         working-directory: ios/PlantingCore
         run: swift test
+
+  android:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    # Measured locally at about 6 minutes from a cold Gradle cache.
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: check this lane is present on this branch
+        id: present
+        run: |
+          if [ -f android/settings.gradle.kts ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "android/ isn't on this branch -- nothing to build here."
+          fi
+
+      - name: validate the gradle wrapper
+        if: steps.present.outputs.present == 'true'
+        uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: install jdk 21
+        if: steps.present.outputs.present == 'true'
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: set up gradle
+        if: steps.present.outputs.present == 'true'
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          # Pull requests read the cache; nothing they run can write to it.
+          cache-read-only: true
+
+      - name: test, lint and build
+        if: steps.present.outputs.present == 'true'
+        working-directory: android
+        run: ./gradlew --no-daemon --stacktrace :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease
+
+      # A build without a snapshot it can read opens on an error screen until
+      # the first download. SnapshotDecoderTest (in :core:test above) decodes
+      # the committed file; this checks both APKs carry that file, byte for byte.
+      - name: check both builds carry the decoded bundled snapshot
+        if: steps.present.outputs.present == 'true'
+        working-directory: android/app/build/outputs/apk
+        shell: bash
+        run: |
+          set -euo pipefail
+          committed="$GITHUB_WORKSPACE/android/app/src/main/assets/snapshot.json"
+          for apk in debug/app-debug.apk release/app-release-unsigned.apk; do
+            if ! unzip -p "$apk" assets/snapshot.json | cmp -s - "$committed"; then
+              echo "::error::$apk does not carry the committed assets/snapshot.json"
+              exit 1
+            fi
+            echo "$apk carries the committed assets/snapshot.json"
+          done

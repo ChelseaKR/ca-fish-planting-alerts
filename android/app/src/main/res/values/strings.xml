@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Trout Truck</string>
+    <string name="widget_name">Favorite waters</string>
+    <string name="widget_description">Which of your favorite waters are on CDFW\'s schedule this week. Part of full access.</string>
+    <string name="channel_alerts_name">Planting alerts</string>
+    <string name="channel_alerts_description">One alert when a favorite water is newly on CDFW\'s weekly schedule.</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The iOS app's icon art, inset so the whole fish sits inside the adaptive icon's safe zone. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/launcher_art"
+    android:inset="16dp" />

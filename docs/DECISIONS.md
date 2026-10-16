@@ -484,7 +484,7 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
   lane's rules (feat/ratings-and-water-seo, not yet on main), and an About
   row that opens the app's Play Store page.
 - **Not ported.** Shortcuts and Siri (`ScheduleIntents`) and the Apple
-  Watch (0021, in progress) have no direct Android twin in this change.
+  Watch (0027) have no direct Android twin in this change.
 
 Owner steps (Play Console app, in-app product, signing, Data safety,
 listing, internal testing) are in `android/README.md`.

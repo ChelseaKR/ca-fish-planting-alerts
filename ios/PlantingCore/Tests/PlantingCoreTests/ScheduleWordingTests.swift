@@ -58,7 +58,7 @@ final class ScheduleWordingTests: XCTestCase {
             .deletingLastPathComponent() // Tests
             .deletingLastPathComponent() // PlantingCore
             .deletingLastPathComponent() // ios
-        let directories = ["CAFishPlanting/Views", "CAFishPlanting/App", "CAFishPlantingWidgets", "PlantingCore/Sources"].map { ios.appendingPathComponent($0) }
+        let directories = ["CAFishPlanting/Views", "CAFishPlanting/App", "CAFishPlantingWidgets", "CAFishPlantingWatch", "CAFishPlantingWatchWidgets", "PlantingCore/Sources"].map { ios.appendingPathComponent($0) }
         // One-line Swift string literals, escapes included.
         let pattern = try NSRegularExpression(pattern: #""((?:[^"\\\n]|\\.)*)""#)
         var found: [Literal] = []

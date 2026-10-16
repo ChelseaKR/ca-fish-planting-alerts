@@ -103,6 +103,9 @@ final class AppEnvironment {
     /// Writes what the Home Screen widget shows (`WidgetDigest`) to the App
     /// Group container. No network, and only when it changed.
     private let widgetBridge: WidgetBridge
+    /// Sends the same digest to Apple Watch (`WatchSync`), and applies a
+    /// mute the watch asks for. `nil` where there is no watch to talk to.
+    private let watchBridge: WatchBridge?
     /// The one refresh running now, if any. Launch, return to the
     /// foreground and the background task can all ask at once; they share
     /// this task rather than racing two GETs into one `SnapshotStore`.
@@ -151,11 +154,12 @@ final class AppEnvironment {
     /// Tests may inject a pre-built refresher (e.g. one wired to a mocked
     /// `URLSession` via `SnapshotRefresher.makeSession(protocolClasses:)`)
     /// to exercise `performBackgroundRefresh()` without a live network call.
-    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil, openThrottle: RefreshThrottle = .foreground, widgetBridge: WidgetBridge? = nil) {
+    init(notificationCenter: UNUserNotificationCenter = .current(), purchases: PurchaseManager? = nil, refresher: SnapshotRefresher? = nil, openThrottle: RefreshThrottle = .foreground, widgetBridge: WidgetBridge? = nil, watchBridge: WatchBridge? = .shared) {
         self.notifications = NotificationScheduler(center: notificationCenter)
         self.refresher = refresher ?? SnapshotRefresher(session: SnapshotRefresher.makeSession())
         self.openThrottle = openThrottle
         self.widgetBridge = widgetBridge ?? WidgetBridge()
+        self.watchBridge = watchBridge
         var entitlementStore: EntitlementStore?
         do {
             let layout = try AppStorageLayout.applicationSupport(bundleIdentifier: bundleIdentifier)
@@ -187,6 +191,9 @@ final class AppEnvironment {
         // The widget is part of full access: a purchase, a restore or a
         // refund redraws it straight away.
         self.purchases.onEntitlementChange = { [weak self] _ in self?.publishWidgetDigest() }
+        // "Mute this water" tapped on the watch, if watchOS hands that
+        // button to the watch app rather than to this one.
+        self.watchBridge?.onMuteRequest = { [weak self] id in self?.setAlertsMuted(true, for: id) }
         syncFromStore()
         Task { notificationAuthorization = await notifications.authorizationStatus() }
     }
@@ -202,7 +209,8 @@ final class AppEnvironment {
     /// after every refresh (the background task's too) and every change to
     /// `favorites`; `WidgetBridge` skips the write when nothing changed. Whether
     /// the widget may list favorites is `FreeTier.widgetsAllowed`, the one
-    /// place that flag is read.
+    /// place that flag is read. Apple Watch gets its own copy, gated the
+    /// same way by `FreeTier.watchAllowed`, read only here too.
     func publishWidgetDigest() {
         guard let snapshot, let refreshMeta else { return }
         let entitled = purchases.entitledStates
@@ -210,6 +218,10 @@ final class AppEnvironment {
                                   locked: !FreeTier.widgetsAllowed(entitledStates: entitled),
                                   entitledStates: entitled)
         widgetBridge.publish(digest)
+        let watchLocked = !FreeTier.watchAllowed(entitledStates: entitled)
+        watchBridge?.publish(watchLocked == digest.locked ? digest
+            : WidgetDigest(snapshot: snapshot, meta: refreshMeta, favorites: favorites.ids, locked: watchLocked,
+                           entitledStates: entitled))
     }
 
     // MARK: States

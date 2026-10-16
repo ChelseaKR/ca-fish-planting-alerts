@@ -50,6 +50,14 @@ This repository was republished with a new history on 2026-09-18
   Refresh button (Command-R). The iPhone layout is used in Slide Over,
   narrow splits and at the accessibility text sizes. The full-access sheet
   opens at full height. The iPad turns to every orientation.
+- Trout Truck on Apple Watch, part of full access: your favorite waters
+  with a "This week" tag or their next scheduled week, each water's next
+  and last scheduled weeks, and a "Next favorite" complication for watch
+  faces and the Smart Stack. It shows what the iPhone app sends, so it
+  needs the iPhone app and makes no network request. "Mute this water"
+  works from an alert on the watch too.
+- A round Lock Screen size for the Favorite waters widget: how many of
+  your favorites are scheduled this week.
 
 ### Fixed
 

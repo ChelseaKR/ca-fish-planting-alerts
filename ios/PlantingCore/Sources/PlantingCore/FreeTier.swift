@@ -46,12 +46,31 @@ public enum FreeTier {
         !widgetsRequireFullAccess || isEntitled
     }
 
+    /// Whether Trout Truck on Apple Watch (the watch app and its
+    /// complications) needs the one-time purchase. It does: the owner asked
+    /// on 2026-10-12 for watch extras as more reasons to buy the same
+    /// purchase (`docs/DECISIONS.md` 0027). The watch never checks a
+    /// purchase itself. It shows only the digest the phone sends
+    /// (`WatchSync`), and the phone builds that digest locked, with no
+    /// favorites in it, unless this allows it.
+    public static let watchRequiresFullAccess = true
+
+    /// Whether the watch may show favorites at all, given the states this
+    /// device owns. The same rule as the widget (DECISIONS 0025): any
+    /// state's purchase unlocks it, and the digest then lists only the
+    /// favorites in owned states. Read in one place: where the phone builds
+    /// the watch's digest (`AppEnvironment.publishWidgetDigest()`).
+    public static func watchAllowed(entitledStates: Set<String>) -> Bool {
+        !watchRequiresFullAccess || !entitledStates.isEmpty
+    }
+
     /// What full access unlocks, in the words the purchase screen lists.
     /// One place, so the screen, About and the App Store copy can't drift
     /// apart (`FullAccessCopyTests` checks the App Store side).
     public static let fullAccessFeatures = [
         "An alert on this device when a favorite is newly on CDFW's weekly schedule",
         "The Favorite waters widget for your Home Screen and Lock Screen",
+        "Your favorite waters on Apple Watch, with a complication",
     ]
 
     // MARK: Per state (DECISIONS 0025)
@@ -74,6 +93,6 @@ public enum FreeTier {
         let alert = semantics == .schedule
             ? "An alert on this device when a \(stateName) favorite is newly on \(agencyShortName)'s schedule"
             : ReportWording.alertFeature(stateName: stateName, agencyShortName: agencyShortName)
-        return [alert, "\(stateName) favorites in the Favorite waters widget"]
+        return [alert, "\(stateName) favorites in the Favorite waters widget", "\(stateName) favorites on Apple Watch"]
     }
 }

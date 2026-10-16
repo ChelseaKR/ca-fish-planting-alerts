@@ -17,7 +17,9 @@ SwiftUI, iOS 17+, no third-party dependencies. Two pieces:
 `CAFishPlantingWidgets/` is a WidgetKit extension
 (`com.chelseakr.cafishplanting.widgets`) with one widget, "Favorite
 waters", in small, medium and large Home Screen sizes and the Lock
-Screen's rectangular and inline sizes.
+Screen's circular, rectangular and inline sizes. The circular size shows
+how many favorites are scheduled this week, "ended" once the week is
+over, and no number at all when locked or empty.
 
 - **Data.** The app writes a small digest of the snapshot it already has
   (`WidgetDigest` in PlantingCore) to the App Group
@@ -48,6 +50,42 @@ Screen's rectangular and inline sizes.
 - **Signing.** Both targets use team `6X5YH93QNM` with automatic signing,
   as before. On a device (not the simulator) the App Group has to be
   registered for the team; see `docs/app-store/OWNER-STEPS.md` step 6.
+
+## Apple Watch
+
+`CAFishPlantingWatch/` is a companion watch app
+(`com.chelseakr.cafishplanting.watchkitapp`, watchOS 10+,
+`WKRunsIndependentlyOfCompanionApp` false), embedded in the iPhone app.
+`CAFishPlantingWatchWidgets/` is its WidgetKit extension with one widget,
+"Next favorite", for watch faces and the Smart Stack. Part of full access
+(`FreeTier.watchRequiresFullAccess`, `docs/DECISIONS.md` 0027).
+
+- **Data.** The phone sends the same `WidgetDigest` the widget reads, as
+  WatchConnectivity's application context (`App/WatchBridge.swift`,
+  `WatchSync` in PlantingCore). The watch app keeps it in the watch's own
+  App Group container (same identifier, the watch's own copy) and reloads
+  the complication. No server, no network request on the watch.
+- **Gate.** The phone builds the watch's digest locked unless
+  `FreeTier.watchAllowed(entitledStates:)` (any state's purchase, as for
+  the widget), and with only the favorites in owned states
+  (DECISIONS 0025). The watch has no StoreKit code and never sees a
+  product ID; it can only show what the phone sent.
+- **Alerts.** The phone's local notifications reach the watch the usual
+  way (when the phone is locked). The watch app registers the same
+  `TT_PLANTING_ALERT` category, so "Mute this water" shows there. If
+  watchOS hands that button to the watch app, it forwards the water's ID
+  to the phone (`transferUserInfo`), which mutes it as its own button
+  does. A tap opens that water on the watch. Not verified on a paired
+  device yet (`docs/app-store/OWNER-STEPS.md`).
+- **Screenshots.** Debug builds read a digest file named by the
+  `TT_WATCH_DIGEST_FILE` environment variable, and `TT_WATCH_GALLERY=1`
+  draws the complication's sizes in the app, since a watch face can't be
+  set up from the command line. Release builds have neither.
+
+Build it on its own with
+`xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlantingWatch
+-destination 'platform=watchOS Simulator,id=<UDID>' build`. Building the
+iPhone app builds and embeds it too.
 
 ## The one-time purchase
 

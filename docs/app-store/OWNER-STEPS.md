@@ -159,7 +159,7 @@ character counts are measured.
    makes the button say "Not available right now" for everyone). Price:
    the **USD 9.99** price point, for the United States (the only storefront).
    English (U.S.) Display Name `Full Access`, Description
-   `Alerts and a widget for your favorite waters`. Family Sharing: your call
+   `Alerts, widget, Watch: your favorite waters`. Family Sharing: your call
    (it can't be turned off once on). Review screenshot: the purchase sheet,
    taken in step 12. Review notes: `Unlocks local notifications and the Home Screen widget for favorited waters. About → Unlock full access.`
    Status must reach **Ready to Submit**.
@@ -292,6 +292,33 @@ adds iPad and Apple silicon Macs. Before submitting that version:
    shows Mute this water.
 4. **Review notes.** Add one line: "Runs on iPhone and iPad; on iPad,
    Browse and Favorites show the list beside the water."
+
+## For a version with Apple Watch (DECISIONS 0027)
+
+1. **Register the watch identifiers** (Certificates, Identifiers &
+   Profiles), each **Explicit** with **App Groups** and
+   `group.com.chelseakr.cafishplanting`: `com.chelseakr.cafishplanting.watchkitapp`
+   (Description `Trout Truck Watch`) and
+   `com.chelseakr.cafishplanting.watchkitapp.widgets` (Description
+   `Trout Truck Watch Widget`). Xcode's automatic signing can create them
+   on the first archive instead.
+2. **Run it on your own watch once** before submitting: with full access
+   on the iPhone, open the watch app and check that your favorites appear,
+   add the "Next favorite" complication to a face, and, with the iPhone
+   locked, check that a planting alert reaches the watch and that **Mute
+   this water** on it mutes that water on the iPhone (the agent could not
+   test a paired device).
+3. **Apple Watch screenshots.** App Store Connect asks for them on the
+   version that first ships a watch app. Take them from a Release build on
+   a watch simulator; the agent's set from 2026-10-12 is a Debug build.
+4. **Review notes.** Add: "The Apple Watch app and its complication are
+   part of the one-time full access purchase, made in the iPhone app.
+   Without it the watch says so and shows the week's schedule count."
+5. **Listing.** Each in-app purchase's description and the promotional
+   text now name Apple Watch ("Alerts, widget, Watch: …", within the
+   45-character limit). Paste the new descriptions into each product's
+   localization in App Store Connect with the version that ships the watch,
+   not before.
 
 ## What is already done
 

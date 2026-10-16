@@ -11,21 +11,26 @@ Two modes:
     CURRENT_PROJECT_VERSION (an extension whose version differs from its
     app is rejected on upload), and both Info.plists take their versions
     from those build settings;
-  - every target runs on iPhone and iPad (TARGETED_DEVICE_FAMILY = "1,2",
-    DECISIONS 0020; a Mac runs the iPad app) and signs with team
-    6X5YH93QNM, never the enrollment ID;
+  - every iOS target runs on iPhone and iPad (TARGETED_DEVICE_FAMILY = "1,2",
+    DECISIONS 0020; a Mac runs the iPad app), every watchOS target
+    (SDKROOT = watchos) on Apple Watch only ("4", DECISIONS 0027), and every
+    target signs with team 6X5YH93QNM, never the enrollment ID;
   - the project has no remote Swift package, and no Swift file imports a
     module outside Apple's SDK and the local PlantingCore package, so no
     analytics or tracking SDK can arrive unnoticed;
   - Info.plist declares export compliance (ITSAppUsesNonExemptEncryption
     false), a launch screen, and no background mode beyond the refresh task;
   - no entitlements file asks for push (aps-environment);
-  - both privacy manifests say no tracking, no tracking domains and no
+  - the watch app is a companion of this app, not a standalone one, and
+    its Info.plists take their versions from the build settings too;
+  - every privacy manifest (app, widget, watch app, watch widget) says no
+    tracking, no tracking domains and no
     collected data, and every required-reason API the Swift sources call
     has its category declared in the manifest (Apple rejects an upload
     that calls one undeclared);
   - the app icon set has every file it names, at the pixel size it names,
-    with no alpha channel, including the 1024x1024 marketing icon.
+    with no alpha channel, including the 1024x1024 marketing icon, and the
+    watch app's single 1024x1024 icon is there and opaque.
 
 - With `--release-tag vX.Y.Z` (the release workflow): the preflight. The tag
   must be stable SemVer equal to MARKETING_VERSION, the build number must be
@@ -56,17 +61,27 @@ IOS = ROOT / "ios"
 PBXPROJ = IOS / "CAFishPlanting.xcodeproj" / "project.pbxproj"
 APP_INFO = IOS / "CAFishPlanting" / "Resources" / "Info.plist"
 WIDGET_INFO = IOS / "CAFishPlantingWidgets" / "Info.plist"
+WATCH_INFO = IOS / "CAFishPlantingWatch" / "Resources" / "Info.plist"
+WATCH_WIDGET_INFO = IOS / "CAFishPlantingWatchWidgets" / "Info.plist"
 MANIFESTS = (
     IOS / "CAFishPlanting" / "Resources" / "PrivacyInfo.xcprivacy",
     IOS / "CAFishPlantingWidgets" / "PrivacyInfo.xcprivacy",
+    IOS / "CAFishPlantingWatch" / "Resources" / "PrivacyInfo.xcprivacy",
+    IOS / "CAFishPlantingWatchWidgets" / "PrivacyInfo.xcprivacy",
 )
 ICONSET = (
     IOS / "CAFishPlanting" / "Resources" / "Assets.xcassets" / "AppIcon.appiconset"
 )
+WATCH_ICONSET = (
+    IOS / "CAFishPlantingWatch" / "Resources" / "Assets.xcassets" / "AppIcon.appiconset"
+)
+APP_BUNDLE_ID = "com.chelseakr.cafishplanting"
 # Code that ships in the app bundle. Tests and UI tests never ship.
 SHIPPED_SWIFT = (
     IOS / "CAFishPlanting",
     IOS / "CAFishPlantingWidgets",
+    IOS / "CAFishPlantingWatch",
+    IOS / "CAFishPlantingWatchWidgets",
     IOS / "PlantingCore" / "Sources",
 )
 CHANGELOG = ROOT / "CHANGELOG.md"
@@ -89,6 +104,7 @@ ALLOWED_IMPORTS = frozenset(
         "SwiftUI",
         "UIKit",
         "UserNotifications",
+        "WatchConnectivity",
         "WidgetKit",
     }
 )
@@ -113,6 +129,7 @@ REQUIRED_REASON: Mapping[str, re.Pattern[str]] = {
     "NSPrivacyAccessedAPICategoryActiveKeyboards": re.compile(r"\bactiveInputModes\b"),
 }
 
+_CONFIG = re.compile(r"buildSettings = \{(?P<body>.*?)\n\s*\};", re.DOTALL)
 _SETTING = re.compile(r"^\s*(?P<key>[A-Z_]+) = (?P<value>[^;]*);", re.MULTILINE)
 _IMPORT = re.compile(
     r"^[ \t]*(?:@\w+[ \t]+)*import[ \t]+"
@@ -129,6 +146,36 @@ def build_settings(pbxproj: str, key: str) -> list[str]:
         for m in _SETTING.finditer(pbxproj)
         if m.group("key") == key
     ]
+
+
+def device_families(pbxproj: str) -> list[tuple[str, str]]:
+    """(TARGETED_DEVICE_FAMILY, SDKROOT) for each build configuration that
+    sets a family. Text with no configuration blocks is read as one."""
+    blocks = [m.group("body") for m in _CONFIG.finditer(pbxproj)] or [pbxproj]
+    found: list[tuple[str, str]] = []
+    for block in blocks:
+        sdk = next(iter(build_settings(block, "SDKROOT")), "")
+        found += [
+            (family, sdk) for family in build_settings(block, "TARGETED_DEVICE_FAMILY")
+        ]
+    return found
+
+
+def check_device_families(pbxproj: str) -> list[str]:
+    """iOS targets on iPhone and iPad, watchOS targets on Apple Watch."""
+    families = device_families(pbxproj)
+    if not families:
+        return ["no target sets TARGETED_DEVICE_FAMILY"]
+    problems: list[str] = []
+    for family, sdk in families:
+        want = "4" if sdk == "watchos" else "1,2"
+        if family != want:
+            problems.append(
+                f'TARGETED_DEVICE_FAMILY must be "{want}" where SDKROOT is '
+                f"{sdk or 'iphoneos'} (iOS targets: iPhone and iPad; watchOS: "
+                f"Apple Watch): {family}"
+            )
+    return problems
 
 
 def check_project(pbxproj: str) -> list[str]:
@@ -148,11 +195,7 @@ def check_project(pbxproj: str) -> list[str]:
         problems.append(
             f"CURRENT_PROJECT_VERSION is not a positive integer: {sorted(builds)}"
         )
-    families = build_settings(pbxproj, "TARGETED_DEVICE_FAMILY")
-    if not families or any(f.strip('"') != "1,2" for f in families):
-        problems.append(
-            f'TARGETED_DEVICE_FAMILY must be "1,2" (iPhone and iPad) everywhere: {families}'
-        )
+    problems += check_device_families(pbxproj)
     teams = set(build_settings(pbxproj, "DEVELOPMENT_TEAM"))
     if teams != {TEAM_ID}:
         problems.append(
@@ -179,6 +222,52 @@ def check_app_info(info: Mapping[str, Any]) -> list[str]:
         problems.append(
             f"unexpected background modes: {sorted(modes - ALLOWED_BACKGROUND_MODES)}"
         )
+    return problems
+
+
+def check_watch_info(info: Mapping[str, Any]) -> list[str]:
+    """The watch app's Info.plist: a companion of this app, not standalone."""
+    problems = _check_version_keys("watch app Info.plist", info)
+    if info.get("WKApplication") is not True:
+        problems.append("watch app Info.plist must set WKApplication")
+    if info.get("WKCompanionAppBundleIdentifier") != APP_BUNDLE_ID:
+        problems.append(
+            f"watch app Info.plist: WKCompanionAppBundleIdentifier must be {APP_BUNDLE_ID}"
+        )
+    if info.get("WKRunsIndependentlyOfCompanionApp") is not False:
+        problems.append(
+            "watch app Info.plist: WKRunsIndependentlyOfCompanionApp must be false "
+            "(the watch has no data or purchase of its own)"
+        )
+    if info.get("ITSAppUsesNonExemptEncryption") is not False:
+        problems.append(
+            "watch app Info.plist must set ITSAppUsesNonExemptEncryption to false"
+        )
+    return problems
+
+
+def check_watch_iconset(
+    contents: Mapping[str, Any], pngs: Mapping[str, bytes]
+) -> list[str]:
+    """The watch app's one 1024x1024 icon exists and is opaque."""
+    images = [
+        image
+        for image in contents.get("images", [])
+        if image.get("platform") == "watchos" and image.get("size") == "1024x1024"
+    ]
+    if not images:
+        return ["the watch icon set has no 1024x1024 watchos image"]
+    filename = images[0].get("filename")
+    if filename not in pngs:
+        return [f"watch icon {filename} is named in Contents.json but missing"]
+    width, height, alpha = png_header(pngs[filename])
+    problems: list[str] = []
+    if (width, height) != (1024, 1024):
+        problems.append(
+            f"watch icon {filename} is {width}x{height}, expected 1024x1024"
+        )
+    if alpha:
+        problems.append(f"watch icon {filename} has an alpha channel")
     return problems
 
 
@@ -391,6 +480,10 @@ def readiness() -> list[str]:
     problems = check_project(pbxproj)
     problems += check_app_info(_plist(APP_INFO))
     problems += _check_version_keys("widget Info.plist", _plist(WIDGET_INFO))
+    problems += check_watch_info(_plist(WATCH_INFO))
+    problems += _check_version_keys(
+        "watch widget Info.plist", _plist(WATCH_WIDGET_INFO)
+    )
     problems += check_changelog_has_version(
         pbxproj, CHANGELOG.read_text(encoding="utf-8")
     )
@@ -408,6 +501,11 @@ def readiness() -> list[str]:
     contents = json.loads((ICONSET / "Contents.json").read_text(encoding="utf-8"))
     pngs = {p.name: p.read_bytes() for p in ICONSET.glob("*.png")}
     problems += check_iconset(contents, pngs)
+    watch_contents = json.loads(
+        (WATCH_ICONSET / "Contents.json").read_text(encoding="utf-8")
+    )
+    watch_pngs = {p.name: p.read_bytes() for p in WATCH_ICONSET.glob("*.png")}
+    problems += check_watch_iconset(watch_contents, watch_pngs)
     return problems
 
 
@@ -458,6 +556,28 @@ def self_test() -> list[str]:
             }
         ]
     }
+    watch_icons = {
+        "images": [
+            {
+                "filename": "w.png",
+                "idiom": "universal",
+                "platform": "watchos",
+                "size": "1024x1024",
+            }
+        ]
+    }
+    good_watch_info: dict[str, Any] = {
+        "CFBundleShortVersionString": "$(MARKETING_VERSION)",
+        "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+        "ITSAppUsesNonExemptEncryption": False,
+        "WKApplication": True,
+        "WKCompanionAppBundleIdentifier": APP_BUNDLE_ID,
+        "WKRunsIndependentlyOfCompanionApp": False,
+    }
+    ios_block = 'buildSettings = {\nSDKROOT = iphoneos;\nTARGETED_DEVICE_FAMILY = "1,2";\n\t};\n'
+    watch_block = (
+        "buildSettings = {\nSDKROOT = watchos;\nTARGETED_DEVICE_FAMILY = 4;\n\t};\n"
+    )
     changelog = (
         "## [Unreleased]\n\n## [1.0.0] - 2026-10-01\n\n### Added\n\n- The app.\n"
     )
@@ -478,6 +598,56 @@ def self_test() -> list[str]:
             bool(check_project(good_proj + "TARGETED_DEVICE_FAMILY = 1;\n")),
             True,
         ),
+        (
+            "watch family ok",
+            not check_project(good_proj + ios_block + watch_block),
+            True,
+        ),
+        (
+            "watch target on iphone",
+            bool(
+                check_project(
+                    good_proj + ios_block + watch_block.replace("= 4;", '= "1,2";')
+                )
+            ),
+            True,
+        ),
+        (
+            "ios target on watch",
+            bool(check_project(good_proj + ios_block.replace('"1,2"', "4"))),
+            True,
+        ),
+        ("watch info ok", not check_watch_info(good_watch_info), True),
+        (
+            "standalone watch app",
+            bool(
+                check_watch_info(
+                    {**good_watch_info, "WKRunsIndependentlyOfCompanionApp": True}
+                )
+            ),
+            True,
+        ),
+        (
+            "wrong companion",
+            bool(
+                check_watch_info(
+                    {**good_watch_info, "WKCompanionAppBundleIdentifier": "x"}
+                )
+            ),
+            True,
+        ),
+        (
+            "watch icon ok",
+            not check_watch_iconset(watch_icons, {"w.png": _png(1024, 1024, 2)}),
+            True,
+        ),
+        (
+            "watch icon alpha",
+            bool(check_watch_iconset(watch_icons, {"w.png": _png(1024, 1024, 6)})),
+            True,
+        ),
+        ("watch icon missing", bool(check_watch_iconset(watch_icons, {})), True),
+        ("no watch icon", bool(check_watch_iconset({"images": []}, {})), True),
         (
             "enrollment id",
             bool(check_project(good_proj.replace(TEAM_ID, ENROLLMENT_ID))),

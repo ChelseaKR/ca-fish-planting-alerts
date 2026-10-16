@@ -33,7 +33,7 @@ description.
 | Name | 30 | `Trout Truck` | 11 |
 | Subtitle | 30 | `CA stocking schedule & alerts` | 29 |
 | Keywords | 100 | `california,fish,fishing,planting,plant,cdfw,stocked,lake,river,creek,reservoir,pond,wildlife,angler` | 99 |
-| Promotional text | 170 | `This week's California trout planting schedule and each water's week-by-week history, free to browse. One-time purchase adds alerts and a widget. No account, no tracking.` | 170 |
+| Promotional text | 170 | `This week's California trout planting schedule and each water's history, free to browse. One-time purchase adds alerts, a widget and Apple Watch. No account, no tracking.` | 170 |
 | Description | 4000 | See [Description](#description) below. | 1,900 |
 | Primary category | — | Sports. | — |
 | Secondary category | — | **Reference**, not the Weather an earlier draft suggested. The app is a schedule-and-history lookup with no weather content, and guideline 2.3.5 asks for the most appropriate category. | — |
@@ -59,7 +59,7 @@ because without it the page has no contact line. See step 5 of
 | Field | Limit | Value | Chars |
 |---|---|---|---|
 | Display name | 30 | `Full Access` | 11 |
-| Description | 45 | `Alerts and a widget for your favorite waters` | 44 |
+| Description | 45 | `Alerts, widget, Watch: your favorite waters` | 43 |
 
 The description names both things full access unlocks, alerts and the
 widget (DECISIONS 0015), within App Store Connect's 45-character limit.

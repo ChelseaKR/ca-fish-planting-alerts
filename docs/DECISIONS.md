@@ -584,3 +584,46 @@ another state has data.
   file, is off-limits; a 404 counts as "no rules". (2) Tennessee is USD
   9.99, one time, product id `com.chelseakr.cafishplanting.state.tn`.
   Michigan's indemnity clause and species scope are moot while it is off.
+
+## 0027 — Apple Watch and a round Lock Screen widget, in full access (2026-10-12; proposed, pending owner)
+
+The owner asked on 2026-10-12 for Apple Watch and Lock Screen extras, as
+more reasons to buy the same one-time purchase. 1.0.0 (build 2) is in
+review and doesn't change; this is for a later version.
+
+- **A watch app, companion only.** `CAFishPlantingWatch`
+  (`com.chelseakr.cafishplanting.watchkitapp`) lists the favorite waters,
+  each with where it stands in the schedule's week: a "This week" tag when
+  listed, otherwise its next scheduled week. A water's page adds its next
+  and last scheduled weeks and the species listed this week. Nothing else:
+  no browsing, no settings, no purchase screen.
+- **A complication and Smart Stack widget**, "Next favorite"
+  (`CAFishPlantingWatchWidgets`): the favorite listed this week, otherwise
+  the one scheduled soonest after it, in the rectangular, circular, inline
+  and corner families.
+- **A round Lock Screen widget on the phone** (`accessoryCircular`): how
+  many favorites are scheduled this week. The widget had the rectangular
+  and inline Lock Screen sizes already.
+- **Part of full access, per state (0025).** `FreeTier.watchRequiresFullAccess`
+  is `true`, and `FreeTier.watchAllowed(entitledStates:)` is the widget's
+  rule: any state's purchase unlocks the watch, which then lists only the
+  favorites in states this device owns. Favorites in other states are
+  counted and said ("2 favorites are in states not unlocked"), never shown.
+  The phone decides, in one place (`AppEnvironment.publishWidgetDigest`),
+  and sends the watch the same digest the widget reads. The watch never
+  checks a purchase and never sees a product ID. A report state's water
+  says "stocked" on the watch too (`ReportWording`), never "scheduled".
+  Each state's purchase screen lists "<State> favorites on Apple Watch". Locked, the watch says the content is part of full access, bought
+  in Trout Truck on the iPhone, and shows the published week and its count.
+- **No new data path.** The digest travels phone to watch over
+  WatchConnectivity's application context, with no server, no account and
+  no network request. The watch sends back only a water ID to mute, when
+  "Mute this water" is tapped on the wrist and watchOS gives that button
+  to the watch app.
+- **Listing copy.** Each in-app purchase's description and the promotional
+  text name Apple Watch, as part of a state's purchase ("Alerts, widget,
+  Watch: Tennessee waters").
+- **Follow-up:** check "Mute this water" from the wrist on a paired iPhone
+  and Apple Watch.
+- **Not built:** a Control Center or Lock Screen control (iOS 18). It
+  would only open the app, which the icon already does.

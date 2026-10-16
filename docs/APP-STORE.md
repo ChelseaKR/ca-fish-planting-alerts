@@ -337,7 +337,7 @@ Connect with this exact identifier:
 | Reference Name (internal, App Store Connect only) | `Full Access` |
 | Price | USD 9.99 price point, United States only (DECISIONS 0007, 0018) |
 | Display Name (customer-facing) | `Full Access` |
-| Description (customer-facing, 45 max) | `Alerts and a widget for your favorite waters` (44 characters) |
+| Description (customer-facing, 45 max) | `Alerts, widget, Watch: your favorite waters` (43 characters) |
 | Cleared for sale | Yes, once the app record itself is created |
 | Review screenshot | A screenshot of the in-app purchase sheet (`PurchaseView`, reachable from About > "Unlock full access" and from a tap on the locked Home Screen widget) is required by App Store Connect for the IAP's own review |
 
@@ -374,7 +374,7 @@ Michigan's are placeholders; a changed id must also change
 | Reference Name | `Tennessee access` | `Massachusetts access` | `Michigan access` |
 | Price | USD 9.99, one time (confirmed 2026-10-12) | USD 9.99 (placeholder) | USD 9.99 (placeholder) |
 | Display Name | `Tennessee` | `Massachusetts` | `Michigan` |
-| Description (45 max) | `Alerts and widget for Tennessee waters` (38) | `Alerts and widget for Massachusetts waters` (42) | `Alerts and widget for Michigan waters` (37) |
+| Description (45 max) | `Alerts, widget, Watch: Tennessee waters` (39) | `Alerts, widget, Watch: Massachusetts waters` (43) | `Alerts, widget, Watch: Michigan waters` (38) |
 | Review screenshot | The Tennessee purchase sheet: Browse > map button (States) > Tennessee > "Unlock alerts and widget" | the same for Massachusetts | the same for Michigan |
 | Review notes (draft) | "Tennessee is a one-time purchase that adds alerts and the Favorite waters widget for Tennessee waters. Browsing and every water's history stay free. To reach it: Browse, the map button at the top left, Tennessee, Unlock alerts and widget. Restore purchases is on the same screen." | same, naming Massachusetts | same, naming Michigan |
 

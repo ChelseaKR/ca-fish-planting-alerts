@@ -443,6 +443,15 @@
       "reviewed": false
     },
     {
+      "cdfw_stock_id": 2455,
+      "canonical_name": "Lake Berryessa",
+      "slug": "lake-berryessa",
+      "aliases": [
+        "Lake Berryessa"
+      ],
+      "reviewed": false
+    },
+    {
       "cdfw_stock_id": 2507,
       "canonical_name": "Hagan Community Park Pond",
       "slug": "hagan-community-park-pond",

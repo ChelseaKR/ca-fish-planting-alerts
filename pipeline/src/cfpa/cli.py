@@ -121,6 +121,7 @@ def run(
     support_email: str | None = None,
     ga4_measurement_id: str | None = None,
     google_site_verification: str | None = None,
+    gear_link_template: str | None = None,
     fixture_fetched_at: dt.datetime | None = None,
     run_today: dt.date | None = None,
     states_dir: Path | None = None,
@@ -293,6 +294,7 @@ def run(
             support_email=support_email,
             ga4_measurement_id=ga4_measurement_id,
             google_site_verification=google_site_verification,
+            gear_link_template=gear_link_template,
             cname=cname,
             snapshot_v2=snap_v2,
         )
@@ -423,6 +425,10 @@ def main(argv: list[str] | None = None) -> int:
         # The APP_STORE_LIVE switch, checked the same way: a value that is
         # neither true nor false refuses the run instead of being guessed.
         app_store_live = site_mod.app_store_live_or_false(args.app_store_live)
+        # The committed Gear affiliate link (site.GEAR_LINK_TEMPLATE,
+        # DECISIONS 0028), checked the same way. Empty = no Gear line.
+        site_mod.gear_link_or_none(site_mod.GEAR_LINK_TEMPLATE)
+        gear_link_template = site_mod.GEAR_LINK_TEMPLATE or None
     except ValueError as exc:
         print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
         return 1
@@ -453,6 +459,7 @@ def main(argv: list[str] | None = None) -> int:
             support_email=args.support_email or None,
             ga4_measurement_id=ga4_measurement_id,
             google_site_verification=google_site_verification,
+            gear_link_template=gear_link_template,
             run_today=args.run_today,
             fixture_fetched_at=args.fixture_fetched_at,
             states_dir=None if args.no_states else args.states_dir,

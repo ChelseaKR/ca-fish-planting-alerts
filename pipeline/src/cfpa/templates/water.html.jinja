@@ -68,6 +68,13 @@
 <p>No plants observed yet for {{ water.name }}.</p>
 {% endif %}
 
+{% if gear_link %}
+<p class="muted gear">
+  Gear: <a href="{{ gear_link }}" rel="sponsored noopener">trout fishing gear at {{ gear_merchant }}</a> (Paid link).
+  {{ site_name }} earns a commission on purchases made through this link. The link is {{ site_name }}'s, not CDFW's, and CDFW does not endorse it or {{ gear_merchant }}.
+</p>
+
+{% endif %}
 <h2>About this water</h2>
 <dl>
   <dt>{{ "County" if water.county_links|length == 1 else "Counties" }}</dt>

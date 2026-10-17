@@ -51,6 +51,13 @@
 {% endif %}
 {% endif %}
 
+{% if gear_link %}
+<p class="muted gear">
+  Gear: <a href="{{ gear_link }}" rel="sponsored noopener">trout fishing gear at {{ gear_merchant }}</a> (Paid link).
+  {{ site_name }} earns a commission on purchases made through this link. The link is {{ site_name }}'s, not {{ state.agency.short_name }}'s, and {{ state.agency.short_name }} does not endorse it or {{ gear_merchant }}.
+</p>
+
+{% endif %}
 <h2>About this water</h2>
 <dl>
   {% if water.counties %}<dt>{{ "County" if water.counties|length == 1 else "Counties" }}</dt><dd>{{ water.counties|join(", ") }}</dd>{% endif %}

@@ -84,6 +84,16 @@
       statement</a>. This site adds no collection on top of that.</li>
 </ul>
 {% endif %}
+{% if gear_link %}
+<p id="paid-links">
+  <strong>Paid links.</strong> Each water page has one &ldquo;Gear&rdquo; link
+  to {{ gear_merchant }}, marked &ldquo;Paid link&rdquo;. It is a plain link:
+  it runs no script and sets no cookie on this site, and it carries nothing
+  about you. If you follow it, {{ gear_merchant }} and its affiliate network
+  may set their own cookies on their sites so that {{ site_name }} is credited
+  with a commission on what you buy; their privacy policies apply there.
+</p>
+{% endif %}
 
 <h2 id="app">The iOS app</h2>
 <ul>

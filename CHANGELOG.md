@@ -13,6 +13,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Search and sharing markup from a 2026-10-19 audit: every page carries
+  `og:image`, `twitter:image`, `twitter:title` and `twitter:description`; the
+  support page carries a `FAQPage` that matches its visible questions and
+  answers; and, once `APP_STORE_LIVE` is on, the home and support pages carry
+  a `MobileApplication`. The home title is shorter (docs/adr/0013, addendum).
+
 - Water locations for maps, from public-domain USGS data (GNIS and the
   National Hydrography Dataset), matched by name and county and never
   guessed: a water with several same-name candidates, or none, has no

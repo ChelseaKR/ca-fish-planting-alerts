@@ -160,6 +160,16 @@ APP_STORE_CANONICAL_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
 # minimum, with a quarter of its height (10px) of clear space around it.
 APP_STORE_BADGE_FILE = "app-store-badge.svg"
 
+# The image link previews show (Open Graph and Twitter cards): the app icon,
+# scaled to 600x600 from ios/CAFishPlanting's 1024 px AppIcon. It is the
+# product's own mark and says nothing about any water or week, so one file
+# is true on every page. Written on every build, unlike the badge, because
+# the icon is ours to use and a shared link should carry it before the app
+# is approved.
+SOCIAL_IMAGE_FILE = "social-card.png"
+SOCIAL_IMAGE_SIZE = 600
+SOCIAL_IMAGE_ALT = "Trout Truck: a trout above ripples on a green background"
+
 _APP_STORE_LIVE_ON = frozenset({"true"})
 _APP_STORE_LIVE_OFF = frozenset({"", "false"})
 
@@ -533,6 +543,93 @@ def _ld_page(
         "breadcrumb": {"@id": f"{page_url}#breadcrumb"},
         "about": about,
     }
+
+
+def _ld_app(base_url: str) -> dict[str, Any]:
+    """The iPhone app, as a MobileApplication. Built when the App Store
+    switch is on, because before Apple approves the app there is nothing to
+    install and no page may say so. States what the listing and the site's
+    own copy state: iOS, free to install, the App Store URL. No rating,
+    review count or download count: none is known here, so none is written."""
+    return {
+        "@type": "MobileApplication",
+        "@id": f"{base_url}/#app",
+        "name": SITE_NAME,
+        "operatingSystem": "iOS",
+        "applicationCategory": "SportsApplication",
+        "description": (
+            "Local notifications when a favorite water appears in CDFW's "
+            "new week of the trout planting schedule. No account; alerts "
+            "happen on the device."
+        ),
+        "url": APP_STORE_CANONICAL_URL,
+        "downloadUrl": APP_STORE_CANONICAL_URL,
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+    }
+
+
+def _ld_faq(page_url: str, items: list[tuple[str, str]]) -> dict[str, Any]:
+    """A FAQPage whose questions and answers are the visible ones, word for
+    word (a test compares them with the rendered support page)."""
+    return {
+        "@type": "FAQPage",
+        "@id": f"{page_url}#faq",
+        "url": page_url,
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": q,
+                "acceptedAnswer": {"@type": "Answer", "text": a},
+            }
+            for q, a in items
+        ],
+    }
+
+
+def _support_faq(source_fetched_label: str) -> list[tuple[str, str]]:
+    """The support page's questions and answers as plain text. Each answer is
+    the visible answer with its links reduced to their text."""
+    return [
+        (
+            "Where does the schedule come from?",
+            "From the California Department of Fish and Wildlife's Fish "
+            "Planting Schedule, checked once a day. The schedule was last "
+            f"checked {source_fetched_label}. CDFW updates it weekly and lists "
+            "plants by week, never by day, on purpose. Plants are subject to "
+            "change, so everything here is scheduled, not confirmed.",
+        ),
+        (
+            "Why does this site show more weeks than CDFW's page?",
+            "CDFW's page only shows about a year. This site keeps every week "
+            "it has recorded, so a water's history keeps growing after CDFW's "
+            "page has moved on.",
+        ),
+        (
+            "How do I subscribe to a water's calendar?",
+            "Every water page links to a calendar feed (.ics). Copy that link "
+            "and add it as a subscribed calendar: on iPhone, in the Calendar "
+            "app's settings under Add Account \u2192 Other \u2192 Add Subscribed "
+            "Calendar; in Google Calendar, under Other calendars \u2192 From URL. "
+            "Each event spans the whole week CDFW scheduled.",
+        ),
+        (
+            "Why didn't the app alert me?",
+            "Alerts are part of the one-time in-app purchase; favoriting and "
+            "browsing are free. Notifications must be allowed for the app "
+            "(Settings \u2192 Notifications). The app checks for a new schedule in "
+            "the background, and iOS decides when that happens. Background App "
+            "Refresh must be on for the app, Low Power Mode pauses it, and "
+            "swiping the app away can stop it until you open it again. CDFW "
+            "updates weekly, so an alert arrives within the week a water is "
+            "added, not the minute it is.",
+        ),
+        (
+            "How do I restore my purchase on a new phone?",
+            "In the app, open About \u2192 Unlock full access \u2192 Restore "
+            "purchases. Use the same Apple Account you bought it with. There "
+            "is no account with this app to sign in to.",
+        ),
+    ]
 
 
 def _ld_dataset(
@@ -910,6 +1007,9 @@ def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -
     style_path.parent.mkdir(parents=True, exist_ok=True)
     style_path.write_text(style_src, encoding="utf-8")
     written.append(style_path)
+    social_path = out_dir / "assets" / SOCIAL_IMAGE_FILE
+    social_path.write_bytes((TEMPLATES_DIR / SOCIAL_IMAGE_FILE).read_bytes())
+    written.append(social_path)
     if app_store_live:
         badge_path = out_dir / "assets" / APP_STORE_BADGE_FILE
         badge_path.write_bytes((TEMPLATES_DIR / APP_STORE_BADGE_FILE).read_bytes())
@@ -978,6 +1078,9 @@ def build_site(
         # Off: no banner tag, no badge, no badge file, no extra CSS.
         "app_store_live": app_store_live,
         "app_store_id": APP_STORE_ID,
+        "social_image_url": f"{base_url}/assets/{SOCIAL_IMAGE_FILE}",
+        "social_image_size": SOCIAL_IMAGE_SIZE,
+        "social_image_alt": SOCIAL_IMAGE_ALT,
         "support_email": support_email,
         "site_name": SITE_NAME,
         # base.html.jinja includes the GA4 tag only when this is set, and the
@@ -1042,9 +1145,9 @@ def build_site(
     ]
 
     index_html = env.get_template("index.html.jinja").render(
-        title=f"California {site_species} planting schedule this week, from CDFW | {SITE_NAME}",
+        title=f"California {site_species} planting schedule this week | {SITE_NAME}",
         description=(
-            f"Every California water on CDFW's fish planting schedule for the "
+            f"Every California water on CDFW's (formerly DFG) fish planting schedule for the "
             f"{source_week_label}, by region and county, with each water's "
             f"{site_species} stocking history."
         ),
@@ -1063,7 +1166,8 @@ def build_site(
                     "by water and county, with each water's planting history."
                 ),
                 "inLanguage": "en-US",
-            }
+            },
+            *([_ld_app(base_url)] if app_store_live else []),
         ),
         source_week_label=source_week_label,
         generated_at_label=generated_at_label,
@@ -1138,6 +1242,17 @@ def build_site(
             canonical_url=f"{base_url}/{slug}/",
             root="../",
             **common,
+            structured_data=(
+                _ld_graph(
+                    _ld_faq(
+                        f"{base_url}/{slug}/",
+                        _support_faq(source_fetched_label),
+                    ),
+                    *([_ld_app(base_url)] if app_store_live else []),
+                )
+                if slug == "support"
+                else None
+            ),
             source_fetched_label=source_fetched_label,
         )
         _write_page(out_dir, slug, page_html, written)

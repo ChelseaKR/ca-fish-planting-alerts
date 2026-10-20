@@ -166,3 +166,24 @@ The owner's steps are in `docs/SEARCH-CONSOLE.md`.
   and results can show the old titles for a while.
 - Nothing is verified in Search Console until the owner does it. Until then
   Google finds pages only by crawling links.
+
+## Addendum 2026-10-19: link previews, FAQPage, MobileApplication
+
+An audit of trouttruck.com found pages with no `og:image`, a bare
+`twitter:card`, and no markup for the support FAQ or the app.
+
+- Every page now carries `og:image` and `twitter:image` (the app icon at
+  600x600, `assets/social-card.png`), `twitter:title` and
+  `twitter:description`, so a shared link has the product's mark and the
+  page's own title and description.
+- `/support/` carries a `FAQPage`. Its questions and answers are the page's
+  own, word for word; `test_site_seo.py` compares them with the rendered
+  page, so the markup cannot drift from what a visitor reads.
+- When `APP_STORE_LIVE` is on, the home and support pages also carry a
+  `MobileApplication` (iOS, free to install, the App Store URL). Off, there
+  is no app markup, matching the rule that the site says nothing about the
+  app until Apple approves it. No rating, review count or download count is
+  written, because none is known here.
+- The home title drops ", from CDFW" so the whole title fits a results
+  line, and the description says CDFW was formerly DFG, a term searchers
+  still use.

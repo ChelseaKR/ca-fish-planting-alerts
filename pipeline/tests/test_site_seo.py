@@ -46,7 +46,14 @@ ALLOWED_TYPES = {
     "CreativeWork",
     "GovernmentOrganization",
     "Organization",
+    "FAQPage",
+    "Question",
+    "Answer",
 }
+# Emitted when the App Store switch is on (the app is approved), so the
+# default build never sees them; tests/test_site_seo.py checks them on a live
+# build separately.
+APP_TYPES = {"MobileApplication", "Offer"}
 # A planting is a scheduled week, never a day or a time (CDFW publishes the
 # week only, and every plant is subject to change): no Event, and none of the
 # properties that would pin one to a date.
@@ -378,8 +385,7 @@ def test_structured_data_checker_catches_an_event_and_a_date(built):
 
 def test_pages_without_structured_data(built):
     out, _ = built
-    for rel in ("privacy", "support"):
-        assert _ld(_html(out, rel)) is None
+    assert _ld(_html(out, "privacy")) is None
     assert _ld((out / "404.html").read_text(encoding="utf-8")) is None
 
 
@@ -668,3 +674,101 @@ def test_cli_refuses_a_malformed_committed_token_before_writing_anything(
     assert cli.main(argv) == 1
     assert "run refused" in capsys.readouterr().err
     assert list(tmp_path.iterdir()) == []
+
+
+def _plain_text(html: str) -> str:
+    import html as htmllib
+
+    # inline tags (a link, <strong>) vanish without leaving a space, so
+    # "Schedule</a>, checked" reads "Schedule, checked" as the answer does
+    html = re.sub(r"<script\b[^>]*>.*?</script\b[^>]*>", " ", html, flags=re.S | re.I)
+    html = re.sub(r"</?(?:a|strong|em|code)\b[^>]*>", "", html)
+    html = re.sub(r"<[^>]+>", " ", html)
+    return re.sub(r"\s+", " ", htmllib.unescape(html)).strip()
+
+
+def test_support_page_carries_a_faq_that_is_the_visible_one(built):
+    """A FAQPage where the page holds a real FAQ, with its questions and answers
+    are the page's, word for word."""
+    out, _ = built
+    html = _html(out, "support")
+    g = _graph(html)
+    assert set(g) == {"FAQPage"}
+    visible = _plain_text(html)
+    heads = re.findall(r"<h2[^>]*>(.*?)</h2>", html, flags=re.S)
+    entities = g["FAQPage"]["mainEntity"]
+    assert len(entities) >= 5
+    for q in entities:
+        assert any(q["name"] == _plain_text(h) for h in heads), q["name"]
+        assert q["acceptedAnswer"]["text"] in visible, q["name"]
+    # and no other page claims to be a FAQ
+    for f in out.rglob("*.html"):
+        if f != out / "support" / "index.html":
+            data = _ld(f.read_text(encoding="utf-8"))
+            assert not any(n.get("@type") == "FAQPage" for n in _nodes(data)), f
+
+
+def test_faq_checker_is_not_vacuous(built):
+    """Negative control: an answer that drifts from the page is caught."""
+    out, _ = built
+    html = _html(out, "support")
+    visible = _plain_text(html)
+    drifted = _graph(html)["FAQPage"]["mainEntity"][0]["acceptedAnswer"]["text"]
+    drifted = drifted.replace("once a day", "every hour")
+    assert drifted != _graph(html)["FAQPage"]["mainEntity"][0]["acceptedAnswer"]["text"]
+    assert drifted not in visible
+
+
+def test_every_page_has_a_social_card_with_an_absolute_image(built):
+    out, _ = built
+    assert (out / "assets" / site.SOCIAL_IMAGE_FILE).read_bytes()[:8] == (
+        b"\x89PNG\r\n\x1a\n"
+    )
+    for f in out.rglob("*.html"):
+        html = f.read_text(encoding="utf-8")
+        img = f"{BASE_URL}/assets/{site.SOCIAL_IMAGE_FILE}"
+        assert f'<meta property="og:image" content="{img}">' in html, f
+        assert f'<meta name="twitter:image" content="{img}">' in html, f
+        assert (
+            'name="twitter:title"' in html and 'name="twitter:description"' in html
+        ), f
+        assert 'property="og:image:alt"' in html, f
+
+
+def test_no_app_structured_data_or_banner_until_the_app_is_live(built):
+    out, _ = built
+    for f in out.rglob("*.html"):
+        html = f.read_text(encoding="utf-8")
+        assert "MobileApplication" not in html, f
+        assert "apple-itunes-app" not in html, f
+
+
+def test_live_build_adds_the_app_and_the_smart_app_banner(tmp_path):
+    snap = _run_fresh(tmp_path, app_store_live=True)
+    out = tmp_path / "site"
+    for rel in ("", "support"):
+        html = _html(out, rel)
+        g = _graph(html)
+        assert g["MobileApplication"]["operatingSystem"] == "iOS"
+        assert g["MobileApplication"]["downloadUrl"] == site.APP_STORE_CANONICAL_URL
+        assert g["MobileApplication"]["offers"]["price"] == "0"
+        # nothing the data does not support
+        assert not (
+            {"aggregateRating", "review", "interactionStatistic"}
+            & set(g["MobileApplication"])
+        )
+        assert (
+            f'<meta name="apple-itunes-app" content="app-id={site.APP_STORE_ID}">'
+            in html
+        )
+        assert _structured_data_problems_allowing_app(html) == []
+    assert snap  # the run returned its snapshot
+
+
+def _structured_data_problems_allowing_app(html: str) -> list[str]:
+    data = _ld(html)
+    return [
+        p
+        for p in _structured_data_problems(data)
+        if p.removeprefix("type ") not in APP_TYPES
+    ]

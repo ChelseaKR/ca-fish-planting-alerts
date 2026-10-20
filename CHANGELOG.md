@@ -13,6 +13,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- An optional "Gear" line on every water page (California and the other
+  states): one link to Bass Pro Shops' trout-fishing category with
+  `rel="sponsored noopener"`, a visible "(Paid link)" label and a note that
+  the agency does not endorse it, plus a matching paragraph on the privacy
+  page. Off until `site.GEAR_LINK_TEMPLATE` is set; it ships empty, so every
+  page is unchanged (DECISIONS 0028).
 - Water locations for maps, from public-domain USGS data (GNIS and the
   National Hydrography Dataset), matched by name and county and never
   guessed: a water with several same-name candidates, or none, has no

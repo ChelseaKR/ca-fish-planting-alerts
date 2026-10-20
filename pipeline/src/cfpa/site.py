@@ -24,7 +24,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 import jinja2
 
@@ -140,6 +140,49 @@ def google_site_verification_or_none(value: str | None) -> str | None:
             "content value of Search Console's HTML tag"
         )
     return value
+
+
+# The "Gear" line on the water pages (DECISIONS 0028): one paid link to Bass
+# Pro Shops' trout-fishing category, with "Paid link" beside it. It renders
+# only when GEAR_LINK_TEMPLATE is set, and it ships empty, so until the owner's
+# affiliate application is approved every page is byte for byte what it was.
+# The template is the affiliate network's deep link with "{url}" where the
+# destination goes (for Impact, https://<brand>.pxf.io/c/<id>/<ad>/<campaign>
+# ?u={url}); the destination is URL-encoded into it. It is a static publisher
+# id: no script, no cookie on this site, and never a per-reader value.
+GEAR_LINK_TEMPLATE = ""
+# The destination: the merchant's own trout gear category. basspro.com answers
+# 403 to automated requests, including /robots.txt, so this was not fetched;
+# it is the category URL search engines list for "trout fishing gear" on
+# basspro.com (2026-10-12). The owner opens it in a browser before turning
+# the link on (docs/DECISIONS.md 0028).
+GEAR_DESTINATION_URL = "https://www.basspro.com/l/trout-fishing-gear"
+GEAR_MERCHANT_NAME = "Bass Pro Shops"
+
+_GEAR_LINK_TEMPLATE_RE = re.compile(r"https://[a-z0-9.-]+\.[a-z]{2,}/[^\s\"'<>]*")
+
+
+def gear_link_or_none(
+    template: str | None, destination: str = GEAR_DESTINATION_URL
+) -> str | None:
+    """Return the Gear line's href, or None when no affiliate link is set.
+
+    A malformed template raises instead of shipping a broken or unlabeled
+    link: it must be https, contain "{url}" exactly once, and carry nothing
+    that varies per reader (no other placeholder).
+    """
+    if template is None or template == "":
+        return None
+    if (
+        not _GEAR_LINK_TEMPLATE_RE.fullmatch(template)
+        or template.count("{url}") != 1
+        or re.search(r"\{(?!url\})", template)
+    ):
+        raise ValueError(
+            f"gear link template {template!r} is not an https deep link "
+            "with a single {url} placeholder"
+        )
+    return template.replace("{url}", quote(destination, safe=""))
 
 
 # The iPhone app's App Store listing (DECISIONS 0018: US storefront only).
@@ -926,6 +969,7 @@ def build_site(
     support_email: str | None = None,
     ga4_measurement_id: str | None = None,
     google_site_verification: str | None = None,
+    gear_link_template: str | None = None,
     dataset_license_url: str | None = DATASET_LICENSE_URL,
     cname: str | None = None,
     snapshot_v2: dict[str, Any] | None = None,
@@ -944,7 +988,9 @@ def build_site(
     ``ga4_measurement_id`` defaults to None (no analytics) rather than to
     ``GA4_MEASUREMENT_ID``, so a caller gets the tag only by asking for it;
     ``cli.main`` is the caller that passes the committed value. The same
-    goes for ``google_site_verification`` (``GOOGLE_SITE_VERIFICATION``).
+    goes for ``google_site_verification`` (``GOOGLE_SITE_VERIFICATION``)
+    and ``gear_link_template`` (``GEAR_LINK_TEMPLATE``, DECISIONS 0028): None
+    or "" renders no Gear line, and the build is byte for byte what it was.
 
     ``app_store_live`` (the APP_STORE_LIVE switch) adds the Smart App Banner
     tag to every page and the App Store badge to the home and support pages,
@@ -956,6 +1002,7 @@ def build_site(
     google_site_verification = google_site_verification_or_none(
         google_site_verification
     )
+    gear_link = gear_link_or_none(gear_link_template)
     env = _env()
     written: list[Path] = []
     base_url = base_url.rstrip("/")
@@ -985,6 +1032,9 @@ def build_site(
         # describe a state the build is not in.
         "ga4_measurement_id": ga4_measurement_id,
         "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
+        # The water pages' Gear line (DECISIONS 0028); None renders nothing.
+        "gear_link": gear_link,
+        "gear_merchant": GEAR_MERCHANT_NAME,
     }
     # The header's "Other states" link, only when v2 has another state, so a
     # California-only build keeps its header byte for byte.

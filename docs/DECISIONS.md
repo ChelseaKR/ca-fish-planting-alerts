@@ -678,3 +678,57 @@ review and doesn't change; this is for a later version.
   and Apple Watch.
 - **Not built:** a Control Center or Lock Screen control (iOS 18). It
   would only open the app, which the icon already does.
+## 0028 — One labeled paid "Gear" link on the water pages, off by default (2026-10-12)
+
+**Context.**
+
+On 2026-10-12 the owner approved trying the Bass Pro Shops / Cabela's
+affiliate program for the website. She applies to the program herself; no
+account is created and nobody is contacted from this repository. At today's
+traffic it earns close to nothing, so it is worth doing only if it costs the
+site nothing it already promises: no script, no cookie, no tracking pixel,
+nothing that varies by reader, and no suggestion that CDFW or TWRA endorses a
+store. The iOS app is out of scope: its privacy label and review notes say
+nothing about affiliate links, so the app does not carry one.
+
+**Decision.**
+
+- **One line per water page, California and every other state.** "Gear:
+  trout fishing gear at Bass Pro Shops (Paid link)", with `rel="sponsored
+  noopener"` on the link and the label right after it, as the FTC's
+  endorsement guidance asks ("Paid link" next to the link, not only a footer
+  note). A second sentence says Trout Truck earns a commission and that the
+  link is Trout Truck's, not the agency's, and the agency does not endorse it
+  or the store.
+- **Apart from the agency's words.** The line sits after the stocking history
+  and before "About this water", never in the footer's attribution and never
+  in a state page's "Source and terms" section. A test pins that order.
+- **A generic category link, not products.** The destination is Bass Pro
+  Shops' own trout-fishing category, `https://www.basspro.com/l/trout-fishing-gear`.
+  There is no per-water product to recommend, and licenses are not sold
+  there.
+- **Configured by one constant, shipped empty.** `site.GEAR_LINK_TEMPLATE`
+  holds the affiliate network's deep link with `{url}` where the destination
+  goes. Empty means no Gear line anywhere and no "Paid links" paragraph on
+  the privacy page: every page is byte for byte what it was (a test strips
+  the two paragraphs from a configured build and compares the rest; a build
+  of this branch and of main from the same fixture differ only in the
+  snapshot files' run timestamps). A malformed template refuses the run, like
+  a malformed GA4 id.
+- **Robots.** `www.basspro.com/robots.txt` and `www.cabelas.com/robots.txt`
+  both answered **403** to an honest User-Agent on 2026-10-12, which this
+  project treats as off-limits (0025's rule), so neither site was fetched
+  further. The category URL is the one search engines list for trout gear on
+  basspro.com; the owner opens it in a browser before turning the link on.
+- **The privacy page says so** when the link is on: the link sets no cookie
+  here, and the store and its network may set their own after a reader
+  follows it.
+
+**Consequences.**
+
+- Turning it on is one constant and a pipeline run; turning it off is the
+  reverse.
+- If the store moves its category page, the link breaks quietly. Recheck the
+  URL when turning the program on and whenever a reader reports it.
+- If the program declines, the constant stays empty and the feature costs
+  only its code.

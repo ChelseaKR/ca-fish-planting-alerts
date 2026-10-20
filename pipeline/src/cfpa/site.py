@@ -456,15 +456,46 @@ def _water_lastmod(
     *,
     source_week_start: str,
     siblings: list[dict[str, Any]] | None = None,
+    nothing_current: bool = False,
 ) -> str:
     """The date this water's page last changed in substance, for sitemap.xml:
     its own data (``_water_data_lastmod``), or the day a water sharing one of
     its counties first appeared, because the page links to every such water
     by name. Siblings are listed by name only, not with their weeks, so a
-    sibling's new listing does not change this page."""
+    sibling's new listing does not change this page.
+
+    The exception is a water with nothing current: its page also lists the
+    siblings that are scheduled this week or later (``_scheduled_siblings``),
+    so a sibling's own data change, or its rollover, changes this page too."""
     dates = [_water_data_lastmod(w, source_week_start=source_week_start)]
     dates += [_water_first_seen(s) for s in siblings or []]
+    if nothing_current:
+        dates += [
+            _water_data_lastmod(s, source_week_start=source_week_start)
+            for s in siblings or []
+        ]
     return max(dates)
+
+
+def _scheduled_siblings(
+    ctx: _PageContext, county: str, w: dict[str, Any]
+) -> list[dict[str, str]]:
+    """The other waters in ``county`` that CDFW has scheduled for this week or
+    later, each with the wording the page can stand behind: from the snapshot
+    alone, never a guess about what will be stocked."""
+    out = []
+    for s in sorted(ctx.waters_by_county[county], key=lambda s: (s["name"], s["slug"])):
+        if s["id"] == w["id"]:
+            continue
+        v = ctx.views[s["id"]]
+        if v["this_week"]:
+            when = f"scheduled this week, the {ctx.source_week_label}"
+        elif v["next_listed_label"]:
+            when = f"next scheduled the {v['next_listed_label']}"
+        else:
+            continue
+        out.append({"slug": s["slug"], "name": s["name"], "when": when})
+    return out
 
 
 # ---- schema.org structured data (docs/adr/0013)
@@ -798,6 +829,16 @@ def _render_water_page(
         }
         for c in w["counties"]
     ]
+    # A water with nothing on the schedule says what is on it in its own
+    # counties, so the page answers the visit instead of ending at "none".
+    scheduled_elsewhere = (
+        [
+            {**ctx.county_link[c], "waters": _scheduled_siblings(ctx, c, w)}
+            for c in w["counties"]
+        ]
+        if view["nothing_current"]
+        else []
+    )
     # The visible breadcrumb, and the BreadcrumbList that mirrors it, go
     # through the first county: the one the snapshot's region comes from.
     primary = w["counties"][0]
@@ -827,6 +868,7 @@ def _render_water_page(
         ),
         breadcrumb=_relative_trail(trail, base_url=base_url, root="../../"),
         water=view,
+        scheduled_elsewhere=scheduled_elsewhere,
         other_waters_by_county=other_waters_by_county,
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
@@ -845,6 +887,7 @@ def _render_water_page(
         w,
         source_week_start=ctx.source_week_start,
         siblings=list(siblings.values()),
+        nothing_current=view["nothing_current"],
     )
 
 

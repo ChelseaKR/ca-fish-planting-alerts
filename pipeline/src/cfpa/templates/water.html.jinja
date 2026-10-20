@@ -21,6 +21,21 @@
   <strong>Nothing is on CDFW's schedule for {{ water.name }} this week or later.</strong>
   That means no plant is scheduled right now, not that there are no fish.
 </p>
+{% for c in scheduled_elsewhere %}
+<section aria-labelledby="now-{{ c.slug }}">
+  <h2 id="now-{{ c.slug }}">On CDFW's schedule now in {{ c.name }} County</h2>
+  {% if c.waters %}
+  <ul class="water-index">
+    {% for s in c.waters %}
+    <li><a href="{{ root }}water/{{ s.slug }}/">{{ s.name }}</a>, {{ s.when }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No other {{ c.name }} County water is on CDFW's schedule this week or later.</p>
+  {% endif %}
+  <p><a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County planting schedule</a></p>
+</section>
+{% endfor %}
 {% endif %}
 <p class="muted">
   CDFW's schedule was last checked {{ source_fetched_label }}, when its current

@@ -336,6 +336,77 @@ def test_no_fish_checker_is_not_vacuous(built):
     assert _no_fish_claims("<p>That means X, not that there are no fish.</p>") == []
 
 
+def _is_current(w: dict[str, Any], week: str) -> bool:
+    return any(
+        p["status"] == "listed" and p["week"]["start"] >= week for p in w["plants"]
+    )
+
+
+def test_a_water_with_nothing_current_lists_what_is_scheduled_in_its_counties(built):
+    """The page for a water with no current listing says what CDFW does have
+    scheduled in the water's counties, from the snapshot: the same waters the
+    county page lists as scheduled, each with its own wording. A water that is
+    scheduled gets no such section."""
+    out, snap = built
+    week = snap["source_week"]["start"]
+    by_county = _county_waters(snap)
+    with_list = without_list = 0
+    for w in snap["waters"]:
+        html = _html(out, f"water/{w['slug']}")
+        if _is_current(w, week):
+            assert "On CDFW's schedule now in" not in html, w["slug"]
+            continue
+        for c in w["counties"]:
+            slug = site.county_slug(c)
+            section = _section(
+                html, f'<section aria-labelledby="now-{slug}">', "</section>"
+            )
+            expected = sorted(
+                s["slug"]
+                for s in by_county[c]
+                if s["id"] != w["id"] and _is_current(s, week)
+            )
+            listed = [h for h in _hrefs(section) if "/water/" in h or "water/" in h]
+            assert sorted(h.split("water/")[1].strip("/") for h in listed) == expected
+            assert f"county/{slug}/" in section
+            if expected:
+                with_list += 1
+            else:
+                without_list += 1
+                assert f"No other {c} County water is on CDFW's schedule" in section
+    # The fixtures cover both branches, so neither can rot unseen.
+    assert with_list and without_list
+
+
+def test_the_scheduled_in_county_section_only_says_what_the_data_says(built):
+    out, snap = built
+    week = snap["source_week"]["start"]
+    checked = 0
+    for w in snap["waters"]:
+        if _is_current(w, week):
+            continue
+        html = _html(out, f"water/{w['slug']}")
+        for s in snap["waters"]:
+            if s["id"] == w["id"] or not set(s["counties"]) & set(w["counties"]):
+                continue
+            listed = {
+                p["week"]["start"] for p in s["plants"] if p["status"] == "listed"
+            }
+            link = f'<a href="../../water/{s["slug"]}/">{s["name"]}</a>, '
+            if link not in html:
+                continue
+            tail = html[html.index(link) + len(link) :].split("</li>", 1)[0]
+            if week in listed:
+                assert tail == f"scheduled this week, the week of {week}"
+            else:
+                assert (
+                    tail
+                    == f"next scheduled the week of {min(x for x in listed if x > week)}"
+                )
+            checked += 1
+    assert checked
+
+
 # ---- structured data
 
 
@@ -574,9 +645,21 @@ def test_sitemap_lastmod_follows_the_data_not_the_build(built, fresh):
             p["status"] == "listed" and p["week"]["start"] >= rollover_from
             for p in w["plants"]
         )
-        if w["id"] in changed or gained_sibling:
+        # A water with nothing current also lists the scheduled waters in its
+        # counties, so those waters' own changes and rollovers move its page.
+        siblings = [s for c in w["counties"] for s in counties[c] if s["id"] != w["id"]]
+        nothing_current = not any(
+            p["status"] == "listed" and p["week"]["start"] >= week for p in w["plants"]
+        )
+        sibling_changed = nothing_current and any(s["id"] in changed for s in siblings)
+        sibling_near = nothing_current and any(
+            p["status"] == "listed" and p["week"]["start"] >= rollover_from
+            for s in siblings
+            for p in s["plants"]
+        )
+        if w["id"] in changed or gained_sibling or sibling_changed:
             assert lastmod[url] == "2026-09-18", w["slug"]
-        elif near:
+        elif near or sibling_near:
             assert lastmod[url] == week, w["slug"]  # the rollover rule
         else:
             assert lastmod[url] == "2026-09-13", w["slug"]

@@ -32,6 +32,14 @@
   <li><strong>Global Privacy Control and Do Not Track are honored.</strong>
       If your browser sends either signal, the analytics script is never
       loaded: nothing is sent to Google and no analytics cookie is set.</li>
+{% if app_store_live %}
+  <li><strong>App Store link clicks.</strong> When you click the App Store
+      badge or an App Store link on this site, Google Analytics records that
+      click with the page it was on (home, support, about or water) and
+      whether it was the badge or a text link. The same rules apply: nothing
+      is recorded if your browser sends Global Privacy Control or Do Not
+      Track, or if you opted out. The iOS app itself sends nothing.</li>
+{% endif %}
   <li id="opt-out"><strong>Opting out on this device.</strong> The
       &ldquo;Opt out of analytics&rdquo; button at the bottom of every page
       turns Google Analytics off in this browser. Every page you open

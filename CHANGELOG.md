@@ -13,6 +13,14 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Launch readiness for the App Store (DECISIONS 0028): the website's App
+  Store surfaces follow one committed value, `APP_STORE_LIVE_DEFAULT`, which
+  stays `False` until launch day; a test fails if the banner, badge, links,
+  `MobileApplication` data and click event ever disagree; the event
+  `app_store_click` (placement, link type) replaces `app_store_badge_click`
+  and obeys the same privacy rules; `scripts/preflight_app_store_live.py`
+  checks the listing before the flip; `docs/LAUNCH-CHECKLIST.md` lists the
+  steps.
 - Search and sharing markup from a 2026-10-19 audit: every page carries
   `og:image`, `twitter:image`, `twitter:title` and `twitter:description`; the
   support page carries a `FAQPage` that matches its visible questions and

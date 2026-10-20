@@ -678,3 +678,36 @@ review and doesn't change; this is for a later version.
   and Apple Watch.
 - **Not built:** a Control Center or Lock Screen control (iOS 18). It
   would only open the app, which the icon already does.
+
+## 0028 — The website's App Store launch is one reviewed value, and clicks are measured (2026-10-19)
+
+The app (1.0.0, build 2) is waiting for Apple's review. The website already
+had a switch for the App Store surfaces (`APP_STORE_LIVE`, ADR 0013), but it
+was a repository variable, so turning it on left no reviewed change and no
+test that the surfaces moved together.
+
+- **One committed value.** `APP_STORE_LIVE_DEFAULT` in
+  `pipeline/src/cfpa/site.py` is `False` until launch day, when a one-line
+  pull request makes it `True`. The `APP_STORE_LIVE` variable still wins when
+  set to `true` or `false`, so it doubles as an off switch that needs no code
+  change. An unknown value still refuses the run.
+- **One flag, every surface.** `APP_STORE_URL` no longer links the app by
+  itself; it changes the address while the switch is on and does nothing
+  while it is off.
+  `cfpa.launch_check.surface_problems` reads a built site and reports any
+  surface (banner, badge, install links, `MobileApplication` data, click
+  event, badge file, "not yet" sentence) that disagrees with the flag. The
+  tests and `scripts/preflight_app_store_live.py` both use it.
+- **Click measurement on the website.** One event, `app_store_click`, with
+  `placement` (home, support, about, water), `link_type` (badge, link) and
+  `link_url`, sent through the existing GA4 tag. It obeys the same Global
+  Privacy Control, Do Not Track, footer opt-out and consent rules as every
+  other event, because it is inside the same guard. It replaces
+  `app_store_badge_click`, which never shipped because the switch was off.
+  The privacy page describes it when the switch is on.
+- **The app is unchanged.** It still has no analytics (0011). Installs are
+  read in App Store Connect (Sources, Web Referrer), not on the website.
+- **Owner steps** (they need her Google login) are in
+  `docs/LAUNCH-CHECKLIST.md`: mark the event as a key event and register its
+  two parameters as custom dimensions, after the event has arrived.
+

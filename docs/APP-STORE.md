@@ -39,33 +39,32 @@ already done. The values table and steps that used to be here are all in it.
 
 ## Once the app is live: turn on the website's App Store badge
 
-Do this after Apple approves and the version is released (the release is
-manual, docs/app-store/OWNER-STEPS.md), once
-https://apps.apple.com/us/app/id6818637427 opens the listing. The website
-says nothing about the App Store listing until the owner turns on one
-switch, the `APP_STORE_LIVE` repository variable, which publish.yml
-passes to the site build (`pipeline/src/cfpa/site.py`). Apple's badge
-license allows the badge only for an app that is available on the App
-Store, so it stays off until the app is live.
+The steps are in [`docs/LAUNCH-CHECKLIST.md`](LAUNCH-CHECKLIST.md). In short:
+the website says nothing about the App Store listing until one value,
+`APP_STORE_LIVE_DEFAULT` in `pipeline/src/cfpa/site.py`, is changed to
+`True` in a reviewed pull request, after
+`scripts/preflight_app_store_live.py` reports `READY to flip`. Apple's badge
+license allows the badge for an app that is available on the App Store, so
+it stays off until the app is live.
 
-- On: `gh variable set APP_STORE_LIVE --repo ChelseaKR/ca-fish-planting-alerts --body true`,
-  then `gh workflow run publish.yml --repo ChelseaKR/ca-fish-planting-alerts`
-  to republish now instead of at the next daily run.
-- Check: `curl -s https://chelseakr.github.io/ca-fish-planting-alerts/ | grep -c apple-itunes-app`
-  prints 1, and the home and support pages show the badge.
 - What changes: every page gets Safari's Smart App Banner
   (`<meta name="apple-itunes-app" content="app-id=6818637427">`); the home
   and support pages get Apple's black "Download on the App Store" badge,
   linking to https://apps.apple.com/us/app/id6818637427, with the copy "For
-  iPhone. Free on the App Store; optional $9.99 Full Access."; the existing
-  "Get the iOS app" links on the home, about and water pages switch on too.
-  With GA4 on, a badge click is sent as the event `app_store_badge_click`
-  through the existing tag, under the same GPC, Do Not Track and opt-out
-  rules.
-- Off again: `gh variable delete APP_STORE_LIVE --repo ChelseaKR/ca-fish-planting-alerts`
-  (or set it to `false`), then run publish.yml again.
-- Any value other than `true`, `false` or empty fails the publish run, and
-  the site keeps its last good build.
+  iPhone. Free on the App Store; optional $9.99 Full Access."; the "Get the
+  iOS app" links on the home, about and water pages switch on too; the home
+  and support pages carry `MobileApplication` structured data. With GA4 on,
+  a click on the badge or any of those links is sent as the event
+  `app_store_click` (`placement`: home, support, about or water;
+  `link_type`: badge or link; `link_url`) through the existing tag, under
+  the same GPC, Do Not Track and opt-out rules.
+- The `APP_STORE_LIVE` repository variable still wins when set to `true` or
+  `false`: it is the way to switch everything off without a code change.
+  Unset, the code decides. Any other value fails the publish run, and the
+  site keeps its last good build.
+- `APP_STORE_URL` changes the listing's address while the switch is on, and
+  does nothing while it is off.
+  With the switch off, nothing on the site links to the App Store.
 
 ## Screenshots
 

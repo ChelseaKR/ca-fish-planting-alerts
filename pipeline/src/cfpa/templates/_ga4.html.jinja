@@ -82,16 +82,20 @@
     allow_ad_personalization_signals: false
   });
 {% if app_store_live %}
-  // A click on the App Store badge (site.py APP_STORE_LIVE), sent through
-  // this same tag, so it obeys the same GPC, Do Not Track, opt-out and
-  // consent rules: none of this runs when those return above, and a
-  // same-page opt-out sets ga-disable, which gtag.js honors.
+  // A click on any App Store badge or install link (site.py
+  // APP_STORE_LIVE), sent through this same tag, so it obeys the same GPC,
+  // Do Not Track, opt-out and consent rules: none of this runs when those
+  // return above, and a same-page opt-out sets ga-disable, which gtag.js
+  // honors. The page names itself in data-app-store-placement (home,
+  // support, about, water); data-app-store-kind says badge or link. The
+  // event carries those two and the destination, nothing about the visitor.
   d.addEventListener("click", function (e) {
     var t = e.target;
-    var a = t && t.closest ? t.closest("a[data-app-store-badge]") : null;
+    var a = t && t.closest ? t.closest("a[data-app-store-placement]") : null;
     if (!a || w["ga-disable-" + id]) return;
-    gtag("event", "app_store_badge_click", {
-      placement: a.getAttribute("data-app-store-badge"),
+    gtag("event", "app_store_click", {
+      placement: a.getAttribute("data-app-store-placement"),
+      link_type: a.getAttribute("data-app-store-kind") || "link",
       link_url: a.href
     });
   });

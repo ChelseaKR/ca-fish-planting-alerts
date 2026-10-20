@@ -18,6 +18,7 @@ import json
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from cfpa import site
 
@@ -40,6 +41,11 @@ REQUIRED_APP_FIELDS = (
 FORBIDDEN_APP_FIELDS = frozenset({"aggregateRating", "review", "interactionStatistic"})
 
 
+def _is_app_store_link(href: str | None) -> bool:
+    """True when the link's host is the App Store, not merely mentioned in the address."""
+    return urlsplit(href or "").hostname == "apps.apple.com"
+
+
 class _Page(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -56,7 +62,7 @@ class _Page(HTMLParser):
             self.in_head = True
         elif tag == "meta" and a.get("name") == "apple-itunes-app":
             self.banners.append((a.get("content"), self.in_head))
-        elif tag == "a" and "apps.apple.com" in (a.get("href") or ""):
+        elif tag == "a" and _is_app_store_link(a.get("href")):
             self.app_links.append(a)
         elif tag == "script":
             self._script = (a.get("type"), [])

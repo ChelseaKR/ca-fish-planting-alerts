@@ -221,3 +221,19 @@ def test_the_workflow_still_passes_the_variable_through():
         Path(__file__).resolve().parents[2] / ".github/workflows/publish.yml"
     ).read_text(encoding="utf-8")
     assert '--app-store-live "$APP_STORE_LIVE"' in wf
+
+
+@pytest.mark.parametrize(
+    ("href", "expected"),
+    [
+        ("https://apps.apple.com/us/app/id123", True),
+        ("http://apps.apple.com/us/app/id123", True),
+        ("https://example.com/?next=apps.apple.com", False),
+        ("https://apps.apple.com.example.com/us/app/id123", False),
+        ("https://example.com/apps.apple.com", False),
+        ("", False),
+        (None, False),
+    ],
+)
+def test_an_install_link_is_recognized_by_its_host_not_a_substring(href, expected):
+    assert launch_check._is_app_store_link(href) is expected

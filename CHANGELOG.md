@@ -64,6 +64,10 @@ This repository was republished with a new history on 2026-09-18
   works from an alert on the watch too.
 - A round Lock Screen size for the Favorite waters widget: how many of
   your favorites are scheduled this week.
+- A California water page with nothing on CDFW's schedule this week or later
+  now lists the other waters in its counties that are scheduled, each with
+  its week, and links the county page. It is built from the snapshot alone,
+  and the page's sitemap `lastmod` moves when one of those waters changes.
 
 ### Fixed
 

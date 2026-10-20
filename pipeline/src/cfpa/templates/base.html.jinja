@@ -26,7 +26,15 @@
 <meta property="og:url" content="{{ canonical_url }}">
 {% endif %}
 <meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:image" content="{{ social_image_url }}">
+<meta property="og:image:width" content="{{ social_image_size }}">
+<meta property="og:image:height" content="{{ social_image_size }}">
+<meta property="og:image:alt" content="{{ social_image_alt }}">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="{{ description }}">
+<meta name="twitter:image" content="{{ social_image_url }}">
+<meta name="twitter:image:alt" content="{{ social_image_alt }}">
 {% if google_site_verification %}
 {# Search Console's URL-prefix ownership check (site.py
    GOOGLE_SITE_VERIFICATION, docs/SEARCH-CONSOLE.md). Home page only. #}

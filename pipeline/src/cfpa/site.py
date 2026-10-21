@@ -250,6 +250,67 @@ def gear_links() -> list[dict[str, str]]:
     ]
 
 
+# The "What to bring" guide at /gear/ (DECISIONS 0030). Section key, then
+# (label, search terms) pairs. Searches for a category, never a product, so
+# the page names no brand, price, rating or image. The prose around them lives
+# in gear.html.jinja.
+GEAR_GUIDE_LINKS: dict[str, tuple[tuple[str, str], ...]] = {
+    "rod": (
+        ("Ultralight spinning rod and reel combos", "ultralight spinning combo"),
+        ("Trout fishing line", "trout fishing line monofilament"),
+        ("Small fishing hooks, assorted", "small fishing hooks assortment"),
+        ("Split shot sinkers", "split shot sinkers"),
+        ("Fishing bobbers", "fishing bobbers"),
+    ),
+    "bait": (
+        ("Trout dough bait", "trout dough bait"),
+        ("Trout spinners and spoons", "trout spinners spoons assortment"),
+        ("Fishing pliers with a line cutter", "fishing pliers line cutter"),
+    ),
+    "catfish": (
+        ("Catfish rod and reel combos", "catfish rod and reel combo"),
+        ("Catfish bait", "catfish bait"),
+        ("Circle hooks", "circle hooks"),
+    ),
+    "cold": (
+        ("Insulated gloves", "insulated gloves"),
+        ("Insulated bottles", "insulated bottle"),
+        ("Fishing waders", "fishing waders"),
+        ("Waterproof boots", "waterproof boots"),
+    ),
+    "sun": (
+        ("Polarized sunglasses", "polarized sunglasses"),
+        ("Wide-brim sun hats", "wide brim sun hat"),
+        ("Sunscreen", "sunscreen spf 30"),
+        ("Insect repellent", "insect repellent"),
+    ),
+    "cooler": (
+        ("Coolers", "cooler"),
+        ("Fish stringers", "fish stringer"),
+        ("Fillet knives", "fillet knife"),
+        ("Trout landing nets", "trout landing net"),
+    ),
+}
+# CDFW's own license page; the guide points to it and gives no legal advice.
+CDFW_LICENSE_URL = "https://wildlife.ca.gov/Licensing/Fishing"
+GEAR_GUIDE_TITLE = "What to bring fishing at a California trout water"
+GEAR_GUIDE_DESCRIPTION = (
+    "A packing list for a day at a water on California's trout planting "
+    "schedule: license reminder, trout and catfish basics, tackle, cold and "
+    "sun gear, and a cooler."
+)
+
+
+def gear_guide_links() -> dict[str, list[dict[str, str]]]:
+    """The guide's links per section, built from ``GEAR_GUIDE_LINKS``."""
+    return {
+        key: [
+            {"label": label, "url": amazon_search_url(terms)} for label, terms in pairs
+        ]
+        for key, pairs in GEAR_GUIDE_LINKS.items()
+    }
+
+
 # The license the compiled schedule history is offered under, as a URL, for
 # the Dataset structured data on /about/ (docs/adr/0013). Unset on purpose:
 # the CC-BY license in docs/LICENSES-AND-ATTRIBUTION.md belongs to a
@@ -1200,6 +1261,35 @@ def _render_county_page(
     return page_url
 
 
+def _render_gear_page(ctx: _PageContext) -> str:
+    """Write /gear/, the "What to bring" guide. Returns its URL."""
+    page_url = f"{ctx.base_url}/gear/"
+    trail = [ctx.home_crumb, ("What to bring", page_url)]
+    html = ctx.env.get_template("gear.html.jinja").render(
+        title=f"{GEAR_GUIDE_TITLE} | {SITE_NAME}, {SITE_TAGLINE}",
+        description=GEAR_GUIDE_DESCRIPTION,
+        canonical_url=page_url,
+        root="../",
+        **ctx.common,
+        structured_data=_ld_graph(
+            _ld_page(
+                "WebPage",
+                page_url=page_url,
+                name=GEAR_GUIDE_TITLE,
+                base_url=ctx.base_url,
+                about={"@type": "State", "name": "California"},
+            ),
+            _ld_breadcrumb(page_url, trail),
+        ),
+        breadcrumb=_relative_trail(trail, base_url=ctx.base_url, root="../"),
+        guide=gear_guide_links(),
+        affiliate_rel=AFFILIATE_LINK_REL,
+        cdfw_license_url=CDFW_LICENSE_URL,
+    )
+    _write_page(ctx.out_dir, "gear", html, ctx.written)
+    return page_url
+
+
 def _render_counties_index(
     ctx: _PageContext,
     *,
@@ -1933,6 +2023,7 @@ def build_site(
         county_count=len(county_names),
     )
     counties_index_lastmod = max(first_seen.values(), default=source_week_start)
+    gear_url = _render_gear_page(ctx)
 
     # ---- region pages: one per CDFW region with a county page. The
     # lastmod is the newest of its waters' own data dates, which already
@@ -1968,11 +2059,12 @@ def build_site(
 
     # ---- sitemap.xml -- lastmod is when a page's substance last changed
     # (see _water_data_lastmod), not the daily build date. The about,
-    # privacy and support pages carry no per-page data date, so no lastmod.
+    # privacy, support and gear pages carry no per-page data date, so no lastmod.
     sitemap_entries: list[tuple[str, str | None]] = [
         (f"{base_url}/", home_lastmod),
         (counties_index_url, counties_index_lastmod),
         (f"{base_url}/about/", None),
+        (gear_url, None),
         (f"{base_url}/privacy/", None),
         (f"{base_url}/support/", None),
         *region_lastmods.items(),

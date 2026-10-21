@@ -346,6 +346,11 @@ def test_privacy_page_states_what_the_events_record(site_dir):
         assert phrase in text, phrase
 
 
+def test_privacy_click_paragraph_covers_the_what_to_bring_page(site_dir):
+    text = _text((site_dir / "privacy" / "index.html").read_text(encoding="utf-8"))
+    assert "gear link on a water page or on the \u201cWhat to bring\u201d page" in text
+
+
 def test_privacy_page_without_analytics_has_no_click_event_paragraph(tmp_path):
     out = _build(tmp_path, None)
     assert "link-clicks" not in (out / "privacy" / "index.html").read_text(

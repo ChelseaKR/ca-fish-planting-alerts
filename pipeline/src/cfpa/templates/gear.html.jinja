@@ -1,0 +1,156 @@
+{% extends "base.html.jinja" %}
+{# DECISIONS 0030. The only Amazon links are the macro's: search links, tagged,
+   rel-marked, each with the labels the GA4 click handler reads. #}
+{% macro links(key) %}
+<ul>
+  {% for g in guide[key] %}
+  <li><a href="{{ g.url }}" rel="{{ affiliate_rel }}" data-ga-event="gear_click" data-ga-placement="gear_guide" data-ga-type="amazon_search">{{ g.label }}</a></li>
+  {% endfor %}
+</ul>
+{% endmacro %}
+{% macro disclosure(anchor_id) %}
+<p class="muted" id="{{ anchor_id }}">
+  The gear links on this page are affiliate links: if you buy something after
+  following one, this site earns a commission, and it costs you nothing extra.
+  {{ amazon_disclosure }}
+  {{ gear_endorsement }}
+  <a href="{{ root }}privacy/#affiliate">More in the privacy policy</a>.
+</p>
+{% endmacro %}
+{% block content %}
+<h1>What to bring fishing at a California trout water</h1>
+<p class="lede">
+  A short packing list for a day at a California lake, pond or stream that is
+  on the planting schedule. It is general fishing know-how, not a product
+  review. Bring what the day and the water call for, and leave the rest.
+</p>
+{{ disclosure("gear-disclosure") }}
+<p>
+  Each list below ends with links that search Amazon.com for that kind of
+  item. They point to search results, not to any one product, and this page
+  names no brand and compares no prices.
+</p>
+
+<h2 id="license">License and rules</h2>
+<ul>
+  <li>Anglers 16 and older generally need a California fishing license. The
+      Department of Fish and Wildlife explains the types and how to get one on
+      its <a href="{{ cdfw_license_url }}">fishing license page</a>. Check
+      there, because rules and fees change.</li>
+  <li>Rules differ by water. Some waters limit the bait, the hooks or the
+      number of fish you may keep, and parks and reservoirs may charge a
+      day-use fee or post rules of their own. Read the signs at the water.</li>
+  <li>A water&rsquo;s page here shows what CDFW has scheduled, by week, never
+      by day. Plants are subject to change, so a scheduled week is not a
+      promise that fish are in the water on the day you arrive.</li>
+</ul>
+<p class="muted">
+  This is a reminder, not legal advice. CDFW&rsquo;s own pages are the
+  authority on licenses and regulations.
+</p>
+
+<h2 id="species">Trout and catfish: what differs</h2>
+<ul>
+  <li><strong>Trout</strong> prefer cooler, well-oxygenated water. They are
+      often more active in the cool hours near sunrise and sunset. Fish at a planting water are commonly rainbow trout, and many anglers
+      fish for them with light line, small hooks, dough baits, worms or small
+      spinners and spoons.</li>
+  <li><strong>Catfish</strong> favor warmer water and often feed near the
+      bottom, with evening and night often the more productive hours in
+      summer. They run bigger and pull harder, so many anglers step up to a
+      stouter rod and heavier line than they would for trout, and use cut
+      bait, chicken liver, worms or prepared catfish baits. Some waters on
+      the schedule list catfish; check the water&rsquo;s page for the species
+      CDFW shows.</li>
+</ul>
+
+<h2 id="tackle">Rod, reel, line and small tackle</h2>
+<ul>
+  <li>A light spinning rod around six to seven feet, with a matching reel, is
+      a common choice for trout at a lake or pond.</li>
+  <li>Line in the four to six pound range is common for trout. Clear
+      monofilament or fluorocarbon is less visible in the water.</li>
+  <li>Small hooks, split shot, a few bobbers and a swivel or two cover most
+      bait setups. Pinching a barb flat is required at some waters and kinder
+      to the fish everywhere.</li>
+  <li>Needle-nose pliers and a line cutter make removing a hook much easier.</li>
+</ul>
+{{ links("rod") }}
+
+<h2 id="bait">Bait and lures for trout</h2>
+<ul>
+  <li>Dough baits, worms and salmon eggs are common bait choices where bait is
+      allowed. Some waters allow artificial lures, not bait, so check the rules
+      before you buy bait.</li>
+  <li>Small spinners and spoons are common lures for casting from shore, and
+      they are easy to carry in a pocket.</li>
+</ul>
+{{ links("bait") }}
+
+<h2 id="catfish">If you are after catfish</h2>
+<ul>
+  <li>A medium-power rod with ten to twenty pound line is a common starting
+      point, with a sliding sinker rig that keeps the bait on the bottom.</li>
+  <li>Circle hooks usually hook the fish in the corner of the mouth, which
+      makes release easier.</li>
+  <li>A headlamp or lantern helps if you stay after dark, and a folding chair
+      helps while you wait.</li>
+</ul>
+{{ links("catfish") }}
+
+<h2 id="cold">Cold, wet and shoulder-season days</h2>
+<p>
+  Mornings at a mountain lake or a foothill stream can be cold even when the
+  afternoon warms up. The weather in late fall, winter and spring can change
+  within hours.
+</p>
+<ul>
+  <li>Dress in layers you can remove: a base layer, an insulating layer and a
+      shell that blocks wind and rain.</li>
+  <li>A warm hat and gloves matter more than they seem. Gloves with free
+      fingertips, or ones you can slip off, help with knots.</li>
+  <li>Waterproof boots keep feet dry on a muddy bank. Waders are for wading;
+      stay out of fast or deep water, and wear a life jacket on a boat.</li>
+  <li>A thermos of something hot is welcome after an hour of standing still.</li>
+</ul>
+{{ links("cold") }}
+
+<h2 id="sun">Sun and summer days</h2>
+<p>
+  Shade can be scarce on a lake shore, and the sun reflects off the water.
+  Summer days can be hot, and fish are often more active early in the morning
+  or in the evening, so many people arrive early and leave before midday.
+</p>
+<ul>
+  <li>A wide-brim hat, sunscreen and sunglasses protect you for hours outside.
+      Polarized lenses also cut glare, which makes it easier to see into the
+      water.</li>
+  <li>Bring more drinking water than you expect to need, and snacks.</li>
+  <li>Insect repellent is useful near still water at dusk.</li>
+</ul>
+{{ links("sun") }}
+
+<h2 id="cooler">Cooler and cleaning</h2>
+<ul>
+  <li>Know the daily limit and any size rule for the water before you keep a
+      fish. If you plan to release fish, wet your hands before you touch
+      the fish and handle it as little as you can.</li>
+  <li>Fish keep better cold. A cooler with ice, brought from home, lets you
+      chill a catch right away; a stringer or a bucket works for a short wait.</li>
+  <li>A sharp fillet knife, a small cutting board, zip bags and wet wipes
+      make cleaning simpler. Follow any posted rules about cleaning fish at
+      the water.</li>
+  <li>A landing net helps bring a fish in without losing it.</li>
+  <li>Pack out your trash, including loose line and hooks.</li>
+</ul>
+{{ links("cooler") }}
+
+<h2 id="before">Before you go</h2>
+<p>
+  <a href="{{ root }}">See what is scheduled this week</a>, or find a water
+  <a href="{{ root }}county/">by county</a>. Each water&rsquo;s page shows its
+  scheduled weeks, and CDFW&rsquo;s own
+  <a href="{{ attribution_url }}">Fish Planting Schedule</a> is the source.
+</p>
+{{ disclosure("gear-disclosure-end") }}
+{% endblock %}

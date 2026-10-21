@@ -37,14 +37,39 @@
 <p>No {{ county }} County water is on CDFW's schedule for this week. That means no plant is scheduled here this week, not that there are no fish.</p>
 {% endif %}
 
-<h2>Every {{ county }} County water on the schedule</h2>
-<p>Most recently scheduled first. A week after the current one is marked upcoming.</p>
+<h2>Scheduled for later weeks</h2>
+{% if later_rows %}
 <table>
-  <caption class="visually-hidden">Every {{ county }} County water CDFW has scheduled, with its latest scheduled week</caption>
+  <caption class="visually-hidden">{{ county }} County waters on CDFW's schedule for a week after the {{ source_week_label }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Week</th>
+      <th scope="col">Water</th>
+      <th scope="col">Species</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in later_rows %}
+    <tr>
+      <td>week of {{ row.week }}</td>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{{ row.species }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No later week is scheduled for a {{ county }} County water. That means nothing beyond the {{ source_week_label }} is on CDFW's schedule here right now, not that there are no fish.</p>
+{% endif %}
+
+<h2>Every {{ county }} County water on the schedule</h2>
+<p>Newest at the top. Each water's latest week counts through this week. Later weeks are listed above.</p>
+<table>
+  <caption class="visually-hidden">Every {{ county }} County water CDFW has scheduled, with its latest scheduled week through the {{ source_week_label }}</caption>
   <thead>
     <tr>
       <th scope="col">Water</th>
-      <th scope="col">Latest scheduled week</th>
+      <th scope="col">Latest scheduled week, through this week</th>
       <th scope="col">Weeks on record</th>
     </tr>
   </thead>
@@ -52,7 +77,7 @@
     {% for row in rows %}
     <tr>
       <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
-      <td>{% if row.latest_start %}week of {{ row.latest_start }}{% if row.upcoming %} (upcoming){% endif %}{% else %}none listed now{% endif %}</td>
+      <td>{% if row.latest_start %}week of {{ row.latest_start }}{% else %}none through this week{% endif %}</td>
       <td>{{ row.weeks }}</td>
     </tr>
     {% endfor %}

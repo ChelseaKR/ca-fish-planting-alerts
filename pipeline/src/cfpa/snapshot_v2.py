@@ -208,7 +208,7 @@ def _state_waters(
     source: StateSource,
     history: StateHistory,
     records: list[StateRecord],
-    as_of: dt.date,
+    today: dt.date,
 ) -> list[dict[str, Any]]:
     by_water: dict[str, list[StateRecord]] = {}
     for r in records:
@@ -226,8 +226,8 @@ def _state_waters(
             by_water[wid], key=lambda r: (r.period.start, r.period.precision, r.species)
         )
         current = [r for r in recs if r.status in ("listed", "reported")]
-        past = [r for r in current if r.period.start <= as_of]
-        future = [r for r in current if r.period.start > as_of and r.status == "listed"]
+        past = [r for r in current if r.period.start <= today]
+        future = [r for r in current if r.period.start > today and r.status == "listed"]
         aliases = history.aliases.get(wid, [meta.name])
         out.append(
             {
@@ -259,6 +259,7 @@ def _state_entry(
     records: list[StateRecord],
     waters: list[dict[str, Any]],
     as_of: dt.date,
+    today: dt.date,
 ) -> dict[str, Any]:
     checks = history.checks
     if checks.last_success_at is None:
@@ -277,7 +278,7 @@ def _state_entry(
         "semantics": source.semantics,
         "date_precisions": list(source.date_precisions),
         "removal_inference": source.removal_inference,
-        "current_week": _week(week_start_containing(as_of)),
+        "current_week": _week(week_start_containing(today)),
         "as_of": as_of.isoformat(),
         "newest_record": newest.period.to_json(),
         "recency_note": source.recency_note,
@@ -340,8 +341,13 @@ def build_snapshot_v2(
         as_of = history.checks.last_success_at.astimezone(
             ZoneInfo(source.time_zone)
         ).date()
-        state_waters = _state_waters(source, history, records, as_of)
-        entry = _state_entry(source, history, records, state_waters, as_of)
+        # "This week" and past versus upcoming are judged against the day the
+        # snapshot is built, in the state's time zone. as_of stays the day of
+        # the last good fetch: after a failed check the two differ, and the
+        # data is then older than the calendar says.
+        today = generated_at.astimezone(ZoneInfo(source.time_zone)).date()
+        state_waters = _state_waters(source, history, records, today)
+        entry = _state_entry(source, history, records, state_waters, as_of, today)
         others.append((entry, state_waters))
     for entry, state_waters in sorted(others, key=lambda e: e[0]["name"]):
         states.append(entry)

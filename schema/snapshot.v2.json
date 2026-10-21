@@ -117,7 +117,7 @@
           "items": { "enum": ["day", "week", "month"] }
         },
         "removal_inference": { "type": "boolean", "description": "True only for schedule states (docs/DECISIONS.md 0016)." },
-        "current_week": { "$ref": "#/$defs/week", "description": "What 'this week' means for this state. California: CDFW's stated week. Others: the week containing as_of." },
+        "current_week": { "$ref": "#/$defs/week", "description": "What 'this week' means for this state. California: CDFW's stated week. Others: the week containing the date the snapshot was generated, in the state's time zone, which differs from as_of after a failed check." },
         "as_of": { "$ref": "#/$defs/date", "description": "The civil date, in the state's time zone, of the last successful fetch." },
         "newest_record": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/period" }] },
         "recency_note": { "type": ["string", "null"], "description": "Show next to this state's data when present (a source that lags)." },

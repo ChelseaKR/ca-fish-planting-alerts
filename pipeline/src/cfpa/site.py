@@ -1060,19 +1060,44 @@ def _render_county_page(
         ),
         key=lambda r: (r["name"], r["slug"]),
     )
-    rows = [
-        {
-            "slug": v["slug"],
-            "name": v["name"],
-            "latest_start": v["latest_listed_start"],
-            "upcoming": v["latest_listed_start"] > ctx.source_week_start,
-            "weeks": v["listed_week_count"],
-        }
-        for v in (ctx.views[w["id"]] for w in members)
-    ]
-    # Most recently scheduled first, ties alphabetical (two stable sorts).
+    # Past and upcoming are kept apart. A week after the snapshot's current
+    # one is upcoming; everything else listed is this week or earlier. The
+    # history table reports each water's latest week through this week, so a
+    # plant scheduled for a later week never hides one that is current.
+    rows: list[dict[str, Any]] = []
+    later_rows: list[dict[str, Any]] = []
+    for w in members:
+        view = ctx.views[w["id"]]
+        listed = [p for p in w["plants"] if p["status"] == "listed"]
+        through_now = [
+            p["week"]["start"]
+            for p in listed
+            if p["week"]["start"] <= ctx.source_week_start
+        ]
+        rows.append(
+            {
+                "slug": view["slug"],
+                "name": view["name"],
+                "latest_start": max(through_now) if through_now else "",
+                "weeks": view["listed_week_count"],
+            }
+        )
+        later_rows.extend(
+            {
+                "slug": view["slug"],
+                "name": view["name"],
+                "week": p["week"]["start"],
+                "species": p["species"],
+            }
+            for p in listed
+            if p["week"]["start"] > ctx.source_week_start
+        )
+    # Most recent first, ties alphabetical (two stable sorts); a water with
+    # nothing through this week (empty string) sorts last.
     rows.sort(key=lambda r: (r["name"], r["slug"]))
     rows.sort(key=lambda r: r["latest_start"], reverse=True)
+    # Soonest week first, then alphabetical.
+    later_rows.sort(key=lambda r: (r["week"], r["name"], r["slug"], r["species"]))
     trail = [ctx.home_crumb, ctx.counties_crumb, (f"{county} County", page_url)]
     title = (
         f"{county} County {species} planting schedule: fish plants this week"
@@ -1105,6 +1130,7 @@ def _render_county_page(
         region_name=region_name,
         water_count=len(members),
         this_week_rows=this_week_rows,
+        later_rows=later_rows,
         rows=rows,
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,

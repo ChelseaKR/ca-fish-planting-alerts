@@ -210,7 +210,9 @@ def test_a_page_for_every_county_with_a_water_and_no_other(built):
         assert f'href="../county/{site.county_slug(c)}/"' in index, c
 
 
-def test_county_page_lists_exactly_its_waters_with_their_latest_week(built):
+def test_county_page_lists_exactly_its_waters_with_their_latest_week_through_this_week(
+    built,
+):
     out, snap = built
     week = snap["source_week"]["start"]
     for county, members in _county_waters(snap).items():
@@ -223,16 +225,24 @@ def test_county_page_lists_exactly_its_waters_with_their_latest_week(built):
         assert {slug for slug, _ in rows} == {w["slug"] for w in members}, county
         by_slug = {w["slug"]: w for w in members}
         for slug, cell in rows:
-            listed = [
+            # Past and upcoming are separate: a later week is listed under
+            # "Scheduled for later weeks" (tests/test_display_fixes.py).
+            through_now = [
                 p["week"]["start"]
                 for p in by_slug[slug]["plants"]
-                if p["status"] == "listed"
+                if p["status"] == "listed" and p["week"]["start"] <= week
             ]
-            latest = max(listed)
-            expected = f"week of {latest}" + (" (upcoming)" if latest > week else "")
+            expected = (
+                f"week of {max(through_now)}"
+                if through_now
+                else "none through this week"
+            )
             assert cell == expected, (county, slug, cell)
-        # most recently scheduled first
-        starts = [cell.split(" ")[2] for _, cell in rows]
+        # most recently scheduled first; a water with nothing through this
+        # week sorts last
+        starts = [
+            cell.split(" ")[2] if cell.startswith("week of") else "" for _, cell in rows
+        ]
         assert starts == sorted(starts, reverse=True), county
 
 

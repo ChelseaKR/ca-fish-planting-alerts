@@ -25,8 +25,11 @@ import dataclasses
 import datetime as dt
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import jinja2
+
+from .states import SOURCES
 
 UPCOMING_DAYS = 60
 RECENT_DAYS = 45
@@ -113,13 +116,35 @@ def _row(w: dict[str, Any], p: dict[str, Any], state: dict[str, Any]) -> dict[st
     }
 
 
+def _build_date(state: dict[str, Any], generated_at: str) -> dt.date:
+    """The civil date the snapshot was built, in the state's time zone. This,
+    not the date of the last good fetch, is what "now" means on a page: after
+    a failed check the data is older than the calendar."""
+    when = dt.datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+    return when.astimezone(ZoneInfo(SOURCES[state["code"]].time_zone)).date()
+
+
+def _date_range_label(waters: list[dict[str, Any]]) -> str:
+    """The span of the dated records on file ("2026-02-22 to 2026-12-24"), or
+    "" when there is none. Month-precision records have no day, so they stay
+    out of the span."""
+    periods = [
+        p["period"]
+        for w in waters
+        for p in w["plants"]
+        if p["period"]["precision"] != "month"
+    ]
+    if not periods:
+        return ""
+    return f"{min(p['start'] for p in periods)} to {max(p['end'] for p in periods)}"
+
+
 def _hub_sections(
-    state: dict[str, Any], waters: list[dict[str, Any]]
+    state: dict[str, Any], waters: list[dict[str, Any]], today: dt.date
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """(this week, coming up) for a schedule state; (this week, recent) for a
     report state. Month-precision plants are never "this week"."""
     week = state["current_week"]
-    as_of = dt.date.fromisoformat(state["as_of"])
     this_week, other = [], []
     for w in waters:
         for p in w["plants"]:
@@ -136,9 +161,9 @@ def _hub_sections(
                 continue
             start = dt.date.fromisoformat(per["start"])
             if state["semantics"] == "schedule":
-                if as_of < start <= as_of + dt.timedelta(days=UPCOMING_DAYS):
+                if today < start <= today + dt.timedelta(days=UPCOMING_DAYS):
                     other.append(_row(w, p, state))
-            elif as_of - dt.timedelta(days=RECENT_DAYS) <= start <= as_of:
+            elif today - dt.timedelta(days=RECENT_DAYS) <= start <= today:
                 other.append(_row(w, p, state))
     this_week.sort(key=lambda r: (r["start"], r["name"]))
     other.sort(
@@ -191,7 +216,15 @@ def render_states(
                 _render_water(ctx, state, w, waters, lastmods[w["id"]], state_species)
             )
         hub_lastmods[state["code"]] = max(lastmods.values())
-        entries.append(_render_hub(ctx, state, waters, hub_lastmods[state["code"]]))
+        entries.append(
+            _render_hub(
+                ctx,
+                state,
+                waters,
+                hub_lastmods[state["code"]],
+                _build_date(state, snap_v2["generated_at"]),
+            )
+        )
     entries.append(_render_index(ctx, snap_v2["states"], max(hub_lastmods.values())))
     return entries
 
@@ -254,10 +287,11 @@ def _render_hub(
     state: dict[str, Any],
     waters: list[dict[str, Any]],
     lastmod: str,
+    today: dt.date,
 ) -> tuple[str, str | None]:
     seg = state["code"].lower()
     page_url = f"{ctx.base_url}/{seg}/"
-    this_week, other = _hub_sections(state, waters)
+    this_week, other = _hub_sections(state, waters, today)
     region_names = {r["code"]: r["name"] for r in state["regions"]}
     groups: dict[str, list[dict[str, str]]] = {}
     for w in waters:
@@ -315,6 +349,8 @@ def _render_hub(
         water_groups=water_groups,
         fetched_label=_fmt_dt(state["checks"]["last_success_at"]),
         attempt_failed=not state["checks"]["last_attempt_ok"],
+        attempt_label=_fmt_dt(state["checks"]["last_attempt_at"]),
+        range_label=_date_range_label(waters),
         has_months=any(w["months_note"] for w in waters),
         has_counts=any(p["count"] is not None for w in waters for p in w["plants"]),
         newest_label=when_label(state["newest_record"])
@@ -448,6 +484,7 @@ def _render_water(
         last_label=when_label(w["last_period"]) if w["last_period"] else "",
         fetched_label=_fmt_dt(state["checks"]["last_success_at"]),
         attempt_failed=not state["checks"]["last_attempt_ok"],
+        attempt_label=_fmt_dt(state["checks"]["last_attempt_at"]),
     )
     ctx.write_page(ctx.out_dir, w["site_path"].strip("/"), html, ctx.written)
     return page_url, lastmod

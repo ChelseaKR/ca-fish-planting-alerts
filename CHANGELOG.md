@@ -87,6 +87,14 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- County pages keep past and upcoming scheduled weeks apart: a new "Scheduled
+  for later weeks" table lists each water and week after the current one, and
+  the history table reports each water's latest week through the current week,
+  so a later week no longer hides a current plant.
+- Tennessee (and other non-California) pages judge "this week" and the
+  upcoming window against the build date, not the date of the last good fetch.
+  The freshness line now says when the failed check ran, which read is the last
+  good one, and the range of dates in the data.
 - The release workflow's preflight no longer fails on the first release.
   With no earlier `v*` tags its list of earlier builds is empty, and the
   macOS runner's bash 3.2 treated that empty list as an unbound variable

@@ -767,3 +767,32 @@ the links come out in one edit (delete `GEAR_CATEGORIES` and the block in
   control that checks its sabotage applied. Existing site checks needed no
   change: they forbid off-origin requests the browser makes by itself
   (script, image, stylesheet, frame), and an `<a href>` is not one.
+
+## 0030 — A "What to bring" guide at /gear/ (2026-10-20)
+
+Extends 0029 with one more website page, for the same Amazon Associates
+account (`trouttruck-20`) and the same reason: it needs 3 qualifying sales by
+about 2027-04-17, and the links come out in one edit if there are none.
+
+- **What.** `/gear/` is a plain checklist for a day at a California water on
+  the schedule: a license reminder with a link to CDFW's license page (no
+  legal advice), trout and catfish basics, rod, line and small tackle, bait
+  and lures, cold-weather and sun items, and a cooler and cleaning list. It is
+  general fishing knowledge. It states no statistic, price, rating or product
+  claim, and names no brand.
+- **Links.** Each section ends with Amazon search links for a category, built
+  by `amazon_search_url()` from `GEAR_GUIDE_LINKS` in `site.py`, so the tag is
+  still written in one place. Same rel values, same disclosure, same plain
+  affiliate sentence and the same CDFW non-endorsement sentence as 0029, shown
+  before the first link and again after the last.
+- **Where it is linked.** From each water page's gear block ("More gear ideas")
+  and from the footer of every page, as an ordinary internal link.
+- **Still the website alone.** No Amazon link in the iOS or Android sources,
+  the feeds, the data, the sitemap or structured data. The page has a
+  canonical URL, a sitemap entry and a breadcrumb.
+- **Click labels.** Each Amazon link carries `data-ga-event="gear_click"`,
+  `data-ga-placement="gear_guide"` and `data-ga-type="amazon_search"`, the
+  labels the click handler in the pending click-event work reads. Without that
+  handler they do nothing.
+- **Guards.** `tests/test_site_gear_guide.py` (with negative controls) and
+  the widened page list in `tests/test_site_affiliate.py`.

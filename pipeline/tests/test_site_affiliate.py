@@ -118,6 +118,11 @@ def _is_water_page(out: Path, path: Path) -> bool:
     return len(rel) == 3 and rel[0] == "water" and rel[2] == "index.html"
 
 
+def _is_gear_page(out: Path, path: Path) -> bool:
+    """The "What to bring" guide (DECISIONS 0030): the one other page."""
+    return path.relative_to(out).parts == ("gear", "index.html")
+
+
 def _link_problems(name: str, href: str, rel: str) -> list[str]:
     found: list[str] = []
     q = parse_qs(urlsplit(href).query)
@@ -137,7 +142,7 @@ def _page_problems(out: Path, path: Path) -> list[str]:
     found: list[str] = []
     if page.other_urls:
         found.append(f"{name}: Amazon URL outside an anchor: {page.other_urls}")
-    if links and not _is_water_page(out, path):
+    if links and not (_is_water_page(out, path) or _is_gear_page(out, path)):
         found.append(f"{name}: affiliate link outside a water page")
     for href, rel in links:
         found += _link_problems(name, href, rel)

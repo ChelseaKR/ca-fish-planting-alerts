@@ -437,6 +437,85 @@ def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
     }
 
 
+def _water_status(
+    w: dict[str, Any],
+    *,
+    source_week_start: str,
+    checked_on: str,
+    recorded_since: str,
+) -> dict[str, Any]:
+    """The facts behind a water page's status block, from the water's own
+    recorded plants and the snapshot's current week, nothing estimated.
+
+    ``checked_on`` is the date CDFW's schedule was last read (an ISO date);
+    "days ago" counts from it, never from the build clock, so a given
+    snapshot always renders the same words. ``recorded_since`` is the first
+    week anywhere in the record ("" when there is none). A week counts only
+    when its status is ``listed``: a week CDFW later removed is not "on the
+    schedule".
+    """
+    week = dt.date.fromisoformat(source_week_start)
+    next_week = (week + dt.timedelta(days=7)).isoformat()
+    listed = sorted(
+        {p["week"]["start"] for p in w["plants"] if p["status"] == "listed"}
+    )
+    past = [d for d in listed if d <= source_week_start]
+    later = [d for d in listed if d > next_week]
+    last = past[-1] if past else ""
+    days_ago: int | None = None
+    if last:
+        days_ago = (
+            dt.date.fromisoformat(checked_on) - dt.date.fromisoformat(last)
+        ).days
+    since = (
+        f"the week of {recorded_since}" if recorded_since else "the start of its record"
+    )
+    count = len(listed)
+    if last == source_week_start:
+        last_text = f"this week, the week of {last}"
+    elif last:
+        last_text = (
+            f"the week of {last}, which began "
+            f"{_plural(days_ago or 0, 'day', 'days')} ago as of the schedule "
+            f"check on {checked_on}"
+        )
+    elif listed:
+        last_text = f"not before this week in the weeks we have recorded since {since}"
+    else:
+        last_text = (
+            f"not on CDFW's schedule in the weeks we have recorded since {since}"
+        )
+    if last:
+        meta = (
+            f"Last on CDFW's schedule the week of {last} "
+            f"({_plural(days_ago or 0, 'day', 'days')} ago); on the schedule "
+            f"{_plural(count, 'week', 'weeks')} since {since}."
+        )
+    elif listed:
+        meta = (
+            "Not on CDFW's schedule before this week in the weeks recorded "
+            f"since {since}; scheduled the week of {listed[0]}."
+        )
+    else:
+        meta = f"Not on CDFW's schedule in the weeks we have recorded since {since}."
+    return {
+        "last_week": last,
+        "days_ago": days_ago,
+        "last_text": last_text,
+        "last_sentence": f"{last_text[0].upper()}{last_text[1:]}.",
+        "this_week": source_week_start,
+        "in_this_week": source_week_start in listed,
+        "next_week": next_week,
+        "in_next_week": next_week in listed,
+        "later_week": later[0] if later else "",
+        "weeks_on_schedule": count,
+        "recorded_since": recorded_since,
+        "since_text": since,
+        "checked_on": checked_on,
+        "meta_phrase": meta,
+    }
+
+
 def _water_description(view: dict[str, Any], *, source_week_label: str) -> str:
     """The meta description: the water, its county, the stocking wording
     people search with, then the weeks that answer the query, within the
@@ -845,6 +924,7 @@ class _PageContext:
     source_week_start: str
     source_week_label: str
     source_fetched_label: str
+    source_checked_on: str = ""
 
     @property
     def home_crumb(self) -> tuple[str, str]:
@@ -932,6 +1012,14 @@ def _render_water_page(
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
         recorded_since_label=f"week of {recorded_since}" if recorded_since else "",
+        # Facts for _water_status.html.jinja. water_status["meta_phrase"] is a
+        # truthful sentence a description may use; nothing here sets one.
+        water_status=_water_status(
+            w,
+            source_week_start=ctx.source_week_start,
+            checked_on=ctx.source_checked_on,
+            recorded_since=recorded_since,
+        ),
     )
     _write_page(ctx.out_dir, f"water/{w['slug']}", html, ctx.written)
 
@@ -1405,6 +1493,7 @@ def build_site(
         source_week_start=source_week_start,
         source_week_label=source_week_label,
         source_fetched_label=source_fetched_label,
+        source_checked_on=snapshot["source"]["fetched_at"][:10],
     )
 
     # ---- per-water pages + ics

@@ -1,0 +1,19 @@
+{# Status block at the top of a water page. Needs: water, water_status.
+   Every date is a recorded week from CDFW's schedule; nothing is estimated. #}
+<section class="water-status" aria-labelledby="water-status-heading">
+  <h2 id="water-status-heading">Where {{ water.name }} stands on CDFW's schedule</h2>
+  <dl>
+    <dt>Last on the schedule</dt>
+    <dd>{{ water_status.last_sentence }}</dd>
+    <dt>This week, the week of {{ water_status.this_week }}</dt>
+    <dd>{{ "On CDFW's schedule." if water_status.in_this_week else "Not on CDFW's schedule." }}</dd>
+    <dt>Next week, the week of {{ water_status.next_week }}</dt>
+    <dd>{{ "On CDFW's schedule." if water_status.in_next_week else "Not on CDFW's schedule." }}</dd>
+    {% if water_status.later_week %}
+    <dt>Later on the schedule</dt>
+    <dd>The week of {{ water_status.later_week }}.</dd>
+    {% endif %}
+    <dt>Weeks on the schedule</dt>
+    <dd>On the schedule in {{ water_status.weeks_on_schedule }} {{ "week" if water_status.weeks_on_schedule == 1 else "weeks" }}, counting the weeks we have recorded since {{ water_status.since_text }}.</dd>
+  </dl>
+</section>

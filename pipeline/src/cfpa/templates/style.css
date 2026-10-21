@@ -142,6 +142,11 @@ ul.water-index li { break-inside: avoid; }
      instead of making the table, and so the page, scroll sideways at 320px
      (SC 1.4.10). */
   thead th { white-space: normal; }
+  /* A definition list is two columns on a wide screen. On a narrow one the
+     label column took its full text width and left the answer a sliver, so
+     it stacks (SC 1.4.10). */
+  dl { grid-template-columns: 1fr; }
+  dd { margin-bottom: 0.5rem; }
 }
 
 /* Breadcrumb trail (water and county pages). Each link keeps a 24px target

@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.time.Instant
 
 /** Where the app keeps its few files. The names match the iOS app's. */
@@ -60,14 +63,40 @@ class JsonFileStore<T>(val file: File, private val serializer: KSerializer<T>) {
         null
     }
 
+    /**
+     * Writes [value] to a temporary file and moves it over [file] in one step,
+     * so a failure part-way leaves the old file as it was. Throws
+     * [IOException] when it cannot write; the app's own callers use [trySave].
+     */
     fun save(value: T) {
-        file.parentFile?.mkdirs()
-        val temp = File(file.parentFile, ".${file.name}.tmp")
-        temp.writeText(storeJson.encodeToString(serializer, value))
-        if (!temp.renameTo(file)) {
-            file.delete()
-            if (!temp.renameTo(file)) throw IOException("could not write $file")
+        val dir = file.parentFile
+        dir?.mkdirs()
+        val temp = File(dir, ".${file.name}.tmp")
+        try {
+            temp.writeText(storeJson.encodeToString(serializer, value))
+            try {
+                Files.move(temp.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+            } catch (_: AtomicMoveNotSupportedException) {
+                // Still never deletes the old file first: REPLACE_EXISTING swaps it in.
+                Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            }
+        } catch (e: Throwable) {
+            temp.delete()
+            if (e is IOException) throw e
+            throw IOException("could not write $file", e)
         }
+    }
+
+    /**
+     * [save] for callers that must keep running when the disk is full or
+     * read-only: `false` when nothing was written. The existing file is
+     * untouched in that case, so the last good copy survives.
+     */
+    fun trySave(value: T): Boolean = try {
+        save(value)
+        true
+    } catch (_: Exception) {
+        false
     }
 }
 
@@ -110,7 +139,11 @@ data class PurchaseEntitlement(
     }
 }
 
-/** The stores the app keeps, each reading a missing or corrupt file as its empty value. */
+/**
+ * The stores the app keeps, each reading a missing or corrupt file as its
+ * empty value. Each `save` returns `false` instead of throwing when the disk
+ * will not take the write (full, read-only); the in-memory state carries on.
+ */
 class Stores(val layout: AppStorageLayout) {
     private val favorites = JsonFileStore(layout.favoritesFile, Favorites.serializer())
     private val alertState = JsonFileStore(layout.alertStateFile, AlertState.serializer())
@@ -120,21 +153,21 @@ class Stores(val layout: AppStorageLayout) {
     private val reviewPrompt = JsonFileStore(layout.reviewPromptFile, ReviewPromptState.serializer())
 
     fun loadFavorites(): Favorites = favorites.loadOrNull()?.let { Favorites.of(it.ids) } ?: Favorites()
-    fun saveFavorites(value: Favorites) = favorites.save(value)
+    fun saveFavorites(value: Favorites): Boolean = favorites.trySave(value)
 
     fun loadAlertState(): AlertState = alertState.loadOrNull() ?: AlertState()
-    fun saveAlertState(value: AlertState) = alertState.save(value)
+    fun saveAlertState(value: AlertState): Boolean = alertState.trySave(value)
 
     /** A disk problem can only turn alerts back on, never silence a water. */
     fun loadMuted(): MutedWaters = muted.loadOrNull() ?: MutedWaters()
-    fun saveMuted(value: MutedWaters) = muted.save(value)
+    fun saveMuted(value: MutedWaters): Boolean = muted.trySave(value)
 
     fun loadOnboarding(): OnboardingState = onboarding.loadOrNull() ?: OnboardingState()
-    fun saveOnboarding(value: OnboardingState) = onboarding.save(value)
+    fun saveOnboarding(value: OnboardingState): Boolean = onboarding.trySave(value)
 
     fun loadEntitlement(): PurchaseEntitlement = entitlement.loadOrNull() ?: PurchaseEntitlement()
-    fun saveEntitlement(value: PurchaseEntitlement) = entitlement.save(value)
+    fun saveEntitlement(value: PurchaseEntitlement): Boolean = entitlement.trySave(value)
 
     fun loadReviewPrompt(): ReviewPromptState = reviewPrompt.loadOrNull() ?: ReviewPromptState()
-    fun saveReviewPrompt(value: ReviewPromptState) = reviewPrompt.save(value)
+    fun saveReviewPrompt(value: ReviewPromptState): Boolean = reviewPrompt.trySave(value)
 }

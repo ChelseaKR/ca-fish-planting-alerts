@@ -14,9 +14,12 @@ import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.chelseakr.cafishplanting.core.Entitlements
 import com.chelseakr.cafishplanting.core.ProductCatalog
+import com.chelseakr.cafishplanting.core.ResumeThrottle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import java.time.Duration
+import java.time.Instant
 
 /** What the purchase sheet shows. */
 data class PurchaseUi(
@@ -44,6 +47,12 @@ interface PurchaseBackend {
     fun purchase(activity: Activity, productID: String)
     /** "Restore purchases": asks Play again what this account owns. */
     fun restore()
+
+    /** Asks Play for the price again after a failed first try. Does nothing while prices are loaded or loading. */
+    fun retryProducts() = Unit
+
+    /** The app came back to the foreground: re-checks what the account owns (throttled) and retries a failed price query. */
+    fun onForeground() = Unit
 }
 
 class PlayBillingBackend(context: Context) : PurchaseBackend {
@@ -51,6 +60,9 @@ class PlayBillingBackend(context: Context) : PurchaseBackend {
     override val ui: StateFlow<PurchaseUi> = _ui
     private var details: Map<String, ProductDetails> = emptyMap()
     private var report: (Entitlements) -> Unit = {}
+    private var connecting = false
+    private var loadingProducts = false
+    private val ownedThrottle = ResumeThrottle(Duration.ofMinutes(15))
 
     private val client: BillingClient = BillingClient.newBuilder(context)
         .setListener { result, purchases ->
@@ -67,8 +79,17 @@ class PlayBillingBackend(context: Context) : PurchaseBackend {
 
     override fun start(onEntitlements: (Entitlements) -> Unit) {
         report = onEntitlements
+        ownedThrottle.markRan(Instant.now())
+        connect()
+    }
+
+    /** Opens the connection to Play. Safe to call again after a failed setup; one attempt at a time. */
+    private fun connect() {
+        if (connecting || client.isReady) return
+        connecting = true
         client.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
+                connecting = false
                 if (result.responseCode != BillingClient.BillingResponseCode.OK) {
                     _ui.update { it.copy(productLoadError = result.debugMessage.ifEmpty { "Google Play isn't available" }) }
                     return
@@ -81,13 +102,27 @@ class PlayBillingBackend(context: Context) : PurchaseBackend {
         })
     }
 
+    override fun retryProducts() {
+        if (details.isNotEmpty() || loadingProducts || connecting) return
+        _ui.update { it.copy(productLoadError = null) }
+        if (client.isReady) loadProducts() else connect()
+    }
+
+    override fun onForeground() {
+        retryProducts()
+        // Play's list is the truth, so a refund or a purchase elsewhere shows up without a restart.
+        if (ownedThrottle.tryRun(Instant.now()) && client.isReady) queryOwned()
+    }
+
     private fun loadProducts() {
+        loadingProducts = true
         val params = QueryProductDetailsParams.newBuilder().setProductList(
             ProductCatalog.productIDs.map {
                 QueryProductDetailsParams.Product.newBuilder().setProductId(it).setProductType(BillingClient.ProductType.INAPP).build()
             },
         ).build()
         client.queryProductDetailsAsync(params) { result, found ->
+            loadingProducts = false
             if (result.responseCode != BillingClient.BillingResponseCode.OK || found.productDetailsList.isEmpty()) {
                 _ui.update { it.copy(productLoadError = result.debugMessage.ifEmpty { "No product found" }) }
                 return@queryProductDetailsAsync

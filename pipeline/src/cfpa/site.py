@@ -170,20 +170,32 @@ SOCIAL_IMAGE_FILE = "social-card.png"
 SOCIAL_IMAGE_SIZE = 600
 SOCIAL_IMAGE_ALT = "Trout Truck: a trout above ripples on a green background"
 
+# THE LAUNCH SWITCH. This is the committed default for the App Store launch,
+# and the one value to change, in one small reviewed pull request, on the day
+# Apple approves the app (docs/LAUNCH-CHECKLIST.md). It is False until then.
+# One value moves everything together: the Smart App Banner tag, the badge,
+# the install links, the MobileApplication JSON-LD and the click event, all
+# of which read the one ``app_store_live`` flag the build derives from it
+# (tests/test_launch_switch.py fails if any of them disagrees with the flag).
+# The APP_STORE_LIVE repository variable still wins when it is set to "true"
+# or "false", so a bad launch can be switched off without a deploy of code.
+APP_STORE_LIVE_DEFAULT = False
+
 _APP_STORE_LIVE_ON = frozenset({"true"})
-_APP_STORE_LIVE_OFF = frozenset({"", "false"})
+_APP_STORE_LIVE_OFF = frozenset({"false"})
 
 
 def app_store_live_or_false(value: str | None) -> bool:
-    """Read the APP_STORE_LIVE switch: "true" is on; unset, "" or "false" is
-    off (case-insensitive, surrounding spaces ignored).
+    """Read the APP_STORE_LIVE switch: "true" is on and "false" is off
+    (case-insensitive, surrounding spaces ignored); unset or "" follows
+    ``APP_STORE_LIVE_DEFAULT``, which is off until launch day.
 
     Anything else raises rather than guessing: a typo such as "ture" or
     "yes" must not leave the site silently showing no badge after the owner
     believes it is on, nor turn it on by accident.
     """
-    if value is None:
-        return False
+    if value is None or value.strip() == "":
+        return APP_STORE_LIVE_DEFAULT
     v = value.strip().lower()
     if v in _APP_STORE_LIVE_ON:
         return True
@@ -576,7 +588,7 @@ def _ld_page(
     }
 
 
-def _ld_app(base_url: str) -> dict[str, Any]:
+def _ld_app(base_url: str, listing_url: str) -> dict[str, Any]:
     """The iPhone app, as a MobileApplication. Built when the App Store
     switch is on, because before Apple approves the app there is nothing to
     install and no page may say so. States what the listing and the site's
@@ -593,8 +605,8 @@ def _ld_app(base_url: str) -> dict[str, Any]:
             "new week of the trout planting schedule. No account; alerts "
             "happen on the device."
         ),
-        "url": APP_STORE_CANONICAL_URL,
-        "downloadUrl": APP_STORE_CANONICAL_URL,
+        "url": listing_url,
+        "downloadUrl": listing_url,
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
     }
 
@@ -1109,8 +1121,12 @@ def build_site(
     source_fetched_label = _fmt_dt(snapshot["source"]["fetched_at"])
     source_week_label = snapshot["source_week"]["label"]
     source_week_start = snapshot["source_week"]["start"]
-    app_store_url = app_store_url or (
-        APP_STORE_CANONICAL_URL if app_store_live else None
+    # One flag decides every App Store surface. An explicit URL (the
+    # APP_STORE_URL variable) replaces the listing's address while the
+    # switch is on and does nothing while it is off: nothing then links to
+    # the App Store at all.
+    app_store_url = (
+        (app_store_url or APP_STORE_CANONICAL_URL) if app_store_live else None
     )
     support_email = support_email or None
     # Shared by every template: the app is only linked once it exists.
@@ -1210,7 +1226,11 @@ def build_site(
                 ),
                 "inLanguage": "en-US",
             },
-            *([_ld_app(base_url)] if app_store_live else []),
+            *(
+                [_ld_app(base_url, app_store_url or APP_STORE_CANONICAL_URL)]
+                if app_store_live
+                else []
+            ),
         ),
         source_week_label=source_week_label,
         generated_at_label=generated_at_label,
@@ -1291,7 +1311,11 @@ def build_site(
                         f"{base_url}/{slug}/",
                         _support_faq(source_fetched_label),
                     ),
-                    *([_ld_app(base_url)] if app_store_live else []),
+                    *(
+                        [_ld_app(base_url, app_store_url or APP_STORE_CANONICAL_URL)]
+                        if app_store_live
+                        else []
+                    ),
                 )
                 if slug == "support"
                 else None

@@ -80,11 +80,13 @@ jobs:
         # site (the snapshot and the calendar feeds byte for byte, a redirect
         # page for every page) into ../site-legacy; the two steps after the
         # commit then publish each to its place. Unset APP_STORE_URL keeps the site saying the app
-        # is not in the App Store yet. APP_STORE_LIVE=true, set by the owner
-        # once Apple approves the app, adds the Smart App Banner and the App
+        # is not in the App Store yet. The committed launch switch
+        # (site.py APP_STORE_LIVE_DEFAULT, docs/LAUNCH-CHECKLIST.md) decides
+        # when this variable is unset; set to true or false it overrides the
+        # code (false is the off switch). On, it adds the Smart App Banner and the App
         # Store badge and links the app's US listing (site.py
-        # APP_STORE_CANONICAL_URL) unless APP_STORE_URL names another; unset
-        # or false leaves all of that out, and any other value fails the run.
+        # APP_STORE_CANONICAL_URL) unless APP_STORE_URL names another; off
+        # leaves all of that out, and any other value fails the run.
         # Passed through env, not interpolated into the script.
         env:
           SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}

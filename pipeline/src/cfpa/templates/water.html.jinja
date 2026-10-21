@@ -46,7 +46,7 @@
 <p>
   <a href="feed.ics">Subscribe to {{ water.name }}'s planting calendar (.ics)</a>
   {% if app_store_url %}
-  &middot; <a href="{{ app_store_url }}">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
+  &middot; <a href="{{ app_store_url }}" data-app-store-placement="water" data-app-store-kind="link">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
   {% else %}
   &middot; an iOS app with a notification when {{ water.name }} appears in a new week is on its way (<a href="{{ root }}about/#app">how it will work</a>).
   {% endif %}

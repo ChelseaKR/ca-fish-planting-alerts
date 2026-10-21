@@ -256,11 +256,23 @@ def test_app_is_not_linked_until_it_has_an_app_store_url(tmp_path: Path):
     assert "not in the App Store yet" in about
 
 
+def test_an_app_store_url_alone_does_not_link_the_app(tmp_path: Path):
+    """The switch decides: a URL without APP_STORE_LIVE links nothing."""
+    out = _build_site(tmp_path, app_store_url="https://apps.apple.com/us/app/id1")
+    for f in _all_html(out):
+        assert "apps.apple.com" not in f.read_text(encoding="utf-8")
+
+
 def test_app_store_url_and_support_email_render_when_configured(tmp_path: Path):
     url = "https://apps.apple.com/us/app/id0000000000"  # shape only; not a real listing
-    out = _build_site(tmp_path, app_store_url=url, support_email="help@example.invalid")
+    out = _build_site(
+        tmp_path,
+        app_store_live=True,
+        app_store_url=url,
+        support_email="help@example.invalid",
+    )
     index = (out / "index.html").read_text(encoding="utf-8")
-    assert f'<a href="{url}">Get the iOS app</a>' in index
+    assert f'<a href="{url}" data-app-store-placement="home"' in index
     assert "not in the App Store yet" not in (out / "about" / "index.html").read_text(
         encoding="utf-8"
     )

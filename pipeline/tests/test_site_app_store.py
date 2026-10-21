@@ -17,6 +17,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 from html.parser import HTMLParser
@@ -47,7 +48,7 @@ LIVE_MARKERS = (
     "apple-itunes-app",
     "app-store-badge",
     "app-store-cta",
-    "app_store_badge_click",
+    "app_store_click",
     "apps.apple.com",
     "Download on the App Store",
 )
@@ -186,7 +187,7 @@ def _badge_shape(badge: dict[str, object]) -> tuple[object, ...]:
     img = children[0][1]
     return (
         attrs.get("href"),
-        attrs.get("data-app-store-badge"),
+        attrs.get("data-app-store-placement"),
         img.get("src"),
         img.get("width"),
         img.get("height"),
@@ -392,10 +393,12 @@ const vm = require("vm");
 const code = fs.readFileSync(process.argv[2], "utf8");
 const c = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
 const listeners = {};
-const anchor = {
-  href: "https://apps.apple.com/us/app/id6818637427",
-  getAttribute: (k) => (k === "data-app-store-badge" ? "home" : null),
-};
+const a0 = Object.assign(
+  { placement: "home", kind: "badge", href: "https://apps.apple.com/us/app/id6818637427" },
+  c.anchor,
+);
+const attrs = { "data-app-store-placement": a0.placement, "data-app-store-kind": a0.kind };
+const anchor = { href: a0.href, getAttribute: (k) => (k in attrs ? attrs[k] : null) };
 const document = {
   addEventListener: (t, f) => { (listeners[t] = listeners[t] || []).push(f); },
   getElementById: () => null,
@@ -406,7 +409,7 @@ const window = Object.assign({ localStorage: { getItem: () => null } }, c.window
 const navigator = Object.assign({}, c.navigator);
 vm.runInContext(code, vm.createContext({ window, navigator, document, Date }));
 if (c.disableAfterLoad) window[c.disableAfterLoad] = true;
-const img = { closest: (sel) => (sel === "a[data-app-store-badge]" ? anchor : null) };
+const img = { closest: (sel) => (sel === "a[data-app-store-placement]" ? anchor : null) };
 (listeners.click || []).forEach((f) => f({ target: img }));
 const events = (window.dataLayer || [])
   .map((a) => Array.from(a))
@@ -461,14 +464,47 @@ def test_ga4_tag_has_no_click_event_when_off(tmp_path):
     out = _build(tmp_path, ga4_measurement_id="G-TEST12345")
     html = (out / "index.html").read_text(encoding="utf-8")
     assert "googletagmanager" in html  # the tag itself is there
-    assert "app_store_badge_click" not in html
+    assert "app_store_click" not in html
 
 
 def test_badge_click_is_sent_through_the_existing_tag(tmp_path, live_tag_js):
     ran = _click(tmp_path, live_tag_js, {"navigator": {"doNotTrack": "0"}})
     assert ran["events"] == [
-        ["event", "app_store_badge_click", {"placement": "home", "link_url": APP_URL}]
+        [
+            "event",
+            "app_store_click",
+            {"placement": "home", "link_type": "badge", "link_url": APP_URL},
+        ]
     ]
+
+
+@pytest.mark.parametrize(
+    ("placement", "kind"),
+    [("home", "link"), ("about", "link"), ("water", "link"), ("support", "badge")],
+)
+def test_every_placement_is_reported_with_its_kind(
+    tmp_path, live_tag_js, placement, kind
+):
+    ran = _click(
+        tmp_path,
+        live_tag_js,
+        {"navigator": {}, "anchor": {"placement": placement, "kind": kind}},
+    )
+    assert ran["events"] == [
+        [
+            "event",
+            "app_store_click",
+            {"placement": placement, "link_type": kind, "link_url": APP_URL},
+        ]
+    ]
+
+
+def test_every_placement_in_the_templates_is_one_the_tag_reports(tmp_path):
+    out = _build(tmp_path, app_store_live=True)
+    seen = set()
+    for html in _pages(out).values():
+        seen.update(re.findall(r'data-app-store-placement="([a-z]+)"', html))
+    assert seen == {"home", "support", "about", "water"}
 
 
 @pytest.mark.parametrize(

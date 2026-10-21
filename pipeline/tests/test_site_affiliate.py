@@ -148,14 +148,43 @@ def _page_problems(out: Path, path: Path) -> list[str]:
         found.append(f"{name}: no agency non-endorsement sentence")
     if links and "costs you nothing extra" not in prose:
         found.append(f"{name}: no plain affiliate sentence")
-    for block in re.findall(
-        r'<script type="application/ld\+json">(.*?)</script>',
-        path.read_text(encoding="utf-8"),
-        re.S,
-    ):
-        if "amazon" in block.lower():
+    for kind, block in _script_blocks(path.read_text(encoding="utf-8")):
+        if kind == "application/ld+json" and "amazon" in block.lower():
             found.append(f"{name}: structured data names Amazon")
     return found
+
+
+class _Scripts(HTMLParser):
+    """Collects each <script> element's type and text, as a browser would split them."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self.blocks: list[tuple[str | None, str]] = []
+        self._type: str | None = None
+        self._open = False
+        self._text: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "script":
+            self._open = True
+            self._type = dict(attrs).get("type")
+            self._text = []
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "script" and self._open:
+            self.blocks.append((self._type, "".join(self._text)))
+            self._open = False
+
+    def handle_data(self, data: str) -> None:
+        if self._open:
+            self._text.append(data)
+
+
+def _script_blocks(html: str) -> list[tuple[str | None, str]]:
+    parser = _Scripts()
+    parser.feed(html)
+    parser.close()
+    return parser.blocks
 
 
 def _problems(out: Path) -> list[str]:
@@ -232,14 +261,8 @@ def test_no_affiliate_link_outside_water_pages_with_everything_switched_on(
     assert DISCLOSURE in privacy.prose()
     # The click event is for the App Store only; nothing was added for Amazon.
     for path in built_live.rglob("*.html"):
-        assert (
-            "amazon"
-            not in "".join(
-                re.findall(
-                    r"<script>(.*?)</script>", path.read_text(encoding="utf-8"), re.S
-                )
-            ).lower()
-        )
+        scripts = _script_blocks(path.read_text(encoding="utf-8"))
+        assert "amazon" not in "".join(text for _, text in scripts).lower()
 
 
 def test_the_privacy_page_states_the_relationship_in_both_builds(

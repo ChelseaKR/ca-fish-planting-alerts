@@ -63,6 +63,7 @@ smoke:
 		--run-today 2026-09-13 \
 		--history $(TMP)/smoke/history.json \
 		--aliases $(TMP)/smoke/aliases.json \
+		--source-log $(TMP)/smoke/source_log.json \
 		--site-out $(TMP)/smoke/site \
 		--states-dir $(TMP)/smoke/states \
 		--states-fixtures tests/fixtures/states \

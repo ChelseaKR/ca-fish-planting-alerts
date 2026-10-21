@@ -5,7 +5,7 @@
   {{ water_count }} {{ "water" if water_count == 1 else "waters" }} in {{ county }}
   County {{ "has" if water_count == 1 else "have" }} been on the California
   Department of Fish and Wildlife's {{ species }} planting schedule in the time
-  this site has recorded{% if region_name %}. CDFW region: {{ region_name }}{% endif %}.
+  this site has recorded{% if region_name %}. CDFW region: {% if region_link %}<a href="{{ root }}region/{{ region_link.slug }}/">{{ region_name }}</a>{% else %}{{ region_name }}{% endif %}{% endif %}.
   Each links to its own page with every scheduled week and a calendar feed.
 </p>
 <p class="muted">

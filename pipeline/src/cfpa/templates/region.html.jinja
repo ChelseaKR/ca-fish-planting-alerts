@@ -1,0 +1,86 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>{{ region_name }} trout stocking schedule</h1>
+<p class="lede">
+  The California Department of Fish and Wildlife files {{ county_count }}
+  {{ "county" if county_count == 1 else "counties" }} and {{ water_count }}
+  {{ "water" if water_count == 1 else "waters" }} on its planting schedule under
+  its {{ region_name }}. Below are the waters it has scheduled for the
+  {{ source_week_label }} and for the week after.
+</p>
+<p class="muted">
+  CDFW's schedule was last checked {{ source_fetched_label }}, when its current
+  week was the {{ source_week_label }}. Plants are subject to change: every
+  entry is scheduled, not confirmed.
+</p>
+
+<h2>Scheduled this week</h2>
+{% if this_week_rows %}
+<table>
+  <caption class="visually-hidden">{{ region_name }} waters on CDFW's schedule for the {{ source_week_label }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">County</th>
+      <th scope="col">Species</th>
+      <th scope="col">Calendar</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in this_week_rows %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{% for c in row.county_links %}<a href="{{ root }}county/{{ c.slug }}/">{{ c.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</td>
+      <td>{{ row.species }}</td>
+      <td><a href="{{ root }}water/{{ row.slug }}/feed.ics">Calendar feed (.ics)</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No water in the {{ region_name }} is on CDFW's schedule for the {{ source_week_label }}. That means no plant is scheduled here that week, not that there are no fish.</p>
+{% endif %}
+
+<h2>Scheduled the week after</h2>
+{% if next_week_rows %}
+<table>
+  <caption class="visually-hidden">{{ region_name }} waters on CDFW's schedule for the {{ next_week_label }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">County</th>
+      <th scope="col">Species</th>
+      <th scope="col">Calendar</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in next_week_rows %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{% for c in row.county_links %}<a href="{{ root }}county/{{ c.slug }}/">{{ c.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</td>
+      <td>{{ row.species }}</td>
+      <td><a href="{{ root }}water/{{ row.slug }}/feed.ics">Calendar feed (.ics)</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No water in the {{ region_name }} is on CDFW's schedule for the {{ next_week_label }} as of the last check. CDFW can add weeks later, and a week with no entry is not a promise that nothing will be scheduled.</p>
+{% endif %}
+
+<h2>Counties in the {{ region_name }}</h2>
+<ul class="water-index">
+  {% for c in counties %}
+  <li><a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County</a> <span class="muted">({{ c.count }} {{ "water" if c.count == 1 else "waters" }})</span></li>
+  {% endfor %}
+</ul>
+
+<h2>Other CDFW regions</h2>
+<ul class="water-index">
+  {% for r in other_regions %}
+  <li><a href="{{ root }}region/{{ r.slug }}/">{{ r.display_name }}</a></li>
+  {% endfor %}
+</ul>
+
+<p><a href="{{ root }}county/">Every county</a> &middot; <a href="{{ root }}">this week, statewide</a></p>
+{% endblock %}

@@ -273,6 +273,20 @@ REGION_NAME_BY_CODE = {
 }
 
 
+def region_display_name(snapshot_name: str) -> str:
+    """CDFW's region label without the code suffix the snapshot adds:
+    "Bay Delta Region (R3)" -> "Bay Delta Region"."""
+    return re.sub(r"\s*\(R\d\)$", "", snapshot_name)
+
+
+def region_slug(snapshot_name: str) -> str:
+    """URL segment for a region page, from CDFW's own label:
+    "Bay Delta Region (R3)" -> "bay-delta"."""
+    name = region_display_name(snapshot_name)
+    name = re.sub(r"\s+Region$", "", name)
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
 def _env() -> jinja2.Environment:
     return jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(TEMPLATES_DIR)),
@@ -1084,6 +1098,7 @@ def _render_county_page(
     *,
     this_week: list[dict[str, Any]],
     region_name: str,
+    region_link: dict[str, str] | None = None,
 ) -> str:
     """Write one county's page. Returns its URL."""
     members = ctx.waters_by_county[county]
@@ -1168,6 +1183,7 @@ def _render_county_page(
         county=county,
         species=species,
         region_name=region_name,
+        region_link=region_link,
         water_count=len(members),
         this_week_rows=this_week_rows,
         later_rows=later_rows,
@@ -1219,6 +1235,89 @@ def _render_counties_index(
     return page_url
 
 
+def _render_region_page(
+    ctx: _PageContext,
+    region: dict[str, Any],
+    *,
+    all_regions: list[dict[str, Any]],
+    waters: list[dict[str, Any]],
+    counties: list[dict[str, Any]],
+) -> str:
+    """Write one CDFW region's page (/region/<slug>/). Returns its URL.
+
+    Lists the waters CDFW has scheduled for the snapshot's current week and
+    for the week after it, the region's counties, and the per-water calendar
+    feeds (there is no county or region feed). The region's name is CDFW's
+    own label from the snapshot, never a place the site names itself.
+    """
+    name = region_display_name(region["name"])
+    page_url = f"{ctx.base_url}/region/{region['slug']}/"
+    next_week = (
+        dt.date.fromisoformat(ctx.source_week_start) + dt.timedelta(days=7)
+    ).isoformat()
+    next_week_label = f"week of {next_week}"
+
+    def rows_for(week_start: str) -> list[dict[str, Any]]:
+        out = []
+        for w in waters:
+            species = {
+                p["species"]
+                for p in w["plants"]
+                if p["status"] == "listed" and p["week"]["start"] == week_start
+            }
+            if species:
+                out.append(
+                    {
+                        "slug": w["slug"],
+                        "name": w["name"],
+                        "species": species_phrase(species),
+                        "county_links": [ctx.county_link[c] for c in w["counties"]],
+                    }
+                )
+        return sorted(out, key=lambda r: (r["name"], r["slug"]))
+
+    this_week_rows = rows_for(ctx.source_week_start)
+    next_week_rows = rows_for(next_week)
+    trail = [ctx.home_crumb, (name, page_url)]
+    title = f"{name} trout stocking schedule | {SITE_NAME}"
+    description = (
+        f"Waters on CDFW's trout stocking schedule in its {name}: "
+        f"{_plural(len(counties), 'county', 'counties')} and "
+        f"{_plural(len(waters), 'water', 'waters')}, scheduled the "
+        f"{ctx.source_week_label} and the week after."
+    )
+    html = ctx.env.get_template("region.html.jinja").render(
+        title=title,
+        description=description,
+        canonical_url=page_url,
+        root="../../",
+        **ctx.common,
+        structured_data=_ld_graph(
+            _ld_page(
+                "CollectionPage",
+                page_url=page_url,
+                name=title,
+                base_url=ctx.base_url,
+                about={"@type": "State", "name": "California"},
+            ),
+            _ld_breadcrumb(page_url, trail),
+        ),
+        breadcrumb=_relative_trail(trail, base_url=ctx.base_url, root="../../"),
+        region_name=name,
+        county_count=len(counties),
+        water_count=len(waters),
+        counties=counties,
+        this_week_rows=this_week_rows,
+        next_week_rows=next_week_rows,
+        next_week_label=next_week_label,
+        other_regions=[r for r in all_regions if r["slug"] != region["slug"]],
+        source_week_label=ctx.source_week_label,
+        source_fetched_label=ctx.source_fetched_label,
+    )
+    _write_page(ctx.out_dir, f"region/{region['slug']}", html, ctx.written)
+    return page_url
+
+
 def _home_regions(
     snapshot: dict[str, Any],
     waters_by_id: dict[str, dict[str, Any]],
@@ -1247,6 +1346,53 @@ def _home_regions(
                 {"code": region["code"], "name": region["name"], "rows": rows}
             )
     return regions
+
+
+def _region_links(
+    snapshot: dict[str, Any],
+    county_names: list[str],
+    region_by_county: dict[str, str],
+) -> list[dict[str, Any]]:
+    """CDFW regions that have a county page and a water, each with the slug
+    of its page. A region with neither gets no page and no link."""
+    counties_in_region: dict[str, int] = {}
+    for c in county_names:
+        code = region_by_county.get(c, "")
+        counties_in_region[code] = counties_in_region.get(code, 0) + 1
+    with_water = {w["region"] for w in snapshot["waters"]}
+    return [
+        {
+            "code": r["code"],
+            "name": r["name"],
+            "display_name": region_display_name(r["name"]),
+            "slug": region_slug(r["name"]),
+            "county_count": counties_in_region[r["code"]],
+        }
+        for r in snapshot["regions"]
+        if r["code"] in counties_in_region and r["code"] in with_water
+    ]
+
+
+def _render_region_pages(
+    ctx: _PageContext,
+    snapshot: dict[str, Any],
+    region_links: list[dict[str, Any]],
+    counties_by_region: dict[str, list[dict[str, Any]]],
+    data_lastmods: dict[str, str],
+) -> dict[str, str]:
+    """Write every region page. Returns {page URL: lastmod}."""
+    lastmods: dict[str, str] = {}
+    for r in region_links:
+        waters = [w for w in snapshot["waters"] if w["region"] == r["code"]]
+        url = _render_region_page(
+            ctx,
+            r,
+            all_regions=region_links,
+            waters=waters,
+            counties=counties_by_region[r["code"]],
+        )
+        lastmods[url] = max(data_lastmods[w["id"]] for w in waters)
+    return lastmods
 
 
 def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -> None:
@@ -1410,6 +1556,8 @@ def build_site(
     county_counts = [
         {**county_link[c], "count": len(waters_by_county[c])} for c in county_names
     ]
+    region_links = _region_links(snapshot, county_names, region_by_county)
+    region_link_by_code = {r["code"]: r for r in region_links}
 
     index_html = env.get_template("index.html.jinja").render(
         title=f"California {site_species} planting schedule this week | {SITE_NAME}",
@@ -1443,6 +1591,7 @@ def build_site(
         source_week_label=source_week_label,
         generated_at_label=generated_at_label,
         regions=regions,
+        region_links=region_links,
         all_waters=all_waters,
         county_counts=county_counts,
     )
@@ -1594,6 +1743,7 @@ def build_site(
             c,
             this_week=this_week_by_county.get(c, []),
             region_name=region_name_by_code.get(region_by_county.get(c, ""), ""),
+            region_link=region_link_by_code.get(region_by_county.get(c, "")),
         )
         county_lastmods[page_url] = max(data_lastmods[w["id"]] for w in members)
         counties_by_region.setdefault(region_by_county.get(c, ""), []).append(
@@ -1609,6 +1759,7 @@ def build_site(
                 "code": r["code"],
                 "name": r["name"],
                 "counties": counties_by_region[r["code"]],
+                "slug": region_slug(r["name"]),
             }
             for r in snapshot["regions"]
             if r["code"] in counties_by_region
@@ -1617,6 +1768,14 @@ def build_site(
         county_count=len(county_names),
     )
     counties_index_lastmod = max(first_seen.values(), default=source_week_start)
+
+    # ---- region pages: one per CDFW region with a county page. The
+    # lastmod is the newest of its waters' own data dates, which already
+    # counts the weekly rollover, so the this-week and next-week lists
+    # changing is a change here too.
+    region_lastmods = _render_region_pages(
+        ctx, snapshot, region_links, counties_by_region, data_lastmods
+    )
 
     # ---- the other states (DECISIONS 0025), from v2. Their pages carry their
     # own attribution, disclaimer and header; nothing here changes a
@@ -1647,6 +1806,7 @@ def build_site(
         (f"{base_url}/about/", None),
         (f"{base_url}/privacy/", None),
         (f"{base_url}/support/", None),
+        *region_lastmods.items(),
         *county_lastmods.items(),
         *water_lastmods.items(),
         *state_entries,

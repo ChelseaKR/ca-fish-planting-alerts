@@ -40,6 +40,15 @@
 <p>No plants are listed for the {{ source_week_label }} on CDFW's schedule. This is CDFW's own page saying so &mdash; not a failed or stale fetch, which this site refuses to publish (see <a href="{{ root }}about/">about &amp; attribution</a>).</p>
 {% endif %}
 
+{% if region_links %}
+<h2>Browse by CDFW region</h2>
+<ul class="water-index">
+  {% for r in region_links %}
+  <li><a href="{{ root }}region/{{ r.slug }}/">{{ r.name }}</a> <span class="muted">({{ r.county_count }} {{ "county" if r.county_count == 1 else "counties" }})</span></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
 <h2>Browse by county</h2>
 <p>Each county page shows this week's plants there and the latest scheduled week at every water. <a href="{{ root }}county/">Every county, by CDFW region</a>.</p>
 <ul class="water-index">

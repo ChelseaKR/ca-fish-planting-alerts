@@ -814,18 +814,23 @@ def test_faq_checker_is_not_vacuous(built):
 
 def test_every_page_has_a_social_card_with_an_absolute_image(built):
     out, _ = built
-    assert (out / "assets" / site.SOCIAL_IMAGE_FILE).read_bytes()[:8] == (
-        b"\x89PNG\r\n\x1a\n"
-    )
     for f in out.rglob("*.html"):
         html = f.read_text(encoding="utf-8")
-        img = f"{BASE_URL}/assets/{site.SOCIAL_IMAGE_FILE}"
-        assert f'<meta property="og:image" content="{img}">' in html, f
-        assert f'<meta name="twitter:image" content="{img}">' in html, f
+        img = re.search(r'<meta property="og:image" content="([^"]+)">', html)
+        assert img, f
+        url = img.group(1)
+        assert url.startswith(f"{BASE_URL}/assets/share/"), f
+        assert f'<meta name="twitter:image" content="{url}">' in html, f
+        assert '<meta name="twitter:card" content="summary_large_image">' in html, f
+        assert '<meta property="og:image:width" content="1200">' in html, f
+        assert '<meta property="og:image:height" content="630">' in html, f
         assert (
             'name="twitter:title"' in html and 'name="twitter:description"' in html
         ), f
         assert 'property="og:image:alt"' in html, f
+        assert 'name="twitter:image:alt"' in html, f
+        # the file the tag names was written by this build
+        assert (out / "assets" / "share" / url.rsplit("/", 1)[1]).is_file(), f
 
 
 def test_no_app_structured_data_or_banner_until_the_app_is_live(built):

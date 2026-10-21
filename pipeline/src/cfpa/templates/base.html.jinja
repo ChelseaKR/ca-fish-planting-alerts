@@ -30,15 +30,18 @@
 <meta property="og:url" content="{{ canonical_url }}">
 {% endif %}
 <meta property="og:site_name" content="{{ site_name }}">
-<meta property="og:image" content="{{ social_image_url }}">
-<meta property="og:image:width" content="{{ social_image_size }}">
-<meta property="og:image:height" content="{{ social_image_size }}">
-<meta property="og:image:alt" content="{{ social_image_alt }}">
-<meta name="twitter:card" content="summary">
+{# The page kind's share card (share_cards.py); a template names its kind with
+   {% set share_card_kind = "..." %}, and a page that sets none gets the home card. #}
+{% set card = share_cards[share_card_kind|default(share_card_default_kind)] %}
+<meta property="og:image" content="{{ card.url }}">
+<meta property="og:image:width" content="{{ card.width }}">
+<meta property="og:image:height" content="{{ card.height }}">
+<meta property="og:image:alt" content="{{ card.alt }}">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ title }}">
 <meta name="twitter:description" content="{{ description }}">
-<meta name="twitter:image" content="{{ social_image_url }}">
-<meta name="twitter:image:alt" content="{{ social_image_alt }}">
+<meta name="twitter:image" content="{{ card.url }}">
+<meta name="twitter:image:alt" content="{{ card.alt }}">
 {% if google_site_verification %}
 {# Search Console's URL-prefix ownership check (site.py
    GOOGLE_SITE_VERIFICATION, docs/SEARCH-CONSOLE.md). Home page only. #}

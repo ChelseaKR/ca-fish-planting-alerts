@@ -187,3 +187,16 @@ An audit of trouttruck.com found pages with no `og:image`, a bare
 - The home title drops ", from CDFW" so the whole title fits a results
   line, and the description says CDFW was formerly DFG, a term searchers
   still use.
+
+## Addendum 2026-10-21: share cards replace the 600x600 icon
+
+The preview image is now a 1200x630 card per kind of page, drawn at build time
+(`pipeline/src/cfpa/share_cards.py`), not the shared app icon. The icon is a
+square, so `twitter:card` was `summary`; the card is wide, so it is
+`summary_large_image`. The text on a card depends only on the kind of page
+(home, county, water, state; region and species when those pages exist) and the
+date CDFW's schedule was last checked, so a site of about 580 pages writes four
+PNGs, not 580. A card says "scheduled" and never "stocked", the same rule as the
+pages. `tests/test_share_cards.py` pins the size, the wording and which kind
+each page names. Per-page cards (a water's own name on its card) were measured
+and not chosen: see the pull request.

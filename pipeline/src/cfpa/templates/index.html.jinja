@@ -7,6 +7,12 @@
   change</strong> by CDFW &mdash; treat every entry as scheduled, not
   confirmed. Data refreshed {{ generated_at_label }}.
 </p>
+{% if other_states %}
+<p>
+  Also on {{ site_name }}:
+  {% for s in other_states %}<a href="{{ root }}{{ s.seg }}/">{{ s.name }} trout stocking schedule</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+</p>
+{% endif %}
 {% if app_store_live %}
 {% with badge_placement = "home" %}{% include "_app_store_badge.html.jinja" %}{% endwith %}
 {% endif %}

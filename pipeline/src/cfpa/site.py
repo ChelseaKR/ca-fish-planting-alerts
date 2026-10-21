@@ -20,9 +20,10 @@ because the snapshot has none.
 from __future__ import annotations
 
 import datetime as dt
+import itertools
 import re
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode, urlsplit
@@ -630,6 +631,92 @@ def _water_title(view: dict[str, Any]) -> str:
     return candidates[-1]
 
 
+RELATED_WATERS_TARGET = 8
+"""A water page links to this many related waters when the snapshot has that
+many: its own counties' waters first, then waters in the same CDFW region."""
+
+
+def _group_by_region(waters: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    out: dict[str, list[dict[str, Any]]] = {}
+    for w in waters:
+        out.setdefault(w["region"], []).append(w)
+    return out
+
+
+def _other_states(snapshot_v2: dict[str, Any] | None) -> list[dict[str, str]]:
+    """The non-California states, as ``{name, seg}`` for the visible links to
+    their hubs; empty without v2."""
+    if snapshot_v2 is None:
+        return []
+    return [
+        {"name": s["name"], "seg": s["code"].lower()}
+        for s in snapshot_v2["states"]
+        if s["code"] != "CA"
+    ]
+
+
+def _week_gaps(weeks: list[str]) -> list[int]:
+    """Whole weeks between each pair of consecutive listed weeks."""
+    days = [dt.date.fromisoformat(d) for d in weeks]
+    return [(b - a).days // 7 for a, b in itertools.pairwise(days)]
+
+
+def _water_record(w: dict[str, Any]) -> dict[str, Any]:
+    """Facts about one water's own recorded weeks, from the snapshot alone.
+
+    Only weeks whose status is ``listed`` count, the same rule as
+    ``_water_status``. Nothing here looks at the current week, so these facts
+    change only when the water's own record does. The status block already
+    says the last week, the count and where the record starts; this adds the
+    water's first week, the span and the gaps between listed weeks."""
+    weeks = sorted({p["week"]["start"] for p in w["plants"] if p["status"] == "listed"})
+    gaps = _week_gaps(weeks)
+    median_gap: float | None = None
+    if gaps:
+        ordered = sorted(gaps)
+        mid = len(ordered) // 2
+        median_gap = (
+            float(ordered[mid])
+            if len(ordered) % 2
+            else (ordered[mid - 1] + ordered[mid]) / 2
+        )
+    return {
+        "count": len(weeks),
+        "first_week": weeks[0] if weeks else "",
+        "latest_week": weeks[-1] if weeks else "",
+        "span_weeks": sum(gaps),
+        "gap_count": len(gaps),
+        "median_gap": _weeks_phrase(median_gap) if median_gap is not None else "",
+        "min_gap": _weeks_phrase(min(gaps)) if gaps else "",
+        "max_gap": _weeks_phrase(max(gaps)) if gaps else "",
+        "single_gap": gaps[0] if len(gaps) == 1 else None,
+        "region_name": REGION_NAME_BY_CODE.get(w["region"], w["region"]),
+    }
+
+
+def _weeks_phrase(n: float) -> str:
+    whole = int(n) if n == int(n) else n
+    return f"{whole} {'week' if whole == 1 else 'weeks'}"
+
+
+def _region_related(
+    ctx: _PageContext, w: dict[str, Any], taken: set[str], want: int
+) -> list[dict[str, Any]]:
+    """Up to ``want`` waters of ``w``'s CDFW region that are not ``w`` and not
+    in ``taken``, so a water with few county neighbors still links to others.
+    The list starts after ``w`` in name order and wraps, so the links spread
+    over the region's waters instead of piling onto its first few."""
+    if want <= 0:
+        return []
+    pool = sorted(
+        ctx.waters_by_region.get(w["region"], []), key=lambda s: (s["name"], s["slug"])
+    )
+    ids = [s["id"] for s in pool]
+    start = ids.index(w["id"]) + 1 if w["id"] in ids else 0
+    ring = pool[start:] + pool[:start]
+    return [s for s in ring if s["id"] != w["id"] and s["id"] not in taken][:want]
+
+
 def _water_description(view: dict[str, Any], *, source_week_label: str) -> str:
     """The meta description: the water, its county, the stocking wording
     people search with, then the schedule and the last-listed date, ahead of
@@ -1045,6 +1132,7 @@ class _PageContext:
     source_week_label: str
     source_fetched_label: str
     source_checked_on: str = ""
+    waters_by_region: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
 
     @property
     def home_crumb(self) -> tuple[str, str]:
@@ -1086,6 +1174,13 @@ def _render_water_page(
         }
         for c in w["counties"]
     ]
+    same_county_count = len(siblings)
+    region_related = _region_related(
+        ctx,
+        w,
+        set(siblings),
+        RELATED_WATERS_TARGET - same_county_count,
+    )
     # A water with nothing on the schedule says what is on it in its own
     # counties, so the page answers the visit instead of ending at "none".
     scheduled_elsewhere = (
@@ -1129,6 +1224,9 @@ def _render_water_page(
         affiliate_rel=AFFILIATE_LINK_REL,
         scheduled_elsewhere=scheduled_elsewhere,
         other_waters_by_county=other_waters_by_county,
+        region_related=[{"slug": r["slug"], "name": r["name"]} for r in region_related],
+        region_name=view["region_name"],
+        water_record=_water_record(w),
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
         recorded_since_label=f"week of {recorded_since}" if recorded_since else "",
@@ -1150,6 +1248,9 @@ def _render_water_page(
     )
     ctx.written.append(ics_path)
 
+    # The region links are navigation, not this water's data: they are left
+    # out of the lastmod (docs: a new water in the region can change them
+    # without moving this date, a known under-report).
     return _water_lastmod(
         w,
         source_week_start=ctx.source_week_start,
@@ -1747,6 +1848,9 @@ def build_site(
     # The header's "Other states" link, only when v2 has another state, so a
     # California-only build keeps its header byte for byte.
     common["states_nav"] = snapshot_v2 is not None and len(snapshot_v2["states"]) > 1
+    # The other states' hubs, for the visible links on the home page and the
+    # county index; empty (so nothing renders) in a California-only build.
+    common["other_states"] = _other_states(snapshot_v2)
 
     # The species pages exist for the species the snapshot has listed plants
     # for; the home and county-index pages link to them.
@@ -1771,6 +1875,7 @@ def build_site(
         for c in w["counties"]:
             waters_by_county.setdefault(c, []).append(w)
     name_counts = Counter(w["name"] for w in snapshot["waters"])
+    waters_by_region = _group_by_region(snapshot["waters"])
     views = {
         w["id"]: _water_view(
             w,
@@ -1969,6 +2074,7 @@ def build_site(
         source_week_label=source_week_label,
         source_fetched_label=source_fetched_label,
         source_checked_on=snapshot["source"]["fetched_at"][:10],
+        waters_by_region=waters_by_region,
     )
 
     # ---- per-water pages + ics

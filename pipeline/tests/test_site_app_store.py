@@ -330,6 +330,13 @@ def test_bad_switch_value_refuses_the_run_and_writes_nothing(tmp_path, capsys):
 def test_copy_never_mentions_android(tmp_path):
     out = _build(tmp_path, app_store_live=True)
     for name, html in _pages(out).items():
+        if name == "privacy/index.html":
+            # The privacy policy must cover the Android app before its store
+            # listing can point at it, so it is the one page that names
+            # Android and Google Play. It still never links to a store.
+            assert "play.google.com" not in html.lower(), name
+            assert "market://" not in html.lower(), name
+            continue
         assert "android" not in html.lower(), name
         assert "google play" not in html.lower(), name
 

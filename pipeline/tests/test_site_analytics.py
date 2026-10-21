@@ -294,7 +294,7 @@ def test_id_build_copy_describes_ga4_and_keeps_the_app_at_data_not_collected(id_
         "the eea, the uk and switzerland",
         "google signals and ad personalization are turned off",
         "14 months",
-        "the trout truck ios app collects no data at all",
+        "collect no data: no analytics, no tracking, no advertising and no account",
         "app store privacy label: data not collected",
     ):
         assert phrase in privacy, phrase

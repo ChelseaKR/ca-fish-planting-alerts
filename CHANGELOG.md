@@ -11,6 +11,19 @@ This repository was republished with a new history on 2026-09-18
 
 ## [Unreleased]
 
+### Changed
+
+- Three claims from the 2026-10-21 structured-data audit now match what the
+  site does. /about/ says in visible text the license stated for the snapshot,
+  from the same constant that already feeds the Dataset and the /data/ page
+  (`DATASET_LICENSE_URL`); the default is still none, because the license
+  choice is the owner's. The "Water locations" paragraph on /about/ says the
+  pages show no map or coordinates today, instead of describing map
+  locations. While the App Store switch is off, the support FAQ's two app
+  answers say the iPhone app is not in the App Store yet; the launch flip
+  restores the earlier wording from the same `APP_STORE_LIVE_DEFAULT`.
+  `tests/test_site_audit_fixes.py`.
+
 ### Added
 
 - An open-data page at `/data/` and CSV and JSON files under `/data/v1/` (current schedule and weekly history for California, and for Tennessee in its own files), with a data dictionary, written by the site build from `snapshot/v2.json`. Linked from the footer and the about page. The page states the source and terms (CDFW Conditions of Use) and adds no license of its own; choosing one is the owner's call (`DATASET_LICENSE_URL`).

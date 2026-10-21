@@ -22,6 +22,9 @@ turns on together:
 - the `MobileApplication` structured data on the home and support pages
 - the `app_store_click` event in Google Analytics
 - the "not in the App Store yet" sentence on the about page goes away
+- the support page's two app questions (alerts, restoring a purchase) change
+  from "not in the App Store yet" wording to the installed-app wording, in
+  both the visible text and the FAQPage data
 
 A test (`pipeline/tests/test_launch_switch.py`) builds the site both ways
 and fails if any one of these disagrees with the others.

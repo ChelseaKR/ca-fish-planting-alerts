@@ -109,6 +109,9 @@ What was ruled out:
   `DATASET_LICENSE_URL` in `pipeline/src/cfpa/site.py`, where `""` means
   the markup states no license. Google lists `license` as recommended, not
   required, so Search Console may show a warning for it until then.
+  Addendum, 2026-10-21: /about/ also says the chosen license in visible text,
+  from the same constant that feeds the Dataset and the /data/ page, so the
+  three never disagree. The default is still `""`.
 
 A test holds the set of types to exactly the list above, so adding a type
 means adding it here first.

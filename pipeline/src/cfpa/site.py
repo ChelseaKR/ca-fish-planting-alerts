@@ -315,7 +315,8 @@ def gear_guide_links() -> dict[str, list[dict[str, str]]]:
 # itself falls under CDFW's Conditions of Use, which the Dataset already
 # cites through `isBasedOn`. Choosing a license for Trout Truck's own
 # compilation is the owner's call; until then the markup states none rather
-# than one nobody chose.
+# than one nobody chose. One constant drives the Dataset on /about/, the
+# sentence beside it on /about/, and the sentence on /data/.
 DATASET_LICENSE_URL = ""
 
 CDFW_NAME = "California Department of Fish and Wildlife"
@@ -956,9 +957,55 @@ def _ld_faq(page_url: str, items: list[tuple[str, str]]) -> dict[str, Any]:
     }
 
 
-def _support_faq(source_fetched_label: str) -> list[tuple[str, str]]:
+# The two app questions on the support page. The first of each pair is the
+# live wording (the app is on the App Store); the second is what is true
+# before launch, when the app is not on the App Store yet.
+_APP_ALERTS_FAQ_LIVE = (
+    "Why didn't the app alert me?",
+    "Alerts are part of the one-time in-app purchase; favoriting and "
+    "browsing are free. Notifications must be allowed for the app "
+    "(Settings \u2192 Notifications). The app checks for a new schedule in "
+    "the background, and iOS decides when that happens. Background App "
+    "Refresh must be on for the app, Low Power Mode pauses it, and "
+    "swiping the app away can stop it until you open it again. CDFW "
+    "updates weekly, so an alert arrives within the week a water is "
+    "added, not the minute it is.",
+)
+_APP_ALERTS_FAQ_NOT_YET = (
+    "How will the app's alerts work?",
+    "The iPhone app is not in the App Store yet, so it sends no alerts "
+    "today. Once it is available: alerts are part of the one-time in-app "
+    "purchase; favoriting and browsing are free. Notifications must be "
+    "allowed for the app (Settings \u2192 Notifications). The app checks for "
+    "a new schedule in the background, and iOS decides when that happens. "
+    "Background App Refresh must be on for the app, Low Power Mode pauses "
+    "it, and swiping the app away can stop it until you open it again. "
+    "CDFW updates weekly, so an alert arrives within the week a water is "
+    "added, not the minute it is.",
+)
+_APP_RESTORE_FAQ_LIVE = (
+    "How do I restore my purchase on a new phone?",
+    "In the app, open About \u2192 Unlock full access \u2192 Restore "
+    "purchases. Use the same Apple Account you bought it with. There "
+    "is no account with this app to sign in to.",
+)
+_APP_RESTORE_FAQ_NOT_YET = (
+    "How will restoring a purchase on a new phone work?",
+    "The iPhone app is not in the App Store yet, so there is nothing to "
+    "restore today. Once it is available, open About \u2192 Unlock full "
+    "access \u2192 Restore purchases in the app and use the same Apple "
+    "Account you bought it with. There is no account with this app to "
+    "sign in to.",
+)
+
+
+def _support_faq(
+    source_fetched_label: str, *, app_store_live: bool = False
+) -> list[tuple[str, str]]:
     """The support page's questions and answers as plain text. Each answer is
-    the visible answer with its links reduced to their text."""
+    the visible answer with its links reduced to their text. The last two
+    are about the iPhone app, so they follow the launch switch: until the app
+    is on the App Store they say so (support.html.jinja holds the same words)."""
     return [
         (
             "Where does the schedule come from?",
@@ -982,23 +1029,8 @@ def _support_faq(source_fetched_label: str) -> list[tuple[str, str]]:
             "Calendar; in Google Calendar, under Other calendars \u2192 From URL. "
             "Each event spans the whole week CDFW scheduled.",
         ),
-        (
-            "Why didn't the app alert me?",
-            "Alerts are part of the one-time in-app purchase; favoriting and "
-            "browsing are free. Notifications must be allowed for the app "
-            "(Settings \u2192 Notifications). The app checks for a new schedule in "
-            "the background, and iOS decides when that happens. Background App "
-            "Refresh must be on for the app, Low Power Mode pauses it, and "
-            "swiping the app away can stop it until you open it again. CDFW "
-            "updates weekly, so an alert arrives within the week a water is "
-            "added, not the minute it is.",
-        ),
-        (
-            "How do I restore my purchase on a new phone?",
-            "In the app, open About \u2192 Unlock full access \u2192 Restore "
-            "purchases. Use the same Apple Account you bought it with. There "
-            "is no account with this app to sign in to.",
-        ),
+        _APP_ALERTS_FAQ_LIVE if app_store_live else _APP_ALERTS_FAQ_NOT_YET,
+        _APP_RESTORE_FAQ_LIVE if app_store_live else _APP_RESTORE_FAQ_NOT_YET,
     ]
 
 
@@ -2281,6 +2313,7 @@ def build_site(
             )
         ),
         license_summary=snapshot["licence"]["summary"],
+        dataset_license_url=dataset_license_url or None,
         license_sources=snapshot["licence"]["sources"],
         generated_at_label=generated_at_label,
         source_fetched_label=source_fetched_label,
@@ -2341,7 +2374,10 @@ def build_site(
                 _ld_graph(
                     _ld_faq(
                         f"{base_url}/{slug}/",
-                        _support_faq(source_fetched_label),
+                        _support_faq(
+                            source_fetched_label,
+                            app_store_live=app_store_live,
+                        ),
                     ),
                     *(
                         [_ld_app(base_url, app_store_url or APP_STORE_CANONICAL_URL)]

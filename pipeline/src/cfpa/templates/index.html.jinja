@@ -49,6 +49,15 @@
 </ul>
 {% endif %}
 
+{% if species_links %}
+<h2>Browse by species</h2>
+<ul class="water-index">
+  {% for l in species_links %}
+  <li><a href="{{ root }}species/{{ l.slug }}/">{{ l.name }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
 <h2>Browse by county</h2>
 <p>Each county page shows this week's plants there and the latest scheduled week at every water. <a href="{{ root }}county/">Every county, by CDFW region</a>.</p>
 <ul class="water-index">

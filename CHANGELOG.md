@@ -19,6 +19,13 @@ This repository was republished with a new history on 2026-09-18
   after, the region's counties, per-water calendar feeds, a breadcrumb, a
   sitemap entry, and links from the home page, the county index and each
   county page. `tests/test_site_region.py`.
+- Species pages at `/species/trout/` and `/species/catfish/`, one for each
+  species with a listed plant in the data: the waters CDFW has scheduled for
+  this week and for next week, by CDFW region with county and water links, a
+  unique title and description, a canonical URL, a breadcrumb, `CollectionPage`
+  structured data (no new schema.org type) and sitemap entries. Linked from the
+  home page and `/county/`. `tests/test_site_species.py` pins each rule with
+  negative controls.
 - Amazon Associates gear links on California water pages (DECISIONS 0029):
   four generic Amazon search links per water under "Gear for this water", each
   `rel="sponsored nofollow noopener"` and tagged `trouttruck-20` from one

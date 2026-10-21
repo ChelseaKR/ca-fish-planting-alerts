@@ -13,6 +13,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Region pages at `/region/<slug>/` for each CDFW region that has a water
+  (Northern, North Central, Bay Delta, Central, South Coast, Inland Deserts),
+  named with CDFW's own labels: the waters scheduled this week and the week
+  after, the region's counties, per-water calendar feeds, a breadcrumb, a
+  sitemap entry, and links from the home page, the county index and each
+  county page. `tests/test_site_region.py`.
 - Amazon Associates gear links on California water pages (DECISIONS 0029):
   four generic Amazon search links per water under "Gear for this water", each
   `rel="sponsored nofollow noopener"` and tagged `trouttruck-20` from one

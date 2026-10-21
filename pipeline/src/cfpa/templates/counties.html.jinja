@@ -12,6 +12,7 @@
 {% for region in regions %}
 <section aria-labelledby="region-{{ region.code }}">
   <h2 id="region-{{ region.code }}">{{ region.name }}</h2>
+  <p><a href="{{ root }}region/{{ region.slug }}/">This week and next in the {{ region.name }}</a></p>
   <ul class="water-index">
     {% for c in region.counties %}
     <li><a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County</a> <span class="muted">({{ c.count }} {{ "water" if c.count == 1 else "waters" }})</span></li>

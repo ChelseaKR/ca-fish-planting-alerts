@@ -20,6 +20,7 @@ import copy
 import datetime as dt
 import json
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
@@ -61,9 +62,30 @@ def _v1(tmp_path: Path) -> dict[str, Any]:
     return json.loads((tmp_path / "plain-site/snapshot/v1.json").read_text("utf-8"))
 
 
+class _Visible(HTMLParser):
+    """Collects the text outside script elements."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: list[str] = []
+        self._in_script = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self._in_script = self._in_script or tag == "script"
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "script":
+            self._in_script = False
+
+    def handle_data(self, data: str) -> None:
+        if not self._in_script:
+            self.parts.append(data)
+
+
 def _text(html: str) -> str:
-    body = re.sub(r"<script.*?</script>", " ", html, flags=re.S)
-    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body)).strip()
+    parser = _Visible()
+    parser.feed(html)
+    return re.sub(r"\s+", " ", " ".join(parser.parts)).strip()
 
 
 def _plant(week: str, species: str = "Trout") -> dict[str, Any]:

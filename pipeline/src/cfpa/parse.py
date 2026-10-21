@@ -39,8 +39,48 @@ TAG_RE = re.compile(r"<[^>]+>")
 WS_RE = re.compile(r"\s+")
 
 
+# The fewest rows a LIVE full-window fetch may parse before the run is refused.
+#
+# Evidence: the full window (a rolling year) has held 1,942 to 2,046 plant
+# records seen per run across the 42 committed history commits from 2026-09-13
+# to 2026-10-21 (records whose last_observed_at is that run's), and the live
+# feed parsed 1,958 rows on 2026-10-20. 1,000 is about
+# half of the lowest of those, so a normal day (or a quiet season, because the
+# window spans all four) never trips it, while a truncated, empty or
+# error-page-sized table does. Without a floor a valid but tiny table would
+# pass every other check, and the history merge would mark each in-window
+# plant missing from it as removed by CDFW.
+#
+# It applies to live fetches only. ``--fixture`` pages are small by design (the
+# committed one-week fixture parses 41 rows), and the zero-row table stays a
+# valid parse (see the module docstring).
+MIN_LIVE_FULL_WINDOW_ROWS = 1000
+
+
 class ParseError(RuntimeError):
     """The table did not match the expected shape. Fail loudly."""
+
+
+class TooFewRowsError(ParseError):
+    """A live full-window fetch parsed fewer rows than any real one has."""
+
+    def __init__(self, rows: int, floor: int) -> None:
+        self.rows = rows
+        self.floor = floor
+        super().__init__(
+            f"the live full-window schedule parsed {rows} "
+            f"{'row' if rows == 1 else 'rows'}, below the floor of {floor} "
+            "(every real fetch so far parsed about 2,000). Refusing the run so "
+            "a truncated or emptied table cannot mark plants as removed; the "
+            "previous snapshot stays"
+        )
+
+
+def assert_live_row_floor(row_count: int) -> None:
+    """Refuse a live full-window fetch with fewer than
+    ``MIN_LIVE_FULL_WINDOW_ROWS`` rows. Never silently pass."""
+    if row_count < MIN_LIVE_FULL_WINDOW_ROWS:
+        raise TooFewRowsError(row_count, MIN_LIVE_FULL_WINDOW_ROWS)
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

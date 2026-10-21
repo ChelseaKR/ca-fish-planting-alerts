@@ -11,9 +11,20 @@ from __future__ import annotations
 
 import pytest
 
-from cfpa import site
+from cfpa import cli, site
 
 
 @pytest.fixture(autouse=True)
 def _pin_launch_default_off(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(site, "APP_STORE_LIVE_DEFAULT", False)
+
+
+@pytest.fixture(autouse=True)
+def _keep_the_committed_source_log_out_of_tests(
+    monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory
+) -> None:
+    """A test that calls ``cli.main`` without ``--source-log`` must not write
+    the committed pipeline/data/source_log.json (it would feed a later test
+    a streak of identical hashes)."""
+    scratch = tmp_path_factory.mktemp("source-log") / "source_log.json"
+    monkeypatch.setattr(cli, "DEFAULT_SOURCE_LOG_PATH", scratch)

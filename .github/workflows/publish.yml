@@ -31,6 +31,8 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
+      # Read the previous run's source-log artifact (advisory; see below).
+      actions: read
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -63,6 +65,31 @@ jobs:
       - name: install dependencies
         working-directory: pipeline
         run: uv sync --locked
+
+      - name: restore the source log from the last run (advisory)
+        # The unchanged-page warning (cfpa.source_log) needs the page hashes of
+        # earlier runs. They travel as a small workflow artifact, not as a
+        # commit and not through actions/cache (CICD-24 prohibits a cache in a
+        # job that deploys). Nothing here can fail the job: a missing, expired
+        # or unreadable artifact only restarts the count at 0, and the
+        # pipeline says so in its output. The log is parsed strictly by the
+        # pipeline and can change nothing but that warning.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -u
+          dir="$RUNNER_TEMP/source-log"
+          mkdir -p "$dir"
+          id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=source-log&per_page=1" \
+            --jq '.artifacts[0] | select(.expired == false) | .id' || true)"
+          if [ -n "$id" ] \
+            && gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" > "$dir/log.zip" \
+            && unzip -o -q "$dir/log.zip" -d "$dir"; then
+            echo "restored the source log from artifact ${id}"
+          else
+            echo "::warning title=Source log not restored::no usable source-log artifact; the unchanged-page count restarts at 0"
+          fi
+          rm -f "$dir/log.zip"
 
       - name: run the pipeline (live fetch -> history -> snapshot -> site)
         # A failed run (stale page, fetch failure, parse drift, history
@@ -99,7 +126,16 @@ jobs:
             --legacy-site-out "${SITE_BASE_URL:+../site-legacy}" \
             --app-store-url "$APP_STORE_URL" \
             --app-store-live "$APP_STORE_LIVE" \
-            --support-email "$SUPPORT_EMAIL"
+            --support-email "$SUPPORT_EMAIL" \
+            --source-log "$RUNNER_TEMP/source-log/source_log.json"
+
+      - name: keep the source log for the next run (advisory)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-log
+          path: ${{ runner.temp }}/source-log/source_log.json
+          retention-days: 30
+          if-no-files-found: warn
 
       - name: commit updated history and alias table, if any
         # Each fetched state's history file is named here, one path each

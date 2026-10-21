@@ -30,6 +30,7 @@ from . import parse as parse_mod
 from . import site as site_mod
 from . import snapshot as snapshot_mod
 from . import snapshot_v2 as snapshot_v2_mod
+from . import source_log as source_log_mod
 from . import species_aliases as species_aliases_mod
 from . import states as states_mod
 from .states import base as states_base
@@ -41,6 +42,7 @@ REPO_ROOT = PIPELINE_DIR.parent
 DEFAULT_HISTORY_PATH = PIPELINE_DIR / "data" / "history.json"
 DEFAULT_ALIASES_PATH = PIPELINE_DIR / "data" / "aliases.json"
 DEFAULT_SPECIES_ALIASES_PATH = PIPELINE_DIR / "data" / "species_aliases.json"
+DEFAULT_SOURCE_LOG_PATH = PIPELINE_DIR / "data" / "source_log.json"
 DEFAULT_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v1.json"
 DEFAULT_V2_SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v2.json"
 DEFAULT_STATES_DIR = PIPELINE_DIR / "data" / "states"
@@ -92,6 +94,25 @@ def print_unlisted_report(unlisted: Sequence[snapshot_mod.UnlistedWater]) -> Non
         )
 
 
+def _report_source_staleness(path: Path, page: fetch_mod.FetchedPage) -> None:
+    """Record this run's content hash and warn when it has not changed for
+    ``source_log.STALE_SOURCE_DAYS``. Advisory: a log that cannot be read or
+    written is reported and skipped, and never fails the run."""
+    try:
+        log = source_log_mod.SourceLog.load(path)
+        cold_start = not log.runs
+        log.record(page.fetched_at.date(), page.content_sha256)
+        log.save(path)
+    except (OSError, source_log_mod.SourceLogError) as exc:
+        print(
+            f"cfpa: WARNING the source log could not be updated, so unchanged-page "
+            f"detection is off for this run: {exc}",
+            file=sys.stderr,
+        )
+        return
+    source_log_mod.print_report(log.unchanged_days(), cold_start=cold_start)
+
+
 def _load_locations(path: Path | None) -> dict[int, dict[str, Any]] | None:
     """The committed coordinates, or None. A file that fails its own checks
     refuses the run like any other bad input, before anything is written."""
@@ -128,6 +149,7 @@ def run(
     states_fixtures: Path | None = None,
     v2_schema_path: Path = DEFAULT_V2_SCHEMA_PATH,
     locations_path: Path | None = DEFAULT_LOCATIONS_PATH,
+    source_log_path: Path | None = None,
 ) -> dict[str, Any]:
     """Execute one full run. Returns the built snapshot dict. Raises on any
     of: fetch failure, stale page, wrong Time Period view, parse error,
@@ -150,6 +172,12 @@ def run(
     the state pages are built. A state that fails keeps its last good data
     and never stops California. None (the default) builds v2 with
     California alone and touches no state file.
+
+    ``source_log_path`` turns on the unchanged-source warning
+    (``cfpa.source_log``; in CI the file travels as a workflow artifact, and it
+    is never committed): this run's content hash is added to the log and the
+    days it has gone unchanged are reported. It only warns, never refuses, and
+    None (the default) leaves the log alone.
     """
     cname = site_mod.custom_domain(base_url)
     if legacy_site_out is not None and (cname is None or not write_site):
@@ -306,6 +334,8 @@ def run(
 
     coverage = snapshot_mod.Coverage(**snap["coverage"])
     coverage.print_report()
+    if source_log_path is not None:
+        _report_source_staleness(source_log_path, page)
     print_unlisted_report(unlisted)
     states_run.print_report(state_runs)
     return snap
@@ -329,6 +359,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--aliases", type=Path, default=DEFAULT_ALIASES_PATH)
     parser.add_argument(
         "--species-aliases", type=Path, default=DEFAULT_SPECIES_ALIASES_PATH
+    )
+    parser.add_argument(
+        "--source-log",
+        type=Path,
+        default=DEFAULT_SOURCE_LOG_PATH,
+        help="the committed log of each run's page hash, for the unchanged-page "
+        "warning (cfpa.source_log)",
     )
     parser.add_argument("--schema", type=Path, default=DEFAULT_SCHEMA_PATH)
     parser.add_argument("--v2-schema", type=Path, default=DEFAULT_V2_SCHEMA_PATH)
@@ -459,6 +496,7 @@ def main(argv: list[str] | None = None) -> int:
             states_fetch=states_fetch,
             states_fixtures=args.states_fixtures,
             v2_schema_path=args.v2_schema,
+            source_log_path=args.source_log,
         )
     except (
         fetch_mod.FetchError,

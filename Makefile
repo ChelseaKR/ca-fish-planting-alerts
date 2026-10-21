@@ -51,7 +51,12 @@ test:
 # The offline end-to-end run: fixture -> history -> schema-validated
 # snapshot -> site, with no network and nothing written inside the repo. The
 # other states read their fixtures (DECISIONS 0025); MA and MI are synthetic.
+# The alias table starts as a copy of the committed one, so the coverage line
+# reports the names the fixture shares with real state ("names matched 37/37")
+# instead of "0/37", which an empty table would print by construction.
 smoke:
+	mkdir -p $(TMP)/smoke
+	cp $(PIPELINE)/data/aliases.json $(TMP)/smoke/aliases.json
 	cd $(PIPELINE) && $(UV_RUN) cfpa \
 		--fixture tests/fixtures/schedule-fresh-2026-09-13.html \
 		--fixture-fetched-at 2026-09-13T12:00:00Z \

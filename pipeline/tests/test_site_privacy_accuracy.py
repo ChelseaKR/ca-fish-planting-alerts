@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import datetime as dt
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
@@ -47,10 +48,31 @@ def _privacy(root: Path, ga4_measurement_id: str | None) -> str:
     return (out / "privacy" / "index.html").read_text(encoding="utf-8")
 
 
+class _Visible(HTMLParser):
+    """Collects the text outside script elements."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: list[str] = []
+        self._in_script = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self._in_script = self._in_script or tag == "script"
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "script":
+            self._in_script = False
+
+    def handle_data(self, data: str) -> None:
+        if not self._in_script:
+            self.parts.append(data)
+
+
 def _text(html: str) -> str:
-    body = re.sub(r"<script.*?</script>", " ", html, flags=re.S)
-    body = re.sub(r"<[^>]+>", " ", body)
-    return re.sub(r"\s+", " ", body).replace("&rsquo;", "'").lower()
+    parser = _Visible()
+    parser.feed(html)
+    body = " ".join(parser.parts)
+    return re.sub(r"\s+", " ", body).replace("\u2019", "'").lower()
 
 
 @pytest.fixture(scope="module")

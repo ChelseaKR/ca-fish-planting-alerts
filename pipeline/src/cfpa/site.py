@@ -30,6 +30,7 @@ from urllib.parse import urlencode, urlsplit
 import jinja2
 
 from . import site_states
+from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
@@ -262,6 +263,10 @@ DATASET_LICENSE_URL = ""
 CDFW_NAME = "California Department of Fish and Wildlife"
 CDFW_SHORT_NAME = "CDFW"
 CDFW_URL = "https://wildlife.ca.gov/"
+
+# A species page lists every water with that species on record only when
+# there are this few; a longer list is the county pages' job.
+SPECIES_ON_RECORD_LIMIT = 60
 
 REGION_NAME_BY_CODE = {
     "R1": "Northern Region",
@@ -1318,6 +1323,158 @@ def _render_region_page(
     return page_url
 
 
+def species_slug(species: str) -> str:
+    """URL segment for a species page: "Catfish" -> "catfish"."""
+    return re.sub(r"[^a-z0-9]+", "-", species.lower()).strip("-")
+
+
+def _species_rows(
+    snapshot: dict[str, Any], species: str, week_start: str
+) -> list[dict[str, Any]]:
+    """The waters with a listed ``species`` plant in the week starting
+    ``week_start``, grouped by CDFW region in the snapshot's region order and
+    sorted by name inside each region. Straight from the snapshot's plants."""
+    by_region: dict[str, list[dict[str, Any]]] = {}
+    for w in snapshot["waters"]:
+        if any(
+            p["status"] == "listed"
+            and p["species"] == species
+            and p["week"]["start"] == week_start
+            for p in w["plants"]
+        ):
+            by_region.setdefault(w["region"], []).append(
+                {
+                    "slug": w["slug"],
+                    "name": w["name"],
+                    "county_links": [
+                        {"name": c, "slug": county_slug(c)} for c in w["counties"]
+                    ],
+                }
+            )
+    return [
+        {
+            "code": r["code"],
+            "name": r["name"],
+            "rows": sorted(by_region[r["code"]], key=lambda x: (x["name"], x["slug"])),
+        }
+        for r in snapshot["regions"]
+        if r["code"] in by_region
+    ]
+
+
+def species_pages_in(snapshot: dict[str, Any]) -> list[dict[str, str]]:
+    """One entry per species the snapshot has a listed plant for: the species
+    exactly as CDFW spells it, and its URL segment. Nothing is assumed about
+    which species exist (today "Trout" and "Catfish")."""
+    present = sorted(
+        {
+            p["species"]
+            for w in snapshot["waters"]
+            for p in w["plants"]
+            if p["status"] == "listed"
+        },
+        key=lambda s: (s.lower() != "trout", s.lower()),
+    )
+    return [
+        {"name": s, "word": s.lower(), "slug": species_slug(s)}
+        for s in present
+        if species_slug(s)
+    ]
+
+
+def _render_species_page(
+    ctx: _PageContext, snapshot: dict[str, Any], species: dict[str, str]
+) -> tuple[str, str]:
+    """Write /species/<slug>/. Returns (URL, lastmod)."""
+    word = species["word"]
+    page_url = f"{ctx.base_url}/species/{species['slug']}/"
+    this_start = ctx.source_week_start
+    next_week = week_of(dt.date.fromisoformat(this_start) + dt.timedelta(days=7))
+    this_regions = _species_rows(snapshot, species["name"], this_start)
+    next_regions = _species_rows(snapshot, species["name"], next_week["start"])
+    n_this = sum(len(r["rows"]) for r in this_regions)
+    n_next = sum(len(r["rows"]) for r in next_regions)
+    # Every water with a listed plant of this species on record, when the
+    # list is short enough to be a page rather than the whole site again.
+    # Longer lists stay on the county pages.
+    on_record = []
+    for w in snapshot["waters"]:
+        weeks = sorted(
+            p["week"]["start"]
+            for p in w["plants"]
+            if p["status"] == "listed" and p["species"] == species["name"]
+        )
+        if weeks:
+            on_record.append(
+                {
+                    "slug": w["slug"],
+                    "name": w["name"],
+                    "county_links": [
+                        {"name": c, "slug": county_slug(c)} for c in w["counties"]
+                    ],
+                    "latest": weeks[-1],
+                    "upcoming": weeks[-1] > this_start,
+                    "weeks": len(weeks),
+                }
+            )
+    on_record.sort(key=lambda r: (r["name"], r["slug"]))
+    on_record.sort(key=lambda r: r["latest"], reverse=True)
+    water_total = len(on_record)
+    show_on_record = water_total <= SPECIES_ON_RECORD_LIMIT
+    trail = [
+        ctx.home_crumb,
+        (f"{species['name']} schedule", page_url),
+    ]
+    title = f"California {word} stocking schedule: this week and next | {SITE_NAME}"
+    html = ctx.env.get_template("species.html.jinja").render(
+        title=title,
+        description=(
+            f"California {word} stocking schedule: "
+            f"{_plural(n_this, 'water', 'waters')} scheduled this week and "
+            f"{n_next} next week, by CDFW region and county, with each "
+            "water's history."
+            if n_this or n_next
+            else f"California {word} stocking schedule: no water is on CDFW's "
+            f"schedule for this week or next. {_plural(water_total, 'water', 'waters')} "
+            "on record, with each water's history."
+        ),
+        canonical_url=page_url,
+        root="../../",
+        **ctx.common,
+        structured_data=_ld_graph(
+            _ld_page(
+                "CollectionPage",
+                page_url=page_url,
+                name=title,
+                base_url=ctx.base_url,
+                about={"@type": "State", "name": "California"},
+            ),
+            _ld_breadcrumb(page_url, trail),
+        ),
+        breadcrumb=_relative_trail(trail, base_url=ctx.base_url, root="../../"),
+        species_word=word,
+        this_label=ctx.source_week_label,
+        next_label=next_week["label"],
+        this_regions=this_regions,
+        next_regions=next_regions,
+        n_this=n_this,
+        n_next=n_next,
+        water_total=water_total,
+        on_record=on_record if show_on_record else [],
+        source_fetched_label=ctx.source_fetched_label,
+        other_species=[
+            s for s in species_pages_in(snapshot) if s["slug"] != species["slug"]
+        ],
+    )
+    _write_page(ctx.out_dir, f"species/{species['slug']}", html, ctx.written)
+    lastmod = max(
+        _water_data_lastmod(w, source_week_start=this_start)
+        for w in snapshot["waters"]
+        if any(p["species"] == species["name"] for p in w["plants"])
+    )
+    return page_url, lastmod
+
+
 def _home_regions(
     snapshot: dict[str, Any],
     waters_by_id: dict[str, dict[str, Any]],
@@ -1500,6 +1657,14 @@ def build_site(
     # The header's "Other states" link, only when v2 has another state, so a
     # California-only build keeps its header byte for byte.
     common["states_nav"] = snapshot_v2 is not None and len(snapshot_v2["states"]) > 1
+
+    # The species pages exist for the species the snapshot has listed plants
+    # for; the home and county-index pages link to them.
+    species_pages = species_pages_in(snapshot)
+    common["species_links"] = [
+        {"name": f"California {sp['word']} stocking schedule", "slug": sp["slug"]}
+        for sp in species_pages
+    ]
 
     # ---- assets/
     _write_assets(out_dir, written, app_store_live=app_store_live)
@@ -1777,6 +1942,10 @@ def build_site(
         ctx, snapshot, region_links, counties_by_region, data_lastmods
     )
 
+    # ---- species pages: this week's and next week's scheduled waters for
+    # each species in the data.
+    species_entries = [_render_species_page(ctx, snapshot, sp) for sp in species_pages]
+
     # ---- the other states (DECISIONS 0025), from v2. Their pages carry their
     # own attribution, disclaimer and header; nothing here changes a
     # California page beyond the header link above.
@@ -1807,6 +1976,7 @@ def build_site(
         (f"{base_url}/privacy/", None),
         (f"{base_url}/support/", None),
         *region_lastmods.items(),
+        *species_entries,
         *county_lastmods.items(),
         *water_lastmods.items(),
         *state_entries,

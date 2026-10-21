@@ -1,0 +1,26 @@
+{# One week's scheduled waters for a species page, grouped by CDFW region.
+   Needs: regions, label, heading_id, species_word, count, none_text. #}
+{% if regions %}
+{% for region in regions %}
+<h3>{{ region.name }}</h3>
+<table>
+  <caption class="visually-hidden">{{ region.name }} waters on CDFW's {{ species_word }} schedule for the {{ label }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">County</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in region.rows %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{% for c in row.county_links %}<a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County</a>{% if not loop.last %}, {% endif %}{% endfor %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endfor %}
+{% else %}
+<p>{{ none_text }}</p>
+{% endif %}

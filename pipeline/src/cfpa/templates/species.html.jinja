@@ -1,0 +1,63 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>California {{ species_word }} stocking schedule: this week and next</h1>
+<p class="lede">
+  {{ n_this }} {{ "water is" if n_this == 1 else "waters are" }} on the California
+  Department of Fish and Wildlife's {{ species_word }} planting schedule for the
+  {{ this_label }}, and {{ n_next }} for the {{ next_label }}{% if n_this or n_next %}, grouped by CDFW
+  region and county{% endif %}. Every entry is scheduled, not confirmed: CDFW can change a
+  plant.
+</p>
+<p class="muted">
+  CDFW's schedule was last checked {{ source_fetched_label }}. A week is a
+  Sunday through Saturday; CDFW does not publish a day or a time.
+</p>
+
+<h2 id="this-week">Scheduled this week: {{ this_label }}</h2>
+{% with regions = this_regions, label = this_label %}
+{% with none_text = "No water is on CDFW's " ~ species_word ~ " schedule for this week. That means no " ~ species_word ~ " plant is scheduled this week, not that there are no fish." %}
+{% include "_species_week.html.jinja" %}
+{% endwith %}
+{% endwith %}
+
+<h2 id="next-week">Scheduled next week: {{ next_label }}</h2>
+{% with regions = next_regions, label = next_label %}
+{% with none_text = "No water is on CDFW's " ~ species_word ~ " schedule for next week yet. CDFW can add to its schedule at any time." %}
+{% include "_species_week.html.jinja" %}
+{% endwith %}
+{% endwith %}
+
+{% if on_record %}
+<h2>Every water with {{ species_word }} on the schedule</h2>
+<p>{{ on_record|length }} {{ "water has" if on_record|length == 1 else "waters have" }} been on CDFW's {{ species_word }} schedule in the time this site has recorded. Sorted by latest scheduled week. A week after the current one is marked upcoming.</p>
+<table>
+  <caption class="visually-hidden">Every water CDFW has scheduled for {{ species_word }}, with its latest scheduled week</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">County</th>
+      <th scope="col">Latest scheduled week</th>
+      <th scope="col">Weeks on record</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in on_record %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{% for c in row.county_links %}<a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County</a>{% if not loop.last %}, {% endif %}{% endfor %}</td>
+      <td>week of {{ row.latest }}{% if row.upcoming %} (upcoming){% endif %}</td>
+      <td>{{ row.weeks }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{{ water_total }} waters have {{ species_word }} on CDFW's schedule in the time this site has recorded. Each county page lists its own waters with their latest scheduled week.</p>
+{% endif %}
+
+<p>
+  <a href="{{ root }}county/">Every county</a> &middot;
+  <a href="{{ root }}">this week, statewide</a>{% for o in other_species %} &middot;
+  <a href="{{ root }}species/{{ o.slug }}/">{{ o.word }} schedule</a>{% endfor %}
+</p>
+{% endblock %}

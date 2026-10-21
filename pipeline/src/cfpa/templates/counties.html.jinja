@@ -8,6 +8,9 @@
   scheduled this week and the latest scheduled week at every one of its
   waters.
 </p>
+{% if species_links %}
+<p>By species: {% for l in species_links %}<a href="{{ root }}species/{{ l.slug }}/">{{ l.name }}</a>{% if not loop.last %} &middot; {% endif %}{% endfor %}.</p>
+{% endif %}
 
 {% for region in regions %}
 <section aria-labelledby="region-{{ region.code }}">

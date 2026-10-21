@@ -5,15 +5,20 @@
 <p class="lede">
   The {{ site_name }} website uses Google Analytics 4 to count visits and see
   which pages are read, unless your browser sends Global Privacy Control or
-  Do Not Track, or you opt out. The {{ site_name }} iOS app collects no data at all: no
-  analytics, no tracking, and no third-party SDK. Neither has an account or
-  advertising.
+  Do Not Track, or you opt out.
+  {# correction 1 (apps coverage): lede begins #}
+  The {{ site_name }} apps for iPhone (with Apple Watch and widgets) and for
+  Android collect no data: no analytics, no tracking, no advertising and no
+  account. Neither app includes analytics, advertising or crash-reporting code.
+  The Android app does include two libraries from Google, described under
+  <a href="#app">The apps</a>.
+  {# correction 1 (apps coverage): lede ends #}
 </p>
 {% else %}
 <p class="lede">
-  Neither the {{ site_name }} website nor its iOS app collects personal data. There is no
-  account, no analytics, no advertising, no tracking, and no third-party
-  script or SDK in either.
+  Neither the {{ site_name }} website nor its apps for iPhone and Android collect
+  personal data. There is no account, no analytics, no advertising, no
+  tracking, and no third-party script on the website.
 </p>
 {% endif %}
 <p>
@@ -21,7 +26,8 @@
   owner a commission; they are links, not ads, scripts or trackers. See
   <a href="#affiliate">Gear links</a>.
 </p>
-<p class="muted">Last updated 2026-10-20. Covers this website and the {{ site_name }} iOS app.</p>
+{# correction 1 (apps coverage): scope line #}
+<p class="muted">Last updated 2026-10-20. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
 
 <h2 id="site">The website</h2>
 {% if ga4_measurement_id %}
@@ -120,30 +126,71 @@
       schedule.</li>
 </ul>
 
-<h2 id="app">The iOS app</h2>
+<h2 id="app">The apps</h2>
 <ul>
-  <li><strong>No analytics:</strong> the app has no analytics, no tracking and
-      no third-party SDK.{% if ga4_measurement_id %} The website's Google
-      Analytics does not run inside the app.{% endif %}</li>
-  <li><strong>What stays on your phone:</strong> the waters you favorite, the
+  {# correction 1 (apps coverage): items begin #}
+  <li><strong>No analytics:</strong> neither app has analytics, tracking,
+      advertising or crash reporting.{% if ga4_measurement_id %} The website's
+      Google Analytics does not run inside the apps.{% endif %}</li>
+  <li><strong>iPhone, Apple Watch and widgets:</strong> the iPhone app, its
+      Apple Watch app, widgets and watch complications use Apple's own
+      frameworks and no third-party SDK. The widgets and complications show a
+      copy of your favorites kept on your device and make no network
+      request.</li>
+  <li><strong>Android and its widget:</strong> the Android app includes two
+      libraries from Google, and no other third-party code. Google Play
+      Billing shows Google Play's purchase sheet, checks which purchases you
+      own and confirms a purchase to Google Play. Google Play In-App Review
+      can show Google Play's own review card; anything you enter there goes to
+      Google Play, and the app does not receive it. These libraries talk to
+      Google Play, not to the developer, and Google's
+      <a href="https://policies.google.com/privacy">privacy policy</a> covers
+      what they handle. The Android home-screen widget shows a copy of your
+      favorites kept on your device and makes no network request.</li>
+  <li><strong>Android backup:</strong> the Android app's data is excluded from
+      cloud backup. A device-to-device transfer to a new phone can carry it.
+      Besides the items listed under &ldquo;What stays on your device&rdquo;,
+      the Android app keeps a small record of when it last asked for a
+      review.</li>
+  {# correction 1 (apps coverage): items end #}
+  <li><strong>What stays on your device:</strong> the waters you favorite, the
       latest copy of the planting schedule, and a record of which listings the
       app has already alerted you about. These live only in the app's own
-      storage on your device (and in your device backups, if you back up your
-      phone). Deleting the app deletes them. They are never sent to the
-      developer or anyone else.</li>
-  <li><strong>The one network request:</strong> the app downloads the public
+      storage on your device (on iPhone, also in your device backups, if you
+      back up your phone). Deleting the app deletes them. They are never sent
+      to the developer or anyone else.</li>
+  {# correction 3 (request wording): item begins #}
+  <li><strong>The one network request:</strong> each app downloads the public
       planting-schedule file this website publishes, from GitHub Pages. The
-      request carries no identifier and nothing about you or your favorites;
-      as with any web request, the host sees the IP address it came from.
-      Links to CDFW's map or to this site open in your browser{% if ga4_measurement_id %},
-      where this site's Google Analytics applies as described above{% endif %}.</li>
-  <li><strong>Notifications:</strong> alerts are local notifications that iOS
-      schedules on your device. There is no push service and no device
-      token.</li>
+      request has no account, device or advertising identifier, and nothing
+      about you or your favorites. It carries a fixed app name in its
+      User-Agent header and, once the app already has a copy, a cache tag
+      (ETag) that GitHub Pages issued for that file. Both are the same for
+      every user, so nothing in the request distinguishes one user from
+      another. As with any web request, the host sees the IP address it came
+      from.</li>
+  {# correction 3 (request wording): item ends #}
+  {# correction 2 (link scope): item begins #}
+  <li><strong>Links:</strong> links to CDFW's map, to CDFW's schedule and to
+      the other source sites open in your browser, on those sites. CDFW and
+      those sites have their own privacy policies, and this site's analytics
+      does not apply to them.{% if ga4_measurement_id %} This site's Google
+      Analytics applies to this site's own pages only, as described
+      above.{% endif %}</li>
+  {# correction 2 (link scope): item ends #}
+  {# correction 1 (apps coverage): notifications and purchases begin #}
+  <li><strong>Notifications:</strong> alerts are local notifications that your
+      phone schedules on your device, by iOS or by Android. There is no push service
+      and no device token.</li>
   <li><strong>Purchases:</strong> the one-time in-app purchase is handled
-      entirely by Apple. The developer does not receive your name, email
-      address or payment details; Apple's privacy policy applies to the
-      transaction.</li>
+      entirely by Apple on iPhone and by Google Play on Android. The developer
+      does not receive your name, email address or payment details. Apple and
+      Google Play each keep their own record of your purchase under your
+      account with them, on terms set by them; see
+      <a href="https://www.apple.com/legal/privacy/">Apple's privacy
+      policy</a> and <a href="https://policies.google.com/privacy">Google's
+      privacy policy</a>.</li>
+  {# correction 1 (apps coverage): notifications and purchases end #}
   <li><strong>App Store privacy label:</strong> Data Not Collected.</li>
 </ul>
 

@@ -256,3 +256,126 @@ def test_a_water_whose_plants_all_aged_off_is_placed_from_cdfws_own_picker():
     # Multi-county labels split the same way the table's Counties cell does.
     assert all(len(v) >= 1 for v in picker.values())
     assert any(len(v) > 1 for v in picker.values())
+
+
+# The live row floor (parse.MIN_LIVE_FULL_WINDOW_ROWS). The committed fixture
+# stands in for a live response here: it is a valid, fresh, full-window page
+# with 41 rows, far below any real fetch.
+FIXTURE_ROWS = 41
+
+
+def _live_run_kwargs(tmp_path: Path, monkeypatch) -> dict:
+    """Kwargs for a run on the live path (no fixture_path) whose fetch returns
+    the committed fixture page, so no network is touched."""
+    from cfpa import fetch as fetch_mod
+
+    page = fetch_mod.load_fixture(
+        str(FRESH), fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.UTC)
+    )
+    monkeypatch.setattr(fetch_mod, "fetch_schedule", lambda **_kw: page)
+    kwargs = _kwargs(tmp_path)
+    kwargs["fixture_path"] = None
+    return kwargs
+
+
+def test_the_floor_is_far_above_a_fixture_week_and_far_below_a_real_fetch():
+    from cfpa import parse as parse_mod
+
+    assert FIXTURE_ROWS < parse_mod.MIN_LIVE_FULL_WINDOW_ROWS < 1942
+
+
+def test_a_live_fetch_below_the_row_floor_is_refused_and_writes_nothing(
+    tmp_path: Path, monkeypatch, capsys
+):
+    from cfpa import parse as parse_mod
+
+    # Seed real state with a fixture run, then attempt a tiny live run.
+    cli.run(**_kwargs(tmp_path))
+    history_before = (tmp_path / "history.json").read_bytes()
+    aliases_before = (tmp_path / "aliases.json").read_bytes()
+    site_before = sorted(p.name for p in (tmp_path / "site").rglob("*"))
+
+    kwargs = _live_run_kwargs(tmp_path, monkeypatch)
+    try:
+        cli.run(**kwargs)
+    except parse_mod.TooFewRowsError as exc:
+        assert exc.rows == FIXTURE_ROWS
+        assert exc.floor == parse_mod.MIN_LIVE_FULL_WINDOW_ROWS
+    else:
+        raise AssertionError("a 41-row live fetch was not refused")
+
+    assert (tmp_path / "history.json").read_bytes() == history_before
+    assert (tmp_path / "aliases.json").read_bytes() == aliases_before
+    assert sorted(p.name for p in (tmp_path / "site").rglob("*")) == site_before
+
+
+def test_main_exits_nonzero_on_a_live_fetch_below_the_row_floor(
+    tmp_path: Path, monkeypatch, capsys
+):
+    from cfpa import fetch as fetch_mod
+
+    page = fetch_mod.load_fixture(
+        str(FRESH), fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.UTC)
+    )
+    monkeypatch.setattr(fetch_mod, "fetch_schedule", lambda **_kw: page)
+    code = cli.main(
+        [
+            "--history", str(tmp_path / "history.json"),
+            "--aliases", str(tmp_path / "aliases.json"),
+            "--site-out", str(tmp_path / "site"),
+            "--no-states",
+            "--run-today", "2026-09-13",
+        ]
+    )  # fmt: skip
+    err = capsys.readouterr().err
+    assert code == 1
+    assert "run refused -- nothing published" in err
+    assert "below the floor of 1000" in err
+    assert not (tmp_path / "history.json").exists()
+    assert not (tmp_path / "aliases.json").exists()
+
+
+def test_a_live_fetch_at_the_row_floor_passes(tmp_path: Path, monkeypatch):
+    from cfpa import parse as parse_mod
+
+    kwargs = _live_run_kwargs(tmp_path, monkeypatch)
+    monkeypatch.setattr(parse_mod, "MIN_LIVE_FULL_WINDOW_ROWS", FIXTURE_ROWS)
+    snap = cli.run(**kwargs)
+    assert snap["coverage"]["rows_parsed"] == FIXTURE_ROWS
+    assert (tmp_path / "history.json").exists()
+
+
+def test_a_live_fetch_one_row_under_the_floor_is_refused(tmp_path: Path, monkeypatch):
+    from cfpa import parse as parse_mod
+
+    kwargs = _live_run_kwargs(tmp_path, monkeypatch)
+    monkeypatch.setattr(parse_mod, "MIN_LIVE_FULL_WINDOW_ROWS", FIXTURE_ROWS + 1)
+    try:
+        cli.run(**kwargs)
+    except parse_mod.TooFewRowsError:
+        pass
+    else:
+        raise AssertionError("a fetch one row under the floor was not refused")
+    assert not (tmp_path / "history.json").exists()
+
+
+def test_negative_control_without_the_floor_the_tiny_live_fetch_publishes(
+    tmp_path: Path, monkeypatch
+):
+    """Sabotage the floor and the same tiny live fetch is published, so the
+    refusal above is the floor's doing and not some other check's."""
+    from cfpa import parse as parse_mod
+
+    kwargs = _live_run_kwargs(tmp_path, monkeypatch)
+    real_floor = parse_mod.MIN_LIVE_FULL_WINDOW_ROWS
+    monkeypatch.setattr(parse_mod, "MIN_LIVE_FULL_WINDOW_ROWS", 0)
+    # The sabotage must have changed the constant, or this proves nothing.
+    assert real_floor != parse_mod.MIN_LIVE_FULL_WINDOW_ROWS
+    snap = cli.run(**kwargs)
+    assert snap["coverage"]["rows_parsed"] == FIXTURE_ROWS
+    assert (tmp_path / "history.json").exists()
+
+
+def test_a_fixture_run_ignores_the_live_row_floor(tmp_path: Path):
+    snap = cli.run(**_kwargs(tmp_path))
+    assert snap["coverage"]["rows_parsed"] == FIXTURE_ROWS

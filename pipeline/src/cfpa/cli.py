@@ -2,8 +2,8 @@
 -> validate -> site -> coverage report.
 
 A failed run (fetch failure, stale page, a page showing a partial Time Period
-view, parse drift, history-integrity violation, schema validation failure)
-writes nothing new and exits non-zero.
+view, parse drift, a live fetch with too few rows, history-integrity violation,
+schema validation failure) writes nothing new and exits non-zero.
 There is no code path that publishes a partial or assumed result.
 """
 
@@ -171,6 +171,11 @@ def run(
     fetch_mod.assert_full_window_view(page)
 
     rows = parse_mod.parse_schedule_table(page.html)
+    # A live fetch that parses far fewer rows than any real one has is a
+    # truncated or emptied table, and the merge below would read every plant
+    # missing from it as removed. Fixtures are small by design and skip this.
+    if not fixture_path:
+        parse_mod.assert_live_row_floor(len(rows))
     water_options = parse_mod.parse_select_options(page.html, "Params_StockingWaterID")
     county_options = parse_mod.parse_select_options(page.html, "Params_Counties")
     region_county_options = parse_mod.parse_select_options(

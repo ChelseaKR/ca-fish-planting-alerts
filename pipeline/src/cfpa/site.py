@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import datetime as dt
 import re
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -382,7 +383,9 @@ def _plural(n: int, one: str, many: str) -> str:
     return f"{n} {one if n == 1 else many}"
 
 
-def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
+def _water_view(
+    w: dict[str, Any], *, source_week_start: str, shared_name: bool = False
+) -> dict[str, Any]:
     plants_sorted = sorted(w["plants"], key=lambda p: p["week"]["start"], reverse=True)
     other_names = [n for n in w["aliases"] if n != w["name"]]
     counties = ", ".join(w["counties"])
@@ -406,6 +409,9 @@ def _water_view(w: dict[str, Any], *, source_week_start: str) -> dict[str, Any]:
         # county is what tells their pages -- and their titles -- apart.
         "qualified_name": f"{w['name']} ({counties})",
         "place": place,
+        # True for the few CDFW names that more than one water carries; just
+        # those titles keep the county (_water_title).
+        "shared_name": shared_name,
         "county_phrase": county_phrase(w["counties"]),
         "species": species,
         "counties": counties,
@@ -516,10 +522,40 @@ def _water_status(
     }
 
 
+# A search result shows about 60 characters of a title and about 155 of a
+# description; past that the ending is cut. The 2026-10-20 audit found every
+# old water title over 60 and 365 of 388 descriptions over 160.
+WATER_TITLE_MAX = 60
+WATER_DESCRIPTION_MAX = 160
+
+
+def _water_title(view: dict[str, Any]) -> str:
+    """The title: the water and both words people search with, "stocking"
+    and "planting" ("planting schedule" is what the old titles said, and the
+    waters that rank today rank under it). The county is left out unless
+    another water shares the name; the h1, description and breadcrumb carry
+    it. A long name drops the species word, then "planting", and never the
+    water's name."""
+    base = view["place"] if view["shared_name"] else view["name"]
+    species = view["species"]
+    candidates = (
+        f"{base} {species} stocking and planting schedule | {SITE_NAME}",
+        f"{base} stocking and planting schedule | {SITE_NAME}",
+        f"{base} {species} stocking schedule | {SITE_NAME}",
+        f"{base} stocking schedule | {SITE_NAME}",
+    )
+    for title in candidates:
+        if len(title) <= WATER_TITLE_MAX:
+            return title
+    return candidates[-1]
+
+
 def _water_description(view: dict[str, Any], *, source_week_label: str) -> str:
     """The meta description: the water, its county, the stocking wording
-    people search with, then the weeks that answer the query, within the
-    first ~150 characters a result shows."""
+    people search with, then the schedule and the last-listed date, ahead of
+    the cut a result makes. A water with nothing current says when it was
+    last scheduled and what the page still has, and leaves the "none this
+    week" sentence to the page body."""
     if view["this_week"] and view["next_listed_label"]:
         status = (
             f"scheduled this week, the {source_week_label}, and next the "
@@ -530,17 +566,21 @@ def _water_description(view: dict[str, Any], *, source_week_label: str) -> str:
     elif view["next_listed_label"]:
         status = f"next scheduled the {view['next_listed_label']}."
     elif view["last_listed_label"]:
-        status = (
-            f"last scheduled the {view['last_listed_label']}. None listed "
-            "this week or later."
-        )
+        status = f"last scheduled the {view['last_listed_label']}."
     else:
         status = "no week currently listed."
     weeks = _plural(view["listed_week_count"], "week", "weeks")
-    return (
-        f"{view['name']}, {view['county_phrase']} {view['species']} stocking: "
-        f"{status} CDFW planting schedule and history, {weeks} on record."
+    head = f"{view['place']} {view['species']} stocking schedule: {status}"
+    # Longest tail that keeps the whole description within the limit.
+    tails = (
+        f" CDFW planting history, {weeks} on record, and a calendar feed.",
+        " CDFW planting history and a calendar feed.",
+        " CDFW planting history.",
     )
+    for tail in tails:
+        if len(head) + len(tail) <= WATER_DESCRIPTION_MAX:
+            return head + tail
+    return head
 
 
 def _rollover_sensitive(w: dict[str, Any], *, source_week_start: str) -> bool:
@@ -985,7 +1025,7 @@ def _render_water_page(
         (f"{primary} County", f"{base_url}/county/{county_slug(primary)}/"),
         (w["name"], page_url),
     ]
-    title = f"{view['place']} {view['species']} planting schedule | {SITE_NAME}"
+    title = _water_title(view)
     html = ctx.env.get_template("water.html.jinja").render(
         title=title,
         description=_water_description(view, source_week_label=ctx.source_week_label),
@@ -1329,8 +1369,13 @@ def build_site(
     for w in snapshot["waters"]:
         for c in w["counties"]:
             waters_by_county.setdefault(c, []).append(w)
+    name_counts = Counter(w["name"] for w in snapshot["waters"])
     views = {
-        w["id"]: _water_view(w, source_week_start=source_week_start)
+        w["id"]: _water_view(
+            w,
+            source_week_start=source_week_start,
+            shared_name=name_counts[w["name"]] > 1,
+        )
         for w in snapshot["waters"]
     }
     data_lastmods = {

@@ -118,8 +118,12 @@ def test_no_plant_rendered_as_a_single_day_on_any_page(tmp_path: Path):
 def test_water_page_titles_and_first_paragraph_answer_the_query(tmp_path: Path):
     """The per-water page should answer '<water> trout stocking' and
     '<water> trout planting schedule' from the title, h1 and description,
-    from data -- the free discovery surface. The title says "planting
-    schedule", the h1 "stocking schedule", so both wordings are on the page."""
+    from data -- the free discovery surface. The title carries both
+    wordings ("stocking and planting schedule", or "stocking schedule" when
+    the water's name is too long for both), the h1 says "stocking schedule".
+    The county is in the h1 and description, and in the title for just a
+    name two waters share. Length and uniqueness are pinned in
+    test_site_water_meta.py."""
     out = _build_site(tmp_path)
     snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
     for w in snap["waters"]:
@@ -131,12 +135,14 @@ def test_water_page_titles_and_first_paragraph_answer_the_query(tmp_path: Path):
         ).group(1)
         species = site.species_phrase({p["species"] for p in w["plants"]})
         where = site.county_phrase(w["counties"])
-        assert f"{species} planting schedule" in title
+        name = w["name"].replace("'", "&#39;")
+        assert "stocking" in title and "schedule" in title, (w["slug"], title)
         assert f"{species} stocking schedule" in h1
         for text in (title, h1, description):
-            assert w["name"].replace("'", "&#39;") in text, (w["slug"], text)
+            assert name in text, (w["slug"], text)
+        for text in (h1, description):
             assert where in text, (w["slug"], text)
-        assert "stocking" in description and "planting schedule" in description
+        assert "stocking" in description and "planting" in description
 
 
 def test_ics_events_are_week_long_not_single_day(tmp_path: Path):
@@ -217,18 +223,23 @@ def test_water_page_says_when_the_schedule_was_last_checked(tmp_path: Path):
         )
 
 
-def test_water_titles_are_unique_and_name_the_county(tmp_path: Path):
+def test_water_titles_are_unique_and_name_the_county_only_when_shared(tmp_path: Path):
     """Five CDFW names are shared by 2-3 waters each (e.g. three Silver
-    Lakes); without the county their pages would have identical titles."""
+    Lakes); without the county their pages would have identical titles. A
+    name no other water carries leaves the county to the h1 and description."""
     import json
+    from collections import Counter
 
     out = _build_site(tmp_path)
     snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    names = Counter(w["name"] for w in snap["waters"])
+    assert max(names.values()) > 1  # the fixture has a shared name
     titles = []
     for w in snap["waters"]:
         html = _water_html(out, w["slug"])
         title = re.search(r"<title>([^<]+)</title>", html).group(1)
-        assert f"({site.county_phrase(w['counties'])})" in title
+        has_county = f"({site.county_phrase(w['counties'])})" in title
+        assert has_county == (names[w["name"]] > 1), (w["slug"], title)
         titles.append(title)
     assert len(titles) == len(set(titles))
 

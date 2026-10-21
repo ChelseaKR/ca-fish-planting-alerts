@@ -45,7 +45,7 @@
 </p>
 
 <p>
-  <a href="feed.ics">Subscribe to {{ water.name }}'s planting calendar (.ics)</a>
+  <a href="feed.ics" data-ga-event="calendar_subscribe_click" data-ga-placement="water" data-ga-type="ics">Subscribe to {{ water.name }}'s planting calendar (.ics)</a>
   {% if app_store_url %}
   &middot; <a href="{{ app_store_url }}" data-app-store-placement="water" data-app-store-kind="link">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
   {% else %}
@@ -101,7 +101,7 @@
   </p>
   <ul>
     {% for g in gear_links %}
-    <li><a href="{{ g.url }}" rel="{{ affiliate_rel }}">{{ g.label }}</a></li>
+    <li><a href="{{ g.url }}" rel="{{ affiliate_rel }}" data-ga-event="gear_click" data-ga-placement="water" data-ga-type="amazon_search">{{ g.label }}</a></li>
     {% endfor %}
   </ul>
   <p class="muted" id="gear-disclosure">

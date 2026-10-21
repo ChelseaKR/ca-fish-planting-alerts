@@ -92,6 +92,26 @@
   {% if water.other_names %}<dt>Also listed by CDFW as</dt><dd>{{ water.other_names }}</dd>{% endif %}
 </dl>
 
+<section class="gear" aria-labelledby="gear-heading">
+  <h2 id="gear-heading">Gear for this water</h2>
+  <p>
+    Planning a trip to {{ water.name }}? These links search Amazon for common
+    trout gear. They point to search results, not to any one product.
+  </p>
+  <ul>
+    {% for g in gear_links %}
+    <li><a href="{{ g.url }}" rel="{{ affiliate_rel }}">{{ g.label }}</a></li>
+    {% endfor %}
+  </ul>
+  <p class="muted" id="gear-disclosure">
+    These are affiliate links: if you buy something after following one, this
+    site earns a commission, and it costs you nothing extra.
+    {{ amazon_disclosure }}
+    {{ gear_endorsement }}
+    <a href="{{ root }}privacy/#affiliate">More in the privacy policy</a>.
+  </p>
+</section>
+
 {% for c in other_waters_by_county %}
 <section aria-labelledby="others-{{ c.slug }}">
   <h2 id="others-{{ c.slug }}">Other {{ c.name }} County waters on the schedule</h2>

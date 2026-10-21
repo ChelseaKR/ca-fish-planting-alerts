@@ -24,7 +24,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
@@ -204,6 +204,50 @@ def app_store_live_or_false(value: str | None) -> bool:
     raise ValueError(f"APP_STORE_LIVE {value!r} is neither 'true' nor 'false'")
 
 
+# Amazon Associates gear links (DECISIONS 0029). Website alone: the iOS app has
+# no web view and never carries them. The store ID is the one value to change
+# if the account's tag ever does. The links are plain Amazon search URLs, not
+# products, so there is no product to go stale and no price or rating to
+# state; they are added by the build and nothing else adds an Amazon URL.
+AMAZON_ASSOCIATE_TAG = "trouttruck-20"
+AMAZON_SEARCH_URL = "https://www.amazon.com/s"
+# Amazon's required wording, byte for byte: do not paraphrase it.
+AMAZON_ASSOCIATE_DISCLOSURE = "As an Amazon Associate I earn from qualifying purchases."
+
+
+def gear_endorsement(agency_short_name: str = "CDFW") -> str:
+    """The sentence that keeps a commercial link from implying that the
+    agency whose data the page shows endorses it (DECISIONS 0029)."""
+    return (
+        f"The links are {SITE_NAME}'s, not {agency_short_name}'s, and "
+        f"{agency_short_name} does not endorse them or Amazon."
+    )
+
+
+AFFILIATE_LINK_REL = "sponsored nofollow noopener"
+# Label, then the search terms. Generic categories alone; the data carries no
+# lake-or-stream field, so every water gets the same four.
+GEAR_CATEGORIES: tuple[tuple[str, str], ...] = (
+    ("Trout rod and reel combo", "trout rod and reel combo"),
+    ("Trout lure and tackle assortment", "trout lure tackle assortment"),
+    ("Fishing waders", "fishing waders"),
+    ("Landing net for trout", "trout landing net"),
+)
+
+
+def amazon_search_url(terms: str) -> str:
+    """An Amazon search URL for ``terms`` carrying the associate tag."""
+    return f"{AMAZON_SEARCH_URL}?{urlencode({'k': terms, 'tag': AMAZON_ASSOCIATE_TAG})}"
+
+
+def gear_links() -> list[dict[str, str]]:
+    """The gear block's links, built from ``GEAR_CATEGORIES``."""
+    return [
+        {"label": label, "url": amazon_search_url(terms)}
+        for label, terms in GEAR_CATEGORIES
+    ]
+
+
 # The license the compiled schedule history is offered under, as a URL, for
 # the Dataset structured data on /about/ (docs/adr/0013). Unset on purpose:
 # the CC-BY license in docs/LICENSES-AND-ATTRIBUTION.md belongs to a
@@ -215,6 +259,7 @@ def app_store_live_or_false(value: str | None) -> bool:
 DATASET_LICENSE_URL = ""
 
 CDFW_NAME = "California Department of Fish and Wildlife"
+CDFW_SHORT_NAME = "CDFW"
 CDFW_URL = "https://wildlife.ca.gov/"
 
 REGION_NAME_BY_CODE = {
@@ -880,6 +925,8 @@ def _render_water_page(
         ),
         breadcrumb=_relative_trail(trail, base_url=base_url, root="../../"),
         water=view,
+        gear_links=gear_links(),
+        affiliate_rel=AFFILIATE_LINK_REL,
         scheduled_elsewhere=scheduled_elsewhere,
         other_waters_by_county=other_waters_by_county,
         source_week_label=ctx.source_week_label,
@@ -1142,6 +1189,8 @@ def build_site(
         "social_image_alt": SOCIAL_IMAGE_ALT,
         "support_email": support_email,
         "site_name": SITE_NAME,
+        "amazon_disclosure": AMAZON_ASSOCIATE_DISCLOSURE,
+        "gear_endorsement": gear_endorsement(CDFW_SHORT_NAME),
         # base.html.jinja includes the GA4 tag only when this is set, and the
         # about/privacy/support copy switches on it too, so the pages never
         # describe a state the build is not in.

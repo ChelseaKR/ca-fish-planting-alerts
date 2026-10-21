@@ -13,6 +13,14 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Amazon Associates gear links on California water pages (DECISIONS 0029):
+  four generic Amazon search links per water under "Gear for this water", each
+  `rel="sponsored nofollow noopener"` and tagged `trouttruck-20` from one
+  constant, with Amazon's disclosure, a plain affiliate sentence and a note that
+  the links are Trout Truck's and CDFW does not endorse them or Amazon beside
+  them; a "Gear links" section on the privacy page. On the website alone: none in the
+  iOS app, the other pages, the data or the feeds, and no added tracking.
+  `tests/test_site_affiliate.py` pins each rule with negative controls.
 - Launch readiness for the App Store (DECISIONS 0028): the website's App
   Store surfaces follow one committed value, `APP_STORE_LIVE_DEFAULT`, which
   stays `False` until launch day; a test fails if the banner, badge, links,

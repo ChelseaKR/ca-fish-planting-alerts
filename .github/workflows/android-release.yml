@@ -1,0 +1,178 @@
+name: android-release
+
+# A signed Android App Bundle for Google Play, built on demand. Manual dispatch is the sole trigger:
+# nothing triggers it, and it never uploads to Play. The owner downloads the
+# .aab artifact and uploads it in Play Console (docs/ANDROID-RELEASE.md).
+#
+#   gh workflow run android-release.yml -f version_code=1 -f version_name=1.0.0
+#
+# Secrets, referenced by name (values are never in this file) (Settings > Secrets and variables > Actions):
+#   ANDROID_UPLOAD_KEYSTORE_BASE64   the upload keystore, base64 on one line
+#   ANDROID_UPLOAD_KEYSTORE_PASSWORD
+#   ANDROID_UPLOAD_KEY_ALIAS
+#   ANDROID_UPLOAD_KEY_PASSWORD
+# This is the UPLOAD key. Play App Signing holds the real app signing key, so a
+# leaked upload key can be reset by Google; the app key cannot leak from here.
+#
+# Rules this file keeps:
+# - Runs from main alone, so a signed bundle is always of reviewed code.
+# - The secrets are read in the steps that need them and nowhere else, are
+#   never echoed, and the keystore file lives in RUNNER_TEMP, never in the
+#   checkout. The workflow has contents: read and no other permission.
+# - Gradle's cache is off for this job: a signing job must not restore or
+#   write a cache that a pull request could have shaped.
+# - The existing unsigned-APK check in ci.yml is not touched.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: "Play versionCode: an integer above every earlier upload (1 for the initial upload)"
+        required: true
+        type: string
+      version_name:
+        description: "Play versionName, SemVer like 1.0.0"
+        required: true
+        type: string
+        default: "1.0.0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: refuse to run from any ref but main
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [ "$REF" != "refs/heads/main" ]; then
+            echo "::error::Run this workflow from main (got $REF). A signed bundle must be built from reviewed code."
+            exit 1
+          fi
+
+      - name: check the version inputs
+        env:
+          VERSION_CODE: ${{ inputs.version_code }}
+          VERSION_NAME: ${{ inputs.version_name }}
+        run: |
+          if ! printf '%s' "$VERSION_CODE" | grep -Eq '^[1-9][0-9]{0,8}$'; then
+            echo "::error::version_code must be a positive integer (Play allows up to 2100000000)."
+            exit 1
+          fi
+          if ! printf '%s' "$VERSION_NAME" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::version_name must be SemVer like 1.0.0."
+            exit 1
+          fi
+
+      - name: check the signing secrets are set
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          missing=""
+          [ -n "$KEYSTORE_B64" ] || missing="$missing ANDROID_UPLOAD_KEYSTORE_BASE64"
+          [ -n "$KEYSTORE_PASSWORD" ] || missing="$missing ANDROID_UPLOAD_KEYSTORE_PASSWORD"
+          [ -n "$KEY_ALIAS" ] || missing="$missing ANDROID_UPLOAD_KEY_ALIAS"
+          [ -n "$KEY_PASSWORD" ] || missing="$missing ANDROID_UPLOAD_KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::These repository secrets are not set:$missing. Add them under Settings > Secrets and variables > Actions; docs/ANDROID-RELEASE.md step 4 says how. No bundle was built."
+            exit 1
+          fi
+          echo "All four signing secrets are set (values are not shown)."
+
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: validate the gradle wrapper
+        uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: install jdk 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: set up gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          cache-disabled: true
+
+      - name: write the upload keystore outside the checkout
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          keystore="$RUNNER_TEMP/upload.jks"
+          if ! printf '%s' "$KEYSTORE_B64" | base64 --decode > "$keystore" 2>/dev/null; then
+            echo "::error::ANDROID_UPLOAD_KEYSTORE_BASE64 is not valid base64. Re-create it with: base64 on one line with no line breaks (docs/ANDROID-RELEASE.md step 4)"
+            exit 1
+          fi
+          # Proves the file is a keystore, the password opens it and the alias
+          # exists, before Gradle runs. keytool reads the password from the
+          # environment, so it never appears in a command line or the log.
+          if ! KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" keytool -list -keystore "$keystore" \
+              -storepass:env KEYSTORE_PASSWORD -alias "$KEY_ALIAS" > /dev/null 2>&1; then
+            rm -f "$keystore"
+            echo "::error::The keystore did not open with ANDROID_UPLOAD_KEYSTORE_PASSWORD and the alias ANDROID_UPLOAD_KEY_ALIAS. Check all three secrets match the keystore you created."
+            exit 1
+          fi
+          echo "ANDROID_UPLOAD_KEYSTORE_FILE=$keystore" >> "$GITHUB_ENV"
+
+      - name: run the tests
+        working-directory: android
+        run: ./gradlew --no-daemon --stacktrace :core:test :app:testDebugUnitTest
+
+      - name: build the signed release bundle
+        working-directory: android
+        env:
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          ANDROID_VERSION_CODE: ${{ inputs.version_code }}
+          ANDROID_VERSION_NAME: ${{ inputs.version_name }}
+        run: ./gradlew --no-daemon --stacktrace :app:bundleRelease
+
+      - name: check the bundle is signed and carries the bundled snapshot
+        working-directory: android/app/build/outputs/bundle/release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f app-release.aab || { echo "::error::app-release.aab was not produced."; exit 1; }
+          if ! jarsigner -verify app-release.aab > /dev/null 2>&1; then
+            echo "::error::app-release.aab is not signed. The signing secrets did not reach Gradle."
+            exit 1
+          fi
+          committed="$GITHUB_WORKSPACE/android/app/src/main/assets/snapshot.json"
+          if ! unzip -p app-release.aab base/assets/snapshot.json | cmp -s - "$committed"; then
+            echo "::error::app-release.aab does not carry the committed assets/snapshot.json"
+            exit 1
+          fi
+          echo "app-release.aab is signed and carries the committed snapshot."
+          sha256sum app-release.aab
+
+      - name: remove the keystore from the runner
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks"
+
+      - name: upload the bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trout-truck-${{ inputs.version_name }}-${{ inputs.version_code }}-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30

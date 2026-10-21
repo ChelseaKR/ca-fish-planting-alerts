@@ -19,8 +19,34 @@ android {
         applicationId = "com.chelseakr.cafishplanting"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        // Play rejects an upload whose versionCode is not above every earlier
+        // upload's, so the release workflow passes ANDROID_VERSION_CODE (and
+        // ANDROID_VERSION_NAME, which follows CHANGELOG's SemVer like the iOS
+        // MARKETING_VERSION). Unset, as in CI and local builds, these are the
+        // values below. A bump is still a reviewed edit here.
+        versionCode = System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?: 1
+        versionName = System.getenv("ANDROID_VERSION_NAME")?.takeIf { it.isNotBlank() } ?: "1.0.0"
+    }
+
+    // Upload-key signing, applied when the release workflow (or the owner's shell)
+    // sets all four values. With any of them unset nothing is configured and
+    // the release build stays unsigned, exactly as CI's assembleRelease expects.
+    // Nothing here is ever printed or written to the repository.
+    val uploadKeystore = System.getenv("ANDROID_UPLOAD_KEYSTORE_FILE")?.takeIf { it.isNotBlank() }
+    val uploadStorePassword = System.getenv("ANDROID_UPLOAD_KEYSTORE_PASSWORD")?.takeIf { it.isNotEmpty() }
+    val uploadKeyAlias = System.getenv("ANDROID_UPLOAD_KEY_ALIAS")?.takeIf { it.isNotBlank() }
+    val uploadKeyPassword = System.getenv("ANDROID_UPLOAD_KEY_PASSWORD")?.takeIf { it.isNotEmpty() }
+    val hasUploadKey = uploadKeystore != null && uploadStorePassword != null &&
+        uploadKeyAlias != null && uploadKeyPassword != null
+    if (hasUploadKey) {
+        signingConfigs {
+            create("upload") {
+                storeFile = file(uploadKeystore!!)
+                storePassword = uploadStorePassword
+                keyAlias = uploadKeyAlias
+                keyPassword = uploadKeyPassword
+            }
+        }
     }
 
     buildTypes {
@@ -28,8 +54,10 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Signing is the owner's (android/README.md): Play App
-            // Signing holds the app key; the upload key never enters the repo.
+            // Signing is the owner's (android/README.md, docs/ANDROID-RELEASE.md):
+            // Play App Signing holds the app key; the upload key never enters
+            // the repo and signs when the environment supplies it.
+            if (hasUploadKey) signingConfig = signingConfigs.getByName("upload")
         }
     }
 

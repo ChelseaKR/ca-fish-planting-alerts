@@ -83,6 +83,11 @@ This repository was republished with a new history on 2026-09-18
   offline; the owner can settle ambiguous waters in
   `pipeline/data/water_location_overrides.json`. Snapshot v1 is unchanged.
   The about page credits the USGS and the Census Bureau (DECISIONS 0024).
+- "View on map" (OpenStreetMap), printed coordinates and, for a point inside
+  the water, structured-data `geo` on each California water page that has a
+  location; a "Sort by closest to me" button on the home page that runs in the
+  browser after a press and sends nothing; a "Your location and map links"
+  section in the privacy policy (DECISIONS 0024, addendum 2026-10-20).
 - More states, each a one-time purchase in the one app (DECISIONS 0025).
   Tennessee's trout stocking schedule from TWRA is on the site and in the
   app, with each date as precise as TWRA gives it: a day, the week of a
@@ -136,6 +141,9 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Water 501572 (North Fork Willow Creek, Madera) is no longer placed: GNIS
+  lists two streams with that name in the county. The geocoder now keeps a
+  same-name stream that has no NHD flowlines as a candidate.
 - County pages keep past and upcoming scheduled weeks apart: a new "Scheduled
   for later weeks" table lists each water and week after the current one, and
   the history table reports each water's latest week through the current week,

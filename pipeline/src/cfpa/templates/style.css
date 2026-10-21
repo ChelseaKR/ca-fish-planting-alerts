@@ -174,3 +174,14 @@ ul.water-index li { break-inside: avoid; }
   padding: 0.125rem 0;
 }
 .breadcrumb a[aria-current="page"] { color: var(--fg); text-decoration: none; }
+
+/* "Closest to me" on the home page (closest.js). The list wraps at any
+   width, so a long water name cannot push the page sideways (SC 1.4.10). */
+.closest button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.closest-list { padding-left: 1.5rem; overflow-wrap: anywhere; }
+.closest-list li { margin: 0.25rem 0; }

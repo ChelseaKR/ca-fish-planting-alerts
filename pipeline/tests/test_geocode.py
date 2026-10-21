@@ -717,3 +717,40 @@ def test_snapshot_v1_still_has_no_locations(tmp_path):
     )
     assert snap["waters"]
     assert all(w["location"] is None for w in snap["waters"])
+
+
+class _NoFlowlines:
+    """A Geometry where one stream has a mapped channel and its namesake has
+    none, as GNIS 264220 and 267078 (North Fork Willow Creek, Madera) did."""
+
+    def waterbodies(self, gnis_id: int) -> list[geo.Polygon]:
+        return []
+
+    def flowlines(self, gnis_id: int) -> list[geo.Ring]:
+        return [[(-119.5, 37.3), (-119.4, 37.4)]] if gnis_id == 1 else []
+
+    def in_counties(self, pt: geo.Point, counties) -> bool:
+        return True
+
+
+def test_a_second_same_name_stream_without_flowlines_still_counts():
+    water = geocode.Water(7, "Willow Creek North Fork", (), ("Madera",))
+    with_lines = geocode.GnisFeature(
+        1, "North Fork Willow Creek", "Stream", "Madera", 34.3, -119.5
+    )
+    without = geocode.GnisFeature(
+        2, "North Fork Willow Creek", "Stream", "Madera", 37.2, -119.4
+    )
+    elsewhere = geocode.GnisFeature(
+        3, "North Fork Willow Creek", "Stream", "Fresno", 36.0, -119.0
+    )
+    geom = _NoFlowlines()
+    alone = geocode.Gazetteer.build([with_lines, elsewhere])
+    assert geocode.match_water(water, alone, geom)["status"] == "exact"
+    both = geocode.Gazetteer.build([with_lines, without, elsewhere])
+    result = geocode.match_water(water, both, geom)
+    # Negative control: the second feature is what changed the answer, and the
+    # one in another county (with no channel to test) is still left out.
+    assert [c["gnis_feature_id"] for c in result["candidates"]] == [1, 2]
+    assert result["status"] == "ambiguous"
+    assert result["location"] is None

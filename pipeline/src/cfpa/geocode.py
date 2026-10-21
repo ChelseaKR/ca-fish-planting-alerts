@@ -393,7 +393,15 @@ def _in_water_counties(f: GnisFeature, water: Water, geom: Geometry) -> bool:
     if f.feature_class in LINEAR:
         # GNIS places a stream at its mouth; the planted water may be upstream
         # in another county, so test the mapped channel itself.
-        return bool(_lines_in_counties(geom.flowlines(f.feature_id), water, geom))
+        lines = geom.flowlines(f.feature_id)
+        if not lines:
+            # No mapped channel to test, so the only evidence is GNIS's own
+            # county. Dropping the feature here let a second same-name
+            # stream in the county go uncounted (hand review 2026-10-20:
+            # North Fork Willow Creek, Madera), so it stays a candidate and
+            # ``locate`` then declines to place it.
+            return f.county in water.counties
+        return bool(_lines_in_counties(lines, water, geom))
     return f.county in water.counties
 
 

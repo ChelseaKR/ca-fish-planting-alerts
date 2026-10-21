@@ -23,6 +23,24 @@
 {% with badge_placement = "home" %}{% include "_app_store_badge.html.jinja" %}{% endwith %}
 {% endif %}
 
+{% if closest_enabled and regions %}
+{# "Closest to me": hidden here, shown by assets/closest.js only when the
+   browser can do it. Without JavaScript the page is the lists below. #}
+<section id="closest" class="closest" aria-labelledby="closest-heading" data-coords="{{ coords_path }}" hidden>
+  <h2 id="closest-heading">Closest to me</h2>
+  <p>
+    Sort this week's waters by distance from you. Your browser asks for your
+    location when you press the button, and the sorting happens in your
+    browser: your location is not sent to this site or to anyone else, and it
+    is not saved.
+  </p>
+  <p><button type="button" id="closest-button">Sort by closest to me</button></p>
+  <p id="closest-status" role="status"></p>
+  <div id="closest-result"></div>
+</section>
+{{ closest_script_tag|safe }}
+{% endif %}
+
 {% if regions %}
 {% for region in regions %}
 <section aria-labelledby="region-{{ region.code }}">
@@ -38,7 +56,7 @@
     </thead>
     <tbody>
       {% for row in region.rows %}
-      <tr>
+      <tr{% if closest_enabled %} data-slug="{{ row.slug }}"{% endif %}>
         <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
         <td>{% for c in row.county_links %}<a href="{{ root }}county/{{ c.slug }}/">{{ c.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</td>
         <td>{{ row.species }}</td>

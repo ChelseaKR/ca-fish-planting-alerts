@@ -81,6 +81,8 @@ The app can't reach testers until these are done in Play Console.
 2. App signing: enroll in Play App Signing, so Google holds the app key.
    Create an upload key outside the repo, then sign release builds with
    it. No key or keystore password goes in this repository.
+   `docs/ANDROID-RELEASE.md` has the exact commands, and the manual
+   `android-release` workflow builds the signed bundle.
 3. In-app product: create a one-time product with the ID `fullaccess`
    (`ProductCatalog.CALIFORNIA_FULL_ACCESS` in `core`), at the iOS price.
    It unlocks alerts and the home screen widget. If Play requires a

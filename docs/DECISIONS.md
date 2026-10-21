@@ -711,3 +711,59 @@ test that the surfaces moved together.
   `docs/LAUNCH-CHECKLIST.md`: mark the event as a key event and register its
   two parameters as custom dimensions, after the event has arrived.
 
+
+## 0029 — Amazon Associates gear links on the website's water pages (2026-10-20)
+
+The owner opened an Amazon Associates account on 2026-10-19 with the store
+ID `trouttruck-20`. Affiliate links are allowed when they are plain and
+visibly disclosed. Amazon closes an account that has not made 3 qualifying
+sales within 180 days, which is about 2027-04-17; if there are none by then
+the links come out in one edit (delete `GEAR_CATEGORIES` and the block in
+`water.html.jinja`).
+
+- **Where.** A short "Gear for this water" block on each California water
+  page, and a "Gear links" section on the privacy page. **The website, never the app.**
+  The iOS app has no web view and never shows these links; the report-state
+  pages, the home, county, support and about pages carry none. The about
+  page's privacy note mentions them in a sentence.
+- **Why search links.** Each link is `https://www.amazon.com/s?k=<terms>&tag=trouttruck-20`,
+  a search for a generic category (trout rod and reel combo, trout lure and
+  tackle assortment, fishing waders, landing net for trout). A search has no
+  product to go out of stock or change price, so the page never states a
+  price, rating, image or "best" claim, and nothing about a product can be
+  wrong. The data has no lake-or-stream field, so every water gets the same
+  four categories.
+- **One constant.** `AMAZON_ASSOCIATE_TAG` in `pipeline/src/cfpa/site.py` is
+  the one place the tag is written. `tests/test_site_affiliate.py` rebuilds
+  the site with a different value and fails if the old one survives.
+- **Disclosure.** Beside every block: "As an Amazon Associate I earn from
+  qualifying purchases." (Amazon's wording, kept exactly), a plain sentence
+  that these are affiliate links and cost the reader nothing extra, and a
+  link to the privacy page. Every link carries `rel="sponsored nofollow
+  noopener"`. No redirect, shortener or cloaking: the address in the page is
+  the address the browser opens.
+- **Agency non-endorsement.** This site shows California Department of
+  Fish and Wildlife data, and a commercial link beside it must not suggest
+  the agency stands behind it. The gear block and the privacy section both
+  say: "The links are Trout Truck's, not CDFW's, and CDFW does not endorse
+  them or Amazon." The site name and the agency's short name come from
+  `SITE_NAME` and `CDFW_SHORT_NAME` through `gear_endorsement()`, and a test
+  fails if a page with a tagged link lacks the sentence for its agency.
+- **Not the same design as PR #64.** An older open PR (#64, branch
+  `feat/gear-links`) proposes a separate Bass Pro link that ships switched
+  off, and numbers its own entry 0028 there. This decision does not depend
+  on it. 0028 on main is the launch switch, and 0029 was free on
+  origin/main when this was written.
+- **No added tracking.** No script, pixel or event for these links. The
+  existing GA4 tag (0011) is unchanged and still obeys Global Privacy
+  Control, Do Not Track and the opt-out; Google's own outbound-click
+  measurement may count a click on any off-site link, which the privacy page
+  already said and now says again for these. The `app_store_click` handler
+  matches App Store links alone.
+- **Guards.** `tests/test_site_affiliate.py` fails when a tagged link lacks
+  the rel values or the disclosure, appears on any page except a California
+  water page, appears in JSON-LD, a feed, the sitemap or the snapshot, or
+  appears in the `ios` or `android` sources; each guard has a negative
+  control that checks its sabotage applied. Existing site checks needed no
+  change: they forbid off-origin requests the browser makes by itself
+  (script, image, stylesheet, frame), and an `<a href>` is not one.

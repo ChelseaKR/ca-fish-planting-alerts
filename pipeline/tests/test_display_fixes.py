@@ -32,7 +32,17 @@ FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
 REPO = Path(__file__).resolve().parents[2]
 V1_SCHEMA = REPO / "schema" / "snapshot.v1.json"
-COMMITTED_TN = REPO / "pipeline" / "data" / "states" / "tn.json"
+# A frozen copy of the Tennessee history as committed on 2026-10-21 01:25 UTC
+# (a real failed check). The live pipeline/data/states/tn.json changes with every
+# daily run, so tests that name the check time must not read it.
+COMMITTED_TN = (
+    REPO
+    / "pipeline"
+    / "tests"
+    / "fixtures"
+    / "states"
+    / "tn-2026-10-21-failed-check.json"
+)
 BASE = "https://example.invalid/ca-fish-planting-alerts"
 
 BANNED_WORDS = re.compile(r"\b(only|first|stocked on|planted on)\b", re.I)

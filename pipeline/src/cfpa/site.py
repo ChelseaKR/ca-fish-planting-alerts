@@ -30,7 +30,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import feeds, opendata, site_states
+from . import feeds, guides, opendata, site_states
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -2408,6 +2408,26 @@ def build_site(
     # each species in the data.
     species_entries = [_render_species_page(ctx, snapshot, sp) for sp in species_pages]
 
+    # ---- guides: plain explanations under /guide/ (DECISIONS 0031)
+    guide_entries = guides.render_guides(
+        env=env,
+        out_dir=out_dir,
+        written=written,
+        base_url=base_url,
+        common=common,
+        site_name=SITE_NAME,
+        facts=guides.guide_facts(snapshot, recorded_since=recorded_since),
+        region_links=region_links,
+        county_counts=county_counts,
+        source_week_label=source_week_label,
+        source_fetched_label=source_fetched_label,
+        write_page=_write_page,
+        ld_graph=_ld_graph,
+        ld_breadcrumb=_ld_breadcrumb,
+        ld_page=_ld_page,
+        relative_trail=_relative_trail,
+    )
+
     # ---- the other states (DECISIONS 0025), from v2. Their pages carry their
     # own attribution, disclaimer and header; nothing here changes a
     # California page beyond the header link above.
@@ -2444,6 +2464,7 @@ def build_site(
         *([(f"{base_url}/data/", data_updated)] if data_updated else []),
         (f"{base_url}/privacy/", None),
         (f"{base_url}/support/", None),
+        *guide_entries,
         *region_lastmods.items(),
         *species_entries,
         *county_lastmods.items(),

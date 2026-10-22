@@ -34,7 +34,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import feeds, guides, opendata, share_cards, site_states
+from . import feeds, guides, opendata, share_cards, site_states, weeks
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -2431,6 +2431,10 @@ def build_site(
         for sp in species_pages
     ]
 
+    # The past-week pages (DECISIONS 0038); the home page and the county index
+    # link to /week/ only when it exists.
+    common["week_archive"] = bool(weeks.week_entries(snapshot))
+
     # ---- assets/
     coords = water_coords(snapshot_v2)
     _write_assets(out_dir, written, app_store_live=app_store_live, coords=coords)
@@ -2758,6 +2762,24 @@ def build_site(
     # each species in the data.
     species_entries = [_render_species_page(ctx, snapshot, sp) for sp in species_pages]
 
+    # ---- past-week pages under /week/ (DECISIONS 0038)
+    week_entries = weeks.render_weeks(
+        env=env,
+        out_dir=out_dir,
+        written=written,
+        base_url=base_url,
+        common=common,
+        site_name=SITE_NAME,
+        snapshot=snapshot,
+        county_slug=county_slug,
+        species_phrase=species_phrase,
+        write_page=_write_page,
+        ld_graph=_ld_graph,
+        ld_breadcrumb=_ld_breadcrumb,
+        ld_page=_ld_page,
+        relative_trail=_relative_trail,
+    )
+
     # ---- guides: plain explanations under /guide/ (DECISIONS 0031)
     guide_entries = guides.render_guides(
         env=env,
@@ -2818,6 +2840,7 @@ def build_site(
         *guide_entries,
         *region_lastmods.items(),
         *species_entries,
+        *week_entries,
         *county_lastmods.items(),
         *water_lastmods.items(),
         *state_entries,

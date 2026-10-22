@@ -1,0 +1,42 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>CDFW planting schedule: week of {{ week_start }}</h1>
+<p class="lede">
+  CDFW's schedule listed {{ water_count }} {{ "water" if water_count == 1 else "waters" }} for
+  the week of {{ week_start }}, Sunday through Saturday ({{ week_end }}), grouped by county. This is
+  CDFW's schedule for that week, as this site recorded it, and it is subject to change.
+</p>
+<p class="muted">
+  Every entry was scheduled, not confirmed, and CDFW does not publish a day or
+  a time. Entries CDFW later removed from its schedule are not listed here.
+</p>
+
+{% for county in counties %}
+<section aria-labelledby="county-{{ loop.index }}">
+  <h2 id="county-{{ loop.index }}">{% if county.slug %}<a href="{{ root }}county/{{ county.slug }}/">{{ county.name }} County</a>{% else %}County not listed{% endif %}</h2>
+  <table>
+    <caption class="visually-hidden">Waters on CDFW's schedule for the week of {{ week_start }}{% if county.slug %} in {{ county.name }} County{% endif %}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Water</th>
+        <th scope="col">Species</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in county.rows %}
+      <tr>
+        <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+        <td>{{ row.species }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endfor %}
+
+<p>
+  <a href="{{ root }}week/">All past weeks</a> &middot;
+  <a href="{{ root }}">this week, statewide</a> &middot;
+  <a href="{{ root }}county/">every county</a>
+</p>
+{% endblock %}

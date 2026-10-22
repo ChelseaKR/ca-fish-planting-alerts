@@ -18,7 +18,9 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
     /// written by a different version of the app.
     /// 2: favorites carry their state's words (`isReport`), and favorites in
     /// a state without its purchase are counted, never shown.
-    public static let currentVersion = 2
+    /// 3: a plan state's favorites (`isPlan`, New York) say "planned for" in
+    /// the agency's own words (DECISIONS 0034).
+    public static let currentVersion = 3
 
     public let version: Int
     /// The snapshot's week (`source_week`).
@@ -57,11 +59,14 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
         public let lastListedWeek: Week?
         /// A report state's water: its rows say "stocked", never "scheduled".
         public let isReport: Bool
+        /// A plan state's water (New York): its rows say "planned for" in
+        /// the agency's own words, never "scheduled" and never a date.
+        public let isPlan: Bool
 
-        public init(id: Water.ID, name: String, countyLabel: String, speciesThisWeek: [String], nextWeek: Week?, lastListedWeek: Week?, isReport: Bool = false) {
+        public init(id: Water.ID, name: String, countyLabel: String, speciesThisWeek: [String], nextWeek: Week?, lastListedWeek: Week?, isReport: Bool = false, isPlan: Bool = false) {
             self.id = id; self.name = name; self.countyLabel = countyLabel
             self.speciesThisWeek = speciesThisWeek; self.nextWeek = nextWeek; self.lastListedWeek = lastListedWeek
-            self.isReport = isReport
+            self.isReport = isReport; self.isPlan = isPlan
         }
 
         public var isListedThisWeek: Bool { !speciesThisWeek.isEmpty }
@@ -88,16 +93,19 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
                 guard let water = snapshot.water(id: id) else { missing += 1; continue }
                 if let entitledStates, !entitledStates.contains(water.state) { otherStates += 1; continue }
                 let week = snapshot.currentWeek(for: water)
+                // A month ("December 2026") or the agency's own words ("April
+                // - third week, 2026") is never "this week": neither names it.
                 var species: [String] = []
-                for plant in water.plants where plant.status != .removed && plant.week.precision != .month && plant.week.overlaps(week) {
+                for plant in water.plants where plant.status != .removed && plant.week.precision != .month
+                    && plant.week.precision != .approximate && plant.week.overlaps(week) {
                     if !species.contains(plant.species) { species.append(plant.species) }
                 }
-                let next = water.semantics == .schedule
-                    ? water.plants.first { $0.status == .listed && $0.week.start > week.end }?.week
-                    : nil
+                let next = water.semantics == .report
+                    ? nil
+                    : water.plants.first { $0.status == .listed && $0.week.start > week.end }?.week
                 favorites.append(Favorite(id: water.id, name: water.name, countyLabel: water.countyLabel,
                                           speciesThisWeek: species, nextWeek: next, lastListedWeek: water.lastListedWeek,
-                                          isReport: water.semantics == .report))
+                                          isReport: water.semantics == .report, isPlan: water.semantics == .plan))
             }
         }
         self.init(week: snapshot.sourceWeek, snapshotGeneratedAt: snapshot.generatedAt,
@@ -174,6 +182,12 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
                 return ReportWording.stockedThisWeek(favorite.speciesThisWeek)
             }
             return favorite.lastListedWeek.map(ReportWording.lastStocked) ?? ReportWording.noStockingOnRecord
+        }
+        if favorite.isPlan {
+            // The agency's words, never a date (DECISIONS 0034).
+            if let next = favorite.nextWeek { return "Planned for \(next.label)" }
+            guard let last = favorite.lastListedWeek else { return "No planned period on record" }
+            return "No planned period ahead. Last planned for \(last.label)"
         }
         switch status(of: favorite, at: now) {
         case .scheduledThisWeek(let species):

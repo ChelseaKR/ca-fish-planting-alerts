@@ -12,7 +12,7 @@ first week", "Spring", "March - fourth week", "April", "Mid April", "Early
 May", "March - April" and so on.
 
 Those words are DEC's, and they are never turned into a date (DECISIONS
-0028). Each is an "approximate" period: its label is DEC's text and the
+0034). Each is an "approximate" period: its label is DEC's text and the
 year, verbatim ("April - third week, 2026"), and its start and end only bound
 it, for ordering and for the app's reminders. A form this code does not know
 refuses the feed rather than being guessed at.

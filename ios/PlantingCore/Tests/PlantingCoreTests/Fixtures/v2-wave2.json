@@ -1,0 +1,2902 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-22T02:42:54Z",
+  "states": [
+    {
+      "code": "CA",
+      "name": "California",
+      "agency": {
+        "name": "California Department of Fish and Wildlife",
+        "short_name": "CDFW",
+        "url": "https://wildlife.ca.gov/"
+      },
+      "semantics": "schedule",
+      "date_precisions": [
+        "week"
+      ],
+      "removal_inference": true,
+      "current_week": {
+        "start": "2026-09-13",
+        "end": "2026-09-19",
+        "label": "week of 2026-09-13"
+      },
+      "as_of": "2026-09-13",
+      "newest_record": {
+        "precision": "week",
+        "start": "2026-09-20",
+        "end": "2026-09-26",
+        "label": "week of 2026-09-20"
+      },
+      "recency_note": null,
+      "source": {
+        "name": "CDFW Fish Planting Schedule",
+        "url": "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch",
+        "fetched_at": "2026-09-13T12:00:00Z",
+        "content_sha256": "91b96eb5ae48b3c672ce90a45ec3325921a7b04a7635dc9d016c24e62c8dbb9d",
+        "last_modified": null
+      },
+      "checks": {
+        "last_attempt_at": "2026-09-13T12:00:00Z",
+        "last_success_at": "2026-09-13T12:00:00Z",
+        "last_attempt_ok": true
+      },
+      "attribution": {
+        "text": "Data: California Department of Fish and Wildlife, Fish Planting Schedule (https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch). Schedule is subject to change; treat all plants as scheduled, not confirmed.",
+        "url": "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch"
+      },
+      "disclaimer": "Trout Truck is independent and is not affiliated with or endorsed by CDFW. CDFW: \"all fish plants are subject to change depending on road, water, weather and operational conditions.\"",
+      "license": {
+        "summary": "CDFW's site-wide Conditions of Use place page content in the public domain with no commercial-use restriction; the related CDFW Fishing Guide dataset on data.ca.gov is explicitly CC-BY. We attribute unconditionally. See docs/LICENSES-AND-ATTRIBUTION.md for the verbatim quotes this is built from.",
+        "sources": [
+          {
+            "name": "CDFW Fish Planting Schedule",
+            "url": "https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch",
+            "terms_url": "https://wildlife.ca.gov/Conditions-of-Use",
+            "terms_read_on": "2026-09-13",
+            "commercial_reuse": "permitted",
+            "attribution_required": true,
+            "terms_quote": "Ownership — In general, information presented on this web site, unless otherwise indicated, is considered in the public domain. It may be distributed or copied as permitted by law."
+          },
+          {
+            "name": "CDFW Fishing Guide (data.ca.gov, CC-BY)",
+            "url": "https://data.ca.gov/dataset/cdfw-fishing-guide2",
+            "terms_url": "https://data.ca.gov/dataset/cdfw-fishing-guide2",
+            "terms_read_on": "2026-09-13",
+            "commercial_reuse": "permitted",
+            "attribution_required": true,
+            "terms_quote": "License: \"Creative Commons Attribution\". Rights: \"No restrictions on public use.\""
+          }
+        ]
+      },
+      "regions": [
+        {
+          "code": "R1",
+          "name": "Northern Region (R1)"
+        },
+        {
+          "code": "R2",
+          "name": "North Central Region (R2)"
+        },
+        {
+          "code": "R3",
+          "name": "Bay Delta Region (R3)"
+        },
+        {
+          "code": "R4",
+          "name": "Central Region (R4)"
+        },
+        {
+          "code": "R5",
+          "name": "South Coast Region (R5)"
+        },
+        {
+          "code": "R6",
+          "name": "Inland Deserts Region (R6)"
+        }
+      ],
+      "counties": [
+        {
+          "name": "Lassen",
+          "region": "R1"
+        },
+        {
+          "name": "Modoc",
+          "region": "R1"
+        },
+        {
+          "name": "Shasta",
+          "region": "R1"
+        },
+        {
+          "name": "Trinity",
+          "region": "R1"
+        }
+      ],
+      "waters_count": 3
+    },
+    {
+      "code": "MA",
+      "name": "Massachusetts",
+      "agency": {
+        "name": "Massachusetts Division of Fisheries and Wildlife",
+        "short_name": "MassWildlife",
+        "url": "https://www.mass.gov/orgs/masswildlife"
+      },
+      "semantics": "report",
+      "date_precisions": [
+        "day"
+      ],
+      "removal_inference": false,
+      "current_week": {
+        "start": "2026-10-18",
+        "end": "2026-10-24",
+        "label": "week of 2026-10-18"
+      },
+      "as_of": "2026-09-13",
+      "newest_record": {
+        "precision": "day",
+        "start": "2026-10-09",
+        "end": "2026-10-09",
+        "label": "2026-10-09"
+      },
+      "recency_note": null,
+      "source": {
+        "name": "MassWildlife trout stocking report",
+        "url": "https://www.mass.gov/info-details/trout-stocking-report",
+        "fetched_at": "2026-09-13T12:00:00Z",
+        "content_sha256": "a5ad956d33764c499fff743fd4ac2b638bd236d1869bbd106a62f1f3c516a574",
+        "last_modified": null
+      },
+      "checks": {
+        "last_attempt_at": "2026-09-13T12:00:00Z",
+        "last_success_at": "2026-09-13T12:00:00Z",
+        "last_attempt_ok": true
+      },
+      "attribution": {
+        "text": "Data: Massachusetts Division of Fisheries and Wildlife (MassWildlife), trout stocking report (https://www.mass.gov/info-details/trout-stocking-report).",
+        "url": "https://www.mass.gov/info-details/trout-stocking-report"
+      },
+      "disclaimer": "Trout Truck is independent and is not affiliated with or endorsed by MassWildlife or the Commonwealth of Massachusetts. These are stockings MassWildlife has reported as done, by the day.",
+      "license": {
+        "summary": "The stocking layer's own license grants permission to copy and use it. It is read through ArcGIS Hub's public download API; the mass.gov page, which allows fair use only, is never read.",
+        "sources": [
+          {
+            "name": "MassWildlife Stocked Fish (View), ArcGIS item license",
+            "url": "https://www.arcgis.com/home/item.html?id=e27aa5ec1ef74659aac1ef12b39510f1",
+            "terms_url": "https://www.arcgis.com/home/item.html?id=e27aa5ec1ef74659aac1ef12b39510f1",
+            "terms_read_on": "2026-10-12",
+            "commercial_reuse": "permitted",
+            "attribution_required": false,
+            "terms_quote": "All maps and other material provided herein are protected by copyright. Permission is granted to copy and use the materials herein."
+          }
+        ]
+      },
+      "regions": [],
+      "counties": [],
+      "waters_count": 3
+    },
+    {
+      "code": "MI",
+      "name": "Michigan",
+      "agency": {
+        "name": "Michigan Department of Natural Resources",
+        "short_name": "Michigan DNR",
+        "url": "https://www.michigan.gov/dnr"
+      },
+      "semantics": "report",
+      "date_precisions": [
+        "day"
+      ],
+      "removal_inference": false,
+      "current_week": {
+        "start": "2026-10-18",
+        "end": "2026-10-24",
+        "label": "week of 2026-10-18"
+      },
+      "as_of": "2026-09-13",
+      "newest_record": {
+        "precision": "day",
+        "start": "2026-06-17",
+        "end": "2026-06-17",
+        "label": "2026-06-17"
+      },
+      "recency_note": "Michigan DNR records often appear weeks after the stocking itself (the DNR notes \"a delay between a stocking event and a corresponding record\"), so a recent stocking may not be listed yet.",
+      "source": {
+        "name": "Michigan DNR fish stocking data",
+        "url": "https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f",
+        "fetched_at": "2026-09-13T12:00:00Z",
+        "content_sha256": "6056af0eeb1025bce1a1f94dd89a4bbc42a55d8a0a3789504fac89c7544b799f",
+        "last_modified": null
+      },
+      "checks": {
+        "last_attempt_at": "2026-09-13T12:00:00Z",
+        "last_success_at": "2026-09-13T12:00:00Z",
+        "last_attempt_ok": true
+      },
+      "attribution": {
+        "text": "Data: Michigan Department of Natural Resources, fish stocking data (https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f).",
+        "url": "https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f"
+      },
+      "disclaimer": "Trout Truck is independent and is not affiliated with or endorsed by the Michigan DNR or the State of Michigan. The State provides this dataset \"AS IS\" and makes no warranty of its accuracy, timeliness or completeness. Trout stockings into public waters only.",
+      "license": {
+        "summary": "The Michigan DNR's stocking dataset is a public record with no restrictions on use, reproduction or distribution. Its terms also ask users to release and indemnify the State, which the owner accepted on 2026-10-13.",
+        "sources": [
+          {
+            "name": "Michigan DNR Fish Stocking Database (dataset license)",
+            "url": "https://michigandnr.com/publications/PDFS/Fishing/FishStocking/FishStockingData.csv",
+            "terms_url": "https://www.arcgis.com/home/item.html?id=fc7739be5f5247e7bf7f2c6bc9471140",
+            "terms_read_on": "2026-10-12",
+            "commercial_reuse": "permitted",
+            "attribution_required": false,
+            "terms_quote": "This dataset is a public record and, as more fully described below, there are no restrictions on the use, reproduction, or distribution of this dataset. ... You forever release the State, its departments, subdivisions, officers, and employees from all claims, rights, actions, demands, damages, liabilities, expenses and fees, which arise out of or relate to your access or use of this dataset. You must defend, indemnify and hold the State, its departments, subdivisions, officers, and employees harmless, without limitation, from and against all actions, claims, losses, liabilities, damages, costs, attorney fees, and expenses (including those required to establish the right to indemnification) arising out of or relating to your access or use of this dataset."
+          }
+        ]
+      },
+      "regions": [],
+      "counties": [
+        {
+          "name": "Alcona",
+          "region": null
+        }
+      ],
+      "waters_count": 3
+    },
+    {
+      "code": "NY",
+      "name": "New York",
+      "agency": {
+        "name": "New York State Department of Environmental Conservation",
+        "short_name": "NYS DEC",
+        "url": "https://dec.ny.gov/"
+      },
+      "semantics": "plan",
+      "date_precisions": [
+        "approximate"
+      ],
+      "removal_inference": false,
+      "current_week": {
+        "start": "2026-10-18",
+        "end": "2026-10-24",
+        "label": "week of 2026-10-18"
+      },
+      "as_of": "2026-09-13",
+      "newest_record": {
+        "precision": "approximate",
+        "start": "2026-06-08",
+        "end": "2026-06-14",
+        "label": "June - second week, 2026"
+      },
+      "recency_note": null,
+      "source": {
+        "name": "NYS DEC spring trout stocking plan (OPEN-NY)",
+        "url": "https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436",
+        "fetched_at": "2026-09-13T12:00:00Z",
+        "content_sha256": "5a5b50b004e33be1d4b9f480c10077d19e0ae64f0482c2e9ac310ab37349abc0",
+        "last_modified": null
+      },
+      "checks": {
+        "last_attempt_at": "2026-09-13T12:00:00Z",
+        "last_success_at": "2026-09-13T12:00:00Z",
+        "last_attempt_ok": true
+      },
+      "attribution": {
+        "text": "Data: New York State Department of Environmental Conservation, Current Season Spring Trout Stocking, via OPEN-NY (https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436).",
+        "url": "https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436"
+      },
+      "disclaimer": "Trout Truck is independent and is not affiliated with or endorsed by NYS DEC or the State of New York. These are DEC's planned stockings for the spring, in DEC's own words for when, such as \"April - third week\". They are plans, not dates, and not confirmed stockings.",
+      "license": {
+        "summary": "OPEN-NY's terms let the data be used as anyone wishes, with no other requirement. It is read through the portal's API, the authorized route.",
+        "sources": [
+          {
+            "name": "OPEN-NY Terms of Use",
+            "url": "https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436",
+            "terms_url": "https://data.ny.gov/download/77gx-ii52/application%2Fpdf",
+            "terms_read_on": "2026-10-12",
+            "commercial_reuse": "permitted",
+            "attribution_required": false,
+            "terms_quote": "So long as you are not doing anything malicious with NYS data, you may use it as you wish, subject to no other requirements."
+          }
+        ]
+      },
+      "regions": [
+        {
+          "code": "1",
+          "name": "DEC Region 1"
+        },
+        {
+          "code": "2",
+          "name": "DEC Region 2"
+        },
+        {
+          "code": "3",
+          "name": "DEC Region 3"
+        },
+        {
+          "code": "4",
+          "name": "DEC Region 4"
+        },
+        {
+          "code": "5",
+          "name": "DEC Region 5"
+        },
+        {
+          "code": "6",
+          "name": "DEC Region 6"
+        },
+        {
+          "code": "7",
+          "name": "DEC Region 7"
+        },
+        {
+          "code": "8",
+          "name": "DEC Region 8"
+        },
+        {
+          "code": "9",
+          "name": "DEC Region 9"
+        }
+      ],
+      "counties": [
+        {
+          "name": "Albany",
+          "region": "4"
+        },
+        {
+          "name": "Allegany",
+          "region": "9"
+        },
+        {
+          "name": "Broome",
+          "region": "7"
+        },
+        {
+          "name": "Cattaraugus",
+          "region": "9"
+        }
+      ],
+      "waters_count": 5
+    },
+    {
+      "code": "TN",
+      "name": "Tennessee",
+      "agency": {
+        "name": "Tennessee Wildlife Resources Agency",
+        "short_name": "TWRA",
+        "url": "https://www.tn.gov/twra.html"
+      },
+      "semantics": "schedule",
+      "date_precisions": [
+        "day",
+        "week",
+        "month"
+      ],
+      "removal_inference": true,
+      "current_week": {
+        "start": "2026-10-18",
+        "end": "2026-10-24",
+        "label": "week of 2026-10-18"
+      },
+      "as_of": "2026-09-13",
+      "newest_record": {
+        "precision": "day",
+        "start": "2026-12-24",
+        "end": "2026-12-24",
+        "label": "2026-12-24"
+      },
+      "recency_note": null,
+      "source": {
+        "name": "TWRA trout stocking schedule",
+        "url": "https://www.tn.gov/twra/fishing/trout-information-stockings.html",
+        "fetched_at": "2026-09-13T12:00:00Z",
+        "content_sha256": "278c1b51420fb1571d4e88b62e9af22ff97c535ea86c800f476cbc0366c96669",
+        "last_modified": null
+      },
+      "checks": {
+        "last_attempt_at": "2026-09-13T12:00:00Z",
+        "last_success_at": "2026-09-13T12:00:00Z",
+        "last_attempt_ok": true
+      },
+      "attribution": {
+        "text": "Data: Tennessee Wildlife Resources Agency (TWRA), trout stocking schedule (https://www.tn.gov/twra/fishing/trout-information-stockings.html).",
+        "url": "https://www.tn.gov/twra/fishing/trout-information-stockings.html"
+      },
+      "disclaimer": "Trout Truck is independent and is not endorsed by TWRA or the State of Tennessee. These are TWRA's scheduled dates, not confirmed stockings. TWRA: \"Any stocking event could be postponed or cancelled due to unforeseen problems such as adverse weather or warm water temperatures.\" A week-of date is a Sunday, and TWRA says the stocking falls within five days after it.",
+      "license": {
+        "summary": "TWRA's schedule is information posted on TN.gov. The TN.gov Linking Policy lets it be copied when it is presented in a non-misleading way, implies no endorsement by the State, and identifies the agency and its web address, which every page and screen that shows it does.",
+        "sources": [
+          {
+            "name": "TN.gov Linking Policy (covers information posted on TN.gov)",
+            "url": "https://www.tn.gov/twra/fishing/trout-information-stockings.html",
+            "terms_url": "https://www.tn.gov/web-policies/linking-policy.html",
+            "terms_read_on": "2026-10-12",
+            "commercial_reuse": "permitted",
+            "attribution_required": true,
+            "terms_quote": "The information posted on a TN.gov Web site may be copied so long as it is presented in a non-misleading way and does not imply that either the site owner or the information, as it is presented on the site owner's Web site, is endorsed by the State. Use of the information must identify the state agency that is the source of the information, and the agency's Web address."
+          }
+        ]
+      },
+      "regions": [
+        {
+          "code": "1",
+          "name": "TWRA Region 1"
+        },
+        {
+          "code": "2",
+          "name": "TWRA Region 2"
+        },
+        {
+          "code": "3",
+          "name": "TWRA Region 3"
+        },
+        {
+          "code": "4",
+          "name": "TWRA Region 4"
+        }
+      ],
+      "counties": [
+        {
+          "name": "Anderson",
+          "region": "4"
+        },
+        {
+          "name": "Caroll",
+          "region": "1"
+        },
+        {
+          "name": "Greene",
+          "region": "4"
+        },
+        {
+          "name": "Monroe",
+          "region": "3"
+        },
+        {
+          "name": "Sevier",
+          "region": "4"
+        }
+      ],
+      "waters_count": 5
+    }
+  ],
+  "waters": [
+    {
+      "id": "cdfw-580",
+      "state": "CA",
+      "name": "West Valley Reservoir",
+      "name_status": "unreviewed",
+      "slug": "west-valley-reservoir",
+      "aliases": [
+        "West Valley Reservoir"
+      ],
+      "counties": [
+        "Lassen",
+        "Modoc"
+      ],
+      "towns": [],
+      "region": "R1",
+      "source_id": "580",
+      "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=580",
+      "site_path": "/water/west-valley-reservoir/",
+      "location": {
+        "lat": 41.20187,
+        "lon": -120.40071,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "237535"
+      },
+      "last_period": {
+        "precision": "week",
+        "start": "2025-09-28",
+        "end": "2025-10-04",
+        "label": "week of 2025-09-28"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "week",
+            "start": "2025-09-28",
+            "end": "2025-10-04",
+            "label": "week of 2025-09-28"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cdfw-679",
+      "state": "CA",
+      "name": "Carrville Pond",
+      "name_status": "unreviewed",
+      "slug": "carrville-pond",
+      "aliases": [
+        "Carrville Pond"
+      ],
+      "counties": [
+        "Trinity"
+      ],
+      "towns": [],
+      "region": "R1",
+      "source_id": "679",
+      "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=679",
+      "site_path": "/water/carrville-pond/",
+      "location": null,
+      "last_period": {
+        "precision": "week",
+        "start": "2026-04-19",
+        "end": "2026-04-25",
+        "label": "week of 2026-04-19"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-04-19",
+            "end": "2026-04-25",
+            "label": "week of 2026-04-19"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "cdfw-689",
+      "state": "CA",
+      "name": "Iron Canyon Reservoir",
+      "name_status": "unreviewed",
+      "slug": "iron-canyon-reservoir",
+      "aliases": [
+        "Iron Canyon Reservoir"
+      ],
+      "counties": [
+        "Shasta"
+      ],
+      "towns": [],
+      "region": "R1",
+      "source_id": "689",
+      "source_url": "https://apps.wildlife.ca.gov/fishing/?stockid=689",
+      "site_path": "/water/iron-canyon-reservoir/",
+      "location": {
+        "lat": 41.04804,
+        "lon": -121.98327,
+        "source": "USGS National Hydrography Dataset",
+        "kind": "waterbody",
+        "source_feature_id": "253142"
+      },
+      "last_period": {
+        "precision": "week",
+        "start": "2025-09-14",
+        "end": "2025-09-20",
+        "label": "week of 2025-09-14"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "week",
+            "start": "2025-09-14",
+            "end": "2025-09-20",
+            "label": "week of 2025-09-14"
+          },
+          "species": "Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "ma-08250-329",
+      "state": "MA",
+      "name": "Westfield River",
+      "name_status": "unreviewed",
+      "slug": "westfield-river-westfield",
+      "aliases": [
+        "Westfield River"
+      ],
+      "counties": [],
+      "towns": [
+        "Westfield"
+      ],
+      "region": null,
+      "source_id": "08250-329",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "site_path": "/ma/water/westfield-river-westfield/",
+      "location": null,
+      "last_period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05",
+        "label": "2026-10-05"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-10-05",
+            "end": "2026-10-05",
+            "label": "2026-10-05"
+          },
+          "species": "Brown Trout",
+          "status": "reported",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "ma-08250-60",
+      "state": "MA",
+      "name": "Westfield River",
+      "name_status": "unreviewed",
+      "slug": "westfield-river-chesterfield",
+      "aliases": [
+        "Westfield River"
+      ],
+      "counties": [],
+      "towns": [
+        "Chesterfield"
+      ],
+      "region": null,
+      "source_id": "08250-60",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "site_path": "/ma/water/westfield-river-chesterfield/",
+      "location": null,
+      "last_period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30",
+        "label": "2026-09-30"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-09-30",
+            "end": "2026-09-30",
+            "label": "2026-09-30"
+          },
+          "species": "Rainbow Trout",
+          "status": "reported",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "ma-34103-272",
+      "state": "MA",
+      "name": "Lake Wyola",
+      "name_status": "unreviewed",
+      "slug": "lake-wyola-shutesbury",
+      "aliases": [
+        "Lake Wyola"
+      ],
+      "counties": [],
+      "towns": [
+        "Shutesbury"
+      ],
+      "region": null,
+      "source_id": "34103-272",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "site_path": "/ma/water/lake-wyola-shutesbury/",
+      "location": null,
+      "last_period": {
+        "precision": "day",
+        "start": "2026-09-25",
+        "end": "2026-09-25",
+        "label": "2026-09-25"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-09-25",
+            "end": "2026-09-25",
+            "label": "2026-09-25"
+          },
+          "species": "Rainbow Trout",
+          "status": "reported",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "mi-alcona-au-sable-river-4001-bridge",
+      "state": "MI",
+      "name": "Au Sable River (4001 BRIDGE)",
+      "name_status": "unreviewed",
+      "slug": "au-sable-river-4001-bridge-alcona-county",
+      "aliases": [
+        "Au Sable River (4001 BRIDGE)"
+      ],
+      "counties": [
+        "Alcona"
+      ],
+      "towns": [],
+      "region": null,
+      "source_id": null,
+      "source_url": "https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f",
+      "site_path": "/mi/water/au-sable-river-4001-bridge-alcona-county/",
+      "location": null,
+      "last_period": {
+        "precision": "day",
+        "start": "2026-04-28",
+        "end": "2026-04-28",
+        "label": "2026-04-28"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "day",
+            "start": "2021-04-26",
+            "end": "2021-04-26",
+            "label": "2021-04-26"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3000,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2021-05-06",
+            "end": "2021-05-06",
+            "label": "2021-05-06"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 6000,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2022-04-28",
+            "end": "2022-04-28",
+            "label": "2022-04-28"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3000,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2022-05-04",
+            "end": "2022-05-04",
+            "label": "2022-05-04"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 6000,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2023-04-10",
+            "end": "2023-04-10",
+            "label": "2023-04-10"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 5400,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2023-04-10",
+            "end": "2023-04-10",
+            "label": "2023-04-10"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 5200,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2024-05-01",
+            "end": "2024-05-01",
+            "label": "2024-05-01"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3300,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2025-04-29",
+            "end": "2025-04-29",
+            "label": "2025-04-29"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3100,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-28",
+            "end": "2026-04-28",
+            "label": "2026-04-28"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3100,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "mi-alcona-au-sable-river-bamfield-road-bridge",
+      "state": "MI",
+      "name": "Au Sable River (BAMFIELD ROAD BRIDGE)",
+      "name_status": "unreviewed",
+      "slug": "au-sable-river-bamfield-road-bridge-alcona-county",
+      "aliases": [
+        "Au Sable River (BAMFIELD ROAD BRIDGE)"
+      ],
+      "counties": [
+        "Alcona"
+      ],
+      "towns": [],
+      "region": null,
+      "source_id": null,
+      "source_url": "https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f",
+      "site_path": "/mi/water/au-sable-river-bamfield-road-bridge-alcona-county/",
+      "location": null,
+      "last_period": {
+        "precision": "day",
+        "start": "2026-04-28",
+        "end": "2026-04-28",
+        "label": "2026-04-28"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "day",
+            "start": "2021-04-08",
+            "end": "2021-04-08",
+            "label": "2021-04-08"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 5894,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2021-04-26",
+            "end": "2021-04-26",
+            "label": "2021-04-26"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 5500,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2022-04-11",
+            "end": "2022-04-11",
+            "label": "2022-04-11"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 5500,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2022-04-11",
+            "end": "2022-04-11",
+            "label": "2022-04-11"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 5500,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2023-04-10",
+            "end": "2023-04-10",
+            "label": "2023-04-10"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 4950,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2023-04-10",
+            "end": "2023-04-10",
+            "label": "2023-04-10"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 2900,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2024-04-23",
+            "end": "2024-04-23",
+            "label": "2024-04-23"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 5047,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2024-04-24",
+            "end": "2024-04-24",
+            "label": "2024-04-24"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 6050,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2025-04-29",
+            "end": "2025-04-29",
+            "label": "2025-04-29"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 5400,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2025-04-29",
+            "end": "2025-04-29",
+            "label": "2025-04-29"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 5700,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-28",
+            "end": "2026-04-28",
+            "label": "2026-04-28"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 5200,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-28",
+            "end": "2026-04-28",
+            "label": "2026-04-28"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 5699,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "mi-alcona-au-sable-river-mio-to-alcona-reach-fr4842-alcona-rest",
+      "state": "MI",
+      "name": "Au Sable River - Mio to Alcona reach (FR4842-Alcona Rest)",
+      "name_status": "unreviewed",
+      "slug": "au-sable-river-mio-to-alcona-reach-fr4842-alcona-rest-alcona-county",
+      "aliases": [
+        "Au Sable River - Mio to Alcona reach (FR4842-Alcona Rest)"
+      ],
+      "counties": [
+        "Alcona"
+      ],
+      "towns": [],
+      "region": null,
+      "source_id": null,
+      "source_url": "https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f",
+      "site_path": "/mi/water/au-sable-river-mio-to-alcona-reach-fr4842-alcona-rest-alcona-county/",
+      "location": null,
+      "last_period": {
+        "precision": "day",
+        "start": "2026-04-28",
+        "end": "2026-04-28",
+        "label": "2026-04-28"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "day",
+            "start": "2021-04-26",
+            "end": "2021-04-26",
+            "label": "2021-04-26"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3000,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2021-05-06",
+            "end": "2021-05-06",
+            "label": "2021-05-06"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 5998,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2022-04-28",
+            "end": "2022-04-28",
+            "label": "2022-04-28"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3000,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2022-05-04",
+            "end": "2022-05-04",
+            "label": "2022-05-04"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 6000,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2023-04-25",
+            "end": "2023-04-25",
+            "label": "2023-04-25"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 1708,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2023-04-25",
+            "end": "2023-04-25",
+            "label": "2023-04-25"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 2900,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2023-05-23",
+            "end": "2023-05-23",
+            "label": "2023-05-23"
+          },
+          "species": "Brown trout",
+          "status": "reported",
+          "count": 5015,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2024-05-01",
+            "end": "2024-05-01",
+            "label": "2024-05-01"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3300,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2025-04-29",
+            "end": "2025-04-29",
+            "label": "2025-04-29"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3100,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-28",
+            "end": "2026-04-28",
+            "label": "2026-04-28"
+          },
+          "species": "Rainbow trout",
+          "status": "reported",
+          "count": 3100,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "ny-albany-berne-thompsons-lake",
+      "state": "NY",
+      "name": "Thompsons Lake",
+      "name_status": "unreviewed",
+      "slug": "thompsons-lake-berne-albany-county",
+      "aliases": [
+        "Thompsons Lake"
+      ],
+      "counties": [
+        "Albany"
+      ],
+      "towns": [
+        "Berne"
+      ],
+      "region": "4",
+      "source_id": null,
+      "source_url": "https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436",
+      "site_path": "/ny/water/thompsons-lake-berne-albany-county/",
+      "location": null,
+      "last_period": {
+        "precision": "approximate",
+        "start": "2026-03-01",
+        "end": "2026-06-30",
+        "label": "Spring, 2026"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-03-01",
+            "end": "2026-06-30",
+            "label": "Spring, 2026"
+          },
+          "species": "Brown Trout",
+          "status": "listed",
+          "count": 2340,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "ny-albany-city-of-albany-six-mile-waterworks",
+      "state": "NY",
+      "name": "Six Mile Waterworks",
+      "name_status": "unreviewed",
+      "slug": "six-mile-waterworks-city-of-albany-albany-county",
+      "aliases": [
+        "Six Mile Waterworks"
+      ],
+      "counties": [
+        "Albany"
+      ],
+      "towns": [
+        "City of Albany"
+      ],
+      "region": "4",
+      "source_id": null,
+      "source_url": "https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436",
+      "site_path": "/ny/water/six-mile-waterworks-city-of-albany-albany-county/",
+      "location": null,
+      "last_period": {
+        "precision": "approximate",
+        "start": "2026-03-01",
+        "end": "2026-04-30",
+        "label": "March - April, 2026"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-03-01",
+            "end": "2026-04-30",
+            "label": "March - April, 2026"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": 2080,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "ny-allegany-amity-genesee-river",
+      "state": "NY",
+      "name": "Genesee River",
+      "name_status": "unreviewed",
+      "slug": "genesee-river-amity-allegany-county",
+      "aliases": [
+        "Genesee River"
+      ],
+      "counties": [
+        "Allegany"
+      ],
+      "towns": [
+        "Amity"
+      ],
+      "region": "9",
+      "source_id": null,
+      "source_url": "https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436",
+      "site_path": "/ny/water/genesee-river-amity-allegany-county/",
+      "location": null,
+      "last_period": {
+        "precision": "approximate",
+        "start": "2026-05-01",
+        "end": "2026-05-07",
+        "label": "May - first week, 2026"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-03-15",
+            "end": "2026-03-21",
+            "label": "March - third week, 2026"
+          },
+          "species": "Brown Trout",
+          "status": "listed",
+          "count": 680,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-03-15",
+            "end": "2026-03-21",
+            "label": "March - third week, 2026"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": 5540,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-04-01",
+            "end": "2026-04-07",
+            "label": "April - first week, 2026"
+          },
+          "species": "Brown Trout",
+          "status": "listed",
+          "count": 6320,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-04-15",
+            "end": "2026-04-21",
+            "label": "April - third week, 2026"
+          },
+          "species": "Brown Trout",
+          "status": "listed",
+          "count": 680,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-04-15",
+            "end": "2026-04-21",
+            "label": "April - third week, 2026"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": 5540,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-05-01",
+            "end": "2026-05-07",
+            "label": "May - first week, 2026"
+          },
+          "species": "Brown Trout",
+          "status": "listed",
+          "count": 6320,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "ny-broome-fenton-chenango-lake",
+      "state": "NY",
+      "name": "Chenango Lake",
+      "name_status": "unreviewed",
+      "slug": "chenango-lake-fenton-broome-county",
+      "aliases": [
+        "Chenango Lake"
+      ],
+      "counties": [
+        "Broome"
+      ],
+      "towns": [
+        "Fenton"
+      ],
+      "region": "7",
+      "source_id": null,
+      "source_url": "https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436",
+      "site_path": "/ny/water/chenango-lake-fenton-broome-county/",
+      "location": null,
+      "last_period": {
+        "precision": "approximate",
+        "start": "2026-05-01",
+        "end": "2026-05-31",
+        "label": "May, 2026"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-03-01",
+            "end": "2026-03-31",
+            "label": "March, 2026"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": 5300,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-04-01",
+            "end": "2026-04-30",
+            "label": "April, 2026"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": 3120,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-05-01",
+            "end": "2026-05-31",
+            "label": "May, 2026"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": 3120,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "ny-cattaraugus-ashford-crandall-pond",
+      "state": "NY",
+      "name": "Crandall Pond",
+      "name_status": "unreviewed",
+      "slug": "crandall-pond-ashford-cattaraugus-county",
+      "aliases": [
+        "Crandall Pond"
+      ],
+      "counties": [
+        "Cattaraugus"
+      ],
+      "towns": [
+        "Ashford"
+      ],
+      "region": "9",
+      "source_id": null,
+      "source_url": "https://data.ny.gov/Recreation/Current-Season-Spring-Trout-Stocking/d9y2-n436",
+      "site_path": "/ny/water/crandall-pond-ashford-cattaraugus-county/",
+      "location": null,
+      "last_period": {
+        "precision": "approximate",
+        "start": "2026-04-11",
+        "end": "2026-04-20",
+        "label": "Mid April, 2026"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "approximate",
+            "start": "2026-04-11",
+            "end": "2026-04-20",
+            "label": "Mid April, 2026"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": 310,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "tn-anderson-norris-tailwater-clinch-river",
+      "state": "TN",
+      "name": "Norris Tailwater / Clinch River",
+      "name_status": "unreviewed",
+      "slug": "norris-tailwater-clinch-river-anderson-county",
+      "aliases": [
+        "Norris Tailwater / Clinch River"
+      ],
+      "counties": [
+        "Anderson"
+      ],
+      "towns": [],
+      "region": "4",
+      "source_id": null,
+      "source_url": "https://www.tn.gov/twra/fishing/trout-information-stockings.html",
+      "site_path": "/tn/water/norris-tailwater-clinch-river-anderson-county/",
+      "location": null,
+      "last_period": null,
+      "next_period": null,
+      "months_note": "M, A, M, J, J, A, S",
+      "plants": []
+    },
+    {
+      "id": "tn-caroll-mckenzie-city-park",
+      "state": "TN",
+      "name": "McKenzie City Park",
+      "name_status": "unreviewed",
+      "slug": "mckenzie-city-park-caroll-county",
+      "aliases": [
+        "McKenzie City Park"
+      ],
+      "counties": [
+        "Caroll"
+      ],
+      "towns": [],
+      "region": "1",
+      "source_id": null,
+      "source_url": "https://www.tn.gov/twra/fishing/trout-information-stockings.html",
+      "site_path": "/tn/water/mckenzie-city-park-caroll-county/",
+      "location": null,
+      "last_period": {
+        "precision": "day",
+        "start": "2026-01-14",
+        "end": "2026-01-14",
+        "label": "2026-01-14"
+      },
+      "next_period": {
+        "precision": "month",
+        "start": "2026-12-01",
+        "end": "2026-12-31",
+        "label": "December 2026"
+      },
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-01-14",
+            "end": "2026-01-14",
+            "label": "2026-01-14"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "month",
+            "start": "2026-12-01",
+            "end": "2026-12-31",
+            "label": "December 2026"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "tn-greene-dillard-ponds",
+      "state": "TN",
+      "name": "Dillard Ponds",
+      "name_status": "unreviewed",
+      "slug": "dillard-ponds-greene-county",
+      "aliases": [
+        "Dillard Ponds"
+      ],
+      "counties": [
+        "Greene"
+      ],
+      "towns": [],
+      "region": "4",
+      "source_id": null,
+      "source_url": "https://www.tn.gov/twra/fishing/trout-information-stockings.html",
+      "site_path": "/tn/water/dillard-ponds-greene-county/",
+      "location": null,
+      "last_period": {
+        "precision": "week",
+        "start": "2026-10-18",
+        "end": "2026-10-24",
+        "label": "week of 2026-10-18"
+      },
+      "next_period": null,
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-03-08",
+            "end": "2026-03-14",
+            "label": "week of 2026-03-08"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-03-22",
+            "end": "2026-03-28",
+            "label": "week of 2026-03-22"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-04-05",
+            "end": "2026-04-11",
+            "label": "week of 2026-04-05"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-04-19",
+            "end": "2026-04-25",
+            "label": "week of 2026-04-19"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-05-03",
+            "end": "2026-05-09",
+            "label": "week of 2026-05-03"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-09-27",
+            "end": "2026-10-03",
+            "label": "week of 2026-09-27"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "label": "week of 2026-10-18"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "tn-monroe-tellico-river",
+      "state": "TN",
+      "name": "Tellico River",
+      "name_status": "unreviewed",
+      "slug": "tellico-river-monroe-county",
+      "aliases": [
+        "Tellico River"
+      ],
+      "counties": [
+        "Monroe"
+      ],
+      "towns": [],
+      "region": "3",
+      "source_id": null,
+      "source_url": "https://www.tn.gov/twra/fishing/trout-information-stockings.html",
+      "site_path": "/tn/water/tellico-river-monroe-county/",
+      "location": null,
+      "last_period": {
+        "precision": "week",
+        "start": "2026-10-11",
+        "end": "2026-10-17",
+        "label": "week of 2026-10-11"
+      },
+      "next_period": {
+        "precision": "week",
+        "start": "2026-10-25",
+        "end": "2026-10-31",
+        "label": "week of 2026-10-25"
+      },
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-02-08",
+            "end": "2026-02-14",
+            "label": "week of 2026-02-08"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-02-22",
+            "end": "2026-02-28",
+            "label": "week of 2026-02-22"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-03-01",
+            "end": "2026-03-07",
+            "label": "week of 2026-03-01"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-03-08",
+            "end": "2026-03-14",
+            "label": "week of 2026-03-08"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-03-15",
+            "end": "2026-03-21",
+            "label": "week of 2026-03-15"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-03-22",
+            "end": "2026-03-28",
+            "label": "week of 2026-03-22"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-03-29",
+            "end": "2026-04-04",
+            "label": "week of 2026-03-29"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-04-05",
+            "end": "2026-04-11",
+            "label": "week of 2026-04-05"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-04-12",
+            "end": "2026-04-18",
+            "label": "week of 2026-04-12"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-04-19",
+            "end": "2026-04-25",
+            "label": "week of 2026-04-19"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-04-26",
+            "end": "2026-05-02",
+            "label": "week of 2026-04-26"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-05-03",
+            "end": "2026-05-09",
+            "label": "week of 2026-05-03"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-05-10",
+            "end": "2026-05-16",
+            "label": "week of 2026-05-10"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-05-17",
+            "end": "2026-05-23",
+            "label": "week of 2026-05-17"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-05-24",
+            "end": "2026-05-30",
+            "label": "week of 2026-05-24"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-05-31",
+            "end": "2026-06-06",
+            "label": "week of 2026-05-31"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-06-07",
+            "end": "2026-06-13",
+            "label": "week of 2026-06-07"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-06-14",
+            "end": "2026-06-20",
+            "label": "week of 2026-06-14"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-06-21",
+            "end": "2026-06-27",
+            "label": "week of 2026-06-21"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-06-28",
+            "end": "2026-07-04",
+            "label": "week of 2026-06-28"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-07-05",
+            "end": "2026-07-11",
+            "label": "week of 2026-07-05"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-07-12",
+            "end": "2026-07-18",
+            "label": "week of 2026-07-12"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-07-19",
+            "end": "2026-07-25",
+            "label": "week of 2026-07-19"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-07-26",
+            "end": "2026-08-01",
+            "label": "week of 2026-07-26"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-08-02",
+            "end": "2026-08-08",
+            "label": "week of 2026-08-02"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-08-09",
+            "end": "2026-08-15",
+            "label": "week of 2026-08-09"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-09-27",
+            "end": "2026-10-03",
+            "label": "week of 2026-09-27"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-10-11",
+            "end": "2026-10-17",
+            "label": "week of 2026-10-11"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-10-25",
+            "end": "2026-10-31",
+            "label": "week of 2026-10-25"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-11-08",
+            "end": "2026-11-14",
+            "label": "week of 2026-11-08"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-11-22",
+            "end": "2026-11-28",
+            "label": "week of 2026-11-22"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "week",
+            "start": "2026-12-06",
+            "end": "2026-12-12",
+            "label": "week of 2026-12-06"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "tn-sevier-gatlinburg-streams",
+      "state": "TN",
+      "name": "Gatlinburg Streams",
+      "name_status": "unreviewed",
+      "slug": "gatlinburg-streams-sevier-county",
+      "aliases": [
+        "Gatlinburg Streams"
+      ],
+      "counties": [
+        "Sevier"
+      ],
+      "towns": [],
+      "region": "4",
+      "source_id": null,
+      "source_url": "https://www.tn.gov/twra/fishing/trout-information-stockings.html",
+      "site_path": "/tn/water/gatlinburg-streams-sevier-county/",
+      "location": null,
+      "last_period": {
+        "precision": "day",
+        "start": "2026-10-15",
+        "end": "2026-10-15",
+        "label": "2026-10-15"
+      },
+      "next_period": {
+        "precision": "day",
+        "start": "2026-10-22",
+        "end": "2026-10-22",
+        "label": "2026-10-22"
+      },
+      "months_note": null,
+      "plants": [
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-01-01",
+            "end": "2026-01-01",
+            "label": "2026-01-01"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-01-08",
+            "end": "2026-01-08",
+            "label": "2026-01-08"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-01-15",
+            "end": "2026-01-15",
+            "label": "2026-01-15"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-01-22",
+            "end": "2026-01-22",
+            "label": "2026-01-22"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-01-29",
+            "end": "2026-01-29",
+            "label": "2026-01-29"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-02-05",
+            "end": "2026-02-05",
+            "label": "2026-02-05"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-02-12",
+            "end": "2026-02-12",
+            "label": "2026-02-12"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-02-19",
+            "end": "2026-02-19",
+            "label": "2026-02-19"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-02-26",
+            "end": "2026-02-26",
+            "label": "2026-02-26"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-03-05",
+            "end": "2026-03-05",
+            "label": "2026-03-05"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-03-12",
+            "end": "2026-03-12",
+            "label": "2026-03-12"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-03-19",
+            "end": "2026-03-19",
+            "label": "2026-03-19"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-03-26",
+            "end": "2026-03-26",
+            "label": "2026-03-26"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-02",
+            "end": "2026-04-02",
+            "label": "2026-04-02"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-09",
+            "end": "2026-04-09",
+            "label": "2026-04-09"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-16",
+            "end": "2026-04-16",
+            "label": "2026-04-16"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-23",
+            "end": "2026-04-23",
+            "label": "2026-04-23"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-04-30",
+            "end": "2026-04-30",
+            "label": "2026-04-30"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-05-07",
+            "end": "2026-05-07",
+            "label": "2026-05-07"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-05-14",
+            "end": "2026-05-14",
+            "label": "2026-05-14"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-05-21",
+            "end": "2026-05-21",
+            "label": "2026-05-21"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-05-28",
+            "end": "2026-05-28",
+            "label": "2026-05-28"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-06-04",
+            "end": "2026-06-04",
+            "label": "2026-06-04"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-06-11",
+            "end": "2026-06-11",
+            "label": "2026-06-11"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-06-18",
+            "end": "2026-06-18",
+            "label": "2026-06-18"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-06-25",
+            "end": "2026-06-25",
+            "label": "2026-06-25"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-07-02",
+            "end": "2026-07-02",
+            "label": "2026-07-02"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-07-09",
+            "end": "2026-07-09",
+            "label": "2026-07-09"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-07-16",
+            "end": "2026-07-16",
+            "label": "2026-07-16"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-07-23",
+            "end": "2026-07-23",
+            "label": "2026-07-23"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-07-30",
+            "end": "2026-07-30",
+            "label": "2026-07-30"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-08-06",
+            "end": "2026-08-06",
+            "label": "2026-08-06"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-08-13",
+            "end": "2026-08-13",
+            "label": "2026-08-13"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-08-20",
+            "end": "2026-08-20",
+            "label": "2026-08-20"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-08-27",
+            "end": "2026-08-27",
+            "label": "2026-08-27"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-09-03",
+            "end": "2026-09-03",
+            "label": "2026-09-03"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-09-10",
+            "end": "2026-09-10",
+            "label": "2026-09-10"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-09-17",
+            "end": "2026-09-17",
+            "label": "2026-09-17"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-09-24",
+            "end": "2026-09-24",
+            "label": "2026-09-24"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-10-01",
+            "end": "2026-10-01",
+            "label": "2026-10-01"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-10-08",
+            "end": "2026-10-08",
+            "label": "2026-10-08"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-10-15",
+            "end": "2026-10-15",
+            "label": "2026-10-15"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-10-22",
+            "end": "2026-10-22",
+            "label": "2026-10-22"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-10-29",
+            "end": "2026-10-29",
+            "label": "2026-10-29"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-11-05",
+            "end": "2026-11-05",
+            "label": "2026-11-05"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-11-12",
+            "end": "2026-11-12",
+            "label": "2026-11-12"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-11-19",
+            "end": "2026-11-19",
+            "label": "2026-11-19"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-11-26",
+            "end": "2026-11-26",
+            "label": "2026-11-26"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-12-03",
+            "end": "2026-12-03",
+            "label": "2026-12-03"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-12-10",
+            "end": "2026-12-10",
+            "label": "2026-12-10"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-12-17",
+            "end": "2026-12-17",
+            "label": "2026-12-17"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        },
+        {
+          "period": {
+            "precision": "day",
+            "start": "2026-12-24",
+            "end": "2026-12-24",
+            "label": "2026-12-24"
+          },
+          "species": "Rainbow Trout",
+          "status": "listed",
+          "count": null,
+          "first_observed_at": "2026-09-13T12:00:00Z",
+          "last_observed_at": "2026-09-13T12:00:00Z"
+        }
+      ]
+    }
+  ],
+  "this_week": [
+    {
+      "water_id": "tn-greene-dillard-ponds",
+      "species": "Rainbow Trout"
+    },
+    {
+      "water_id": "tn-sevier-gatlinburg-streams",
+      "species": "Rainbow Trout"
+    }
+  ]
+}

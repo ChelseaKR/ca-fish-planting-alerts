@@ -12,11 +12,17 @@ public struct PlantKey: Hashable, Sendable, Codable {
     /// nil for a week, so every baseline stored before precision existed
     /// (California's, all weeks) still matches; `.day` or `.month` otherwise.
     public let precision: DatePrecision?
-    public init(weekStart: PlainDate, species: String, precision: DatePrecision? = nil) {
+    /// The agency's words, for an approximate period only (they can't be
+    /// rebuilt from a start date). nil otherwise.
+    public let text: String?
+    public init(weekStart: PlainDate, species: String, precision: DatePrecision? = nil, text: String? = nil) {
         self.weekStart = weekStart; self.species = species
         self.precision = precision == .week ? nil : precision
+        self.text = precision == .approximate ? text : nil
     }
-    public init(_ plant: Plant) { self.init(weekStart: plant.week.start, species: plant.species, precision: plant.week.precision) }
+    public init(_ plant: Plant) {
+        self.init(weekStart: plant.week.start, species: plant.species, precision: plant.week.precision, text: plant.week.label)
+    }
 
     /// The period the key names, in words: "the week of 2026-10-11",
     /// "2026-10-14", or "December 2026".
@@ -25,6 +31,7 @@ public struct PlantKey: Hashable, Sendable, Codable {
         case .week: return "the week of \(weekStart.isoDate)"
         case .day: return weekStart.isoDate
         case .month: return "\(Self.monthNames[weekStart.month - 1]) \(weekStart.year)"
+        case .approximate: return text ?? "\(weekStart.year)"
         }
     }
 
@@ -67,7 +74,11 @@ public struct PlannedNotification: Equatable, Sendable, Identifiable {
     }
 
     public var title: String {
-        semantics == .report ? ReportWording.alertTitle(waterName) : "\(waterName) is on the stocking schedule"
+        switch semantics {
+        case .report: return ReportWording.alertTitle(waterName)
+        case .plan: return "\(waterName) is in the stocking plan"
+        case .schedule: return "\(waterName) is on the stocking schedule"
+        }
     }
 
     /// Week-of only, and "scheduled" rather than "stocked" — per
@@ -79,6 +90,10 @@ public struct PlannedNotification: Equatable, Sendable, Identifiable {
         if semantics == .report {
             let days = newKeys.map(\.phrase).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
             return ReportWording.alertBody(periods: days, species: what, agencyShortName: agencyShortName, lagging: lagging)
+        }
+        if semantics == .plan {
+            let periods = newKeys.map(\.phrase).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+            return "Planned for \(periods.joined(separator: " and ")) (\(what)), in \(agencyShortName)'s own words. A plan, not a date, and not a confirmed stocking."
         }
         if newKeys.allSatisfy({ $0.precision == nil }) {
             // Weeks only: California's words, exactly as before.

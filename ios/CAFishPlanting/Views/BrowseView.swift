@@ -273,7 +273,7 @@ struct StateFreshnessRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("\(state.agencyShortName) \(state.semantics == .schedule ? "stocking schedule" : "stocking report")")
+            Text("\(state.agencyShortName) \(state.kindLabel.lowercased())")
                 .font(.footnote.weight(.semibold))
             if let newest = state.newestRecord {
                 Text("Newest date in it: \(newest.label)")

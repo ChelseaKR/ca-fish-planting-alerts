@@ -84,6 +84,8 @@
 <p>No plants observed yet for {{ water.name }}.</p>
 {% endif %}
 
+{% include "_water_record.html.jinja" %}
+
 <h2>About this water</h2>
 <dl>
   <dt>{{ "County" if water.county_links|length == 1 else "Counties" }}</dt>
@@ -129,4 +131,14 @@
   {% endif %}
 </section>
 {% endfor %}
+{% if region_related %}
+<section aria-labelledby="region-related-heading">
+  <h2 id="region-related-heading">More waters in CDFW's {{ region_name }}</h2>
+  <ul class="water-index">
+    {% for s in region_related %}
+    <li><a href="{{ root }}water/{{ s.slug }}/">{{ s.name }}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,27 @@
+{# What this water's own recorded weeks show. Needs: water, water_record.
+   Every figure comes from the weeks CDFW listed for this water; nothing is
+   estimated. The status block above has the last week and the count. #}
+{% if water_record.count %}
+<section class="water-record" aria-labelledby="water-record-heading">
+  <h2 id="water-record-heading">{{ water.name }} in this site's record</h2>
+  <dl>
+    <dt>Earliest week on the schedule</dt>
+    <dd>The week of {{ water_record.first_week }}.</dd>
+    {% if water_record.gap_count %}
+    <dt>Span of the listed weeks</dt>
+    <dd>From the week of {{ water_record.first_week }} to the week of {{ water_record.latest_week }}, {{ water_record.span_weeks }} {{ "week" if water_record.span_weeks == 1 else "weeks" }} in all.</dd>
+    <dt>Gap between listed weeks</dt>
+    {% if water_record.single_gap is not none %}
+    <dd>The two listed weeks are {{ water_record.min_gap }} apart.</dd>
+    {% else %}
+    <dd>{{ water_record.median_gap }} at the median, between {{ water_record.min_gap }} and {{ water_record.max_gap }}, across {{ water_record.gap_count }} gaps. This describes the weeks recorded here, not a forecast.</dd>
+    {% endif %}
+    {% else %}
+    <dt>Span of the listed weeks</dt>
+    <dd>One listed week so far, so there is no gap between weeks to report.</dd>
+    {% endif %}
+    <dt>CDFW region</dt>
+    <dd>{{ water_record.region_name }}</dd>
+  </dl>
+</section>
+{% endif %}

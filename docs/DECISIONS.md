@@ -938,8 +938,9 @@ link the system opens rather than a request the app makes.
 ## 0034 — States wave 2: Michigan, Massachusetts and New York, and a v2 reader that ignores what it does not know (2026-10-13; rebased 2026-10-21)
 
 (Numbered 0028 on the `feat/states-wave2` branch of 2026-10-13; that number
-went to the launch switch on main. 0031 is the guides, 0032 Oregon, and 0033
-is reserved for the email digest ADR, so this is 0034. The owner confirmed
+went to the launch switch on main. 0031 is the guides, 0032 Oregon, 0033
+is reserved for the email digest ADR and 0035 is the ratings prompt, so this
+is 0034. The owner confirmed
 on 2026-10-21 that iOS 1.1.0 ships all four states, Tennessee plus these
 three, each as its own in-app purchase, while 1.0.0 is in Apple's review.)
 

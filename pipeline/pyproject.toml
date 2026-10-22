@@ -54,7 +54,9 @@ ignore = ["E501"]            # line length owned by the formatter
 # S101: assert is expected in tests. S603: the analytics tests run node on a
 # fixed argv of temp-file paths (test_site_analytics.py), never a shell or
 # caller-supplied input, so the check is exempted here rather than inline.
-"tests/**" = ["S101", "S603"]
+# S314: test_site_feeds.py parses the Atom files this build just wrote, never
+# fetched or caller-supplied XML (no defusedxml dependency is added for it).
+"tests/**" = ["S101", "S603", "S314"]
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 [tool.ruff.format]

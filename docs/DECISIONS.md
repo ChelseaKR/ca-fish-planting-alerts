@@ -1047,10 +1047,8 @@ pattern in `Configuration.storekit` and App Store Connect: Non-Consumable,
 USD 9.99, description "Alerts, widget, Watch: <State> waters". The
 California product is unchanged.
 
-**The daily run.** `ENABLED_STATES` is TN, MI, MA, NY. `publish.yml`'s
-commit step still lists only `pipeline/data/states/tn.json`; adding
-`mi.json`, `ma.json` and `ny.json` to that `git add` line is the owner's
-edit, as 0032 says for Oregon. Until it is made, each run fetches and
-publishes the three states but their histories are not committed, so
-Massachusetts' rows age off the site at the end of its season instead of
-accumulating.
+**The daily run.** `ENABLED_STATES` is TN, MI, MA, NY, and `publish.yml`'s
+commit step lists `pipeline/data/states/mi.json`, `ma.json` and `ny.json`
+beside `tn.json` (the one-line edit 0032 describes for Oregon), so each run
+commits the three histories and Massachusetts' rows accumulate past the end
+of its season instead of aging off.

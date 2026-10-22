@@ -30,7 +30,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import feeds, site_states
+from . import feeds, opendata, site_states
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -1093,6 +1093,172 @@ def _ld_dataset(
     return node
 
 
+def _open_data_states(
+    snap_v2: dict[str, Any], files: list[opendata.OpenFile], *, base_url: str
+) -> list[dict[str, Any]]:
+    """What /data/ shows for each state: its source, terms, dates and files,
+    all read from the snapshot the files were built from."""
+    out = []
+    for state in snap_v2["states"]:
+        mine = [f for f in files if f.state == state["code"]]
+        history = [
+            (p["period"]["start"], p["period"]["end"])
+            for w in snap_v2["waters"]
+            if w["state"] == state["code"]
+            for p in w["plants"]
+        ]
+        out.append(
+            {
+                "code": state["code"],
+                "name": state["name"],
+                "agency": state["agency"],
+                "source_name": state["source"]["name"],
+                "source_url": state["source"]["url"],
+                "attribution": state["attribution"],
+                "disclaimer": state["disclaimer"],
+                "license_summary": state["license"]["summary"],
+                "terms_url": opendata.terms_url(state),
+                "updated": state["source"]["fetched_at"][:10],
+                "current_week_label": state["current_week"]["label"],
+                "precisions": state["date_precisions"],
+                "semantics": state["semantics"],
+                "coverage": (
+                    (min(h[0] for h in history), max(h[1] for h in history))
+                    if history
+                    else None
+                ),
+                "files": [
+                    {
+                        "kind": f.kind,
+                        "fmt": f.fmt,
+                        "records": f.records,
+                        "path": f.path,
+                        "url": f"{base_url}/{f.path}",
+                    }
+                    for f in mine
+                ],
+            }
+        )
+    return out
+
+
+def _ld_open_dataset(
+    entry: dict[str, Any], *, base_url: str, license_url: str | None
+) -> dict[str, Any]:
+    """One state's CSV and JSON files as a Dataset, on /data/. Same pattern
+    as the Dataset on /about/: the source and its terms through
+    ``isBasedOn``, the attribution as ``creditText``, and ``license`` only
+    when the owner has chosen one (``DATASET_LICENSE_URL``)."""
+    node: dict[str, Any] = {
+        "@type": "Dataset",
+        "@id": f"{base_url}/data/#{entry['code'].lower()}",
+        "name": (
+            f"{entry['name']} fish planting schedule, current and history "
+            f"(CSV and JSON), from {entry['agency']['short_name']}"
+        ),
+        "description": (
+            f"{entry['name']} fish planting records from the "
+            f"{entry['agency']['name']}'s published schedule, as recorded by "
+            f"{SITE_NAME}: the water, county, species, the scheduled period, "
+            "and when each record was first and last seen. A current file "
+            "lists this week and later; a history file lists every record "
+            "observed. Entries are scheduled, not confirmed, and the agency "
+            "can change them. Stable columns are documented on the page."
+        ),
+        "url": f"{base_url}/data/#{entry['code'].lower()}",
+        "isAccessibleForFree": True,
+        "creator": {"@type": "Organization", "name": SITE_NAME, "url": f"{base_url}/"},
+        "isBasedOn": {
+            "@type": "CreativeWork",
+            "name": entry["source_name"],
+            "url": entry["source_url"],
+            "license": entry["terms_url"],
+            "creator": {
+                "@type": "GovernmentOrganization",
+                "name": entry["agency"]["name"],
+                "url": entry["agency"]["url"],
+            },
+        },
+        "creditText": entry["attribution"]["text"],
+        "keywords": [
+            entry["name"],
+            entry["agency"]["short_name"],
+            "fish planting schedule",
+            "trout stocking",
+        ],
+        "variableMeasured": [c[0] for c in opendata.COLUMNS],
+        "spatialCoverage": {"@type": "State", "name": entry["name"]},
+        "dateModified": entry["updated"],
+        "distribution": [
+            {
+                "@type": "DataDownload",
+                "name": f"{entry['code']} {f['kind']}, {f['fmt'].upper()}",
+                "encodingFormat": "text/csv"
+                if f["fmt"] == "csv"
+                else "application/json",
+                "contentUrl": f["url"],
+            }
+            for f in entry["files"]
+        ],
+    }
+    if entry["coverage"]:
+        node["temporalCoverage"] = "/".join(entry["coverage"])
+    if license_url:
+        node["license"] = license_url
+    return node
+
+
+def _write_open_data(
+    env: jinja2.Environment,
+    snapshot_v2: dict[str, Any],
+    out_dir: Path,
+    written: list[Path],
+    *,
+    base_url: str,
+    common: dict[str, Any],
+    license_url: str | None,
+) -> str:
+    """Write /data/ and the files it lists. Returns the data's last-updated
+    date (the newest state's last successful check), for the sitemap.
+    California is always in v2."""
+    open_files = opendata.build_files(snapshot_v2, base_url=base_url)
+    for f in open_files:
+        f_path = out_dir / f.path
+        f_path.parent.mkdir(parents=True, exist_ok=True)
+        # newline="" keeps the CSV's CRLF line endings as written.
+        with f_path.open("w", encoding="utf-8", newline="") as fh:
+            fh.write(f.text)
+        written.append(f_path)
+    open_states = _open_data_states(snapshot_v2, open_files, base_url=base_url)
+    data_updated = str(max(e["updated"] for e in open_states))
+    data_html = env.get_template("data.html.jinja").render(
+        title=f"Open data: CSV and JSON downloads | {SITE_NAME}, {SITE_TAGLINE}",
+        description=(
+            "Download the fish planting schedule this site mirrors as CSV and "
+            "JSON: this week and later, and the full weekly history, with a "
+            "documented column list. Source: CDFW; terms: see CDFW Conditions "
+            "of Use."
+        ),
+        canonical_url=f"{base_url}/data/",
+        root="../",
+        **common,
+        structured_data=_ld_graph(
+            *(
+                _ld_open_dataset(e, base_url=base_url, license_url=license_url)
+                for e in open_states
+            )
+        ),
+        states=open_states,
+        columns=opendata.COLUMNS,
+        schema_version=opendata.SCHEMA_VERSION,
+        data_dir=opendata.DATA_DIR,
+        data_updated=data_updated,
+        dataset_license_url=license_url,
+    )
+    _write_page(out_dir, "data", data_html, written)
+    return data_updated
+
+
 def _relative_trail(
     trail: list[tuple[str, str]], *, base_url: str, root: str
 ) -> list[tuple[str, str]]:
@@ -1925,6 +2091,7 @@ def build_site(
     }
     # The header's "Other states" link, only when v2 has another state, so a
     # California-only build keeps its header byte for byte.
+    common["open_data"] = snapshot_v2 is not None
     common["states_nav"] = snapshot_v2 is not None and len(snapshot_v2["states"]) > 1
     # The other states' hubs, for the visible links on the home page and the
     # county index; empty (so nothing renders) in a California-only build.
@@ -2069,6 +2236,23 @@ def build_site(
         source_fetched_label=source_fetched_label,
     )
     _write_page(out_dir, "about", about_html, written)
+
+    # ---- /data/ and the CSV and JSON files it lists, from v2. A build with
+    # no v2 (a hand-made snapshot in a test) has no such page, and then no
+    # page links to it (``open_data`` in ``common``).
+    data_updated = (
+        _write_open_data(
+            env,
+            snapshot_v2,
+            out_dir,
+            written,
+            base_url=base_url,
+            common=common,
+            license_url=dataset_license_url or None,
+        )
+        if snapshot_v2 is not None
+        else None
+    )
 
     # ---- privacy + support: the URLs App Store Connect asks for
     if ga4_measurement_id:
@@ -2257,6 +2441,7 @@ def build_site(
         (counties_index_url, counties_index_lastmod),
         (f"{base_url}/about/", None),
         (gear_url, None),
+        *([(f"{base_url}/data/", data_updated)] if data_updated else []),
         (f"{base_url}/privacy/", None),
         (f"{base_url}/support/", None),
         *region_lastmods.items(),

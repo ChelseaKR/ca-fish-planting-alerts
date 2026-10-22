@@ -28,6 +28,14 @@ This repository was republished with a new history on 2026-09-18
   structured data (no new schema.org type) and sitemap entries. Linked from the
   home page and `/county/`. `tests/test_site_species.py` pins each rule with
   negative controls.
+- Share cards: link previews now show a 1200x630 card (`og:image`,
+  `twitter:card=summary_large_image`, alt text) drawn at build time by
+  `pipeline/src/cfpa/share_cards.py`, one per kind of page (home, county,
+  water, region, species, and state when other states are built). Each carries the site name, a title that says "scheduled",
+  never "stocked", and the date CDFW's schedule was last checked. Five to six PNGs
+  of about 28 KB, not one per page. Pillow is the new dependency; its bundled
+  font is the only font used and none is fetched. Replaces the 600x600 icon
+  as the preview image (`assets/social-card.png` is no longer published).
 - Amazon Associates gear links on California water pages (DECISIONS 0029):
   four generic Amazon search links per water under "Gear for this water", each
   `rel="sponsored nofollow noopener"` and tagged `trouttruck-20` from one

@@ -30,7 +30,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import feeds, guides, opendata, site_states
+from . import feeds, guides, opendata, share_cards, site_states
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -163,15 +163,11 @@ APP_STORE_CANONICAL_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
 # minimum, with a quarter of its height (10px) of clear space around it.
 APP_STORE_BADGE_FILE = "app-store-badge.svg"
 
-# The image link previews show (Open Graph and Twitter cards): the app icon,
-# scaled to 600x600 from ios/CAFishPlanting's 1024 px AppIcon. It is the
-# product's own mark and says nothing about any water or week, so one file
-# is true on every page. Written on every build, unlike the badge, because
-# the icon is ours to use and a shared link should carry it before the app
-# is approved.
-SOCIAL_IMAGE_FILE = "social-card.png"
-SOCIAL_IMAGE_SIZE = 600
-SOCIAL_IMAGE_ALT = "Trout Truck: a trout above ripples on a green background"
+# The image link previews show (Open Graph and Twitter cards): one 1200x630
+# card per kind of page, drawn at build time by share_cards.py. The kind a
+# page uses is named in its template (``share_card_kind``); a page that names
+# none gets the home card.
+SHARE_CARD_DEFAULT_KIND = "home"
 
 # THE LAUNCH SWITCH. This is the committed default for the App Store launch,
 # and the one value to change, in one small reviewed pull request, on the day
@@ -2097,13 +2093,24 @@ def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -
     style_path.parent.mkdir(parents=True, exist_ok=True)
     style_path.write_text(minify_css(style_src), encoding="utf-8")
     written.append(style_path)
-    social_path = out_dir / "assets" / SOCIAL_IMAGE_FILE
-    social_path.write_bytes((TEMPLATES_DIR / SOCIAL_IMAGE_FILE).read_bytes())
-    written.append(social_path)
     if app_store_live:
         badge_path = out_dir / "assets" / APP_STORE_BADGE_FILE
         badge_path.write_bytes((TEMPLATES_DIR / APP_STORE_BADGE_FILE).read_bytes())
         written.append(badge_path)
+
+
+def _share_card_kinds(
+    snapshot: dict[str, Any], snapshot_v2: dict[str, Any] | None
+) -> list[str]:
+    """The share card kinds this build's pages use, in file order."""
+    kinds = ["home", "county", "water"]
+    if any(w["region"] for w in snapshot["waters"]):
+        kinds.append("region")
+    if species_pages_in(snapshot):
+        kinds.append("species")
+    if snapshot_v2 is not None and len(snapshot_v2["states"]) > 1:
+        kinds.append("state")
+    return kinds
 
 
 def build_site(
@@ -2164,6 +2171,10 @@ def build_site(
         (app_store_url or APP_STORE_CANONICAL_URL) if app_store_live else None
     )
     support_email = support_email or None
+    # Share cards: one per kind of page in use. A page type that arrives later
+    # adds its kind to _share_card_kinds and names it in its template.
+    checked_on = snapshot["source"]["fetched_at"][:10]
+    share_card_kinds = _share_card_kinds(snapshot, snapshot_v2)
     # Shared by every template: the app is only linked once it exists.
     common = {
         "attribution_text": attribution_text,
@@ -2172,9 +2183,13 @@ def build_site(
         # Off: no banner tag, no badge, no badge file, no extra CSS.
         "app_store_live": app_store_live,
         "app_store_id": APP_STORE_ID,
-        "social_image_url": f"{base_url}/assets/{SOCIAL_IMAGE_FILE}",
-        "social_image_size": SOCIAL_IMAGE_SIZE,
-        "social_image_alt": SOCIAL_IMAGE_ALT,
+        "share_cards": {
+            kind: share_cards.card_meta(
+                kind, base_url=base_url, site_name=SITE_NAME, checked_on=checked_on
+            )
+            for kind in share_card_kinds
+        },
+        "share_card_default_kind": SHARE_CARD_DEFAULT_KIND,
         "support_email": support_email,
         "site_name": SITE_NAME,
         "amazon_disclosure": AMAZON_ASSOCIATE_DISCLOSURE,
@@ -2203,6 +2218,13 @@ def build_site(
 
     # ---- assets/
     _write_assets(out_dir, written, app_store_live=app_store_live)
+    share_cards.write_cards(
+        out_dir,
+        share_card_kinds,
+        site_name=SITE_NAME,
+        checked_on=checked_on,
+        written=written,
+    )
 
     waters_by_id = {w["id"]: w for w in snapshot["waters"]}
     region_by_county = {c["name"]: c["region"] for c in snapshot["counties"]}

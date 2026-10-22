@@ -3,10 +3,32 @@ package com.chelseakr.cafishplanting.core
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/** What a decode left out, for tests and diagnostics. Never shown as a value. */
+data class IgnoredVocabulary(
+    val states: List<String> = emptyList(),
+    val waters: List<String> = emptyList(),
+    val plants: Int = 0,
+) {
+    val isEmpty: Boolean get() = states.isEmpty() && waters.isEmpty() && plants == 0
+}
+
+data class DecodedSnapshot(val snapshot: Snapshot, val ignored: IgnoredVocabulary)
+
 /**
- * Strict decoder for `schema/snapshot.v2.json`: California plus every other
- * state with data, the same checks as `SnapshotV2Decoding.swift`. A contract
- * violation throws and the caller keeps the last good snapshot, as with v1.
+ * Decoder for `schema/snapshot.v2.json`: California plus every other state
+ * with data, the same checks as `SnapshotV2Decoding.swift`. Unknown keys are
+ * ignored. Two kinds of trouble are told apart (DECISIONS 0034):
+ *
+ * - A contract violation (a missing field, a week labeled as a day, a
+ *   `reported` plant in a schedule state, California not first) throws, and
+ *   the caller keeps the last good snapshot, as with v1.
+ * - A vocabulary this build does not know is left out, never thrown on: a
+ *   state whose `semantics` this build has no words for, a state it has no
+ *   product for ([StateProducts]), a plant whose `status` or
+ *   `period.precision` is new. The pipeline may add a state or a value
+ *   before an app update ships; an install must keep refreshing through
+ *   that. What is left out is counted in [IgnoredVocabulary], and `this_week` entries
+ *   for those waters are dropped with them.
  *
  * California's waters keep v1's ids (`cdfw-<id>`), so favorites, alert
  * baselines and the widget carry over. The snapshot's top-level
@@ -16,25 +38,57 @@ import kotlinx.serialization.Serializable
 internal object SnapshotV2Decoding {
     private fun bad(what: String) = SnapshotDecodingException.malformed(what)
 
-    fun decode(dto: SnapshotV2DTO): Snapshot {
-        val states = dto.states.map(::state)
-        val ca = states.firstOrNull { it.code == "CA" }
-        if (ca == null || states.first().code != "CA") throw bad("a v2 snapshot must list California first")
-        if (states.map { it.code }.toSet().size != states.size) throw bad("a state is listed twice")
-        val byCode = states.associateBy { it.code }
+    fun decode(dto: SnapshotV2DTO): Snapshot = decodeReporting(dto).snapshot
+
+    fun decodeReporting(dto: SnapshotV2DTO): DecodedSnapshot {
+        val ignoredStates = mutableListOf<String>()
+        val ignoredWaters = mutableListOf<String>()
+        var ignoredPlants = 0
+        val allStates = mutableListOf<StateInfo>()
+        for (d in dto.states) {
+            val st = state(d)
+            if (st == null) ignoredStates += d.code else allStates += st
+        }
+        val ca = allStates.firstOrNull { it.code == "CA" }
+        if (ca == null || dto.states.first().code != "CA") throw bad("a v2 snapshot must list California first")
+        if (dto.states.map { it.code }.toSet().size != dto.states.size) throw bad("a state is listed twice")
+        val byCode = allStates.associateBy { it.code }
+        val ignoredStateSet = ignoredStates.toSet()
 
         val seen = HashSet<String>()
-        val waters = dto.waters.map { w ->
-            val st = byCode[w.state] ?: throw bad("water ${w.id} names a state the snapshot doesn't list: ${w.state}")
-            val water = water(w, st)
-            if (!seen.add(water.id)) throw bad("duplicate water id ${water.id}")
-            water
+        val dropped = HashSet<String>()
+        val waters = mutableListOf<Water>()
+        for (w in dto.waters) {
+            val id = w.id.trim()
+            if (!seen.add(id)) throw bad("duplicate water id $id")
+            if (w.state in ignoredStateSet) {
+                dropped += id
+                ignoredWaters += id
+                continue
+            }
+            val st = byCode[w.state] ?: throw bad("water $id names a state the snapshot doesn't list: ${w.state}")
+            val (water, plantsIgnored) = water(w, st)
+            ignoredPlants += plantsIgnored
+            if (water == null) {
+                dropped += id
+                ignoredWaters += id
+                continue
+            }
+            waters += water
         }
-        val thisWeek = dto.thisWeek.map { entry ->
+        // The pipeline never publishes a state without a water (DECISIONS
+        // 0025), so a state left with none after its plants were ignored goes
+        // too, rather than listing a count of waters this build can't show.
+        val withWaters = waters.map { it.state }.toSet()
+        val states = allStates.filter { it.code == "CA" || it.code in withWaters }
+        for (st in allStates) if (st !in states) ignoredStates += st.code
+        val thisWeek = mutableListOf<ThisWeekEntry>()
+        for (entry in dto.thisWeek) {
             val id = entry.waterID.trim()
             val species = entry.species.trim()
+            if (id in dropped) continue
             if (id !in seen || species.isEmpty()) throw bad("this_week entry $id names no water or no species")
-            ThisWeekEntry(id, species)
+            thisWeek += ThisWeekEntry(id, species)
         }
         val species = mutableListOf<String>()
         for (w in waters) for (p in w.plants) if (p.species !in species) species += p.species
@@ -47,7 +101,7 @@ internal object SnapshotV2Decoding {
             statedPeriodStart = ca.currentWeek.start, statedPeriodEnd = ca.currentWeek.end,
             contentSHA256 = caSource.contentSHA256,
         )
-        return Snapshot(
+        val snapshot = Snapshot(
             schemaVersion = 2,
             generatedAt = SnapshotDecoder.datetime(dto.generatedAt, "generated_at"),
             source = source, sourceWeek = ca.currentWeek, attribution = ca.attribution,
@@ -55,13 +109,18 @@ internal object SnapshotV2Decoding {
             species = species.sorted(), waters = waters, thisWeek = thisWeek,
             coverage = null, states = states,
         )
+        return DecodedSnapshot(snapshot, IgnoredVocabulary(ignoredStates, ignoredWaters, ignoredPlants))
     }
 
-    private fun state(d: StateDTO): StateInfo {
+    /** One state, or null when this build has no words or no product for it. */
+    private fun state(d: StateDTO): StateInfo? {
         val code = d.code
         if (code.length != 2 || code != code.uppercase()) throw bad("state code is not two capitals: $code")
-        val semantics = StateSemantics.fromWire(d.semantics) ?: throw bad("state $code has unknown semantics ${d.semantics}")
-        val precisions = d.datePrecisions.map { DatePrecision.fromWire(it) ?: throw bad("state $code has unknown precision $it") }
+        val semantics = StateSemantics.fromWire(d.semantics)
+        if (semantics == null || !StateProducts.isKnown(code)) return null
+        // A precision this build does not know is left out of the list; the
+        // plants that use it are left out below, water by water.
+        val precisions = d.datePrecisions.mapNotNull { DatePrecision.fromWire(it) }
         val regions = d.regions.map { r ->
             if (code == "CA" && r.code !in SnapshotDecoder.regionCodes) throw bad("region has an unrecognized code: ${r.code}")
             Region(r.code, r.name)
@@ -103,8 +162,12 @@ internal object SnapshotV2Decoding {
         )
     }
 
-    fun period(d: PeriodV2DTO, field: String): Week {
-        val precision = DatePrecision.fromWire(d.precision) ?: throw bad("$field has unknown precision ${d.precision}")
+    /**
+     * A period at a precision this build knows, or null for one it does not.
+     * A known precision whose label or bounds break the contract throws.
+     */
+    fun period(d: PeriodV2DTO, field: String): Week? {
+        val precision = DatePrecision.fromWire(d.precision) ?: return null
         val start = SnapshotDecoder.date(d.start, "$field.start")
         val end = SnapshotDecoder.date(d.end, "$field.end")
         if (start > end) throw bad("$field has end before start")
@@ -118,7 +181,11 @@ internal object SnapshotV2Decoding {
         return Week(start, end, d.label, precision)
     }
 
-    private fun water(w: WaterV2DTO, state: StateInfo): Water {
+    /**
+     * One water, or null when every plant used a vocabulary this build does
+     * not know and there is no months note to show instead.
+     */
+    private fun water(w: WaterV2DTO, state: StateInfo): Pair<Water?, Int> {
         val id = w.id.trim()
         var stockID = 0
         if (state.code == "CA") {
@@ -131,14 +198,21 @@ internal object SnapshotV2Decoding {
         if (name.isEmpty()) throw bad("water $id has an empty name")
         val region = w.region ?: ""
         if (state.code == "CA" && region !in SnapshotDecoder.regionCodes) throw bad("water $id has an unrecognized region: $region")
-        val plants = w.plants.map { p ->
-            val status = PlantStatus.fromWire(p.status) ?: throw bad("waters[$id].plants has an unrecognized status: ${p.status}")
+        var ignoredPlants = 0
+        val plants = mutableListOf<Plant>()
+        for (p in w.plants) {
+            val status = PlantStatus.fromWire(p.status)
+            val week = if (status == null) null else period(p.period, "waters[$id].plants[].period")
+            if (status == null || week == null) {
+                ignoredPlants++
+                continue
+            }
             val fits = if (state.semantics == StateSemantics.REPORT) status == PlantStatus.REPORTED else status != PlantStatus.REPORTED
             if (!fits) throw bad("waters[$id] has a ${p.status} plant in a ${state.semantics.wire} state")
             val species = p.species.trim()
             if (species.isEmpty()) throw bad("waters[$id] has a plant with an empty species")
-            Plant(
-                week = period(p.period, "waters[$id].plants[].period"),
+            plants += Plant(
+                week = week,
                 species = species,
                 status = status,
                 firstObservedAt = SnapshotDecoder.datetime(p.firstObservedAt, "waters[$id].plants[].first_observed_at"),
@@ -147,8 +221,13 @@ internal object SnapshotV2Decoding {
             )
         }
         val monthsNote = w.monthsNote?.trim()?.takeIf { it.isNotEmpty() }
-        if (plants.isEmpty() && monthsNote == null) throw bad("water $id has no plants and no months note")
-        return Water(
+        if (plants.isEmpty() && monthsNote == null) {
+            // Nothing this build can show. An empty list in the file is a
+            // contract violation; a list emptied by unknown vocabulary is not.
+            if (ignoredPlants == 0) throw bad("water $id has no plants and no months note")
+            return null to ignoredPlants
+        }
+        val water = Water(
             id = id, cdfwStockID = stockID, name = name, nameReviewed = w.nameStatus == "reviewed",
             slug = w.slug, aliases = SnapshotDecoder.clean(w.aliases), counties = SnapshotDecoder.clean(w.counties),
             region = region, cdfwMapURL = SnapshotDecoder.url(w.sourceURL, "waters[$id].source_url"),
@@ -158,6 +237,7 @@ internal object SnapshotV2Decoding {
             agencyShortName = state.agencyShortName, towns = SnapshotDecoder.clean(w.towns),
             sitePath = w.sitePath, monthsNote = monthsNote,
         )
+        return water to ignoredPlants
     }
 }
 

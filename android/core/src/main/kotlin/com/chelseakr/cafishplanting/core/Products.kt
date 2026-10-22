@@ -45,6 +45,13 @@ object StateProducts {
 
     fun productID(state: String): String? = productIDsByState[state]
 
+    /**
+     * Whether this build sells a product for the state. A state it doesn't
+     * know is left out of a decoded snapshot (`SnapshotV2Decoding`, DECISIONS
+     * 0034) rather than shown with a purchase button that could not work.
+     */
+    fun isKnown(state: String): Boolean = state in productIDsByState
+
     fun state(productID: String): String? = productIDsByState.entries.firstOrNull { it.value == productID }?.key
 
     /** The states a set of owned products unlocks. Unknown IDs unlock nothing. */

@@ -22,8 +22,9 @@ class SnapshotDecodingException(message: String) : Exception(message) {
 }
 
 /**
- * Strict decoder for `schema/snapshot.v1.json` and `schema/snapshot.v2.json`,
- * the same checks as `SnapshotDecoder.swift` and `SnapshotV2Decoding.swift`.
+ * Decoder for `schema/snapshot.v1.json` and `schema/snapshot.v2.json`,
+ * strict about the contract and tolerant of vocabulary it doesn't know (v2
+ * only, see `SnapshotV2Decoding`), the same checks as `SnapshotDecoder.swift` and `SnapshotV2Decoding.swift`.
  * A v1 file is California alone. Unknown JSON keys are ignored, matching
  * `schema/README.md`'s reader contract; a missing required field, a bad
  * date, a non-https URL, an unknown status or region, a duplicate water or
@@ -46,6 +47,15 @@ object SnapshotDecoder {
             1 -> decodeV1(text)
             2 -> SnapshotV2Decoding.decode(wire(text, SnapshotV2DTO.serializer()))
             else -> throw SnapshotDecodingException.unsupportedSchemaVersion(version)
+        }
+    }
+
+    /** [decode], plus what a v2 file's unknown vocabulary left out (always nothing for v1). */
+    fun decodeReporting(bytes: ByteArray): DecodedSnapshot {
+        val text = bytes.toString(Charsets.UTF_8)
+        return when (wire(text, VersionDTO.serializer()).schemaVersion) {
+            2 -> SnapshotV2Decoding.decodeReporting(wire(text, SnapshotV2DTO.serializer()))
+            else -> DecodedSnapshot(decode(text), IgnoredVocabulary())
         }
     }
 

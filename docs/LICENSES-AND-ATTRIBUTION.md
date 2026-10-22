@@ -41,6 +41,21 @@ with any map or location, on the site's about page and in the app:
 > Dataset and Geographic Names Information System. County boundaries: U.S.
 > Census Bureau, TIGER/Line Shapefiles.
 
+Read again 2026-10-20 (before the map link and "closest to me" shipped):
+`https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits`
+(HTTP 200; `www.usgs.gov/robots.txt` does not disallow it) says
+"USGS-authored or produced data and information are considered to be in the
+U.S. Public Domain" and "When using information from USGS information
+products, publications, or websites, we ask that proper credit be given."
+`DomesticNames_CA_Text.xml` (pubdate 20260929) says use constraints "None.
+Acknowledgment of the U.S. Geological Survey would be appreciated for products
+derived from these data." The about page gives that acknowledgment.
+
+"View on map" links go to `https://www.openstreetmap.org/` as plain links. No
+OpenStreetMap data, tile, script or API is fetched by this site or the
+browser until a reader clicks, so no OpenStreetMap license or tile policy
+applies to the site itself.
+
 robots.txt for the download hosts, read 2026-10-12 with an honest
 User-Agent (`trout-truck-geocode/0.1
 (+https://github.com/ChelseaKR/ca-fish-planting-alerts)`) before any

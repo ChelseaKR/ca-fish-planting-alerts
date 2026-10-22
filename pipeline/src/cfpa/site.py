@@ -3,24 +3,27 @@
 The one script this module can write is the Google Analytics 4 tag
 (DECISIONS 0011, which replaces 0002's "no tracking" for the website only).
 It is emitted only when a GA4 measurement ID is configured
-(``GA4_MEASUREMENT_ID`` below); with none, every page has no JavaScript, no
-cookies and no third-party request, exactly as before. The about, privacy
-and support pages describe whichever of those two states the build is in.
-Nothing here ever writes an external stylesheet host, a pixel or an iframe.
-The iOS app never carries analytics.
+(``GA4_MEASUREMENT_ID`` below); with none, no page has a third-party script,
+cookies or a third-party request. The other script is the home page's own
+``assets/closest.js`` ("closest to me", DECISIONS 0024), written when the
+build has water locations: first-party, idle until a button is pressed, and
+sending nothing anywhere. The about, privacy and support pages describe
+whichever state the build is in. Nothing here ever writes an external
+stylesheet host, a pixel or an iframe. The iOS app never carries analytics.
 
 Pages may also carry one ``<script type="application/ld+json">`` block of
 schema.org structured data (docs/adr/0013). That is data for search
 engines, not JavaScript: a browser never executes it and it makes no
 request. It only ever states what the snapshot says -- a planting is a
-scheduled *week*, so there is no ``Event``, and no coordinates are given
-because the snapshot has none.
+scheduled *week*, so there is no ``Event``. ``geo`` is given only for a water
+whose federal match is a point inside the water, and the page shows it.
 """
 
 from __future__ import annotations
 
 import datetime as dt
 import itertools
+import json
 import re
 from collections import Counter
 from dataclasses import dataclass, field
@@ -34,6 +37,46 @@ from . import feeds, guides, opendata, share_cards, site_states
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
+
+# "Closest to me" and "View on map" (DECISIONS 0024): the home page's browser
+# script and the static file of coordinates it reads. First-party files, no
+# third-party script, tile or tracker.
+CLOSEST_JS_FILE = "closest.js"
+COORDS_FILE = "water-coords.json"
+COORDS_SCHEMA = "trout-truck-water-coords-v1"
+COORDS_SOURCE = (
+    "U.S. Geological Survey, National Hydrography Dataset and Geographic Names "
+    "Information System; every point is in pipeline/data/water_locations.json "
+    "with its feature id"
+)
+# The one place a page may name this script. Tests remove exactly this string
+# before they count a page's scripts.
+CLOSEST_SCRIPT_TAG = f'<script src="assets/{CLOSEST_JS_FILE}" defer></script>'
+OSM_URL = "https://www.openstreetmap.org/"
+
+
+def map_url(lat: float, lon: float, *, approximate: bool) -> str:
+    """A link to a map service's own page for a point. Nothing is embedded: no
+    script, tile or iframe loads from the map service until a reader clicks."""
+    zoom = 12 if approximate else 14
+    return f"{OSM_URL}?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}"
+
+
+def water_coords(snapshot_v2: dict[str, Any] | None) -> dict[str, list[Any]]:
+    """slug -> [lat, lon, "w" | "s"] for each California water v2 places.
+    "w" is a point inside a lake or reservoir (or GNIS's own point for it);
+    "s" is a point on a stream, which is approximate. A water with no single
+    federal match has no entry, so nothing is placed that was not matched."""
+    if snapshot_v2 is None:
+        return {}
+    out: dict[str, list[Any]] = {}
+    for w in snapshot_v2["waters"]:
+        loc = w.get("location")
+        if w.get("state") == "CA" and loc:
+            kind = "s" if loc["kind"] == "stream_point" else "w"
+            out[w["slug"]] = [loc["lat"], loc["lon"], kind]
+    return out
+
 
 # The product name (DECISIONS 0010). It says nothing a searcher types, so
 # every title and meta description keeps the descriptive "trout planting" /
@@ -874,11 +917,16 @@ def _ld_county(county: str) -> dict[str, Any]:
     }
 
 
-def _ld_water(w: dict[str, Any], *, page_url: str) -> dict[str, Any]:
+def _ld_water(
+    w: dict[str, Any], *, page_url: str, point: list[Any] | None = None
+) -> dict[str, Any]:
     """The water itself. BodyOfWater (a schema.org Place) is true of every
     CDFW planting water, lake, reservoir, creek or river section alike; the
-    finer subtypes would be a guess from the name. No ``geo``: the snapshot
-    carries no location for any water, and none is invented."""
+    finer subtypes would be a guess from the name. ``geo`` only for a water
+    whose point is inside the water itself (``point`` kind "w") and that the
+    page shows as coordinates; a stream's point is approximate and a stream is
+    not at one place, so a stream gets none, and a water with no single
+    federal match gets none either."""
     node: dict[str, Any] = {
         "@type": "BodyOfWater",
         "@id": f"{page_url}#water",
@@ -894,6 +942,12 @@ def _ld_water(w: dict[str, Any], *, page_url: str) -> dict[str, Any]:
     other_names = [n for n in w["aliases"] if n != w["name"]]
     if other_names:
         node["alternateName"] = other_names
+    if point is not None and point[2] == "w":
+        node["geo"] = {
+            "@type": "GeoCoordinates",
+            "latitude": point[0],
+            "longitude": point[1],
+        }
     return node
 
 
@@ -1327,6 +1381,7 @@ class _PageContext:
     source_fetched_label: str
     source_checked_on: str = ""
     waters_by_region: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    coords: dict[str, list[Any]] = field(default_factory=dict)
 
     @property
     def home_crumb(self) -> tuple[str, str]:
@@ -1335,6 +1390,19 @@ class _PageContext:
     @property
     def counties_crumb(self) -> tuple[str, str]:
         return ("Counties", f"{self.base_url}/county/")
+
+
+def _water_map(point: list[Any] | None) -> dict[str, Any] | None:
+    """What the water page shows for a placed water, or None."""
+    if point is None:
+        return None
+    approximate = point[2] == "s"
+    return {
+        "lat": point[0],
+        "lon": point[1],
+        "approximate": approximate,
+        "url": map_url(point[0], point[1], approximate=approximate),
+    }
 
 
 def _render_water_page(
@@ -1348,9 +1416,9 @@ def _render_water_page(
     def by_name(s: dict[str, Any]) -> tuple[str, str]:
         return (s["name"], s["slug"])
 
-    # Waters sharing a county: the only nearness the snapshot supports (it
-    # has no locations), so the page says "other <county> County waters",
-    # never "nearby".
+    # Waters sharing a county: the only nearness the page claims (not every
+    # water has a location), so it says "other <county> County waters", never
+    # "nearby".
     siblings = {
         s["id"]: s
         for c in w["counties"]
@@ -1395,6 +1463,7 @@ def _render_water_page(
         (w["name"], page_url),
     ]
     title = _water_title(view)
+    point = ctx.coords.get(w["slug"])
     html = ctx.env.get_template("water.html.jinja").render(
         title=title,
         description=_water_description(view, source_week_label=ctx.source_week_label),
@@ -1410,10 +1479,11 @@ def _render_water_page(
                 about={"@id": f"{page_url}#water"},
             ),
             _ld_breadcrumb(page_url, trail),
-            _ld_water(w, page_url=page_url),
+            _ld_water(w, page_url=page_url, point=point),
         ),
         breadcrumb=_relative_trail(trail, base_url=base_url, root="../../"),
         water=view,
+        water_map=_water_map(point),
         gear_links=gear_links(),
         affiliate_rel=AFFILIATE_LINK_REL,
         scheduled_elsewhere=scheduled_elsewhere,
@@ -2111,7 +2181,13 @@ def minify_css(css: str) -> str:
     return re.sub(r"\x00(\d+)\x00", lambda m: strings[int(m.group(1))], out)
 
 
-def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -> None:
+def _write_assets(
+    out_dir: Path,
+    written: list[Path],
+    *,
+    app_store_live: bool,
+    coords: dict[str, list[Any]] | None = None,
+) -> None:
     """assets/style.css, plus the App Store badge and its CSS when live.
 
     The badge CSS is appended only when the switch is on, and the badge file
@@ -2125,6 +2201,27 @@ def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -
     style_path.parent.mkdir(parents=True, exist_ok=True)
     style_path.write_text(minify_css(style_src), encoding="utf-8")
     written.append(style_path)
+    if coords:
+        js_path = out_dir / "assets" / CLOSEST_JS_FILE
+        js_path.write_text(
+            (TEMPLATES_DIR / CLOSEST_JS_FILE).read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+        written.append(js_path)
+        coords_path = out_dir / "assets" / COORDS_FILE
+        coords_path.write_text(
+            json.dumps(
+                {
+                    "schema": COORDS_SCHEMA,
+                    "source": COORDS_SOURCE,
+                    "waters": dict(sorted(coords.items())),
+                },
+                separators=(",", ":"),
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        written.append(coords_path)
     if app_store_live:
         badge_path = out_dir / "assets" / APP_STORE_BADGE_FILE
         badge_path.write_bytes((TEMPLATES_DIR / APP_STORE_BADGE_FILE).read_bytes())
@@ -2249,7 +2346,8 @@ def build_site(
     ]
 
     # ---- assets/
-    _write_assets(out_dir, written, app_store_live=app_store_live)
+    coords = water_coords(snapshot_v2)
+    _write_assets(out_dir, written, app_store_live=app_store_live, coords=coords)
     share_cards.write_cards(
         out_dir,
         share_card_kinds,
@@ -2357,6 +2455,9 @@ def build_site(
         region_links=region_links,
         all_waters=all_waters,
         county_counts=county_counts,
+        closest_enabled=bool(coords),
+        closest_script_tag=CLOSEST_SCRIPT_TAG,
+        coords_path=f"assets/{COORDS_FILE}",
     )
     _write_page(out_dir, "", index_html, written)
 
@@ -2369,6 +2470,8 @@ def build_site(
     else:
         about_collects = "what it collects (nothing)"
     about_html = env.get_template("about.html.jinja").render(
+        locations_placed=len(coords) if coords else None,
+        locations_total=len(snapshot["waters"]),
         title=f"About, attribution & privacy | {SITE_NAME}, {SITE_TAGLINE}",
         description=(
             f"What {SITE_NAME} is, {about_collects}, and where its trout planting "
@@ -2499,6 +2602,7 @@ def build_site(
         source_fetched_label=source_fetched_label,
         source_checked_on=snapshot["source"]["fetched_at"][:10],
         waters_by_region=waters_by_region,
+        coords=coords,
     )
 
     # ---- per-water pages + ics

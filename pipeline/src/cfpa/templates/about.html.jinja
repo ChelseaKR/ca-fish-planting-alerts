@@ -49,8 +49,10 @@
 <p>This is a plain static site. Specifically:</p>
 <ul>
   <li>No cookies are set by this site.</li>
-  <li>No JavaScript runs on this site, at all &mdash; there is nothing to run
-      analytics, tracking, or a "third-party script" with.</li>
+  <li>There is no analytics, tracking or third-party script. The one script
+      is the home page's &ldquo;Sort by closest to me&rdquo; button, which does
+      nothing until you press it (see
+      <a href="{{ root }}privacy/#location">Your location</a>).</li>
   <li>No request made by a page on this site contacts any server other than
       the one serving the page itself. Nothing you do here leaves your
       browser.</li>
@@ -118,19 +120,22 @@
 
 <h3 id="locations">Water locations</h3>
 <p>
-  The pages on this site do not show a map or coordinates for any water.
-  Each California water page links to CDFW's own map instead. Where this
-  project has matched a water to a location, in its data files and not on
-  these pages, the match uses public-domain federal data, never CDFW's own
-  fishing map data (its terms are unknown, so it is not used). Source of
-  water locations: U.S. Geological Survey, National Hydrography Dataset and
+  Map locations come from public-domain federal data, never from CDFW's own
+  fishing map (its terms are unknown, so it is not used). Source of water
+  locations: U.S. Geological Survey, National Hydrography Dataset and
   Geographic Names Information System
   (<a href="https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits">U.S. Public Domain</a>).
   County boundaries used to check each match: U.S. Census Bureau,
   <a href="https://www2.census.gov/geo/tiger/TIGER2024/COUNTY/">TIGER/Line Shapefiles</a>.
-  A water gets a location when exactly one federal feature with its name
-  lies in the county CDFW lists; waters with no single match have no
-  location.
+  A water gets a location only when exactly one federal feature with its name
+  lies in the county CDFW lists; a lake's point is inside the lake, and a
+  stream's point is on the stream but approximate, since a stream is planted
+  along its length. Waters with no single match have no location and are
+  never placed on a map. {% if locations_placed is not none %}Right now,
+  {{ locations_placed }} of {{ locations_total }} California waters have a
+  location.{% endif %} Where a water has a location, its page has a
+  &ldquo;View on map&rdquo; link to OpenStreetMap, and the home page can sort
+  this week's list by distance from you.
 </p>
 
 <h2>Accuracy</h2>

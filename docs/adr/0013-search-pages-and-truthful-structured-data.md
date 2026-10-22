@@ -79,7 +79,7 @@ property is valid on its type).
 | Page | Types | Why |
 |---|---|---|
 | Home | `WebSite` (name, url, description, language) | Names the site. Google reads it for site names only on a domain or subdomain home page, never a subdirectory, so on github.io it does nothing yet. It is still true, and it starts working once the site has its own domain. No `potentialAction`: Google retired the sitelinks search box, and the site has no search. |
-| Water | `WebPage` about a `BodyOfWater`, plus `BreadcrumbList` | `BodyOfWater` (a `Place`) is true of every CDFW planting water, whether lake, reservoir, creek or river section. The subtypes (`LakeBodyOfWater`, `Reservoir`, `RiverBodyOfWater`) would be guesses from the name, and a name does not say whether a "lake" is dammed. It carries `containedInPlace` (the county `AdministrativeArea`, inside the `State` California), `hasMap` (CDFW's own map link for the water), `identifier` (the CDFW stock ID) and `alternateName` (CDFW's other spellings). It has no `geo` and no `address`, because the snapshot has no location. `BreadcrumbList` mirrors the visible breadcrumb name for name. It is the one type here that Google shows as a rich result. |
+| Water | `WebPage` about a `BodyOfWater`, plus `BreadcrumbList` | `BodyOfWater` (a `Place`) is true of every CDFW planting water, whether lake, reservoir, creek or river section. The subtypes (`LakeBodyOfWater`, `Reservoir`, `RiverBodyOfWater`) would be guesses from the name, and a name does not say whether a "lake" is dammed. It carries `containedInPlace` (the county `AdministrativeArea`, inside the `State` California), `hasMap` (CDFW's own map link for the water), `identifier` (the CDFW stock ID) and `alternateName` (CDFW's other spellings). It has no `address`. It has `geo` (a `GeoCoordinates`) only on a water whose federal match is a point inside the water, and only because the page shows those same numbers (DECISIONS 0024, addendum 2026-10-20); a stream's approximate point and a water with no single match get none. `BreadcrumbList` mirrors the visible breadcrumb name for name. It is the one type here that Google shows as a rich result. |
 | County, county index | `CollectionPage` about the county (or California), plus `BreadcrumbList` | These pages are lists of links to waters. `CollectionPage` says that and nothing more. `ItemList` was not used: Google's list results cover only recipes, courses, restaurants and movies. |
 | About | `Dataset` | Describes the compiled schedule history: name, description, `url` (`/about/#data`), `isAccessibleForFree`, `creator` (Trout Truck), `keywords`, `variableMeasured`, `spatialCoverage` (California), `temporalCoverage` (the earliest scheduled week to the latest), `dateModified` (the day the data last changed, the same date as the home page's lastmod), and `distribution` (`snapshot/v1.json`). CDFW is credited through `isBasedOn` (the schedule, created by CDFW as a `GovernmentOrganization`, with its terms, CDFW's Conditions of Use) and `creditText` (the attribution every page carries). |
 | Privacy, support, 404 | none | Nothing on them to describe. |
@@ -97,9 +97,11 @@ What was ruled out:
 - **`TouristAttraction`.** It is a claim about the place that the data does
   not make: a section of creek is not a tourist attraction. Google shows no
   rich result for it either.
-- **`geo` coordinates.** The snapshot's `location` is null for every water.
-  Geocoding a name like "Deer Creek" could put a pin on the wrong one of
-  the two (in Tehama and Tulare counties).
+- **`geo` coordinates, by name.** Geocoding a name like "Deer Creek" could
+  put a pin on the wrong one of the two (in Tehama and Tulare counties).
+  Superseded in part on 2026-10-20: `geo` is now given where a federal
+  match is unique in the listed county and is a point inside the water
+  (DECISIONS 0024); nothing is geocoded from a name alone.
 - **A CC-BY `license` on the Dataset.** CC-BY is the license of a
   different CDFW product, the Fishing Guide dataset on data.ca.gov
   (`docs/LICENSES-AND-ATTRIBUTION.md`). The planting schedule falls under

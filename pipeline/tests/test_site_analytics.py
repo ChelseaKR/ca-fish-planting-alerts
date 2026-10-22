@@ -49,7 +49,6 @@ EXPECTED_DENIED_REGIONS = {
 # the tag is on. Matched against page text with tags stripped and whitespace
 # collapsed, case-insensitively.
 FALSE_WITH_ANALYTICS = (
-    "no javascript runs",
     "no cookies are set",
     "literally nothing is collected",
     "nothing you do here leaves your browser",
@@ -253,7 +252,10 @@ def test_no_analytics_detector_is_not_vacuous(no_id_pages, id_pages):
 def test_no_id_copy_still_says_the_site_collects_nothing(no_id_pages):
     privacy = _text(no_id_pages["privacy/index.html"])
     assert "no analytics, no advertising, no tracking" in privacy
-    assert "no cookies are set and no javascript runs" in privacy
+    assert "no cookies are set." in privacy
+    # The script that exists is named, not denied (DECISIONS 0024).
+    assert "no javascript runs" not in privacy
+    assert "the one script is the home page" in privacy
     assert "literally nothing is collected" in _text(no_id_pages["about/index.html"])
 
 

@@ -5,8 +5,9 @@ stand behind, and what each page says now.
    ``site.DATASET_LICENSE_URL``, which also drives the Dataset and /data/),
    /about/ says the same in visible text. Which license is the owner's call
    and is still open, so the default states none.
-2. /about/ no longer says map locations come from USGS as if pages showed a
-   map: it says the pages show none.
+2. /about/'s Water locations paragraph is true of the pages. (Written to say
+   the pages show no map; now that the coordinates work is in the stack it
+   states the map links and the tests check them.)
 3. The support FAQ's two app answers are true before launch (the app is not
    on the App Store yet) and are the old words once the launch switch is on.
    The visible text and the FAQPage JSON-LD stay word for word identical in
@@ -23,6 +24,7 @@ import datetime as dt
 import json
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -189,35 +191,50 @@ def test_negative_control_license_check_catches_a_changed_value(tmp_path):
 # ---- 2. the water locations paragraph -----------------------------------------
 
 
-def test_about_says_pages_show_no_map_and_does_not_promise_one(before_launch):
+def test_about_says_located_waters_have_a_map_link_and_no_page_claims_no_map(
+    before_launch,
+):
+    """The coordinates work puts map links on water pages, so the Water
+    locations paragraph (geo's wording) says so and no longer says the pages
+    show no map."""
     text = _visible(_page(before_launch, "about"))
-    assert (
-        "The pages on this site do not show a map or coordinates for any water." in text
-    )
-    assert "Each California water page links to CDFW's own map instead." in text
-    # the old sentences that read as if pages carried a map
-    assert "Map locations come from public-domain federal data" not in text
-    assert "never placed on a map" not in text
-    assert "a lake's point is inside the lake" not in text
-    # the federal sources are still credited, because the data files use them
+    assert "Where a water has a location, its page has a" in text
+    assert "link to OpenStreetMap" in text
+    # the no-map sentences from the earlier wording are gone
+    assert "do not show a map" not in text
+    assert "links to CDFW's own map instead" not in text
+    # the federal sources are still credited
     assert "U.S. Geological Survey" in text and "U.S. Census Bureau" in text
 
 
-def test_the_claim_matches_the_pages_no_water_page_shows_a_map(before_launch):
+def test_the_claim_matches_the_pages_a_map_link_only_where_coordinates_print(
+    before_launch,
+):
+    """Replaces the no-map check: a water page carries an OpenStreetMap link
+    exactly when it prints coordinates, and never embeds a map."""
+    linked = 0
     for f in before_launch.glob("water/*/index.html"):
         html = f.read_text(encoding="utf-8")
-        assert "geo" not in json.dumps(_read(html).ld).lower().replace("geographic", "")
-        assert "<iframe" not in html and "openstreetmap" not in html.lower()
+        page = _read(html)
+        has_link = any(
+            urlsplit(href).hostname == "www.openstreetmap.org" for href in page.links
+        )
+        assert has_link == ("Coordinates" in _visible(html)), f
+        assert "<iframe" not in html, f
+        linked += has_link
+    assert linked > 0  # the fixture places some waters, so the check ran
 
 
 def test_negative_control_catches_the_old_locations_claim(before_launch):
     html = _page(before_launch, "about")
     old = html.replace(
-        "The pages on this site do not show a map or coordinates for any water.",
-        "Map locations come from public-domain federal data.",
+        "Where a water has a location, its page has a",
+        "The pages on this site do not show a map or coordinates for any water."
+        " Where a water has a location, its page has a",
     )
     assert old != html  # the sabotage landed
-    assert "do not show a map" not in _visible(old)
+    assert "do not show a map" in _visible(old)
+    assert "do not show a map" not in _visible(html)
 
 
 # ---- 3. the support FAQ before and after launch -------------------------------

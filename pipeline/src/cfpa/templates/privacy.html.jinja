@@ -109,8 +109,10 @@
 {# END seo/click-events paragraph #}
 {% else %}
 <ul>
-  <li>Every page is a plain static file. No cookies are set and no JavaScript
-      runs.</li>
+  <li>Every page is a plain static file. No cookies are set. The one script is
+      the home page&rsquo;s &ldquo;Sort by closest to me&rdquo; button, which
+      does nothing until you press it; see
+      <a href="#location">Your location and map links</a>.</li>
   <li>No page makes a request to any server other than the one serving it.</li>
   <li>Calendar feeds (.ics) and Atom feeds (.atom) are plain files; your
       calendar or feed app downloads them directly. This site does not know
@@ -122,6 +124,21 @@
       statement</a>. This site adds no collection on top of that.</li>
 </ul>
 {% endif %}
+
+<h2 id="location">Your location and map links</h2>
+<ul>
+  <li><strong>Your location.</strong> If you press the &ldquo;Sort by closest
+      to me&rdquo; button on the home page, your browser asks permission to
+      use your location. The sorting happens in your browser, your location is
+      not sent to this site or to anyone else, and it is not saved. Nothing
+      asks for your location unless you press the button.</li>
+  <li><strong>Map links.</strong> The &ldquo;View on map&rdquo; link on a
+      water page is an ordinary link to OpenStreetMap. Nothing loads from
+      OpenStreetMap until you click it. Your browser then sends OpenStreetMap
+      the water&rsquo;s coordinates, which are in the link, and OpenStreetMap&rsquo;s
+      own <a href="https://osmfoundation.org/wiki/Privacy_Policy">privacy
+      policy</a> applies. This site adds no map script, tile or tracker.</li>
+</ul>
 
 <h2 id="affiliate">Gear links</h2>
 <p>

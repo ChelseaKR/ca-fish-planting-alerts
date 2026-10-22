@@ -530,6 +530,46 @@ under 0004 ("unknown = not used") it is not a source.
   Information System", and the Census Bureau acknowledgement its terms
   require.
 
+### Addendum 2026-10-20: the map link, "closest to me" and a hand review
+
+- **Where the points show.** A water page with a point has a "View on
+  map" link to OpenStreetMap (a plain link with `rel="noopener noreferrer"`;
+  nothing is embedded and nothing loads from a map service until a reader
+  clicks), the coordinates, and the source. A stream's point is labeled
+  approximate. The about page says how many California waters have a point
+  right now, and credits the USGS, which asks for
+  acknowledgment and does not require it.
+- **`geo` in structured data** only when the point is inside the water
+  (`waterbody` or `named_point`) and the page prints the same numbers. A
+  stream point (`stream_point`) gets none: a stream is not at one place.
+  `tests/test_site_seo.py` and `tests/test_site_water_map.py` fail otherwise.
+- **"Closest to me"** on the home page: `assets/closest.js` (first-party,
+  about 6 KB, idle until a button is pressed) and `assets/water-coords.json`
+  (slug to latitude, longitude, kind, built from the same committed file).
+  The browser asks for the location only after the press; the script reads
+  the static file with a plain GET that carries no location, sorts in memory,
+  and stores and sends nothing. Without JavaScript the section stays hidden
+  and the lists are unchanged. This is the one script on the site besides the
+  GA4 tag (0011), so the about and privacy copy that said "no JavaScript runs"
+  now names it, and the privacy page has a "Your location and map links"
+  section.
+- **Hand review, 2026-10-20.** Every `exact` match was re-read against the
+  GNIS file (published 2026-09-29). One was wrong: GNIS lists two streams
+  named North Fork Willow Creek in Madera County (feature ids 264220 and
+  267078), and the geocoder had counted only the one
+  with NHD flowlines. CDFW 501572 is now `ambiguous` with no point, the
+  geocoder keeps a flowline-less same-name stream as a candidate, and
+  `hand_review` in `water_locations.json` records it. No other `exact` water
+  has a second same-name lake, reservoir, stream or canal in its listed
+  counties. The nine other `ambiguous` waters and the 146 `none` waters are
+  unchanged and need the owner (`water_location_overrides.json`).
+- **Terms, read again 2026-10-20.** `usgs.gov/information-policies-and-instructions/copyrights-and-credits`:
+  "USGS-authored or produced data and information are considered to be in the
+  U.S. Public Domain" and "we ask that proper credit be given". The file
+  metadata `DomesticNames_CA_Text.xml` (pubdate 20260929): use constraints
+  "None. Acknowledgment of the U.S. Geological Survey would be appreciated for
+  products derived from these data."
+
 ## 0025 — More states, each a one-time purchase in the one app (2026-10-12)
 
 **Context.**

@@ -38,6 +38,7 @@ ALLOWED_TYPES = {
     "BreadcrumbList",
     "ListItem",
     "BodyOfWater",
+    "GeoCoordinates",
     "AdministrativeArea",
     "State",
     "PropertyValue",
@@ -62,10 +63,21 @@ BANNED_KEYS = {
     "endDate",
     "doorTime",
     "eventStatus",
-    "geo",
-    "latitude",
-    "longitude",
 }
+# Coordinates are allowed in one place (DECISIONS 0024): a BodyOfWater whose
+# federal match is a point inside the water and whose page shows the same
+# numbers. See _structured_data_problems.
+
+
+def _inside_water_points() -> set[int]:
+    """Stock ids the committed locations file places inside the water."""
+    from cfpa import locations
+
+    placed = locations.load_locations(cli.DEFAULT_LOCATIONS_PATH)
+    return {i for i, loc in placed.items() if loc["kind"] != "stream_point"}
+
+
+INSIDE_WATER_POINTS = _inside_water_points()
 
 _LD = re.compile(r'<script type="application/ld\+json">(.*?)</script>', re.S)
 
@@ -420,14 +432,36 @@ def test_the_scheduled_in_county_section_only_says_what_the_data_says(built):
 # ---- structured data
 
 
-def _structured_data_problems(data: Any) -> list[str]:
+def _structured_data_problems(data: Any, html: str | None = None) -> list[str]:
     problems = []
     for node in _nodes(data):
         kind = node.get("@type")
         if kind is not None and (kind not in ALLOWED_TYPES or "Event" in kind):
             problems.append(f"type {kind}")
         problems += [f"key {k}" for k in sorted(BANNED_KEYS & node.keys())]
+        if "geo" in node and not _geo_is_true_of_the_page(node, html):
+            problems.append("key geo")
+        if kind != "GeoCoordinates":
+            problems += [f"key {k}" for k in ("latitude", "longitude") if k in node]
     return problems
+
+
+def _geo_is_true_of_the_page(node: dict[str, Any], html: str | None) -> bool:
+    """geo is allowed on a BodyOfWater, as a GeoCoordinates with a latitude and
+    a longitude and nothing else, when the page's visible text states those
+    numbers and does not call the point approximate."""
+    geo = node["geo"]
+    if html is None or node.get("@type") != "BodyOfWater":
+        return False
+    if not isinstance(geo, dict) or geo.get("@type") != "GeoCoordinates":
+        return False
+    if set(geo) != {"@type", "latitude", "longitude"}:
+        return False
+    text = _visible_text(html)
+    return (
+        f"{geo['latitude']}, {geo['longitude']}, a point inside the water" in text
+        and "approximate" not in text.split("Coordinates", 1)[-1][:200]
+    )
 
 
 def test_every_structured_data_type_is_allowed_and_nothing_is_an_event(built):
@@ -437,7 +471,7 @@ def test_every_structured_data_type_is_allowed_and_nothing_is_an_event(built):
         data = _ld(f.read_text(encoding="utf-8"))
         if data is None:
             continue
-        assert _structured_data_problems(data) == [], f
+        assert _structured_data_problems(data, f.read_text(encoding="utf-8")) == [], f
         seen |= {n["@type"] for n in _nodes(data) if "@type" in n}
     # the allowlist is not wider than what is used
     assert seen == ALLOWED_TYPES
@@ -447,15 +481,16 @@ def test_structured_data_checker_catches_an_event_and_a_date(built):
     """Negative control: a planting written as an Event with a startDate,
     and a water given coordinates, are both caught."""
     out, snap = built
-    data = _ld(_html(out, f"water/{snap['waters'][0]['slug']}"))
-    assert _structured_data_problems(data) == []
+    page = _html(out, f"water/{snap['waters'][0]['slug']}")
+    data = _ld(page)
+    assert _structured_data_problems(data, page) == []
     sabotaged = copy.deepcopy(data)
     sabotaged["@graph"].append(
         {"@type": "Event", "name": "Trout plant", "startDate": "2026-09-13"}
     )
     sabotaged["@graph"][-2]["geo"] = {"latitude": 0, "longitude": 0}
     assert sabotaged != data  # the sabotage landed
-    assert set(_structured_data_problems(sabotaged)) == {
+    assert set(_structured_data_problems(sabotaged, page)) == {
         "type Event",
         "key startDate",
         "key geo",
@@ -522,9 +557,15 @@ def test_water_structured_data_states_only_what_the_snapshot_has(built):
         ]
         others = [n for n in w["aliases"] if n != w["name"]]
         assert water.get("alternateName", []) == others
-        # the snapshot has no location for any water, so no coordinates
+        # v1 never carries a location (installed 1.0 apps read it); geo comes
+        # from the committed water_locations.json and only for a point inside
+        # the water, never for a stream's approximate point or an unmatched
+        # water (tests/test_site_water_map.py checks each page against it).
         assert w["location"] is None
-        assert not {"geo", "address", "latitude", "longitude"} & water.keys()
+        assert not {"address", "latitude", "longitude"} & water.keys()
+        assert ("geo" in water) == (w["cdfw_stock_id"] in INSIDE_WATER_POINTS), w[
+            "name"
+        ]
         crumbs = [c["name"] for c in g["BreadcrumbList"]["itemListElement"]]
         assert crumbs == [
             site.SITE_NAME,

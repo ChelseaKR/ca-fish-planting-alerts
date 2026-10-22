@@ -28,9 +28,9 @@
   }
  ],
  "counts": {
-  "exact": 232,
+  "exact": 231,
   "owner_resolved": 0,
-  "ambiguous": 9,
+  "ambiguous": 10,
   "none": 146,
   "owner_none": 0
  },
@@ -11818,16 +11818,10 @@
     "Madera"
    ],
    "kind": "stream",
-   "status": "exact",
-   "matched_name": "North Fork Willow Creek",
-   "method": "reordered",
-   "location": {
-    "lat": 37.35898,
-    "lon": -119.54369,
-    "source": "USGS National Hydrography Dataset",
-    "kind": "stream_point",
-    "source_feature_id": "264220"
-   },
+   "status": "ambiguous",
+   "matched_name": null,
+   "method": null,
+   "location": null,
    "candidates": [
     {
      "gnis_feature_id": 264220,
@@ -11845,10 +11839,21 @@
       "kind": "stream_point",
       "source_feature_id": "264220"
      }
+    },
+    {
+     "gnis_feature_id": 267078,
+     "name": "North Fork Willow Creek",
+     "class": "Stream",
+     "county": "Madera",
+     "gnis_point": {
+      "lat": 37.2138362,
+      "lon": -119.4976354
+     },
+     "would_be": null
     }
    ],
    "near_misses": [],
-   "reason": null
+   "reason": "2 GNIS features with this name in the county (hand review 2026-10-20: GNIS 267078 was missed because the geocoder only counted a stream with NHD flowlines)"
   },
   {
    "cdfw_stock_id": 501573,
@@ -12116,6 +12121,14 @@
    "candidates": [],
    "near_misses": [],
    "reason": "no GNIS feature with this name in the listed county"
+  }
+ ],
+ "hand_review": [
+  {
+   "reviewed_on": "2026-10-20",
+   "cdfw_stock_id": 501572,
+   "change": "exact -> ambiguous",
+   "why": "GNIS lists two streams named North Fork Willow Creek in Madera County (264220 and 267078). The geocoder counted only 264220 because it keeps a stream only when NHD flowlines carry its id. The point is withdrawn until the owner picks one."
   }
  ]
 }

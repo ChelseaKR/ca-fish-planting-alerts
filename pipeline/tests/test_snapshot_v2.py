@@ -202,6 +202,43 @@ def test_new_york_shows_decs_words_and_never_a_date(built: Path):
     assert "<td>Scheduled</td>" not in page
 
 
+def test_new_york_pages_say_plan_in_decs_own_words_and_never_scheduled(built: Path):
+    """The plan wording (DECISIONS 0034), read with a real HTML parser."""
+    hub = _Page(_page(built, "ny/index.html"))
+    text = " ".join(hub.visible_text.split())
+    assert hub.title == "New York trout stocking plan, from NYS DEC | Trout Truck"
+    assert (
+        "has planned trout stocking in New York, at the precision NYS DEC gives: "
+        'its own words, such as "April - third week". These are planned periods '
+        "in NYS DEC's own words, not dates and not confirmed stockings." in text
+    )
+    assert "Nothing else is on the plan in the next 60 days." in text
+    assert "scheduled" not in text.lower()
+    assert "stocked on" not in text.lower()
+    v2 = _v2(built)
+    ny = [w for w in v2["waters"] if w["state"] == "NY"]
+    water = _Page(_page(built, ny[0]["site_path"].strip("/") + "/index.html"))
+    wtext = " ".join(water.visible_text.split())
+    assert "'s stocking plan. " in wtext
+    assert "Most recently planned: " in wtext
+    assert "Stocking plan and history" in wtext
+    assert "in NYS DEC's own words." in wtext
+    assert "scheduled" not in wtext.lower()
+    index = _Page(_page(built, "states/index.html"))
+    itext = " ".join(index.visible_text.split())
+    assert "New York publishes a spring plan once a year in its own words." in itext
+    assert "Spring plan" in itext
+    data = _Page(_page(built, "data/index.html"))
+    dtext = " ".join(data.visible_text.split())
+    assert (
+        'NYS DEC gives when in its own words, such as "April - third week", and '
+        "this site keeps them verbatim in period_label with the year." in dtext
+    )
+    # The control: a schedule state's hub still says "scheduled".
+    tn = " ".join(_Page(_page(built, "tn/index.html")).visible_text.split())
+    assert "These are scheduled dates, not confirmed stockings." in tn
+
+
 def test_month_precision_is_never_this_week(built: Path):
     v2 = _v2(built)
     month_waters = {

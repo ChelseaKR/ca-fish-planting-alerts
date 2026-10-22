@@ -32,10 +32,15 @@ public struct ReviewPromptState: Codable, Equatable, Sendable {
 /// The good moments the app may ask after. Both come at the end of
 /// something the person did, never in the middle of it: the app asks when
 /// they leave a water's page, not while it is open.
+///
+/// Neither depends on which state's purchase the person owns (DECISIONS
+/// 0025, 0035): an alert only exists for a state they unlocked, whichever
+/// it is, and a favorite in any state counts.
 public enum ReviewMoment: Equatable, Sendable {
     /// They opened a planting alert and then left that water's page.
     case readPlantingAlert
-    /// They left a water's page, in a launch with at least one favorite.
+    /// They left a water's page, in a launch with at least one favorite in
+    /// any state.
     case finishedWithWater
 }
 

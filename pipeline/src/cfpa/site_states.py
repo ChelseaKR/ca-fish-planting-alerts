@@ -48,6 +48,9 @@ class StatesContext:
     ld_breadcrumb: Any
     ld_page: Any
     relative_trail: Any
+    # How much of a title a results page shows (site.WATER_TITLE_MAX), brand
+    # included. Passed in because site.py imports this module.
+    title_max: int = 60
 
 
 def when_label(period: dict[str, str]) -> str:
@@ -79,6 +82,23 @@ def place_phrase(w: dict[str, Any], state_name: str, region_name: str = "") -> s
     if region_name:
         return f"{region_name}, {state_name}"
     return state_name
+
+
+def short_place_phrase(
+    w: dict[str, Any], state: dict[str, Any], region_name: str = ""
+) -> str:
+    """``place_phrase`` with the state's postal code in place of its name:
+    "Monroe County, TN". Only for a title that would not fit otherwise; the
+    h1, description and structured data keep the name."""
+    return place_phrase(w, state["code"], region_name)
+
+
+def fit_title(candidates: list[str], site_name: str, limit: int) -> str:
+    """The first candidate whose whole title, " | <site name>" included, is
+    within ``limit`` characters, else the last (shortest). A title never drops
+    the water's name to get under the limit, so the last may still run over."""
+    full = [f"{c} | {site_name}" for c in candidates]
+    return next((t for t in full if len(t) <= limit), full[-1])
 
 
 def _fmt_dt(iso_z: str) -> str:
@@ -430,7 +450,12 @@ def _render_water(
     )
     noun = "stocking schedule" if schedule else "stocking history"
     head = f"{w['name']} {species} {noun}"
-    title = f"{head} ({place}) | {ctx.site_name}"
+    short = short_place_phrase(
+        w, state, "" if w["counties"] or w["towns"] else _place(w, state)
+    )
+    title = fit_title(
+        [f"{head} ({place})", f"{head} ({short})"], ctx.site_name, ctx.title_max
+    )
     if schedule:
         if w["next_period"]:
             status = f"next scheduled {when_label(w['next_period'])}."

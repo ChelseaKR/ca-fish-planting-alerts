@@ -36,6 +36,7 @@
   week CDFW scheduled.
 </p>
 
+{% if app_store_live %}
 <h2 id="alerts">Why didn't the app alert me?</h2>
 <ul>
   <li>Alerts are part of the one-time in-app purchase; favoriting and
@@ -56,6 +57,33 @@
   Use the same Apple Account you bought it with. There is no account with
   this app to sign in to.
 </p>
+{% else %}
+<h2 id="alerts">How will the app's alerts work?</h2>
+<p>
+  The iPhone app is not in the App Store yet, so it sends no alerts today.
+  Once it is available:
+</p>
+<ul>
+  <li>alerts are part of the one-time in-app purchase; favoriting and
+      browsing are free.</li>
+  <li>Notifications must be allowed for the app (Settings &rarr;
+      Notifications).</li>
+  <li>The app checks for a new schedule in the background, and iOS decides
+      when that happens. Background App Refresh must be on for the app, Low
+      Power Mode pauses it, and swiping the app away can stop it until you
+      open it again.</li>
+  <li>CDFW updates weekly, so an alert arrives within the week a water is
+      added, not the minute it is.</li>
+</ul>
+
+<h2 id="restore">How will restoring a purchase on a new phone work?</h2>
+<p>
+  The iPhone app is not in the App Store yet, so there is nothing to restore
+  today. Once it is available, open About &rarr; Unlock full access &rarr;
+  Restore purchases in the app and use the same Apple Account you bought it
+  with. There is no account with this app to sign in to.
+</p>
+{% endif %}
 
 <h2 id="privacy">What does the app know about me?</h2>
 <p>Nothing leaves your phone. See the <a href="{{ root }}privacy/">privacy policy</a>.</p>

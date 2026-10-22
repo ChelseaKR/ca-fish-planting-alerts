@@ -60,21 +60,49 @@ import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.PurchaseBackend
 import com.chelseakr.cafishplanting.PurchaseUi
 import com.chelseakr.cafishplanting.core.FreeTier
+import com.chelseakr.cafishplanting.core.NotificationAskMemory
 import com.chelseakr.cafishplanting.core.NotificationPrimingCopy
 import com.chelseakr.cafishplanting.core.ProductCatalog
 import com.chelseakr.cafishplanting.rememberHaptics
 import java.io.File
 
-/** Whether Android will no longer show its notification prompt (asked before, and now refused for good). */
+/**
+ * Whether Android will no longer show its notification prompt (asked before
+ * on this install, and now refused for good). The flag file is stamped with
+ * this install's first-install time, so one copied here by a device transfer
+ * (which carries `files/`) is ignored and the prompt is shown. See
+ * [NotificationAskMemory].
+ */
 object PermissionMemory {
     private fun flag(activity: Activity) = File(activity.filesDir, "trout-truck/notification-asked")
 
-    fun recordAsked(activity: Activity) {
-        flag(activity).apply { parentFile?.mkdirs() }.writeText("1")
+    private fun installStamp(activity: Activity): String = try {
+        activity.packageManager.getPackageInfo(activity.packageName, 0).firstInstallTime.toString()
+    } catch (_: Exception) {
+        "unknown"
     }
 
-    fun refused(activity: Activity): Boolean = Build.VERSION.SDK_INT >= 33 && flag(activity).exists() &&
-        !activity.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+    fun recordAsked(activity: Activity) {
+        // A failed write only means the next tap asks Android again, which is harmless.
+        try {
+            flag(activity).apply { parentFile?.mkdirs() }.writeText(NotificationAskMemory.flagContents(installStamp(activity)))
+        } catch (_: Exception) {
+        }
+    }
+
+    fun refused(activity: Activity): Boolean {
+        val contents = try {
+            flag(activity).takeIf { it.exists() }?.readText()
+        } catch (_: Exception) {
+            null
+        }
+        return NotificationAskMemory.refused(
+            flag = contents,
+            installStamp = installStamp(activity),
+            hasRuntimePermission = Build.VERSION.SDK_INT >= 33,
+            rationaleWanted = { Build.VERSION.SDK_INT >= 33 && activity.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) },
+        )
+    }
 }
 
 /**
@@ -146,6 +174,8 @@ fun PurchaseSheet(activity: Activity, env: AppEnvironment, purchases: PurchaseBa
         if (state.isEntitled && !wasEntitled) haptics.success()
         wasEntitled = state.isEntitled
     }
+    // Opening the sheet with no price is a good moment to ask Play again (it was offline, or busy, the first time).
+    LaunchedEffect(Unit) { purchases.retryProducts() }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).navigationBarsPadding(),
@@ -193,6 +223,9 @@ fun PurchaseSheet(activity: Activity, env: AppEnvironment, purchases: PurchaseBa
                         },
                         modifier = Modifier.padding(start = 8.dp),
                     )
+                }
+                if (price == null && ui.productLoadError != null) {
+                    TextButton(onClick = purchases::retryProducts, modifier = Modifier.fillMaxWidth()) { Text("Try again") }
                 }
                 TextButton(onClick = purchases::restore, enabled = ui.busy == PurchaseUi.Busy.IDLE) {
                     if (ui.busy == PurchaseUi.Busy.RESTORING) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)

@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 env.refreshNotificationPermission()
+                app.purchases.onForeground()
                 // Launch and each return to the foreground, at most every 6 hours (30 minutes after a failure).
                 env.refreshIfDue()
             }

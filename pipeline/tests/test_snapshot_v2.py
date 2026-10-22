@@ -94,7 +94,30 @@ def test_a_california_only_v2_leaves_every_california_page_unchanged(tmp_path: P
     ca_only = snapshot_v2.build_snapshot_v2(v1, [], generated_at=NOW)
     site.build_site(v1, tmp_path / "without", base_url=BASE)
     site.build_site(v1, tmp_path / "with", base_url=BASE, snapshot_v2=ca_only)
+    # The one addition a v2 brings to a California page is the footer's link
+    # to /data/ (the open-data page and its files); take it out and every
+    # file is the same, byte for byte.
+    link = '<a href="{root}data/">open data</a> &middot; '
+    removed = 0
+    for page in (tmp_path / "with").rglob("*.html"):
+        text = page.read_text("utf-8")
+        root = "../" * len(page.relative_to(tmp_path / "with").parts[:-1]) or "./"
+        if page.name == "404.html":
+            root = "/ca-fish-planting-alerts/"
+        fixed = text.replace(link.format(root=root), "")
+        removed += text != fixed
+        page.write_text(fixed, "utf-8")
+    assert removed > 0
+    data_files = [p for p in (tmp_path / "with").rglob("*") if "data" in p.parts]
+    assert data_files
+    for p in sorted(data_files, reverse=True):
+        p.unlink() if p.is_file() else p.rmdir()
     a, b = _tree(tmp_path / "without"), _tree(tmp_path / "with")
+    assert a.keys() - b.keys() == set()
+    sitemap = (tmp_path / "with" / "sitemap.xml").read_text("utf-8")
+    assert f"<loc>{BASE}/data/</loc>" in sitemap
+    for name in ("sitemap.xml", "about/index.html"):
+        a.pop(name), b.pop(name)
     assert a == b
     assert "states/index.html" not in a
     assert "Other states" not in (tmp_path / "with" / "index.html").read_text()

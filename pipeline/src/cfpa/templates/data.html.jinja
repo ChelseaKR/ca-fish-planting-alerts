@@ -1,0 +1,110 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>Open data: CSV and JSON downloads</h1>
+
+<p class="lede">
+  The fish planting schedule this site mirrors, as plain files you can open in
+  a spreadsheet or load into code. Each state has a <strong>current</strong>
+  file (this week and later) and a <strong>history</strong> file (every record
+  this site has observed, including weeks after the agency's own page moved
+  on). The files are rewritten whenever the site is rebuilt from new data.
+</p>
+<p>
+  Every record is a <strong>scheduled</strong> period, not a confirmed plant.
+  The agency can change its schedule, and nothing here says a plant happened.
+</p>
+
+<h2 id="source">Source and terms</h2>
+{% for st in states if st.code == "CA" %}
+<p>
+  <strong>Source: {{ st.agency.short_name }}; terms: see
+  <a href="{{ st.terms_url }}">{{ st.agency.short_name }} Conditions of Use</a>.</strong>
+  {{ st.attribution.text }}
+</p>
+<p>{{ st.license_summary }}</p>
+{% endfor %}
+{% if dataset_license_url %}
+<p>License stated for these files: <a href="{{ dataset_license_url }}">{{ dataset_license_url }}</a>.</p>
+{% else %}
+<p>
+  These files add no license of their own. Use of the data follows the
+  source's terms linked above, and when you share or republish it, credit the
+  agency as the source.
+</p>
+{% endif %}
+<p>
+  {{ site_name }} is independent and is not affiliated with or endorsed by
+  CDFW or any other agency named on this page. See
+  <a href="{{ root }}about/#data">data, license &amp; attribution</a> for
+  every source this site is built from.
+</p>
+
+{% for st in states %}
+<section aria-labelledby="files-{{ st.code|lower }}">
+  <h2 id="files-{{ st.code|lower }}">{{ st.name }}</h2>
+  <p>
+    Last updated {{ st.updated }}, the day of the last successful check of
+    {{ st.agency.short_name }}'s schedule. Current means {{ st.current_week_label }}
+    and later.
+    {% if st.coverage %}
+    Records cover {{ st.coverage[0] }} to {{ st.coverage[1] }}.
+    {% endif %}
+  </p>
+  {% if st.code != "CA" %}
+  <p>{{ st.attribution.text }} Terms: <a href="{{ st.terms_url }}">{{ st.agency.short_name }} terms of use</a>. {{ st.license_summary }}</p>
+  <p>{{ st.disclaimer }}</p>
+  {% if "day" in st.precisions or "month" in st.precisions %}
+  <p>
+    {{ st.agency.short_name }} gives some dates as a day or a month rather than
+    a week. The <code>period_precision</code> column says which, and the start
+    and end columns hold the whole period.
+  </p>
+  {% endif %}
+  {% endif %}
+  <ul>
+    {% for f in st.files %}
+    <li>
+      <a href="{{ root }}{{ f.path }}">{{ st.code|lower }}-{{ f.kind }}.{{ f.fmt }}</a>
+      <span class="muted">({{ f.kind }}, {{ f.fmt|upper }}, {{ f.records }} {{ "record" if f.records == 1 else "records" }})</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endfor %}
+
+<h2 id="dictionary">Data dictionary</h2>
+<p>
+  Schema version {{ schema_version }}. Every file has the same
+  {{ columns|length }} columns, in this order, one record per water, period
+  and species. A column's name and meaning will not change inside version
+  {{ schema_version }}; a change that could break a reader would be published
+  as a new version under a new path (<code>{{ data_dir }}/</code> today).
+  An empty value means the source gives none, never zero.
+</p>
+<dl>
+  {% for name, type, description in columns %}
+  <dt><code>{{ name }}</code> <span class="muted">({{ type }})</span></dt>
+  <dd>{{ description }}</dd>
+  {% endfor %}
+</dl>
+
+<h2 id="format">File format</h2>
+<ul>
+  <li>CSV: UTF-8, comma separated, a header row, values quoted when needed
+      (RFC 4180), CRLF line endings. Records are sorted by water name, then
+      id, period and species.</li>
+  <li>JSON: one object with <code>schema_version</code>, <code>state</code>,
+      <code>kind</code>, <code>updated</code> (a date, from the data),
+      <code>source_fetched_at</code>, <code>current_week</code>,
+      <code>agency</code>, <code>attribution</code>, <code>terms_url</code>,
+      <code>disclaimer</code>, <code>columns</code> and <code>records</code>.
+      Each record has the dictionary's columns as keys, in the same order.</li>
+  <li>Dates and times are UTC where they carry a time, and America/Los_Angeles
+      calendar dates for California weeks.</li>
+</ul>
+<p>
+  The same data, with per-state metadata, is in
+  the <a href="{{ root }}snapshot/v2.json">snapshot</a>
+  (<a href="{{ root }}snapshot/v1.json">version 1</a> is California alone).
+</p>
+{% endblock %}

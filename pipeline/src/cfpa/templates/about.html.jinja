@@ -142,5 +142,9 @@
   <a href="{{ attribution_url }}">CDFW's Fish Planting Schedule</a>, fetched
   {{ source_fetched_label }}. Machine-readable snapshot:
   <a href="{{ root }}snapshot/v1.json">{{ root }}snapshot/v1.json</a>.
+  {% if open_data %}
+  CSV and JSON downloads of the schedule, with a data dictionary:
+  <a href="{{ root }}data/">open data</a>.
+  {% endif %}
 </p>
 {% endblock %}

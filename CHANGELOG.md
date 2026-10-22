@@ -13,6 +13,8 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- An open-data page at `/data/` and CSV and JSON files under `/data/v1/` (current schedule and weekly history for California, and for Tennessee in its own files), with a data dictionary, written by the site build from `snapshot/v2.json`. Linked from the footer and the about page. The page states the source and terms (CDFW Conditions of Use) and adds no license of its own; choosing one is the owner's call (`DATASET_LICENSE_URL`).
+
 - Region pages at `/region/<slug>/` for each CDFW region that has a water
   (Northern, North Central, Bay Delta, Central, South Coast, Inland Deserts),
   named with CDFW's own labels: the waters scheduled this week and the week

@@ -102,7 +102,8 @@ def _off_problems(out: Path) -> list[str]:
     if (out / "assets" / site.APP_STORE_BADGE_FILE).exists():
         problems.append("badge file written")
     css = (out / "assets" / "style.css").read_text(encoding="utf-8")
-    if css != (site.TEMPLATES_DIR / "style.css").read_text(encoding="utf-8"):
+    template = (site.TEMPLATES_DIR / "style.css").read_text(encoding="utf-8")
+    if css != site.minify_css(template):
         problems.append("style.css differs from the template")
     return problems
 

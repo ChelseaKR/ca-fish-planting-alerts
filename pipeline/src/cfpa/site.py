@@ -30,7 +30,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import site_states
+from . import feeds, site_states
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -1336,6 +1336,9 @@ def _render_county_page(
         canonical_url=page_url,
         root="../../",
         **ctx.common,
+        feed_path=feeds.feed_path("county", county_slug(county)),
+        feed_title=f"{county} County trout schedule, {SITE_NAME} (Atom)",
+        feed_scope=f"{county} County",
         structured_data=_ld_graph(
             _ld_page(
                 "CollectionPage",
@@ -1500,6 +1503,9 @@ def _render_region_page(
         ),
         breadcrumb=_relative_trail(trail, base_url=ctx.base_url, root="../../"),
         region_name=name,
+        feed_path=feeds.feed_path("region", region["slug"]),
+        feed_title=f"{name} trout schedule, {SITE_NAME} (Atom)",
+        feed_scope=name,
         county_count=len(counties),
         water_count=len(waters),
         counties=counties,
@@ -1743,6 +1749,78 @@ def _render_region_pages(
     return lastmods
 
 
+def _write_feeds(
+    ctx: _PageContext,
+    snapshot: dict[str, Any],
+    *,
+    region_links: list[dict[str, Any]],
+    county_names: list[str],
+) -> None:
+    """Write feeds/this-week.atom plus one feed per region and per county."""
+    entries = feeds.current_week_entries(snapshot, species_phrase=species_phrase)
+    week_label = snapshot["source_week"]["label"]
+    week_start = snapshot["source_week"]["start"]
+    region_of_water = {w["id"]: w["region"] for w in snapshot["waters"]}
+
+    def write(
+        path: str,
+        subset: list[feeds.FeedEntry],
+        *,
+        title: str,
+        subtitle: str,
+        page_url: str,
+    ) -> None:
+        target = ctx.out_dir / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            feeds.build_feed(
+                entries=subset,
+                base_url=ctx.base_url,
+                path=path,
+                title=title,
+                subtitle=subtitle,
+                page_url=page_url,
+                week_label=week_label,
+                week_start=week_start,
+                site_name=SITE_NAME,
+                attribution_text=snapshot["attribution"]["text"],
+            ),
+            encoding="utf-8",
+        )
+        ctx.written.append(target)
+
+    scheduled = "Scheduled, not confirmed: CDFW's plants are subject to change."
+    write(
+        feeds.feed_path("this-week"),
+        entries,
+        title=f"{SITE_NAME}: California trout schedule, {week_label}",
+        subtitle=f"Waters on CDFW's schedule for the {week_label}. {scheduled}",
+        page_url=f"{ctx.base_url}/",
+    )
+    for r in region_links:
+        write(
+            feeds.feed_path("region", r["slug"]),
+            [e for e in entries if region_of_water[e.water_id] == r["code"]],
+            title=f"{r['display_name']} trout schedule, {week_label}",
+            subtitle=(
+                f"Waters on CDFW's schedule in its {r['display_name']} for the "
+                f"{week_label}. {scheduled}"
+            ),
+            page_url=f"{ctx.base_url}/region/{r['slug']}/",
+        )
+    for c in county_names:
+        write(
+            feeds.feed_path("county", county_slug(c)),
+            [e for e in entries if c in e.counties],
+            title=f"{c} County trout schedule, {week_label}",
+            subtitle=(
+                f"Waters in {c} County on CDFW's schedule for the {week_label}. "
+                f"{scheduled}"
+            ),
+            page_url=f"{ctx.base_url}/county/{county_slug(c)}/",
+        )
+
+
 def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -> None:
     """assets/style.css, plus the App Store badge and its CSS when live.
 
@@ -1929,6 +2007,9 @@ def build_site(
         canonical_url=f"{base_url}/",
         root="./",
         **common,
+        feed_path=feeds.feed_path("this-week"),
+        feed_title=f"{SITE_NAME}: this week's California trout schedule (Atom)",
+        feed_scope="statewide this-week",
         google_site_verification=google_site_verification,
         structured_data=_ld_graph(
             {
@@ -2162,6 +2243,11 @@ def build_site(
         ),
         snapshot_v2,
     )
+
+    # ---- Atom feeds: statewide, per region and per county that has a page.
+    # They are data files like the .ics calendars, not pages: no sitemap
+    # entry, and the pages point to them with rel="alternate" instead.
+    _write_feeds(ctx, snapshot, region_links=region_links, county_names=county_names)
 
     # ---- sitemap.xml -- lastmod is when a page's substance last changed
     # (see _water_data_lastmod), not the daily build date. The about,

@@ -13,6 +13,12 @@
   {% for s in other_states %}<a href="{{ root }}{{ s.seg }}/">{{ s.name }} trout stocking schedule</a>{% if not loop.last %}, {% endif %}{% endfor %}.
 </p>
 {% endif %}
+{% if feed_path %}
+<p class="muted">
+  Subscribe: <a href="{{ root }}{{ feed_path }}">Atom feed of the {{ feed_scope }} schedule</a>
+  for a feed reader. Each entry is scheduled, not confirmed.
+</p>
+{% endif %}
 {% if app_store_live %}
 {% with badge_placement = "home" %}{% include "_app_store_badge.html.jinja" %}{% endwith %}
 {% endif %}

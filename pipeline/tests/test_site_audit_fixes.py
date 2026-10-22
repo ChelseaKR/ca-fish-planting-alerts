@@ -24,6 +24,7 @@ import datetime as dt
 import json
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -215,7 +216,9 @@ def test_the_claim_matches_the_pages_a_map_link_only_where_coordinates_print(
     for f in before_launch.glob("water/*/index.html"):
         html = f.read_text(encoding="utf-8")
         page = _read(html)
-        has_link = any("openstreetmap.org" in href for href in page.links)
+        has_link = any(
+            urlsplit(href).hostname == "www.openstreetmap.org" for href in page.links
+        )
         assert has_link == ("Coordinates" in _visible(html)), f
         assert "<iframe" not in html, f
         linked += has_link

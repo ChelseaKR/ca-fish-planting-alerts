@@ -285,3 +285,78 @@ def test_negative_control_the_count_check_notices_a_changed_number(built, tmp_pa
     site.build_site(mutated, tmp_path / "site", base_url=BASE_URL)
     page = _parse(tmp_path / "site" / "guide" / "scheduled-vs-confirmed" / "index.html")
     assert "and 1 was later removed" in page.visible
+
+
+class _Headings(HTMLParser):
+    """Collects h2 ids and the visible text of the section after each."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.ids: list[str] = []
+        self.sections: dict[str, list[str]] = {}
+        self.links: dict[str, list[str]] = {}
+        self._cur = ""
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = {k: v or "" for k, v in attrs}
+        if tag == "h2":
+            self._cur = a.get("id", "")
+            self.ids.append(self._cur)
+            self.sections[self._cur] = []
+            self.links[self._cur] = []
+        if tag == "a" and self._cur:
+            self.links[self._cur].append(a.get("href", ""))
+
+    def handle_data(self, data: str) -> None:
+        if self._cur:
+            self.sections[self._cur].append(data)
+
+
+def _names_section(html: str) -> tuple[str, list[str], list[str]]:
+    h = _Headings()
+    h.feed(html)
+    return " ".join("".join(h.sections["names"]).split()), h.links["names"], h.ids
+
+
+def test_names_section_explains_the_aliases_with_an_anchor(built):
+    out, _ = built
+    html = (out / "guide" / "what-is-a-trout-plant" / "index.html").read_text("utf-8")
+    text, links, ids = _names_section(html)
+    assert ids.count("names") == 1
+    assert ids.index("names") < ids.index("criteria")  # existing anchors kept
+    for needle in (
+        "CDFW",
+        "California Department of Fish and Wildlife",
+        "planting",
+        "stocking",
+        "Hatchery trout",
+        "scheduled",
+    ):
+        assert needle in text, needle
+    assert any(urlsplit(link).hostname == "wildlife.ca.gov" for link in links)
+    # One sentence links back to the weekly schedule (the site root).
+    assert "../../" in links
+    assert not (_words(text) & BANNED_WORDS)
+    # The former-name claim has no CDFW source read, so it must stay out.
+    assert "DFG" not in text and "formerly" not in text.lower()
+
+
+def test_names_section_leaves_title_h1_and_description_alone(built):
+    out, _ = built
+    page = _guide_pages(out)["what-is-a-trout-plant"]
+    g = next(x for x in guides.GUIDES if x.slug == "what-is-a-trout-plant")
+    assert page.title.strip() == g.title.format(site=page.title.split("|")[-1].strip())
+    assert page.meta["description"] == g.description
+    assert g.h1 == "What is a trout plant?"
+
+
+def test_negative_control_names_check_notices_a_missing_section(built, tmp_path):
+    out, _ = built
+    html = (out / "guide" / "what-is-a-trout-plant" / "index.html").read_text("utf-8")
+    sabotaged = html.replace('id="names"', 'id="renamed"')
+    assert sabotaged != html  # the sabotage applied
+    with pytest.raises(KeyError):
+        _names_section(sabotaged)
+    dirty = html.replace("Hatchery trout", "Only the best hatchery trout")
+    assert dirty != html
+    assert _words(_names_section(dirty)[0]) & BANNED_WORDS

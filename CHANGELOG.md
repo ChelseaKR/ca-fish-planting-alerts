@@ -138,6 +138,14 @@ This repository was republished with a new history on 2026-09-18
   now lists the other waters in its counties that are scheduled, each with
   its week, and links the county page. It is built from the snapshot alone,
   and the page's sitemap `lastmod` moves when one of those waters changes.
+- Website: Tennessee water page titles follow the same 60-character rule as
+  California's (brand included), with "TN" in place of "Tennessee" when the
+  name would not fit. The h1 and the page keep "Tennessee".
+- Website: when CDFW's schedule lists nothing for the current week, the home
+  page leads with "Next scheduled" and "Most recently scheduled" tables, each
+  row with its own week, and its meta description says the week lists no
+  plants. It says that is not that there are no fish. A failed or stale fetch
+  is still refused before any page is built.
 
 ### Fixed
 

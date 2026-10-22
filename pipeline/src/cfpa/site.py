@@ -2052,6 +2052,74 @@ def _home_regions(
     return regions
 
 
+def _home_row(
+    w: dict[str, Any],
+    week: dict[str, Any],
+    species: list[str],
+    county_link: dict[str, dict[str, str]],
+) -> dict[str, Any]:
+    return {
+        "slug": w["slug"],
+        "name": w["name"],
+        "county_links": [county_link[c] for c in w["counties"]],
+        "species": ", ".join(sorted(species)),
+        "week_start": week["start"],
+        "week_label": week["label"],
+    }
+
+
+def _home_nearest_weeks(
+    snapshot: dict[str, Any], county_link: dict[str, dict[str, str]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """For a home page whose current week lists nothing: the waters CDFW has
+    scheduled for a later week, soonest first, and the waters on the most
+    recent earlier week with any listing. Each row carries its own week.
+
+    Only ``listed`` plants count: a week CDFW took off its schedule is
+    neither "next" nor "recent". Nothing is inferred, so either list can be
+    empty. Callers reach this only with a snapshot ``cli.run`` accepted, which
+    has passed ``fetch.assert_fresh``: a failed or stale fetch never gets
+    here, so an empty week is CDFW's own page saying so.
+    """
+    current = snapshot["source_week"]["start"]
+    Entry = tuple[dict[str, Any], dict[str, Any], list[str]]
+    later: dict[tuple[str, str], Entry] = {}
+    earlier: dict[tuple[str, str], Entry] = {}
+    for w in snapshot["waters"]:
+        for p in w["plants"]:
+            if p["status"] != "listed" or p["week"]["start"] == current:
+                continue
+            bucket = later if p["week"]["start"] > current else earlier
+            key = (w["id"], p["week"]["start"])
+            bucket.setdefault(key, (w, p["week"], []))[2].append(p["species"])
+    upcoming = [_home_row(w, wk, sp, county_link) for w, wk, sp in later.values()]
+    upcoming.sort(key=lambda r: (r["week_start"], r["name"], r["slug"]))
+    recent_week = max((k[1] for k in earlier), default=None)
+    recent = [
+        _home_row(w, wk, sp, county_link)
+        for (_, start), (w, wk, sp) in earlier.items()
+        if start == recent_week
+    ]
+    recent.sort(key=lambda r: (r["name"], r["slug"]))
+    return upcoming, recent
+
+
+def _home_description(
+    source_week_label: str, species: str, *, week_is_empty: bool
+) -> str:
+    if week_is_empty:
+        return (
+            f"CDFW's schedule lists no California fish plants for the "
+            f"{source_week_label}. The waters it scheduled next and most "
+            f"recently, with each water's {species} stocking history."
+        )
+    return (
+        f"Every California water on CDFW's (formerly DFG) fish planting schedule for the "
+        f"{source_week_label}, by region and county, with each water's "
+        f"{species} stocking history."
+    )
+
+
 def _region_links(
     snapshot: dict[str, Any],
     county_names: list[str],
@@ -2430,12 +2498,14 @@ def build_site(
     region_links = _region_links(snapshot, county_names, region_by_county)
     region_link_by_code = {r["code"]: r for r in region_links}
 
+    week_is_empty = not snapshot["this_week"]
+    upcoming_rows, recent_rows = (
+        _home_nearest_weeks(snapshot, county_link) if week_is_empty else ([], [])
+    )
     index_html = env.get_template("index.html.jinja").render(
         title=f"California {site_species} planting schedule this week | {SITE_NAME}",
-        description=(
-            f"Every California water on CDFW's (formerly DFG) fish planting schedule for the "
-            f"{source_week_label}, by region and county, with each water's "
-            f"{site_species} stocking history."
+        description=_home_description(
+            source_week_label, site_species, week_is_empty=week_is_empty
         ),
         canonical_url=f"{base_url}/",
         root="./",
@@ -2465,6 +2535,9 @@ def build_site(
         source_week_label=source_week_label,
         generated_at_label=generated_at_label,
         regions=regions,
+        week_is_empty=week_is_empty,
+        upcoming_rows=upcoming_rows,
+        recent_rows=recent_rows,
         region_links=region_links,
         all_waters=all_waters,
         county_counts=county_counts,
@@ -2721,6 +2794,7 @@ def build_site(
             ld_breadcrumb=_ld_breadcrumb,
             ld_page=_ld_page,
             relative_trail=_relative_trail,
+            title_max=WATER_TITLE_MAX,
         ),
         snapshot_v2,
     )

@@ -187,8 +187,8 @@ data class WidgetDigest(
         /** Writes the digest; returns `false` when it was already the same, so the widget needn't redraw. */
         fun save(layout: AppStorageLayout, digest: WidgetDigest): Boolean {
             if (load(layout) == digest) return false
-            store(layout).save(digest)
-            return true
+            // A failed write is not a redraw: the widget keeps what it had.
+            return store(layout).trySave(digest)
         }
     }
 }

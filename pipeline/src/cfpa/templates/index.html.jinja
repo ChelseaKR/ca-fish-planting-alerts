@@ -1,5 +1,17 @@
 {% extends "base.html.jinja" %}
 {% block content %}
+{% if week_is_empty %}
+<h1>California trout planting schedule: nothing listed for the {{ source_week_label }}</h1>
+<p class="lede">
+  The California Department of Fish and Wildlife's schedule lists no plants
+  for the current week, the {{ source_week_label }}. That means no plant is
+  scheduled this week, not that there are no fish. Below are the waters it
+  has scheduled for a later week and the waters it scheduled most recently,
+  each with its own week. Plants are <strong>subject to change</strong> by
+  CDFW &mdash; treat every entry as scheduled, not confirmed. Data refreshed
+  {{ generated_at_label }}.
+</p>
+{% else %}
 <h1>This week's California trout planting schedule: {{ source_week_label }}</h1>
 <p class="lede">
   California Department of Fish and Wildlife scheduled these waters for
@@ -7,6 +19,7 @@
   change</strong> by CDFW &mdash; treat every entry as scheduled, not
   confirmed. Data refreshed {{ generated_at_label }}.
 </p>
+{% endif %}
 {% if other_states %}
 <p>
   Also on {{ site_name }}:
@@ -67,6 +80,21 @@
 </section>
 {% endfor %}
 {% else %}
+<section aria-labelledby="next-scheduled">
+  <h2 id="next-scheduled">Next scheduled</h2>
+  {% if upcoming_rows %}
+  {% with rows = upcoming_rows, caption = "Waters CDFW has scheduled for planting in a later week, in date order" %}{% include "_home_week_rows.html.jinja" %}{% endwith %}
+  {% else %}
+  <p>CDFW's schedule lists no plants for a later week yet. That means nothing is scheduled beyond the {{ source_week_label }} right now, not that there are no fish.</p>
+  {% endif %}
+</section>
+{% if recent_rows %}
+<section aria-labelledby="recently-scheduled">
+  <h2 id="recently-scheduled">Most recently scheduled: the {{ recent_rows[0].week_label }}</h2>
+  {% with rows = recent_rows, caption = "Waters CDFW scheduled for planting the " ~ recent_rows[0].week_label %}{% include "_home_week_rows.html.jinja" %}{% endwith %}
+  <p class="muted">Every water's page has its full week-by-week history.</p>
+</section>
+{% endif %}
 <p>No plants are listed for the {{ source_week_label }} on CDFW's schedule. This is CDFW's own page saying so &mdash; not a failed or stale fetch, which this site refuses to publish (see <a href="{{ root }}about/">about &amp; attribution</a>).</p>
 {% endif %}
 

@@ -2,6 +2,7 @@ package com.chelseakr.cafishplanting.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -54,7 +55,10 @@ class WidgetDigestTest {
         assertTrue(WidgetDigest.save(layout, d))
         assertFalse(WidgetDigest.save(layout, d))
         assertEquals(d, WidgetDigest.load(layout))
-        layout.widgetDigestFile.writeText(layout.widgetDigestFile.readText().replace("\"version\": 1", "\"version\": 99"))
+        val written = layout.widgetDigestFile.readText()
+        val other = written.replace("\"version\": ${WidgetDigest.CURRENT_VERSION}", "\"version\": 99")
+        assertNotEquals("the version swap must land", written, other)
+        layout.widgetDigestFile.writeText(other)
         assertNull(WidgetDigest.load(layout))
     }
 }

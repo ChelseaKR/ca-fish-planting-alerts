@@ -449,14 +449,15 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
   freshness, search, the widget digest, the stores and the words the app
   shows), and `app`. Package name `com.chelseakr.cafishplanting`, the iOS
   bundle identifier's stem (0010).
-- **California, from v1.** It reads
-  `https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json`
-  and nothing else, with the iOS app's request: one GET, `If-None-Match`, a
-  fixed `User-Agent`, no cookies. v1 stays byte-compatible beside v2 (0025),
-  so this app is California only until it gains states too. It ships its
-  own committed v1 snapshot (`android/app/src/main/assets/snapshot.json`,
-  refreshed by `android/scripts/sync-bundled-snapshot.sh`, which checks it
-  against `schema/snapshot.v1.json`), since the iOS app now bundles v2.
+- **Every state, from v2 (0025).** It reads
+  `https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v2.json`
+  with the iOS app's request: one GET, `If-None-Match`, a fixed
+  `User-Agent`, no cookies. Only when v2 isn't there (HTTP 404 or 410) does
+  it make one more GET, of `snapshot/v1.json`, California alone; the decoder
+  reads both. It ships its own committed v2 snapshot
+  (`android/app/src/main/assets/snapshot.json`, refreshed by
+  `android/scripts/sync-bundled-snapshot.sh`, which checks it against
+  `schema/snapshot.v2.json`), so each app controls when its file changes.
 - **Same rules.** A week, never a day, and "scheduled", never "stocked". No
   account, no analytics, no crash reporting, no server push. Alerts are
   local notifications that WorkManager's daily periodic refresh (and the
@@ -464,30 +465,40 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
   mutes and the alert baseline are files on the device. Cloud backup is
   off; a device-to-device transfer carries them.
 - **The alert planner is held to the Swift one.** Shared fixtures in
-  `ios/PlantingCore/Tests/PlantingCoreTests/Fixtures/` (synthetic cases and
-  two real-data excerpts) carry expectations recorded from the Swift
-  planner. `AlertPlannerParityTests.swift` and `AlertPlannerParityTest.kt`
-  both run every scenario and must produce the same alerts, ids, words and
-  baselines.
-- **Same free/paid boundary (0009, 0015).** Browsing, history and
-  favorites are free and unlimited. One Google Play one-time in-app
-  product, placeholder ID `fullaccess`, unlocks alerts and the home screen
-  widget. Play Billing only; the app never links to another way to pay.
-  The catalog and the entitlement are per product, so per-state products
-  are new entries, not new code.
+  `ios/PlantingCore/Tests/PlantingCoreTests/Fixtures/` carry expectations
+  recorded from the Swift planner. `alert-planner-parity.json` (synthetic
+  cases and two real-data excerpts) is California's;
+  `alert-planner-parity-states.json` runs every state of the v2 fixture,
+  with each state's purchase deciding which alerts may be posted and which
+  favorites the widget lists. `AlertPlannerParityTests.swift`,
+  `MultiStateParityTests.swift` and their Kotlin twins run every scenario
+  and must produce the same alerts, ids, words, baselines and widget rows.
+- **Same free/paid boundary, per state (0009, 0015, 0025).** Browsing,
+  history and favorites are free and unlimited in every state. Each state
+  is one Google Play one-time product that unlocks alerts for that state's
+  favorites and lists them in the home screen widget; the widget unlocks
+  with any state and counts, never shows, favorites in states not bought.
+  California's is `fullaccess`, unchanged. Tennessee's is `state_tn`, USD
+  9.99. `state_ma` and `state_mi` are placeholders while those states are
+  off. A Play product ID already belongs to this one app, so these drop the
+  package-name prefix the App Store IDs carry; `StateProducts` in `core`
+  records the mapping, and a test checks it against `StateAccess.swift`.
+  Play Billing only; the app never links to another way to pay.
 - **Platform words.** Android has a home screen widget (Glance) and no Lock
   Screen widget, so the copy says "home screen" where iOS says "Home Screen
   and Lock Screen", and "Swipe down" where iOS says "Pull down". Everything
-  else in the introduction is the iOS app's California copy from before
-  more states (0025), word for word, and a test pins it.
+  else in the introduction is the iOS copy, with more states (0025), word
+  for word, which a test checks against `Onboarding.swift`.
 - **Review prompt.** Google Play's in-app review card, with the iOS rating
   lane's rules (0035), and an About row that opens the app's Play Store
   page.
 - **Not ported.** Shortcuts and Siri (`ScheduleIntents`) and the Apple
   Watch (0027) have no direct Android twin in this change.
 
-Owner steps (Play Console app, in-app product, signing, Data safety,
-listing, internal testing) are in `android/README.md`.
+Owner steps (Play Console app, in-app products, signing, Data safety,
+listing, internal testing) are in `android/README.md`. The v2, per-state
+and introduction bullets above were updated on 2026-10-12 when the Android
+app gained the states of 0025.
 
 ## 0024 — Water locations from federal public-domain data, never guessed (2026-10-12; proposed)
 

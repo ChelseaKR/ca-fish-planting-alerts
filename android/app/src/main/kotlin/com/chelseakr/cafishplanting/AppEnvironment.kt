@@ -5,6 +5,7 @@ import android.content.Context
 import com.chelseakr.cafishplanting.core.AlertPlanner
 import com.chelseakr.cafishplanting.core.AlertState
 import com.chelseakr.cafishplanting.core.AppStorageLayout
+import com.chelseakr.cafishplanting.core.BrowseChoice
 import com.chelseakr.cafishplanting.core.BundledSnapshot
 import com.chelseakr.cafishplanting.core.Entitlements
 import com.chelseakr.cafishplanting.core.Favorites
@@ -56,8 +57,17 @@ data class AppState(
     val notificationsAllowed: Boolean = false,
     /** Set when a water is favorited for the first time, before Android's permission prompt. */
     val primingFor: Water? = null,
+    /** Which state Browse shows, as the person last picked it. */
+    val browseChoice: BrowseChoice = BrowseChoice(),
 ) {
-    val isEntitled: Boolean get() = entitlements.californiaFullAccess
+    /** Whether this state's full access is owned on this device (DECISIONS 0025). */
+    fun isEntitled(state: String): Boolean = entitlements.owns(state)
+
+    /** Any state unlocked: the widget and the general alert words. */
+    val hasAnyAccess: Boolean get() = entitlements.hasAnyAccess
+
+    /** The state Browse shows, if the snapshot still has it; else California. */
+    val browseState: String get() = if (snapshot?.state(browseChoice.state) == null) "CA" else browseChoice.state
 
     fun freshness(now: Instant = Instant.now()): SnapshotFreshness? {
         val snapshot = snapshot ?: return null
@@ -117,6 +127,7 @@ class AppEnvironment(
             entitlements = stores.loadEntitlement().entitlements,
             onboarding = stores.loadOnboarding(),
             notificationsAllowed = notifications.allowed(),
+            browseChoice = stores.loadBrowseChoice(),
         )
         scope.launch {
             val outcome = loader.await()
@@ -150,7 +161,11 @@ class AppEnvironment(
         val st = _state.value
         val snapshot = st.snapshot ?: return
         val meta = st.meta ?: return
-        val digest = WidgetDigest.build(snapshot, meta, st.favorites.ids, locked = !FreeTier.widgetsAllowed(st.isEntitled))
+        val entitled = st.entitlements.entitledStates
+        val digest = WidgetDigest.build(
+            snapshot, meta, st.favorites.ids,
+            locked = !FreeTier.widgetsAllowed(entitled), entitledStates = entitled,
+        )
         if (WidgetDigest.save(layout, digest)) WidgetUpdates.redraw(context, digest)
     }
 
@@ -225,6 +240,16 @@ class AppEnvironment(
         _state.update { it.copy(entitlements = entitlements) }
         // The widget is part of full access: a purchase or a refund redraws it straight away.
         publishWidgetDigest()
+    }
+
+    // States
+
+    /** Browse shows this state from now on, and after a relaunch. */
+    fun setBrowseState(code: String) {
+        val choice = BrowseChoice(code)
+        if (_state.value.browseChoice == choice) return
+        stores.saveBrowseChoice(choice)
+        _state.update { it.copy(browseChoice = choice) }
     }
 
     // Introduction
@@ -311,7 +336,8 @@ class AppEnvironment(
             alertState = plan.state
             stores.saveAlertState(alertState)
             // A muted water's baseline moved forward with the rest; only its alert is left out.
-            st.muted.unmuted(plan.notifications).takeIf { FreeTier.notificationsAllowed(st.isEntitled) } ?: emptyList()
+            // Each alert needs its own water's state's purchase (DECISIONS 0025).
+            FreeTier.alertsToPost(st.muted.unmuted(plan.notifications), s.snapshot, st.entitlements.entitledStates)
         }
         shown.forEach(notifications::post)
         return outcome

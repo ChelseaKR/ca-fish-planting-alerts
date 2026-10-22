@@ -103,21 +103,32 @@ fun AppRoot(env: AppEnvironment, router: Router, purchases: PurchaseBackend, act
         },
     ) {
         when (route.tab) {
-            Tab.BROWSE -> ListDetail(env, state, route.openInBrowse, "Choose a water from the list to see its schedule and history.", isBusy = { route.showingPurchase || route.showingOnboarding }) { open ->
-                BrowseList(env, state, open.selected, open.onOpen)
+            Tab.BROWSE -> ListDetail(env, state, route.openInBrowse, "Choose a water from the list to see its schedule and history.", isBusy = { route.showingPurchase || route.showingOnboarding }, onUnlock = { router.setPurchase(true, it) }) { open ->
+                BrowseList(env, state, open.selected, open.onOpen, onShowStates = { router.setStates(true) })
             }
-            Tab.FAVORITES -> ListDetail(env, state, route.openInFavorites, "Choose a favorite to see its schedule and history.", isBusy = { route.showingPurchase || route.showingOnboarding }) { open ->
+            Tab.FAVORITES -> ListDetail(env, state, route.openInFavorites, "Choose a favorite to see its schedule and history.", isBusy = { route.showingPurchase || route.showingOnboarding }, onUnlock = { router.setPurchase(true, it) }) { open ->
                 FavoritesList(env, state, open.selected, open.onOpen, onBrowse = { router.select(Tab.BROWSE) })
             }
-            Tab.ABOUT -> AboutScreen(env, state, onUnlock = { router.setPurchase(true) }, onShowIntroduction = { router.setOnboarding(true) })
+            Tab.ABOUT -> AboutScreen(
+                env, state,
+                onUnlock = { router.setPurchase(true, "CA") },
+                onShowStates = { router.setStates(true) },
+                onShowIntroduction = { router.setOnboarding(true) },
+            )
         }
     }
 
     state.primingFor?.let { water ->
-        PrimingSheet(activity, env, waterName = water.name, isEntitled = state.isEntitled, onDone = env::dismissPriming)
+        PrimingSheet(
+            activity, env, waterName = water.name, isEntitled = state.isEntitled(water.state), onDone = env::dismissPriming,
+            agencyShortName = water.agencyShortName, semantics = water.semantics,
+        )
+    }
+    if (route.showingStates) {
+        StatesSheet(env, purchases, onBuy = { code -> router.setPurchase(true, code) }, onDismiss = { router.setStates(false) })
     }
     if (route.showingPurchase) {
-        PurchaseSheet(activity, env, purchases, onDismiss = { router.setPurchase(false) })
+        PurchaseSheet(activity, env, purchases, stateCode = route.purchaseState, onDismiss = { router.setPurchase(false) })
     }
     if (route.showingOnboarding) {
         OnboardingScreen(onFinish = {
@@ -145,6 +156,7 @@ private fun ListDetail(
     openRequest: OpenRequest?,
     placeholder: String,
     isBusy: () -> Boolean,
+    onUnlock: (String) -> Unit,
     list: @Composable (ListOpen) -> Unit,
 ) {
     val largeText = LocalDensity.current.fontScale >= LARGE_TEXT_SCALE
@@ -191,9 +203,11 @@ private fun ListDetail(
                         env = env,
                         state = state,
                         water = water,
-                        sourceWeek = snapshot.sourceWeek,
+                        // The water's own state's current week.
+                        sourceWeek = snapshot.currentWeek(water),
                         showBack = !twoPanes,
                         onBack = { scope.launch { navigator.navigateBack() } },
+                        onUnlock = onUnlock,
                     )
                 } else {
                     EmptyState(Icons.Outlined.Info, "No water chosen", placeholder, androidx.compose.ui.Modifier.semantics { contentDescription = "No water chosen. $placeholder" })

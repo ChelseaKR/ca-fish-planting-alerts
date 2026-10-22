@@ -18,6 +18,10 @@ data class RouterState(
     val openInFavorites: OpenRequest? = null,
     val pendingWaterID: String? = null,
     val showingPurchase: Boolean = false,
+    /** The state the purchase sheet sells. California's is the original full access. */
+    val purchaseState: String = "CA",
+    /** The States screen: every state, what it publishes, and whether it is unlocked. */
+    val showingStates: Boolean = false,
     val showingOnboarding: Boolean = false,
 )
 
@@ -34,14 +38,18 @@ class Router {
 
     fun select(tab: Tab) = _state.update { it.copy(tab = tab) }
 
-    fun setPurchase(showing: Boolean) = _state.update { it.copy(showingPurchase = showing) }
+    fun setPurchase(showing: Boolean, state: String = "CA") =
+        _state.update { if (showing) it.copy(showingPurchase = true, purchaseState = state) else it.copy(showingPurchase = false) }
+
+    fun setStates(showing: Boolean) = _state.update { it.copy(showingStates = showing) }
 
     fun setOnboarding(showing: Boolean) = _state.update { it.copy(showingOnboarding = showing) }
 
     /** Handles the app's own links. `false`, and nothing asked, for any other URL. */
     fun handle(url: String): Boolean {
         if (UnlockLink.matches(url)) {
-            _state.update { it.copy(tab = Tab.ABOUT, showingPurchase = true) }
+            // The locked widget's link opens California's purchase, as in the iOS app.
+            _state.update { it.copy(tab = Tab.ABOUT, showingPurchase = true, purchaseState = "CA") }
             return true
         }
         val id = WaterLink.waterID(url) ?: return false

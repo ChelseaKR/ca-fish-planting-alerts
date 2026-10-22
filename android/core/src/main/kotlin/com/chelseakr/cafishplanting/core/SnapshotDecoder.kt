@@ -14,7 +14,7 @@ import java.time.format.DateTimeParseException
 class SnapshotDecodingException(message: String) : Exception(message) {
     companion object {
         fun unsupportedSchemaVersion(version: Int) = SnapshotDecodingException(
-            "Snapshot schema version $version is not supported (this app reads version ${Snapshot.SUPPORTED_SCHEMA_VERSION}).",
+            "Snapshot schema version $version is not supported (this app reads versions 1 and ${Snapshot.SUPPORTED_SCHEMA_VERSION}).",
         )
 
         fun malformed(what: String) = SnapshotDecodingException("Snapshot is malformed: $what.")
@@ -22,8 +22,10 @@ class SnapshotDecodingException(message: String) : Exception(message) {
 }
 
 /**
- * Strict decoder for `schema/snapshot.v1.json`, the same checks as
- * `SnapshotDecoder.swift`. Unknown JSON keys are ignored, matching
+ * Decoder for `schema/snapshot.v1.json` and `schema/snapshot.v2.json`,
+ * strict about the contract and tolerant of vocabulary it doesn't know (v2
+ * only, see `SnapshotV2Decoding`), the same checks as `SnapshotDecoder.swift` and `SnapshotV2Decoding.swift`.
+ * A v1 file is California alone. Unknown JSON keys are ignored, matching
  * `schema/README.md`'s reader contract; a missing required field, a bad
  * date, a non-https URL, an unknown status or region, a duplicate water or
  * an empty name throws.
@@ -40,16 +42,34 @@ object SnapshotDecoder {
     fun decode(bytes: ByteArray): Snapshot = decode(bytes.toString(Charsets.UTF_8))
 
     fun decode(text: String): Snapshot {
-        val dto = try {
-            json.decodeFromString(SnapshotDTO.serializer(), text)
-        } catch (e: SerializationException) {
-            throw SnapshotDecodingException.malformed(e.message ?: "not a snapshot document")
-        } catch (e: IllegalArgumentException) {
-            throw SnapshotDecodingException.malformed(e.message ?: "not a snapshot document")
+        val version = wire(text, VersionDTO.serializer()).schemaVersion
+        return when (version) {
+            1 -> decodeV1(text)
+            2 -> SnapshotV2Decoding.decode(wire(text, SnapshotV2DTO.serializer()))
+            else -> throw SnapshotDecodingException.unsupportedSchemaVersion(version)
         }
-        if (dto.schemaVersion != Snapshot.SUPPORTED_SCHEMA_VERSION) {
-            throw SnapshotDecodingException.unsupportedSchemaVersion(dto.schemaVersion)
+    }
+
+    /** [decode], plus what a v2 file's unknown vocabulary left out (always nothing for v1). */
+    fun decodeReporting(bytes: ByteArray): DecodedSnapshot {
+        val text = bytes.toString(Charsets.UTF_8)
+        return when (wire(text, VersionDTO.serializer()).schemaVersion) {
+            2 -> SnapshotV2Decoding.decodeReporting(wire(text, SnapshotV2DTO.serializer()))
+            else -> DecodedSnapshot(decode(text), IgnoredVocabulary())
         }
+    }
+
+    internal fun <T> wire(text: String, serializer: kotlinx.serialization.KSerializer<T>): T = try {
+        json.decodeFromString(serializer, text)
+    } catch (e: SerializationException) {
+        throw SnapshotDecodingException.malformed(e.message ?: "not a snapshot document")
+    } catch (e: IllegalArgumentException) {
+        throw SnapshotDecodingException.malformed(e.message ?: "not a snapshot document")
+    }
+
+    /** `schema/snapshot.v1.json`: California alone. */
+    private fun decodeV1(text: String): Snapshot {
+        val dto = wire(text, SnapshotDTO.serializer())
         val seen = HashSet<String>()
         val waters = dto.waters.map { w ->
             val water = water(w)
@@ -196,6 +216,9 @@ object SnapshotDecoder {
 }
 
 // Wire DTOs, private to decoding. The public model is [Snapshot].
+
+@Serializable
+internal class VersionDTO(@SerialName("schema_version") val schemaVersion: Int)
 
 @Serializable
 internal class SnapshotDTO(

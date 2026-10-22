@@ -1,0 +1,33 @@
+{# Listed weeks per calendar month for one water. Needs: water, water_months
+   (None below three listed weeks, which shows nothing). Counts come from the
+   weeks CDFW listed for this water since the record began; removed entries
+   are not counted, and a month that is not shown has no listed week. #}
+{% if water_months %}
+<section class="water-months" aria-labelledby="water-months-heading">
+  <h2 id="water-months-heading">{{ water.name }} by month in the weeks recorded here</h2>
+  <p>
+    In the weeks recorded here, since the {{ water_months.since_label }},
+    {{ water.name }} was on CDFW's schedule for {{ water_months.total }}
+    {{ "week" if water_months.total == 1 else "weeks" }} across
+    {{ water_months.month_count }} {{ "month" if water_months.month_count == 1 else "months" }}.
+    {% if water_months.peak_tied %}{{ water_months.peak_months }} share the highest count, {{ water_months.peak_weeks }} {{ "week" if water_months.peak_weeks == 1 else "weeks" }} each.{% else %}{{ water_months.peak_months }} has the highest count, with {{ water_months.peak_weeks }} {{ "week" if water_months.peak_weeks == 1 else "weeks" }}.{% endif %}
+  </p>
+  <table>
+    <caption class="visually-hidden">Weeks {{ water.name }} was on CDFW's schedule, by month, since the {{ water_months.since_label }}</caption>
+    <thead>
+      <tr><th scope="col">Month</th><th scope="col">Weeks on the schedule</th></tr>
+    </thead>
+    <tbody>
+      {% for row in water_months.rows %}
+      <tr><td>{{ row.month }}</td><td>{{ row.weeks }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">
+    A week counts in the month it begins. A month missing from the table has no
+    listed week in this record; the record does not say what happened in it.
+    This is a count of recorded weeks, not a forecast, and a record this short
+    is not a full season.
+  </p>
+</section>
+{% endif %}

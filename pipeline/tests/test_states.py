@@ -14,7 +14,7 @@ import httpx
 import pytest
 import respx
 
-from cfpa.states import ENABLED_STATES, SOURCES, ma, mi, tn
+from cfpa.states import ENABLED_STATES, SOURCES, ma, mi, ny, tn
 from cfpa.states import run as srun
 from cfpa.states.base import (
     USER_AGENT_TEMPLATE,
@@ -22,6 +22,7 @@ from cfpa.states.base import (
     Period,
     RobotsDisallowedError,
     RobotsUnreadableError,
+    StateFetchError,
     StateFormatError,
     check_robots_strict,
     no_sleep,
@@ -168,67 +169,143 @@ def test_tn_negative_control_a_truncated_file_is_refused_and_keeps_last_good_dat
 # ---- Massachusetts and Michigan, from labeled synthetic fixtures
 
 
-def test_ma_fixture_is_labeled_synthetic():
-    doc = json.loads((STATE_FIXTURES / "ma.json").read_text())
-    assert doc["_fixture_note"].startswith("SYNTHETIC FIXTURE")
+def _text(name: str) -> str:
+    return (STATE_FIXTURES / name).read_text(encoding="utf-8")
 
 
-def test_ma_parses_reports_by_day_with_towns_not_counties():
-    feed = ma.parse([_body((STATE_FIXTURES / "ma.json").read_text())])
-    assert feed.skipped == 1  # the row with no date
-    swift = feed.waters["ma-swift-belch"]
-    assert swift.towns == ("Belchertown",)
-    assert swift.counties == ()
-    assert swift.source_id == "SWIFT-BELCH"
-    days = sorted(
-        r.period.start for r in feed.records if r.water_id == "ma-swift-belch"
-    )
-    assert days == [dt.date(2026, 10, 6), dt.date(2026, 10, 9)]
+# ---- Massachusetts, from the real 2026-10-12 Hub download
+
+
+def test_ma_parses_reports_by_day_with_towns_and_the_legends_species():
+    feed = ma.parse([_body(_text("ma.csv"))])
+    assert len(feed.records) == 150
+    assert len(feed.waters) == 123
+    assert {r.species for r in feed.records} == {"Rainbow Trout", "Brown Trout"}
+    wyola = feed.waters["ma-34103-272"]
+    assert wyola.name == "Lake Wyola"  # " - Shutesbury" is the town, kept apart
+    assert wyola.towns == ("Shutesbury",)
+    assert wyola.counties == ()
     assert {r.period.precision for r in feed.records} == {"day"}
+    assert min(r.period.start for r in feed.records) == dt.date(2026, 9, 24)
+    assert max(r.period.start for r in feed.records) == dt.date(2026, 10, 9)
 
 
-def test_ma_negative_control_a_renamed_field_is_refused():
-    text = (STATE_FIXTURES / "ma.json").read_text().replace('"Waterbody"', '"Water"')
-    assert '"Waterbody"' not in text
-    with pytest.raises(StateFormatError, match="missing fields"):
+def test_ma_negative_control_an_unknown_species_code_is_refused_not_guessed():
+    text = _text("ma.csv").replace(",RT,34103-272,", ",XX,34103-272,", 1)
+    assert ",XX,34103-272," in text
+    with pytest.raises(StateFormatError, match="legend"):
         ma.parse([_body(text)])
 
 
-def test_mi_reads_every_page_and_sums_two_lots_on_one_day():
-    bodies = [_body((STATE_FIXTURES / f"mi-{i}.json").read_text()) for i in (0, 1)]
-    feed = mi.parse(bodies)
-    au_sable = sorted(
-        (r.period.start, r.species, r.count)
-        for r in feed.records
-        if r.water_id == "mi-1234"
-    )
-    assert au_sable == [
-        (dt.date(2026, 4, 21), "Brown Trout", 5000),
-        (dt.date(2026, 7, 29), "Rainbow Trout", 4000),
-    ]
-    assert feed.waters["mi-1234"].counties == ("Crawford",)
+def test_ma_negative_control_the_old_guessed_date_field_is_refused():
+    text = _text("ma.csv").replace("Stocked_Date", "Date", 1)
+    assert "Stocked_Date" not in text.splitlines()[0]
+    with pytest.raises(StateFormatError, match="missing columns"):
+        ma.parse([_body(text)])
+
+
+# ---- Michigan, from the real DNR CSV (a subset of its rows, verbatim)
+
+
+def test_mi_keeps_public_trout_stockings_from_2021_only():
+    feed = mi.parse([_body(_text("mi.csv"))])
+    assert len(feed.records) >= mi.SOURCE.min_rows
+    species = {r.species for r in feed.records}
+    assert species == {"Brown trout", "Rainbow trout", "Brook trout", "Lake trout"}
+    assert min(r.period.start for r in feed.records) >= mi.PUBLISH_SINCE
+    names = {w.name for w in feed.waters.values()}
+    assert not any(n.startswith("Private Pond") for n in names)
+
+
+def test_mi_ids_come_from_county_water_and_site():
+    feed = mi.parse([_body(_text("mi.csv"))])
+    wid = next(iter(feed.waters))
+    assert wid.startswith("mi-")
+    assert all(w.counties for w in feed.waters.values())
+    slugs = [w.slug for w in feed.waters.values()]
+    assert len(slugs) == len(set(slugs))
 
 
 def test_mi_negative_control_a_negative_count_is_refused():
-    text = (
-        (STATE_FIXTURES / "mi-0.json")
-        .read_text()
-        .replace('"number_fish": 5000', '"number_fish": -5')
+    lines = _text("mi.csv").splitlines()
+    i = next(
+        n
+        for n, line in enumerate(lines)
+        if "Brown trout" in line and "State Plant" in line
     )
-    assert '"number_fish": -5' in text
-    with pytest.raises(StateFormatError, match="whole count"):
+    cells = lines[i].split(",")
+    cells[10] = "-5"
+    lines[i] = ",".join(cells)
+    text = "\n".join(lines)
+    assert ",-5," in text
+    with pytest.raises(StateFormatError, match="negative"):
         mi.parse([_body(text)])
 
 
-def test_mi_rereads_a_lookback_window_and_never_before_its_publish_date():
-    assert mi.since_date(None) == mi.PUBLISH_SINCE
-    assert mi.since_date(dt.date(2026, 9, 18)) == dt.date(2026, 5, 21)
-    assert mi.since_date(dt.date(2021, 2, 1)) == mi.PUBLISH_SINCE
+def test_mi_negative_control_a_renamed_column_is_refused():
+    text = _text("mi.csv").replace("Stocking_Date", "Date_Stocked", 1)
+    assert "Stocking_Date" not in text.splitlines()[0]
+    with pytest.raises(StateFormatError, match="missing columns"):
+        mi.parse([_body(text)])
 
 
-def test_only_tennessee_is_fetched_by_the_daily_run():
-    assert ENABLED_STATES == ("TN",)
-    assert set(SOURCES) == {"TN", "MA", "MI"}
+# ---- New York, from OPEN-NY's real 2026 plan
+
+
+@pytest.mark.parametrize(
+    ("text", "start", "end"),
+    [
+        ("April - third week", dt.date(2026, 4, 15), dt.date(2026, 4, 21)),
+        ("March - fourth week", dt.date(2026, 3, 22), dt.date(2026, 3, 31)),
+        ("May", dt.date(2026, 5, 1), dt.date(2026, 5, 31)),
+        ("Mid April", dt.date(2026, 4, 11), dt.date(2026, 4, 20)),
+        ("Early May", dt.date(2026, 5, 1), dt.date(2026, 5, 10)),
+        ("March - April", dt.date(2026, 3, 1), dt.date(2026, 4, 30)),
+        ("Spring", dt.date(2026, 3, 1), dt.date(2026, 6, 30)),
+    ],
+)
+def test_ny_words_are_kept_verbatim_and_only_bounded(text, start, end):
+    p = ny.period(text, 2026)
+    assert p.precision == "approximate"
+    assert p.label == f"{text}, 2026"  # DEC's words, never a date
+    assert (p.start, p.end) == (start, end)
+
+
+def test_ny_real_plan_parses_every_row_it_can_read():
+    feed = ny.parse([_body(_text("ny.json"))])
+    assert len(feed.waters) == 582
+    assert len(feed.records) >= ny.SOURCE.min_rows
+    assert {r.period.precision for r in feed.records} == {"approximate"}
+    assert all(r.period.label.endswith(", 2026") for r in feed.records)
+
+
+def test_ny_negative_control_an_unknown_date_form_is_refused():
+    text = _text("ny.json").replace(
+        '"date":"April - third week"', '"date":"Around Easter"', 1
+    )
+    if text == _text("ny.json"):
+        text = _text("ny.json").replace(
+            '"date": "April - third week"', '"date": "Around Easter"', 1
+        )
+    assert "Around Easter" in text
+    with pytest.raises(StateFormatError, match="does not know"):
+        ny.parse([_body(text)])
+
+
+def test_a_plan_never_infers_a_removal():
+    feed = ny.parse([_body(_text("ny.json"))])
+    history = merge(
+        StateHistory.empty("NY"), feed, ny.SOURCE, as_of=dt.date(2026, 3, 1)
+    )
+    fewer = dataclasses.replace(feed, records=feed.records[:10])
+    merged = merge(history, fewer, ny.SOURCE, as_of=dt.date(2026, 3, 2))
+    assert {r.status for r in merged.records} == {"listed"}
+    assert not ny.SOURCE.removal_inference
+
+
+def test_every_state_is_fetched_by_the_daily_run_now_that_each_works_live():
+    assert ENABLED_STATES == ("TN", "MI", "MA", "NY")
+    assert set(SOURCES) == {"TN", "MA", "MI", "NY"}
 
 
 # ---- the strict robots rule
@@ -257,9 +334,10 @@ def test_an_unreadable_robots_txt_puts_the_host_off_limits(status, headers, body
     robots = respx.get("https://services1.arcgis.com/robots.txt").respond(
         status, text=body, headers=headers
     )
-    data = respx.get(url__startswith=ma.LAYER_URL)
+    layer = "https://services1.arcgis.com/x/arcgis/rest/services/y/FeatureServer/0"
+    data = respx.get(url__startswith=layer)
     with httpx.Client() as client, pytest.raises(RobotsUnreadableError):
-        ma.fetch(client, UA, no_sleep)
+        check_robots_strict(client, layer, UA)
     assert robots.called
     assert not data.called  # nothing else on the host is asked for
 
@@ -302,23 +380,81 @@ def test_tn_live_fetch_sends_an_honest_user_agent_and_never_a_browser_one():
     assert bodies[0].last_modified == "Fri, 09 Oct 2026 21:29:40 GMT"
 
 
+HUB_ROBOTS = "User-agent: *\nCrawl-delay: 60\nDisallow: /sites/\n"
+
+
 @respx.mock
-def test_arcgis_pages_are_requested_politely_one_after_another():
-    respx.get("https://utility.arcgis.com/robots.txt").respond(
-        200, text="User-agent: *\nAllow: /", headers={"content-type": "text/plain"}
+def test_ma_reads_hub_politely_and_never_the_403_host():
+    respx.get("https://hub.arcgis.com/robots.txt").respond(
+        200, text=HUB_ROBOTS, headers={"content-type": "text/plain"}
     )
-    pages = [(STATE_FIXTURES / f"mi-{i}.json").read_text() for i in (0, 1)]
-    route = respx.get(url__startswith=mi.LAYER_URL).mock(
-        side_effect=[httpx.Response(200, text=p) for p in pages]
+    blocked = respx.get(url__startswith="https://services1.arcgis.com/")
+    result = (
+        "https://hub.arcgis.com/api/v3/datasets/e27aa5ec1ef74659aac1ef12b39510f1_0"
+        "/downloads/data?format=csv&spatialRefId=2249&where=1%3D1"
+    )
+    status = respx.get(url__startswith=ma.DOWNLOAD_URL).mock(
+        side_effect=[
+            httpx.Response(202, json={"status": "Pending"}),
+            httpx.Response(200, json={"status": "Completed", "resultUrl": result}),
+        ]
+    )
+    csv_route = respx.get(url__startswith=result.split("?")[0]).respond(
+        200, text=_text("ma.csv")
     )
     slept: list[float] = []
     with httpx.Client() as client:
-        bodies = mi.fetch(client, UA, slept.append, dt.date(2026, 9, 18))
-    assert len(bodies) == 2
-    assert slept == [5.0]
-    first = route.calls[0].request.url.params
-    assert first["where"] == "stocking_date >= DATE '2026-05-21'"
-    assert route.calls[1].request.url.params["resultOffset"] == "1000"
+        bodies = ma.fetch(client, UA, slept.append)
+    assert status.call_count == 2 and csv_route.called
+    assert slept == [61.0, 61.0]  # the Crawl-delay, plus a second, between requests
+    assert not blocked.called
+    assert len(ma.parse(bodies).records) == 150
+
+
+@respx.mock
+def test_ma_refuses_a_result_url_on_another_host():
+    respx.get("https://hub.arcgis.com/robots.txt").respond(
+        200, text=HUB_ROBOTS, headers={"content-type": "text/plain"}
+    )
+    respx.get(url__startswith=ma.DOWNLOAD_URL).respond(
+        200,
+        json={"status": "Completed", "resultUrl": "https://services1.arcgis.com/x.csv"},
+    )
+    blocked = respx.get(url__startswith="https://services1.arcgis.com/")
+    with httpx.Client() as client, pytest.raises(StateFetchError, match="not followed"):
+        ma.fetch(client, UA, no_sleep)
+    assert not blocked.called
+
+
+@respx.mock
+def test_mi_asks_conditionally_and_a_304_changes_nothing(tmp_path: Path):
+    respx.get("https://michigandnr.com/robots.txt").respond(404, text="<html>")
+    route = respx.get(mi.CSV_URL).respond(304)
+    history = StateHistory.empty("MI")
+    history = dataclasses.replace(
+        history,
+        checks=dataclasses.replace(
+            history.checks, etag='"abc"', last_modified="Fri, 09 Oct 2026 18:27:05 GMT"
+        ),
+    )
+    history.save(tmp_path / "mi.json")
+    with httpx.Client() as client:
+        runs = srun.run_states(
+            states_dir=tmp_path,
+            fetch_codes=["MI"],
+            user_agent=UA,
+            now=NOW,
+            client=client,
+            sleep=no_sleep,
+        )
+    sent = route.calls.last.request.headers
+    assert sent["if-none-match"] == '"abc"'
+    assert sent["if-modified-since"] == "Fri, 09 Oct 2026 18:27:05 GMT"
+    assert "text/csv" in sent["accept"] and "octet-stream" in sent["accept"]
+    run = next(r for r in runs if r.source.code == "MI")
+    assert run.outcome == "unchanged"
+    assert run.history.records == []
+    assert run.history.checks.last_success_at == NOW
 
 
 # ---- the state history
@@ -347,7 +483,7 @@ def test_schedule_removal_only_for_a_period_that_has_not_ended():
 
 
 def test_a_report_never_infers_a_removal():
-    feed = ma.parse([_body((STATE_FIXTURES / "ma.json").read_text())])
+    feed = ma.parse([_body(_text("ma.csv"))])
     history = merge(
         StateHistory.empty("MA"), feed, ma.SOURCE, as_of=dt.date(2026, 10, 12)
     )
@@ -403,7 +539,7 @@ def test_one_failing_state_does_not_stop_another(tmp_path: Path):
     fixtures = tmp_path / "fx"
     fixtures.mkdir()
     (fixtures / "tn.json").write_text(_tn_text(), encoding="utf-8")
-    (fixtures / "ma.json").write_text("{not json", encoding="utf-8")
+    (fixtures / "ma.csv").write_text("not,the,columns\n", encoding="utf-8")
     runs = {
         r.source.code: r
         for r in srun.run_states(

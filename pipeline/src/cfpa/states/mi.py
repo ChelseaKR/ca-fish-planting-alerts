@@ -1,35 +1,49 @@
-"""Michigan: the DNR Fish Stocking Database (stockings already done).
+"""Michigan: the DNR's fish stocking data, a report of stockings done.
 
-The ArcGIS layer ``DNR/FishStockingReportGISAGO/MapServer/0`` sits behind
-the DNR's dashboard. RESEARCH.md (2026-10-11) counted 70,453 rows from
-1979-01-23, each with the DNR's ``waters_id`` (a stable key), the water,
-county, species, the day, the number of fish and their average length. The
-DNR says there is "a delay between a stocking event and a corresponding
-record": the newest trout record on 2026-10-11 was 2026-07-29. So the app
-and site say "stocked on <day>" and always show how recent the newest
-record is (``recency_note``), never "this week's stockings".
+Read from the DNR's own CSV, linked from its Fish Stocking Database
+dashboard as "Fish stocking data is available for download in CSV format":
+https://michigandnr.com/publications/PDFS/Fishing/FishStocking/FishStockingData.csv.
+That host's robots.txt answers 404, which counts as "no rules" (DECISIONS
+0025). The ArcGIS layer behind the dashboard sits on a host whose robots.txt
+redirects to a home page, so it is never read.
 
-**Not fetched by the daily run** (``cfpa.states.ENABLED_STATES``). On
-2026-10-12 the layer's host, utility.arcgis.com, answered its robots.txt
-with a 301 to the arcgis.com home page, which is not a robots file, and an
-unreadable robots.txt puts a host off-limits (the owner's rule). The field
-names below are RESEARCH.md's description, not read from the layer today;
-``arcgis.features`` refuses a response that lacks any of them.
+Measured 2026-10-12 (Last-Modified Fri, 09 Oct 2026 18:27:05 GMT): 70,453
+rows from 1979-01-23, columns ``County_Name, Water_Body_Name, sitename, Town,
+Range, Section, Species, Strain, Marking_Group, Stocking_Date (MM/DD/YYYY),
+Number_Fish_Stocked, Average_Length_Inches, Operation``. Species values carry
+padding spaces. There is no water id, so a water is county + water + site.
 
-The license is the dataset's own (quoted in ``LICENSE``): "no restrictions
-on the use, reproduction, or distribution", with an indemnity clause the
-owner has been asked about (RESEARCH.md §7, question 2).
+What is kept (DECISIONS 0028):
+
+- **Trout only**: brown, rainbow, brook and lake trout (every species whose
+  name contains "trout"). The product is Trout Truck.
+- **Public stockings only**: the ``PUBLIC_OPERATIONS`` below. Private ponds
+  stocked under permit, research, school and out-of-state rows are left out,
+  because they are not water an angler can fish.
+- **2021 onward** (``PUBLISH_SINCE``), in history and in the snapshot.
+
+The DNR says "There may be a delay between a stocking event and a
+corresponding record on this table", so records are "stocked on <day>" with
+that lag said beside them (``recency_note``), never "this week".
+
+The file is about 9.6 MB, so each run asks for it conditionally (ETag and
+If-Modified-Since); an unchanged file costs a 304 and nothing more.
+
+License: the dataset's own terms (quoted in ``LICENSE``), which the owner
+accepted on 2026-10-13, indemnity and release clauses included.
 """
 
 from __future__ import annotations
 
+import csv
 import datetime as dt
+import io
 from collections.abc import Callable
 
 import httpx
 
-from . import arcgis
 from .base import (
+    FetchContext,
     FetchedBody,
     LicenseSource,
     ParsedFeed,
@@ -40,38 +54,54 @@ from .base import (
     WaterMeta,
     check_robots_strict,
     combined_sha256,
+    get_text,
     slugify,
 )
 
 DASHBOARD_URL = (
     "https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f"
 )
-ITEM_URL = "https://www.arcgis.com/home/item.html?id=77581b13c6984b919ab8ed927496a31f"
-LAYER_URL = (
-    "https://utility.arcgis.com/usrsvcs/servers/fc7739be5f5247e7bf7f2c6bc9471140/"
-    "rest/services/DNR/FishStockingReportGISAGO/MapServer/0"
+ITEM_URL = "https://www.arcgis.com/home/item.html?id=fc7739be5f5247e7bf7f2c6bc9471140"
+CSV_URL = (
+    "https://michigandnr.com/publications/PDFS/Fishing/FishStocking/"
+    "FishStockingData.csv"
 )
 
-# Unverified field names (see the module docstring).
-F_KEY = "waters_id"
-F_WATER = "water_name"
-F_COUNTY = "county"
-F_SPECIES = "species"
-F_DATE = "stocking_date"
-F_COUNT = "number_fish"
-FIELDS = (F_KEY, F_WATER, F_COUNTY, F_SPECIES, F_DATE, F_COUNT)
+COLUMNS = (
+    "County_Name",
+    "Water_Body_Name",
+    "sitename",
+    "Species",
+    "Stocking_Date",
+    "Number_Fish_Stocked",
+    "Operation",
+)
 
-# Re-read this many days before the newest record on file, because records
-# arrive late and out of order.
-LOOKBACK_DAYS = 120
+ACCEPT = "text/csv, application/octet-stream;q=0.9, */*;q=0.1"
+
+# Stockings into water the public can fish. Everything else in the file
+# ("Private Plant (under permit)", "Private Water Private Operation",
+# "Research", "Educational Institution", "Marsh & Rearing Pond Release",
+# "Transplant of Wild Fish", "Indiana", "Wisconsin", ...) is left out.
+PUBLIC_OPERATIONS = frozenset(
+    {
+        "State Plant",
+        "Federal Plant",
+        "Tribal Plant",
+        "Tribal/DNR Coop Plant",
+        "INDNR/DNR Coop Plant",
+        "Public Plant",
+        "Mitigation Plant",
+    }
+)
+
 # Kept in history from the first fetch, and the earliest record the snapshot
-# and the site publish: five seasons, not 47 years, so the app's download
-# stays small.
+# and the site publish: five seasons, not 47 years.
 PUBLISH_SINCE = dt.date(2021, 1, 1)
 
 LICENSE = LicenseSource(
     name="Michigan DNR Fish Stocking Database (dataset license)",
-    url=DASHBOARD_URL,
+    url=CSV_URL,
     terms_url=ITEM_URL,
     terms_read_on="2026-10-12",
     commercial_reuse="permitted",
@@ -79,62 +109,101 @@ LICENSE = LicenseSource(
     terms_quote=(
         "This dataset is a public record and, as more fully described below, "
         "there are no restrictions on the use, reproduction, or distribution of "
-        "this dataset. ... You must defend, indemnify and hold the State, its "
-        "departments, subdivisions, officers, and employees harmless, without "
-        "limitation, from and against all actions, claims, losses, liabilities, "
-        "damages, costs, attorney fees, and expenses (including those required "
-        "to establish the right to indemnification) arising out of or relating "
-        "to your access or use of this dataset."
+        "this dataset. ... You forever release the State, its departments, "
+        "subdivisions, officers, and employees from all claims, rights, actions, "
+        "demands, damages, liabilities, expenses and fees, which arise out of or "
+        "relate to your access or use of this dataset. You must defend, "
+        "indemnify and hold the State, its departments, subdivisions, officers, "
+        "and employees harmless, without limitation, from and against all "
+        "actions, claims, losses, liabilities, damages, costs, attorney fees, "
+        "and expenses (including those required to establish the right to "
+        "indemnification) arising out of or relating to your access or use of "
+        "this dataset."
     ),
 )
 
 
-def _count(value: object) -> int | None:
-    if value is None or value == "":
+def _count(text: str) -> int | None:
+    text = text.strip()
+    if not text:
         return None
-    if isinstance(value, bool) or not isinstance(value, int | float):
-        raise StateFormatError(f"{F_COUNT} is not a number: {value!r}")
-    if value < 0 or value != int(value):
-        raise StateFormatError(f"{F_COUNT} is not a whole count: {value!r}")
-    return int(value)
+    try:
+        n = int(text)
+    except ValueError as exc:
+        raise StateFormatError(
+            f"Number_Fish_Stocked is not a whole number: {text!r}"
+        ) from exc
+    if n < 0:
+        raise StateFormatError(f"Number_Fish_Stocked is negative: {text!r}")
+    return n
+
+
+def _day(text: str) -> dt.date:
+    try:
+        return dt.datetime.strptime(text.strip(), "%m/%d/%Y").date()
+    except ValueError as exc:
+        raise StateFormatError(f"Stocking_Date is not MM/DD/YYYY: {text!r}") from exc
+
+
+def water_id(county: str, water: str, site: str) -> str:
+    return "mi-" + slugify(county, water, site)
+
+
+def _rows(bodies: list[FetchedBody]) -> list[dict[str, str]]:
+    if len(bodies) != 1:
+        raise StateFormatError(f"expected one Michigan DNR file, got {len(bodies)}")
+    reader = csv.DictReader(io.StringIO(bodies[0].text.lstrip("﻿")))
+    missing = [c for c in COLUMNS if c not in (reader.fieldnames or [])]
+    if missing:
+        raise StateFormatError(
+            f"the Michigan DNR file is missing columns {missing}; it may have changed"
+        )
+    return [{k: (v or "") for k, v in row.items() if k} for row in reader]
 
 
 def parse(bodies: list[FetchedBody]) -> ParsedFeed:
-    if not bodies:
-        raise StateFormatError("no Michigan DNR response to read")
     waters: dict[str, WaterMeta] = {}
     records: dict[tuple[str, str, str, str], ParsedRecord] = {}
     skipped = 0
-    for attrs in arcgis.features(bodies, FIELDS):
-        key = str(attrs.get(F_KEY) or "").strip()
-        name = str(attrs.get(F_WATER) or "").strip()
-        county = str(attrs.get(F_COUNTY) or "").strip()
-        species = str(attrs.get(F_SPECIES) or "").strip()
-        day = arcgis.epoch_ms_date(attrs.get(F_DATE), F_DATE)
-        if not (key and name and species and day):
+    for row in _rows(bodies):
+        species = " ".join(row["Species"].split())
+        if "trout" not in species.lower():
+            continue
+        if row["Operation"].strip() not in PUBLIC_OPERATIONS:
+            continue
+        day = _day(row["Stocking_Date"])
+        if day < PUBLISH_SINCE:
+            continue
+        county = row["County_Name"].strip()
+        water = row["Water_Body_Name"].strip()
+        site = row["sitename"].strip()
+        if not (county and water):
             skipped += 1
             continue
-        wid = "mi-" + slugify(key)
+        wid = water_id(county, water, site)
+        name = water if not site or site == water else f"{water} ({site})"
         waters[wid] = WaterMeta(
             id=wid,
-            slug=slugify(name, county, "county") if county else slugify(name, key),
+            slug=slugify(water, site, county, "county"),
             name=name,
-            counties=(county,) if county else (),
+            counties=(county,),
             region=None,
-            source_id=key,
+            source_id=None,
             source_url=DASHBOARD_URL,
         )
         rec = ParsedRecord(
             water_id=wid,
             period=Period.day(day),
             species=species,
-            count=_count(attrs.get(F_COUNT)),
+            count=_count(row["Number_Fish_Stocked"]),
         )
         prior = records.get(rec.key())
-        if prior is not None and prior.count is not None and rec.count is not None:
-            # Two lots of the same species on the same day: one stocking.
+        if prior is not None:
+            # Two lots of one species on one day at one site: one stocking.
+            total = (prior.count or 0) + (rec.count or 0)
+            both_none = prior.count is None and rec.count is None
             rec = ParsedRecord(
-                rec.water_id, rec.period, rec.species, prior.count + rec.count
+                rec.water_id, rec.period, rec.species, None if both_none else total
             )
         records[rec.key()] = rec
     first = bodies[0]
@@ -145,31 +214,21 @@ def parse(bodies: list[FetchedBody]) -> ParsedFeed:
         content_sha256=combined_sha256(bodies),
         last_modified=first.last_modified,
         skipped=skipped,
+        etag=first.etag,
     )
-
-
-def since_date(known_newest: dt.date | None) -> dt.date:
-    if known_newest is None:
-        return PUBLISH_SINCE
-    return max(PUBLISH_SINCE, known_newest - dt.timedelta(days=LOOKBACK_DAYS))
 
 
 def fetch(
     client: httpx.Client,
     user_agent: str,
     sleep: Callable[[float], None],
-    known_newest: dt.date | None = None,
+    context: FetchContext | None = None,
 ) -> list[FetchedBody]:
-    check_robots_strict(client, LAYER_URL, user_agent)
-    since = since_date(known_newest).isoformat()
-    return arcgis.query_all(
-        client,
-        LAYER_URL,
-        user_agent,
-        sleep,
-        where=f"{F_DATE} >= DATE '{since}'",
-        order_by=f"{F_DATE} ASC",
-    )
+    """robots.txt, then one conditional GET (NotModified on a 304)."""
+    check_robots_strict(client, CSV_URL, user_agent)
+    # The server answers "Accept: text/csv" with 406 (measured 2026-10-13); it
+    # serves the file as application/octet-stream.
+    return [get_text(client, CSV_URL, user_agent, accept=ACCEPT, since=context)]
 
 
 SOURCE = StateSource(
@@ -179,13 +238,13 @@ SOURCE = StateSource(
     agency_name="Michigan Department of Natural Resources",
     agency_short_name="Michigan DNR",
     agency_url="https://www.michigan.gov/dnr",
-    source_name="Michigan DNR Fish Stocking Database",
+    source_name="Michigan DNR fish stocking data",
     source_url=DASHBOARD_URL,
-    data_urls=(LAYER_URL,),
+    data_urls=(CSV_URL,),
     semantics="report",
     date_precisions=("day",),
     attribution_text=(
-        "Data: Michigan Department of Natural Resources, Fish Stocking Database "
+        "Data: Michigan Department of Natural Resources, fish stocking data "
         f"({DASHBOARD_URL})."
     ),
     attribution_url=DASHBOARD_URL,
@@ -193,12 +252,13 @@ SOURCE = StateSource(
         "Trout Truck is independent and is not affiliated with or endorsed by the "
         "Michigan DNR or the State of Michigan. The State provides this dataset "
         '"AS IS" and makes no warranty of its accuracy, timeliness or '
-        "completeness."
+        "completeness. Trout stockings into public waters only."
     ),
     license_summary=(
         "The Michigan DNR's stocking dataset is a public record with no "
-        "restrictions on use, reproduction or distribution, under terms that "
-        "also ask users to indemnify the State."
+        "restrictions on use, reproduction or distribution. Its terms also ask "
+        "users to release and indemnify the State, which the owner accepted on "
+        "2026-10-13."
     ),
     license_sources=(LICENSE,),
     regions=(),
@@ -207,7 +267,9 @@ SOURCE = StateSource(
         'DNR notes "a delay between a stocking event and a corresponding '
         'record"), so a recent stocking may not be listed yet.'
     ),
-    min_rows=1,
+    # About 700 public trout stockings a year since 2021: fewer than this
+    # looks like a truncated file, not a quiet year.
+    min_rows=1000,
     publish_since=PUBLISH_SINCE,
     fetch=fetch,
     parse=parse,

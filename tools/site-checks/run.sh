@@ -69,14 +69,22 @@ mkdir -p "$site"
 # Every page, relative to the site root: "about/index.html" becomes
 # "about/", the home page "./", and 404.html stays as it is.
 pages_file="$work/pages.txt"
+all_pages="$work/all-pages.txt"
 (cd "$site" && find . -name '*.html' | LC_ALL=C sort) \
-  | sed -e 's#^\./##' -e 's#index\.html$##' -e 's#^$#./#' > "$pages_file"
+  | sed -e 's#^\./##' -e 's#index\.html$##' -e 's#^$#./#' > "$all_pages"
+# Every California page, every state hub and /states/ are checked. The other
+# states' water pages (about 1,450 of them, one template; DECISIONS 0028) are
+# checked as a fixed sample of the first 12 per state in sorted order, so the
+# job stays inside its timeout. A state with a broken template still fails.
+awk -F/ '$1 ~ /^[a-z][a-z]$/ && $2 == "water" { if (++n[$1] > 12) next } { print }' \
+  "$all_pages" > "$pages_file"
+echo "   $(wc -l < "$all_pages" | tr -d ' ') pages built"
 page_count="$(wc -l < "$pages_file" | tr -d ' ')"
 if [ "$page_count" -lt 10 ]; then
   echo "site-checks: only $page_count page(s) built; refusing to pass a near-empty site" >&2
   exit 1
 fi
-echo "   $page_count pages"
+echo "   $page_count pages checked"
 
 port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
 base="http://127.0.0.1:$port/$prefix/"

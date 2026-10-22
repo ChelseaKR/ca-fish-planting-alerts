@@ -68,6 +68,7 @@ from zoneinfo import ZoneInfo
 import httpx
 
 from .base import (
+    FetchContext,
     FetchedBody,
     LicenseSource,
     ParsedFeed,
@@ -359,7 +360,7 @@ def fetch(
     client: httpx.Client,
     user_agent: str,
     sleep: Callable[[float], None],
-    known_newest: dt.date | None = None,
+    context: FetchContext | None = None,
     today: dt.date | None = None,
 ) -> list[FetchedBody]:
     """HORIZON_WEEKS windows from this week's Monday. A window that fills the

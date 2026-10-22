@@ -32,6 +32,7 @@ from collections.abc import Callable
 import httpx
 
 from .base import (
+    FetchContext,
     FetchedBody,
     LicenseSource,
     ParsedFeed,
@@ -207,9 +208,9 @@ def fetch(
     client: httpx.Client,
     user_agent: str,
     sleep: Callable[[float], None],
-    known_newest: dt.date | None = None,
+    context: FetchContext | None = None,
 ) -> list[FetchedBody]:
-    # One whole-year file: nothing to narrow by ``known_newest``.
+    # One whole-year file, about 100 KB: read whole each run.
     check_robots_strict(client, DATA_URL, user_agent)
     return [get_text(client, DATA_URL, user_agent)]
 

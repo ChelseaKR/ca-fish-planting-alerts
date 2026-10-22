@@ -50,7 +50,7 @@ test:
 
 # The offline end-to-end run: fixture -> history -> schema-validated
 # snapshot -> site, with no network and nothing written inside the repo. The
-# other states read their fixtures (DECISIONS 0025); MA and MI are synthetic.
+# other states read their fixtures (DECISIONS 0025, 0034), all real data.
 # The alias table starts as a copy of the committed one, so the coverage line
 # reports the names the fixture shares with real state ("names matched 37/37")
 # instead of "0/37", which an empty table would print by construction.
@@ -67,7 +67,7 @@ smoke:
 		--site-out $(TMP)/smoke/site \
 		--states-dir $(TMP)/smoke/states \
 		--states-fixtures tests/fixtures/states \
-		--states TN,MA,MI
+		--states TN,MA,MI,NY
 	test -f $(TMP)/smoke/site/index.html
 	test -f $(TMP)/smoke/site/snapshot/v2.json
 	test -f $(TMP)/smoke/site/tn/index.html

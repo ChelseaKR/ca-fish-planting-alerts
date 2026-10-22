@@ -66,8 +66,10 @@ COLUMNS: tuple[tuple[str, str, str], ...] = (
     (
         "period_precision",
         "text",
-        "How exact the agency's date is: week, day or month. California is "
-        "always week.",
+        "How exact the agency's date is: week, day, month or approximate. "
+        "California is always week. approximate is the agency's own words "
+        "(New York: April - third week, 2026); period_start and period_end "
+        "only bound it.",
     ),
     (
         "period_start",
@@ -89,10 +91,10 @@ COLUMNS: tuple[tuple[str, str, str], ...] = (
     (
         "status",
         "text",
-        "listed: on the agency's schedule as of the last check. removed: was "
-        "on the schedule and dropped before its period ended (used for states "
-        "that publish schedules). reported: the agency reports the stocking "
-        "as done (used for states that publish reports).",
+        "listed: on the agency's schedule or plan as of the last check. "
+        "removed: was on the schedule and dropped before its period ended "
+        "(used for states that publish schedules). reported: the agency "
+        "reports the stocking as done (used for states that publish reports).",
     ),
     (
         "count",

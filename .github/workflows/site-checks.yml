@@ -4,7 +4,7 @@ name: site-checks
 # pipeline builds. The job runs tools/site-checks/run.sh, the same script a
 # contributor runs locally, so both give the same result. What it checks:
 # axe-core and pa11y-ci on every page (A11Y-01, A11Y-03), a reflow check at
-# 320px (A11Y-09), Lighthouse CI accessibility, performance, script and
+# 320px on every page in the site's fonts and a wide font (A11Y-09), Lighthouse CI accessibility, performance, script and
 # lab Core Web Vitals budgets (A11Y-02, PERF-02, OBS-23/25), and the
 # regression check against perf/baseline.json (PERF-03). Google Analytics is
 # blocked in every browser the script starts. See perf/README.md.

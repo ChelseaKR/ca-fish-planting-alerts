@@ -6,8 +6,10 @@
 #   1. Build the site from the committed fixture: offline, and nothing is
 #      written inside the checkout.
 #   2. Serve it on a free local port.
-#   3. axe-core on every page, which covers A11Y-01 and the A11Y-09 reflow
-#      check (axe.mjs).
+#   3. axe-core on every page (A11Y-01, axe.mjs), then the A11Y-09 reflow
+#      check at 320px on every page, with the site's fonts and again with a
+#      wide font so the runner's installed fonts cannot hide an overflow
+#      (reflow.mjs), and that check's negative control.
 #   4. pa11y-ci with the axe runner, WCAG2AA, on every page (A11Y-03).
 #   5. Lighthouse CI on four representative pages (home, about, a water
 #      page, a county page), run three times each:
@@ -93,8 +95,13 @@ if [ ! -x "$chrome" ]; then
   exit 1
 fi
 
-echo "== axe-core (A11Y-01, A11Y-09)"
+echo "== axe-core (A11Y-01)"
 xargs node axe.mjs "$base" < "$pages_file"
+
+echo "== reflow at 320px, site fonts and a wide font (A11Y-09)"
+xargs node reflow.mjs "$base" < "$pages_file"
+echo "== reflow negative control: the pre-#83 rule must be caught"
+xargs node reflow.mjs --self-test "$base" < "$pages_file"
 
 echo "== pa11y-ci, axe runner, WCAG2AA (A11Y-03)"
 python3 - "$base" "$pages_file" "$chrome" > "$work/pa11yci.json" <<'PY'

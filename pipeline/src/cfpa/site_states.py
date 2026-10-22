@@ -12,11 +12,14 @@ The words follow each state's source:
   agency dropped says "schedule changed";
 - a **report** (Massachusetts, Michigan) says "stocked", because the agency
   reports stockings that happened, and shows how recent its newest record
-  is, because Michigan's lag by weeks.
+  is, because Michigan's lag by weeks;
+- a **plan** (New York, DECISIONS 0034) says "planned", never "scheduled"
+  and never "stocked": a once-a-year plan in the agency's own words.
 
 Every period is shown at the precision the agency gave: a day, the week of a
-Sunday, or a month. Never finer. "Stocking" is the word in every title,
-which is also each agency's own word outside California.
+Sunday, a month, or the agency's own words ("April - third week"). Never
+finer. "Stocking" is the word in every title, which is also each agency's
+own word outside California.
 """
 
 from __future__ import annotations
@@ -33,6 +36,8 @@ from .states import SOURCES
 
 UPCOMING_DAYS = 60
 RECENT_DAYS = 45
+# The example of an agency's own words shown on a plan state's pages.
+APPROXIMATE_EXAMPLE = "April - third week"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -60,7 +65,17 @@ def when_label(period: dict[str, str]) -> str:
     return period["label"]
 
 
-def status_label(status: str) -> str:
+def words(state: dict[str, Any]) -> dict[str, str]:
+    """A schedule's words, or a plan's (New York, DECISIONS 0034): a plan is
+    "planned", never "scheduled", and never a confirmed stocking."""
+    if state["semantics"] == "plan":
+        return {"kind": "plan", "verb": "planned", "Verb": "Planned"}
+    return {"kind": "schedule", "verb": "scheduled", "Verb": "Scheduled"}
+
+
+def status_label(status: str, semantics: str = "schedule") -> str:
+    if status == "listed" and semantics == "plan":
+        return "Planned"
     return {
         "listed": "Scheduled",
         "removed": "Schedule changed",
@@ -136,11 +151,19 @@ def _place(w: dict[str, Any], state: dict[str, Any]) -> str:
 
 
 def _precision_phrase(state: dict[str, Any]) -> str:
-    """'the week starting on a Monday' for a state that gives only weeks."""
+    """'the week starting on a Monday' for a state that gives only weeks;
+    'its own words, such as "April - third week"' for New York's plan."""
     week = SOURCES[state["code"]].week_phrase
-    words = {"day": "a day", "week": week, "month": "a month"}
+    words = {
+        "day": "a day",
+        "week": week,
+        "month": "a month",
+        "approximate": f'its own words, such as "{APPROXIMATE_EXAMPLE}"',
+    }
     parts = [
-        words[p] for p in ("day", "week", "month") if p in state["date_precisions"]
+        words[p]
+        for p in ("day", "week", "month", "approximate")
+        if p in state["date_precisions"]
     ]
     if len(parts) < 3:
         return " or ".join(parts)
@@ -156,7 +179,7 @@ def _row(w: dict[str, Any], p: dict[str, Any], state: dict[str, Any]) -> dict[st
         "start": p["period"]["start"],
         "species": p["species"],
         "count": p["count"],
-        "status": status_label(p["status"]),
+        "status": status_label(p["status"], state["semantics"]),
     }
 
 
@@ -196,7 +219,7 @@ def _hub_sections(
             if p["status"] == "removed":
                 continue
             in_week = (
-                per["precision"] != "month"
+                per["precision"] not in ("month", "approximate")
                 and per["start"] <= week["end"]
                 and per["end"] >= week["start"]
             )
@@ -204,7 +227,7 @@ def _hub_sections(
                 this_week.append(_row(w, p, state))
                 continue
             start = dt.date.fromisoformat(per["start"])
-            if state["semantics"] == "schedule":
+            if state["semantics"] in ("schedule", "plan"):
                 if today < start <= today + dt.timedelta(days=UPCOMING_DAYS):
                     other.append(_row(w, p, state))
             elif today - dt.timedelta(days=RECENT_DAYS) <= start <= today:
@@ -291,7 +314,9 @@ def _render_index(
             "agency": s["agency"]["name"],
             "kind": "Weekly schedule"
             if s["code"] == "CA"
-            else ("Schedule" if s["semantics"] == "schedule" else "Stocking report"),
+            else {"schedule": "Schedule", "plan": "Spring plan"}.get(
+                s["semantics"], "Stocking report"
+            ),
             "waters": s["waters_count"],
             "checked": _fmt_dt(s["checks"]["last_success_at"]),
         }
@@ -349,9 +374,10 @@ def _render_hub(
         )
     water_groups = [{"name": k, "waters": v} for k, v in sorted(groups.items())]
     species = _species_word([p for w in waters for p in w["plants"]])
-    schedule = state["semantics"] == "schedule"
+    schedule = state["semantics"] in ("schedule", "plan")
+    wd = words(state)
     title = (
-        f"{state['name']} {species} stocking schedule"
+        f"{state['name']} {species} stocking {wd['kind']}"
         if schedule
         else f"{state['name']} {species} stocking report"
     ) + f", from {state['agency']['short_name']} | {ctx.site_name}"
@@ -361,7 +387,7 @@ def _render_hub(
         description=(
             f"Where {state['agency']['name']} "
             + (
-                f"has scheduled {species} stocking"
+                f"has {wd['verb']} {species} stocking"
                 if schedule
                 else f"has stocked {species}"
             )
@@ -387,6 +413,8 @@ def _render_hub(
         week_phrase=SOURCES[state["code"]].week_phrase,
         precision_phrase=_precision_phrase(state),
         schedule=schedule,
+        w_kind=wd["kind"],
+        w_verb=wd["verb"],
         species=species,
         this_week=this_week,
         other=other,
@@ -417,7 +445,8 @@ def _render_water(
 ) -> tuple[str, str | None]:
     seg = state["code"].lower()
     page_url = f"{ctx.base_url}{w['site_path']}"
-    schedule = state["semantics"] == "schedule"
+    schedule = state["semantics"] in ("schedule", "plan")
+    wd = words(state)
     species = _species_word(w["plants"], state_species)
     place = place_phrase(
         w,
@@ -430,7 +459,7 @@ def _render_water(
             "precision": p["period"]["precision"],
             "species": p["species"],
             "count": p["count"],
-            "status": status_label(p["status"]),
+            "status": status_label(p["status"], state["semantics"]),
             "removed": p["status"] == "removed",
         }
         for p in sorted(
@@ -448,7 +477,7 @@ def _render_water(
         ),
         key=lambda o: o["name"],
     )
-    noun = "stocking schedule" if schedule else "stocking history"
+    noun = f"stocking {wd['kind']}" if schedule else "stocking history"
     head = f"{w['name']} {species} {noun}"
     short = short_place_phrase(
         w, state, "" if w["counties"] or w["towns"] else _place(w, state)
@@ -458,11 +487,9 @@ def _render_water(
     )
     if schedule:
         if w["next_period"]:
-            status = f"next scheduled {when_label(w['next_period'])}."
+            status = f"next {wd['verb']} {when_label(w['next_period'])}."
         elif w["last_period"]:
-            status = (
-                f"last scheduled {when_label(w['last_period'])}; nothing later listed."
-            )
+            status = f"last {wd['verb']} {when_label(w['last_period'])}; nothing later listed."
         elif w["months_note"]:
             status = f"listed by month ({w['months_note']}), no date set."
         else:
@@ -526,6 +553,8 @@ def _render_water(
         head=head,
         place=place,
         schedule=schedule,
+        w_kind=wd["kind"],
+        w_verb=wd["verb"],
         plants=plants,
         has_counts=any(p["count"] is not None for p in plants),
         has_removed=any(p["removed"] for p in plants),

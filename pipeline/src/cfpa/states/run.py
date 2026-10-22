@@ -21,13 +21,21 @@ import httpx
 
 from . import SOURCES
 from .base import (
+    FetchContext,
     FetchedBody,
+    NotModified,
     StateFetchError,
     StateFormatError,
     StateSource,
     real_sleep,
 )
-from .store import StateHistory, StateHistoryError, merge, record_failure
+from .store import (
+    StateHistory,
+    StateHistoryError,
+    merge,
+    record_failure,
+    record_unchanged,
+)
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -56,11 +64,12 @@ def civil_date(when: dt.datetime, time_zone: str) -> dt.date:
 def load_fixture_bodies(
     fixtures_dir: Path, code: str, fetched_at: dt.datetime
 ) -> list[FetchedBody]:
-    """``<code>.json`` (one body) or ``<code>-<n>.json`` (pages, in order).
-    A source that serves HTML (Oregon) keeps its pages as ``.html`` instead."""
+    """``<code>.<ext>`` (one body) or ``<code>-<n>.<ext>`` (pages, in order),
+    where the extension is the source's own: ``.json`` (Tennessee, New
+    York), ``.csv`` (Massachusetts, Michigan) or ``.html`` (Oregon)."""
     lower = code.lower()
     paths: list[Path] = []
-    for ext in ("json", "html"):
+    for ext in ("json", "csv", "html"):
         single = fixtures_dir / f"{lower}.{ext}"
         paths = (
             [single]
@@ -98,7 +107,12 @@ def _fetch_live(
     try:
         # The newest record on file lets a long report re-read only the
         # recent past (Michigan); a whole-file source ignores it.
-        return source.fetch(client, user_agent, sleep, history.newest_period_start)
+        context = FetchContext(
+            newest=history.newest_period_start,
+            etag=history.checks.etag,
+            last_modified=history.checks.last_modified,
+        )
+        return source.fetch(client, user_agent, sleep, context)
     finally:
         if owns:
             client.close()
@@ -159,6 +173,10 @@ def run_states(
                 + (f", {removed} newly removed from the schedule" if removed else "")
             )
             runs.append(StateRun(source, merged, path, "updated", message))
+        except NotModified:
+            # A 304: the file on file is still the agency's current one.
+            unchanged = record_unchanged(history, checked_at=now)
+            runs.append(StateRun(source, unchanged, path, "unchanged", "not modified"))
         except (StateFetchError, StateFormatError, StateHistoryError) as exc:
             failed = record_failure(history, attempted_at=now, error=str(exc))
             runs.append(StateRun(source, failed, path, "failed", str(exc)))
@@ -169,8 +187,8 @@ def print_report(runs: Iterable[StateRun]) -> None:
     for r in runs:
         if r.outcome == "skipped":
             continue
-        if r.outcome == "updated":
-            print(f"states: {r.source.code} updated: {r.message}")
+        if r.outcome in ("updated", "unchanged"):
+            print(f"states: {r.source.code} {r.outcome}: {r.message}")
             continue
         print(
             f"cfpa: WARNING {r.source.code} ({r.source.name}) was not updated; its "

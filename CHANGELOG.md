@@ -26,6 +26,16 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- States wave 2 (DECISIONS 0034), each its own one-time purchase in the
+  app: Michigan (the DNR's stocking data, trout stocked into public water
+  since 2021, with the DNR's reporting lag said beside it), Massachusetts
+  (MassWildlife's report of stockings done, read through ArcGIS Hub), and
+  New York (DEC's spring stocking plan in DEC's own words, such as "April -
+  third week", never turned into dates). New York favorites get a reminder
+  when a planned period begins. The app's v2 reader now leaves out a state,
+  a semantics, a status or a precision it does not know instead of refusing
+  the file, so an install keeps refreshing when the pipeline adds one first;
+  a malformed file still keeps the last good snapshot.
 - A page for each past week on record at `/week/YYYY-MM-DD/` (the waters CDFW's schedule listed that week, by county, each linked to its water page) and an index at `/week/`, with canonical URLs, structured data and sitemap entries whose `lastmod` comes from the data. The current week stays the home page; removed entries and empty weeks are left out, and a week with fewer than 8 listed waters is noindex,follow and out of the sitemap (DECISIONS 0038). `tests/test_site_weeks.py`.
 - An open-data page at `/data/` and CSV and JSON files under `/data/v1/` (current schedule and weekly history for California, and for Tennessee in its own files), with a data dictionary, written by the site build from `snapshot/v2.json`. Linked from the footer and the about page. The page states the source and terms (CDFW Conditions of Use) and adds no license of its own; choosing one is the owner's call (`DATASET_LICENSE_URL`).
 

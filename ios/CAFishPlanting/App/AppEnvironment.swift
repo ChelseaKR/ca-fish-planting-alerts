@@ -55,7 +55,9 @@ struct NotificationPrimingCopy: Equatable {
         let which = waterName.map { "\($0) or another favorite" } ?? "one of your favorites"
         var points = [
             Point(systemImage: "calendar",
-                  text: semantics == .report
+                  text: semantics == .plan
+                    ? "When \(agencyShortName)'s spring plan lists \(which), this device shows one alert, and a reminder when each planned period begins. Both use \(agencyShortName)'s own words, such as \"April - third week\", never a date."
+                    : semantics == .report
                     ? "When \(agencyShortName)'s stocking report adds \(which), this device shows one alert, naming the day \(agencyShortName) gives."
                     : agencyShortName == "CDFW"
                     ? "When CDFW's weekly schedule adds a week for \(which), this device shows one alert. It names the week, never a day, and CDFW says plans can change."
@@ -63,7 +65,9 @@ struct NotificationPrimingCopy: Equatable {
             Point(systemImage: "iphone",
                   text: "Alerts are made on this device from the schedule it downloads. There is no account and no server, and nothing about you or your favorites leaves the device."),
             Point(systemImage: "bell.slash",
-                  text: "No other notifications: no marketing, no reminders, no badges."),
+                  text: semantics == .plan
+                    ? "No other notifications: no marketing and no badges."
+                    : "No other notifications: no marketing, no reminders, no badges."),
         ]
         if !isEntitled {
             points.append(Point(systemImage: "lock",
@@ -203,7 +207,12 @@ final class AppEnvironment {
         self.purchases = purchases ?? PurchaseManager(entitlementStore: entitlementStore)
         // The widget is part of full access: a purchase, a restore or a
         // refund redraws it straight away.
-        self.purchases.onEntitlementChange = { [weak self] _ in self?.publishWidgetDigest() }
+        self.purchases.onEntitlementChange = { [weak self] _ in
+            self?.publishWidgetDigest()
+            // A New York purchase, restore or refund changes which planned
+            // periods this device reminds about (DECISIONS 0034).
+            self?.replanReminders()
+        }
         // "Mute this water" tapped on the watch, if watchOS hands that
         // button to the watch app rather than to this one.
         self.watchBridge?.onMuteRequest = { [weak self] id in self?.setAlertsMuted(true, for: id) }
@@ -238,6 +247,21 @@ final class AppEnvironment {
     }
 
     // MARK: States
+
+    /// Replaces the pending planned-period reminders (New York, DECISIONS
+    /// 0034) with the ones the current favorites, purchases and mutes call
+    /// for. Runs after a refresh and after any of those change.
+    func replanReminders(now: Date = Date()) {
+        guard let snapshot else { return }
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: now)
+        let today = PlainDate(year: c.year ?? 1970, month: c.month ?? 1, day: c.day ?? 1)
+        let reminders = ReminderPlanner.reminders(snapshot: snapshot, favorites: favorites.ids,
+                                                  entitledStates: purchases.entitledStates,
+                                                  muted: Set(favorites.ids.filter { mutedWaters.contains($0) }),
+                                                  today: today)
+        let scheduler = notifications
+        Task { await scheduler.scheduleReminders(reminders) }
+    }
 
     /// Each alert needs its own water's state's purchase (DECISIONS 0025): a
     /// California buyer gets no Tennessee alert, and the reverse. A water the
@@ -301,6 +325,7 @@ final class AppEnvironment {
             // Favoriting it again starts with alerts on.
             setAlertsMuted(false, for: water.id)
         }
+        replanReminders()
     }
 
     // MARK: Muted alerts
@@ -317,6 +342,7 @@ final class AppEnvironment {
         if muted { updated.mute(id) } else { updated.unmute(id) }
         mutedWaters = updated
         try? mutedStore?.save(updated)
+        replanReminders()
     }
 
     /// The water's screen is open: its delivered alerts have been read.
@@ -477,6 +503,7 @@ final class AppEnvironment {
                 await notifications.schedule(shown)
             }
         }
+        replanReminders(now: now)
         return outcome
     }
 }

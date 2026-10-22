@@ -81,10 +81,10 @@ def test_a_flag_value_that_is_not_one_or_zero_refuses_instead_of_guessing(value)
 
 
 def test_the_registry_and_the_daily_run_only_know_oregon_behind_the_flag():
-    assert set(states.registered_sources({})) == {"TN", "MA", "MI"}
-    assert states.enabled_states({}) == ("TN",)
-    assert set(states.registered_sources(FLAG_ON)) == {"TN", "MA", "MI", "OR"}
-    assert states.enabled_states(FLAG_ON) == ("TN", "OR")
+    assert set(states.registered_sources({})) == {"TN", "MA", "MI", "NY"}
+    assert states.enabled_states({}) == ("TN", "MI", "MA", "NY")
+    assert set(states.registered_sources(FLAG_ON)) == {"TN", "MA", "MI", "NY", "OR"}
+    assert states.enabled_states(FLAG_ON) == ("TN", "MI", "MA", "NY", "OR")
 
 
 def _import_state(env_value: str | None) -> dict[str, object]:
@@ -110,11 +110,12 @@ def _import_state(env_value: str | None) -> dict[str, object]:
 
 
 def test_a_fresh_process_has_no_oregon_by_default_and_has_it_with_the_flag():
-    assert _import_state(None) == {"sources": ["MA", "MI", "TN"], "enabled": ["TN"]}
-    assert _import_state("0") == {"sources": ["MA", "MI", "TN"], "enabled": ["TN"]}
+    default = {"sources": ["MA", "MI", "NY", "TN"], "enabled": ["TN", "MI", "MA", "NY"]}
+    assert _import_state(None) == default
+    assert _import_state("0") == default
     assert _import_state("1") == {
-        "sources": ["MA", "MI", "OR", "TN"],
-        "enabled": ["TN", "OR"],
+        "sources": ["MA", "MI", "NY", "OR", "TN"],
+        "enabled": ["TN", "MI", "MA", "NY", "OR"],
     }
 
 

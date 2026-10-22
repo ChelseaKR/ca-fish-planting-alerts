@@ -20,6 +20,19 @@ public enum ScheduleAnswer {
         }
         let stale = SnapshotFreshness.scheduleDate(of: now) > week.end
         let upcoming = water.listedPlants(onOrAfter: week)
+        if water.semantics == .plan {
+            // A once-a-year plan in the agency's own words (DECISIONS 0034):
+            // say the words, and that they are a plan, never a date.
+            let agency = water.agencyShortName
+            if let first = upcoming.first {
+                let species = speciesList(upcoming.filter { $0.week == first.week })
+                return "\(water.name) is planned for \(first.week.label)\(species), in \(agency)'s own words. A plan, not a date and not a confirmed stocking."
+            }
+            if let last = water.lastListedWeek {
+                return "\(water.name) isn't in \(agency)'s plan for later this season. It was last planned for \(last.label)."
+            }
+            return "\(water.name) hasn't been in \(agency)'s plan in this app's history."
+        }
         var sentences: [String] = []
 
         if let first = upcoming.first {

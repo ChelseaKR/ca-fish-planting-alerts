@@ -147,7 +147,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pipeline/data/history.json pipeline/data/aliases.json pipeline/data/states/tn.json
+          git add pipeline/data/history.json pipeline/data/aliases.json pipeline/data/states/tn.json pipeline/data/states/mi.json pipeline/data/states/ma.json pipeline/data/states/ny.json
           if git diff --cached --quiet; then
             echo "no change to history or aliases this run"
           else

@@ -70,6 +70,8 @@ struct WaterDetailView: View {
                          ? "Muted. \(water.name) stays in Favorites and the widget, with no alert when it is newly on the schedule."
                          : water.state == "CA"
                          ? "An alert on this device when \(water.name) is newly on CDFW's weekly schedule."
+                         : water.semantics == .plan
+                         ? "An alert on this device when \(water.name) is in \(water.agencyShortName)'s spring plan, and a reminder when each planned period begins."
                          : water.semantics == .report
                          ? "An alert on this device when \(water.name) is new in \(water.agencyShortName)'s stocking report."
                          : "An alert on this device when \(water.name) is newly on \(water.agencyShortName)'s schedule.")
@@ -104,7 +106,7 @@ struct WaterDetailView: View {
                     }
                 }
             } header: {
-                SectionHeader(water.semantics == .report ? "Stocking history" : "Schedule history")
+                SectionHeader(water.semantics == .report ? "Stocking history" : water.semantics == .plan ? "Stocking plans" : "Schedule history")
             }
 
             if water.state != "CA", let state {
@@ -175,7 +177,9 @@ private struct PlantRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 // The pipeline's own label, verbatim: a week is never shown
                 // as a day, and a month says its day isn't set.
-                Text(plant.week.precision == .month ? "\(plant.week.label), day not set" : plant.week.label)
+                Text(plant.week.precision == .month ? "\(plant.week.label), day not set"
+                     : plant.week.precision == .approximate ? "Planned for \(plant.week.label)"
+                     : plant.week.label)
                 Text(plant.count.map { "\(plant.species), \($0.formatted()) fish" } ?? plant.species)
                     .font(.caption).foregroundStyle(.secondaryText)
             }

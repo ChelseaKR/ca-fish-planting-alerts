@@ -90,9 +90,15 @@ public enum FreeTier {
     /// What a state's purchase unlocks, in the purchase screen's words. A
     /// report state's alert says "stocked", a schedule state's "scheduled".
     public static func stateFeatures(stateName: String, agencyShortName: String, semantics: StateSemantics) -> [String] {
-        let alert = semantics == .schedule
-            ? "An alert on this device when a \(stateName) favorite is newly on \(agencyShortName)'s schedule"
-            : ReportWording.alertFeature(stateName: stateName, agencyShortName: agencyShortName)
+        let alert: String
+        switch semantics {
+        case .schedule:
+            alert = "An alert on this device when a \(stateName) favorite is newly on \(agencyShortName)'s schedule"
+        case .report:
+            alert = ReportWording.alertFeature(stateName: stateName, agencyShortName: agencyShortName)
+        case .plan:
+            alert = "A reminder on this device when a \(stateName) favorite's planned stocking period begins, in \(agencyShortName)'s own words"
+        }
         return [alert, "\(stateName) favorites in the Favorite waters widget", "\(stateName) favorites on Apple Watch"]
     }
 }

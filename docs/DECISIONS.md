@@ -856,7 +856,7 @@ the sitemap, the footer of every page and the home page.
   confusion the schedule itself invites; they are not a bet on a measured
   query. If they earn no impressions in 8 weeks after indexing, drop them in
   one edit (delete `guides.py`, the templates and the three links).
-- **Indexing is unchanged.** No noindex change, and no ranking claim.
+- **No ranking claim.** Only the thin weeks above are noindex.
 
 ## 0032 — Oregon is built and tested behind a flag that is off (2026-10-21)
 
@@ -950,6 +950,11 @@ nothing else.
   linked, not copied. A later week can still change and has no page. A week
   with no listings gets no page, and with no such week at all `/week/` is not
   written and nothing links to it.
+- **Thin weeks are not indexed (owner decision 2026-10-22).** A week with
+  fewer than `WEEK_INDEX_MIN_WATERS` = 8 listed waters keeps its page, is
+  linked from `/week/` like the others, and carries `robots` `noindex,follow`
+  and no sitemap entry. A week with 8 or more is indexed and in the sitemap.
+  The index says nothing about which is which.
 - **Removed entries are never shown.** A removed plant is not a listing;
   a page says so in one sentence.
 - **Copy.** The week, the count, "CDFW's schedule for that week, as this
@@ -967,4 +972,4 @@ nothing else.
   (`trout-truck-query-evidence-2026-10-22.md`), so this is a bet on long-tail
   date queries, not a measured one. If the week pages earn no impressions by
   the next review, delete `weeks.py`, the two templates and the links to /week/.
-- **Indexing is unchanged.** No noindex change, and no ranking claim.
+- **No ranking claim.** Only the thin weeks above are noindex.

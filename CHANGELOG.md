@@ -26,7 +26,7 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
-- A page for each past week on record at `/week/YYYY-MM-DD/` (the waters CDFW's schedule listed that week, by county, each linked to its water page) and an index at `/week/`, with canonical URLs, structured data and sitemap entries whose `lastmod` comes from the data. The current week stays the home page; removed entries and empty weeks are left out (DECISIONS 0038). `tests/test_site_weeks.py`.
+- A page for each past week on record at `/week/YYYY-MM-DD/` (the waters CDFW's schedule listed that week, by county, each linked to its water page) and an index at `/week/`, with canonical URLs, structured data and sitemap entries whose `lastmod` comes from the data. The current week stays the home page; removed entries and empty weeks are left out, and a week with fewer than 8 listed waters is noindex,follow and out of the sitemap (DECISIONS 0038). `tests/test_site_weeks.py`.
 - An open-data page at `/data/` and CSV and JSON files under `/data/v1/` (current schedule and weekly history for California, and for Tennessee in its own files), with a data dictionary, written by the site build from `snapshot/v2.json`. Linked from the footer and the about page. The page states the source and terms (CDFW Conditions of Use) and adds no license of its own; choosing one is the owner's call (`DATASET_LICENSE_URL`).
 
 - Region pages at `/region/<slug>/` for each CDFW region that has a water

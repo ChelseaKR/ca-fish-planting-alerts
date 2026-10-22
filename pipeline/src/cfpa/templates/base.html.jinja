@@ -13,7 +13,7 @@
 <meta name="apple-itunes-app" content="app-id={{ app_store_id }}">
 {% endif %}
 {% if noindex %}
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex{% if noindex_follow %},follow{% endif %}">
 {% endif %}
 {% if canonical_url %}
 <link rel="canonical" href="{{ canonical_url }}">

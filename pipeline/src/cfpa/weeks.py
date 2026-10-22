@@ -5,7 +5,9 @@ index of them (/week/), built from the snapshot's plants and nothing else
 A week gets a page when CDFW's schedule listed at least one water for it and
 the week is over (it starts before the snapshot's current week). The current
 week is the home page; a week after it can still change and has no page here.
-Entries with status "removed" are never shown. Kept in its own module so the
+Entries with status "removed" are never shown. A week with fewer than
+``WEEK_INDEX_MIN_WATERS`` waters keeps its page but is noindex,follow and out
+of the sitemap. Kept in its own module so the
 change to ``site.py`` stays a few additive lines.
 
 Nothing on a week page depends on the day it was built: no "last checked"
@@ -25,6 +27,10 @@ from .snapshot import week_of
 
 TITLE_MAX = 60
 DESCRIPTION_MAX = 155
+# A week with fewer listed waters than this still has a page and is linked from
+# /week/, but carries a robots noindex,follow tag and is left out of the
+# sitemap (owner decision 2026-10-22; DECISIONS 0038).
+WEEK_INDEX_MIN_WATERS = 8
 
 
 def week_entries(snapshot: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
@@ -137,6 +143,7 @@ def render_weeks(
 
     for start in ordered:
         n = len(weeks[start])
+        thin = n < WEEK_INDEX_MIN_WATERS
         url = f"{index_url}{start}/"
         trail = [home, index_crumb, (f"Week of {start}", url)]
         title = week_title(start, site_name)
@@ -144,6 +151,8 @@ def render_weeks(
             title=title,
             description=week_description(start, n),
             canonical_url=url,
+            noindex=thin,
+            noindex_follow=thin,
             root="../../",
             **common,
             structured_data=ld_graph(
@@ -165,7 +174,8 @@ def render_weeks(
             ),
         )
         write_page(out_dir, f"week/{start}", html, written)
-        entries.append((url, lastmods[start]))
+        if not thin:
+            entries.append((url, lastmods[start]))
 
     # The index changes when a week joins it: the day the week became a past
     # week (the Sunday after it began) or when its entries last changed.

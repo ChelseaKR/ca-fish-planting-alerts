@@ -20,6 +20,8 @@ import pytest
 
 from cfpa import cli, site, weeks
 
+WEEK_MIN = weeks.WEEK_INDEX_MIN_WATERS
+
 FIXTURES = Path(__file__).parent / "fixtures"
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "snapshot.v1.json"
 BASE_URL = "https://example.invalid/ca-fish-planting-alerts"
@@ -386,13 +388,15 @@ def test_the_sitemap_has_exactly_the_new_urls_with_a_lastmod_from_the_data(built
         for u in root.findall("s:url", SITEMAP_NS)
     }
     week_urls = {u for u in entries if u.startswith(f"{BASE_URL}/week/")}
+    indexed = {s for s, slugs in expected.items() if len(slugs) >= WEEK_MIN}
+    assert indexed and indexed != set(expected)  # both sides are non-empty
     assert week_urls == {f"{BASE_URL}/week/"} | {
-        f"{BASE_URL}/week/{s}/" for s in expected
+        f"{BASE_URL}/week/{s}/" for s in indexed
     }
     # lastmod for a week: the most recent to oldest_observed_at / removal date among the
     # history records of that week, computed here from the history file.
     records = json.loads(history.read_text(encoding="utf-8"))["plants"]
-    for start in expected:
+    for start in indexed:
         dates = [
             r["first_observed_at"][:10] for r in records if r["week_start"] == start
         ]
@@ -452,3 +456,80 @@ def test_links_into_the_archive_exist_from_home_and_the_county_index(built):
     page = _parse(out / "week" / sorted(_week_dirs(out))[0] / "index.html")
     assert "../../week/" in page.hrefs
     assert "../../county/" in page.hrefs
+
+
+class _Robots(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.found: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = dict(attrs)
+        if tag == "meta" and a.get("name") == "robots":
+            self.found.append(a.get("content") or "")
+
+
+def _robots(path: Path) -> list[str]:
+    r = _Robots()
+    r.feed(path.read_text(encoding="utf-8"))
+    return r.found
+
+
+def _sitemap_locs(root: Path) -> set[str]:
+    tree = ET.fromstring((root / "sitemap.xml").read_text(encoding="utf-8"))
+    return {
+        u.findtext("s:loc", namespaces=SITEMAP_NS) or ""
+        for u in tree.findall("s:url", SITEMAP_NS)
+    }
+
+
+def test_the_threshold_constant_is_eight():
+    assert weeks.WEEK_INDEX_MIN_WATERS == 8
+
+
+def test_thin_weeks_are_noindex_follow_and_out_of_the_sitemap(built):
+    out, snap, history = built
+    expected = _expected_from_history(history, snap)
+    locs = _sitemap_locs(out)
+    thin = {s for s, v in expected.items() if len(v) < WEEK_MIN}
+    full = set(expected) - thin
+    assert thin and full
+    for s in thin:
+        page = out / "week" / s / "index.html"
+        assert page.exists()  # still built and reachable
+        assert _robots(page) == ["noindex,follow"], s
+        assert f"{BASE_URL}/week/{s}/" not in locs
+        assert f"../week/{s}/" in _parse(out / "week" / "index.html").hrefs
+        assert _page_slugs(out, s) == expected[s]
+    for s in full:
+        assert _robots(out / "week" / s / "index.html") == [], s
+        assert f"{BASE_URL}/week/{s}/" in locs
+    # The index lists every week, thin or not, and is itself indexed.
+    assert _robots(out / "week" / "index.html") == []
+    assert f"{BASE_URL}/week/" in locs
+
+
+def test_negative_control_a_week_at_the_threshold_is_indexed_and_one_below_is_not(
+    built, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    _, snap, history = built
+    expected = _expected_from_history(history, snap)
+    start = max(expected, key=lambda s: len(expected[s]))
+    n = len(expected[start])
+    assert n >= 2
+    url = f"{BASE_URL}/week/{start}/"
+    # At the threshold: indexed and in the sitemap.
+    monkeypatch.setattr(weeks, "WEEK_INDEX_MIN_WATERS", n)
+    assert n == weeks.WEEK_INDEX_MIN_WATERS  # the sabotage applied
+    site.build_site(copy.deepcopy(snap), tmp_path / "at", base_url=BASE_URL)
+    assert _robots(tmp_path / "at" / "week" / start / "index.html") == []
+    assert url in _sitemap_locs(tmp_path / "at")
+    # One above the count: the same week is noindex,follow and not in the sitemap.
+    monkeypatch.setattr(weeks, "WEEK_INDEX_MIN_WATERS", n + 1)
+    assert n + 1 == weeks.WEEK_INDEX_MIN_WATERS  # the sabotage applied
+    site.build_site(copy.deepcopy(snap), tmp_path / "below", base_url=BASE_URL)
+    assert _robots(tmp_path / "below" / "week" / start / "index.html") == [
+        "noindex,follow"
+    ]
+    assert url not in _sitemap_locs(tmp_path / "below")
+    assert (tmp_path / "below" / "week" / start / "index.html").exists()

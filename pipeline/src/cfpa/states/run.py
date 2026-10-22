@@ -56,17 +56,22 @@ def civil_date(when: dt.datetime, time_zone: str) -> dt.date:
 def load_fixture_bodies(
     fixtures_dir: Path, code: str, fetched_at: dt.datetime
 ) -> list[FetchedBody]:
-    """``<code>.json`` (one body) or ``<code>-<n>.json`` (pages, in order)."""
+    """``<code>.json`` (one body) or ``<code>-<n>.json`` (pages, in order).
+    A source that serves HTML (Oregon) keeps its pages as ``.html`` instead."""
     lower = code.lower()
-    single = fixtures_dir / f"{lower}.json"
-    paths = (
-        [single]
-        if single.exists()
-        else sorted(
-            fixtures_dir.glob(f"{lower}-*.json"),
-            key=lambda p: int(p.stem.rsplit("-", 1)[1]),
+    paths: list[Path] = []
+    for ext in ("json", "html"):
+        single = fixtures_dir / f"{lower}.{ext}"
+        paths = (
+            [single]
+            if single.exists()
+            else sorted(
+                fixtures_dir.glob(f"{lower}-*.{ext}"),
+                key=lambda p: int(p.stem.rsplit("-", 1)[1]),
+            )
         )
-    )
+        if paths:
+            break
     if not paths:
         raise StateFetchError(f"no fixture for {code} in {fixtures_dir}")
     return [

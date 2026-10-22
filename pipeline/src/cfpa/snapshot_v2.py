@@ -21,7 +21,8 @@ from zoneinfo import ZoneInfo
 import jsonschema
 
 from .locations import location_for
-from .states.base import Period, StateSource, week_start_containing
+from .states import SOURCES
+from .states.base import Period, StateSource, week_containing
 from .states.store import StateHistory, StateRecord
 
 CA_AGENCY = {
@@ -57,10 +58,10 @@ def _iso_z(d: dt.datetime) -> str:
     return d.astimezone(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _week(start: dt.date) -> dict[str, str]:
+def _week(start: dt.date, days: int = 7) -> dict[str, str]:
     return {
         "start": start.isoformat(),
-        "end": (start + dt.timedelta(days=6)).isoformat(),
+        "end": (start + dt.timedelta(days=days - 1)).isoformat(),
         "label": f"week of {start.isoformat()}",
     }
 
@@ -278,7 +279,9 @@ def _state_entry(
         "semantics": source.semantics,
         "date_precisions": list(source.date_precisions),
         "removal_inference": source.removal_inference,
-        "current_week": _week(week_start_containing(today)),
+        "current_week": _week(
+            week_containing(today, source.week_starts_on), source.week_days
+        ),
         "as_of": as_of.isoformat(),
         "newest_record": newest.period.to_json(),
         "recency_note": source.recency_note,
@@ -366,8 +369,11 @@ def _check_plant(w: dict[str, Any], p: dict[str, Any], state: dict[str, Any]) ->
     per = Period.from_json(p["period"])
     if per.label != p["period"]["label"] or per.end < per.start:
         raise SnapshotV2Error(f"water {w['id']} has a bad period {p['period']}")
-    if per.precision == "week" and per.start.weekday() != 6:
-        raise SnapshotV2Error(f"water {w['id']} has a week not on a Sunday")
+    source = SOURCES.get(w["state"])
+    starts_on = source.week_starts_on if source else 6
+    if per.precision == "week" and per.start.weekday() != starts_on:
+        day = "Sunday" if starts_on == 6 else "Monday"
+        raise SnapshotV2Error(f"water {w['id']} has a week not on a {day}")
     if per.precision not in state["date_precisions"]:
         raise SnapshotV2Error(
             f"water {w['id']} has a {per.precision} the state never gives"

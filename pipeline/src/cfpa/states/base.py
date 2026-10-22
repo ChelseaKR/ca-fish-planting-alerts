@@ -76,6 +76,12 @@ def week_start_containing(day: dt.date) -> dt.date:
     return day - dt.timedelta(days=(day.weekday() + 1) % 7)
 
 
+def week_containing(day: dt.date, starts_on: int) -> dt.date:
+    """The date that begins the week containing ``day``, for a week that
+    starts on weekday ``starts_on`` (Monday 0 .. Sunday 6)."""
+    return day - dt.timedelta(days=(day.weekday() - starts_on) % 7)
+
+
 @dataclasses.dataclass(frozen=True, slots=True, order=True)
 class Period:
     """When a record says fish come (or came), at the precision the agency
@@ -234,6 +240,11 @@ class StateSource:
         list[FetchedBody],
     ]
     parse: Callable[[list[FetchedBody]], ParsedFeed]
+    # How the agency's week is laid out. California and Tennessee: a Sunday
+    # start (weekday 6) and a seven-day span. Oregon: Monday (0), five days.
+    week_starts_on: int = 6
+    week_days: int = 7
+    week_phrase: str = "the week of a Sunday"
 
     @property
     def removal_inference(self) -> bool:

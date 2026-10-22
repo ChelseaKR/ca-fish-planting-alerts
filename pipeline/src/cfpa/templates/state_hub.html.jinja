@@ -5,8 +5,8 @@
 <p class="lede">
   Where the {{ state.agency.name }} ({{ state.agency.short_name }}) has
   scheduled {{ species }} stocking in {{ state.name }}, at the precision
-  {{ state.agency.short_name }} gives: a day, the week of a Sunday, or a
-  month. These are scheduled dates, not confirmed stockings.
+  {{ state.agency.short_name }} gives: {% if state.date_precisions == ['day', 'week', 'month'] %}a day, {{ week_phrase }}, or a
+  month{% else %}{{ precision_phrase }}{% endif %}. These are scheduled dates, not confirmed stockings.
 </p>
 {% else %}
 <h1>{{ state.name }} {{ species }} stocking report</h1>

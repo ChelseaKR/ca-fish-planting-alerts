@@ -796,3 +796,40 @@ about 2027-04-17, and the links come out in one edit if there are none.
   handler they do nothing.
 - **Guards.** `tests/test_site_gear_guide.py` (with negative controls) and
   the widened page list in `tests/test_site_affiliate.py`.
+
+## 0032 — Oregon is built and tested behind a flag that is off (2026-10-21)
+
+(0030 is the /gear/ guide on main, so this is the next free number.)
+
+ODFW's weekly trout stocking schedule has an adapter
+(`pipeline/src/cfpa/states/oregon.py`), but Oregon is not registered, not
+fetched, not published and not in the sitemap. It stays that way until the
+owner decides, because ODFW's page and the State of Oregon's website terms are
+silent on reuse, and 0004 says unknown is not used.
+
+- **The flag.** `CFPA_ENABLE_OREGON=1` in the environment registers Oregon
+  (`cfpa.states.registered_sources`) and adds it to the states the daily run
+  fetches. Unset, empty and `0` are off; any other value refuses the run.
+  `pipeline/src/cfpa/states/__init__.py` reads it once, at import.
+- **Off means identical.** A default build is byte-identical to main (checked
+  by building both and diffing the trees, and by
+  `tests/test_oregon.py::test_a_default_build_is_byte_identical_whether_or_not_oregon_is_registered`).
+  `publish.yml` is not changed: it does not set the flag and does not commit
+  `pipeline/data/states/or.json`. Turning Oregon on also means adding that
+  path to the commit step and setting the flag there. That is the owner's edit.
+- **Shape of the source.** Weeks run Monday to Friday. The view is capped at
+  50 rows and the print view at 500 (it stops at 2027-05-07), so the fetch
+  reads one week at a time, splits a full week into ODFW's six zones, and
+  refuses a zone that is still full. It reads 8 weeks from this week's
+  Monday, a fixed window (the far weeks look carried forward from the year
+  before). There is no county, species or size in inches; a water is a name
+  plus a zone.
+- **Shared code touched, all additive.** `StateSource` gained
+  `week_starts_on`, `week_days` and `week_phrase` (Sunday, 7, "the week of a
+  Sunday" by default, so Tennessee is unchanged); the v2 snapshot checks a
+  week against its state's start day; the hub names a zone when a water has
+  no county.
+- **Copy rules** are in the module docstring and `COPY_RULES`, pinned by
+  tests: "scheduled", never "planted" or "stocked on"; a week, never a day;
+  ODFW's size-class words with no inch sizes; a water's frequency is ODFW's
+  plan for the weeks read, not a rate.

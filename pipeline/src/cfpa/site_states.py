@@ -65,7 +65,7 @@ def status_label(status: str) -> str:
     }[status]
 
 
-def place_phrase(w: dict[str, Any], state_name: str) -> str:
+def place_phrase(w: dict[str, Any], state_name: str, region_name: str = "") -> str:
     if w["counties"]:
         cs = w["counties"]
         county = (
@@ -76,6 +76,8 @@ def place_phrase(w: dict[str, Any], state_name: str) -> str:
         return f"{county}, {state_name}"
     if w["towns"]:
         return f"{', '.join(w['towns'])}, {state_name}"
+    if region_name:
+        return f"{region_name}, {state_name}"
     return state_name
 
 
@@ -103,11 +105,33 @@ def _water_lastmod(w: dict[str, Any], state: dict[str, Any]) -> str:
     return max(dates, default=fetched)
 
 
+def _place(w: dict[str, Any], state: dict[str, Any]) -> str:
+    """Counties, else towns, else the agency's region (Oregon gives a zone
+    and no county). A state that gives counties renders exactly as before."""
+    named = w["counties"] or w["towns"]
+    if named:
+        return ", ".join(named)
+    names = {r["code"]: r["name"] for r in state["regions"]}
+    return str(names.get(w["region"] or "", ""))
+
+
+def _precision_phrase(state: dict[str, Any]) -> str:
+    """'the week starting on a Monday' for a state that gives only weeks."""
+    week = SOURCES[state["code"]].week_phrase
+    words = {"day": "a day", "week": week, "month": "a month"}
+    parts = [
+        words[p] for p in ("day", "week", "month") if p in state["date_precisions"]
+    ]
+    if len(parts) < 3:
+        return " or ".join(parts)
+    return f"{parts[0]}, {parts[1]}, or {parts[2]}"
+
+
 def _row(w: dict[str, Any], p: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
     return {
         "slug": w["slug"],
         "name": w["name"],
-        "place": ", ".join(w["counties"] or w["towns"]),
+        "place": _place(w, state),
         "when": when_label(p["period"]),
         "start": p["period"]["start"],
         "species": p["species"],
@@ -300,7 +324,7 @@ def _render_hub(
             {
                 "slug": w["slug"],
                 "name": w["name"],
-                "place": ", ".join(w["counties"] or w["towns"]),
+                "place": _place(w, state),
             }
         )
     water_groups = [{"name": k, "waters": v} for k, v in sorted(groups.items())]
@@ -340,6 +364,8 @@ def _render_hub(
         ),
         breadcrumb=ctx.relative_trail(trail, base_url=ctx.base_url, root="../"),
         state=state,
+        week_phrase=SOURCES[state["code"]].week_phrase,
+        precision_phrase=_precision_phrase(state),
         schedule=schedule,
         species=species,
         this_week=this_week,
@@ -373,7 +399,11 @@ def _render_water(
     page_url = f"{ctx.base_url}{w['site_path']}"
     schedule = state["semantics"] == "schedule"
     species = _species_word(w["plants"], state_species)
-    place = place_phrase(w, state["name"])
+    place = place_phrase(
+        w,
+        state["name"],
+        "" if w["counties"] or w["towns"] else _place(w, state),
+    )
     plants = [
         {
             "when": when_label(p["period"]),

@@ -1987,6 +1987,34 @@ def _write_feeds(
         )
 
 
+_CSS_TOKEN = re.compile(r'"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'|/\*.*?\*/', re.DOTALL)
+
+
+def minify_css(css: str) -> str:
+    """Strip comments and redundant whitespace from a stylesheet.
+
+    Deterministic and conservative: string literals are carried through
+    untouched, and whitespace is only dropped where CSS never needs it
+    (around ``{ } ; ,``, after ``:``, and the last ``;`` of a block). It never
+    touches whitespace before ``:`` or around ``+ > /``, which can change the
+    meaning of a selector or a value.
+    """
+    strings: list[str] = []
+
+    def _stash(m: re.Match[str]) -> str:
+        if m.group(0).startswith("/*"):
+            return " "
+        strings.append(m.group(0))
+        return f"\x00{len(strings) - 1}\x00"
+
+    out = _CSS_TOKEN.sub(_stash, css)
+    out = re.sub(r"\s+", " ", out)
+    out = re.sub(r" ?([{};,]) ?", r"\1", out)
+    out = out.replace(": ", ":")
+    out = out.replace(";}", "}").strip()
+    return re.sub(r"\x00(\d+)\x00", lambda m: strings[int(m.group(1))], out)
+
+
 def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -> None:
     """assets/style.css, plus the App Store badge and its CSS when live.
 
@@ -1999,7 +2027,7 @@ def _write_assets(out_dir: Path, written: list[Path], *, app_store_live: bool) -
         style_src += (TEMPLATES_DIR / "app-store.css").read_text(encoding="utf-8")
     style_path = out_dir / "assets" / "style.css"
     style_path.parent.mkdir(parents=True, exist_ok=True)
-    style_path.write_text(style_src, encoding="utf-8")
+    style_path.write_text(minify_css(style_src), encoding="utf-8")
     written.append(style_path)
     social_path = out_dir / "assets" / SOCIAL_IMAGE_FILE
     social_path.write_bytes((TEMPLATES_DIR / SOCIAL_IMAGE_FILE).read_bytes())

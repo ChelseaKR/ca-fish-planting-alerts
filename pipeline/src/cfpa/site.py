@@ -34,7 +34,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import feeds, guides, opendata, share_cards, site_states, weeks
+from . import feeds, guides, llms, opendata, share_cards, site_states, weeks
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -2871,6 +2871,37 @@ def build_site(
     robots_path = out_dir / "robots.txt"
     robots_path.write_text(robots_txt, encoding="utf-8")
     written.append(robots_path)
+
+    # ---- llms.txt (llmstxt.org): a plain-text description of the site, its
+    # sources, feeds and update cadence. Lists only what this build wrote.
+    open_states = (
+        _open_data_states(
+            snapshot_v2,
+            opendata.build_files(snapshot_v2, base_url=base_url),
+            base_url=base_url,
+        )
+        if snapshot_v2 is not None
+        else []
+    )
+    llms_path = out_dir / "llms.txt"
+    llms_path.write_text(
+        llms.render(
+            site_name=SITE_NAME,
+            base_url=base_url,
+            attribution_text=attribution_text,
+            states=open_states,
+            region_feeds=[
+                (
+                    r["display_name"],
+                    f"{base_url}/{feeds.feed_path('region', r['slug'])}",
+                )
+                for r in region_links
+            ],
+            week_label=source_week_label,
+        ),
+        encoding="utf-8",
+    )
+    written.append(llms_path)
 
     # ---- CNAME, only for a custom domain. A Pages site published from a
     # branch takes its custom domain from this file, so it has to be in

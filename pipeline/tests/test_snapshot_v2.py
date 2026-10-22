@@ -116,7 +116,10 @@ def test_a_california_only_v2_leaves_every_california_page_unchanged(tmp_path: P
     assert a.keys() - b.keys() == set()
     sitemap = (tmp_path / "with" / "sitemap.xml").read_text("utf-8")
     assert f"<loc>{BASE}/data/</loc>" in sitemap
-    for name in ("sitemap.xml", "about/index.html"):
+    # llms.txt lists the open data files only when there is a v2 to list.
+    assert "/data/" in (tmp_path / "with" / "llms.txt").read_text("utf-8")
+    assert "/data/" not in (tmp_path / "without" / "llms.txt").read_text("utf-8")
+    for name in ("sitemap.xml", "about/index.html", "llms.txt"):
         a.pop(name), b.pop(name)
     assert a == b
     assert "states/index.html" not in a

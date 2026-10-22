@@ -119,6 +119,11 @@
 <h2>Guides</h2>
 <p>New to the schedule? <a href="{{ root }}guide/">Plain guides</a> explain <a href="{{ root }}guide/how-to-read-the-schedule/">how to read it</a>, <a href="{{ root }}guide/scheduled-vs-confirmed/">what scheduled means</a> and <a href="{{ root }}guide/what-is-a-trout-plant/">what a trout plant is</a>.</p>
 
+{% if week_archive %}
+<h2>Earlier weeks</h2>
+<p>Past weeks of CDFW's schedule are on record, one page each: <a href="{{ root }}week/">every past week, most recent to oldest</a>.</p>
+{% endif %}
+
 <h2>Browse by county</h2>
 <p>Each county page shows this week's plants there and the latest scheduled week at every water. <a href="{{ root }}county/">Every county, by CDFW region</a>.</p>
 <ul class="water-index">

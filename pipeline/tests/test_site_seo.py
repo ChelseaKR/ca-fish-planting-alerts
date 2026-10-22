@@ -652,7 +652,10 @@ def test_sitemap_lists_every_indexable_page_exactly_once(built):
             f"{BASE_URL}/./", f"{BASE_URL}/"
         )
         for f in out.rglob("index.html")
+        # A noindex page (a thin week, DECISIONS 0038) is built but not listed.
+        if 'name="robots" content="noindex' not in f.read_text(encoding="utf-8")
     }
+    assert pages
     assert set(locs) == pages
     assert "404" not in sitemap
 

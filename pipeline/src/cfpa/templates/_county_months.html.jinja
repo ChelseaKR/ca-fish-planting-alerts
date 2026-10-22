@@ -1,0 +1,30 @@
+{# Listed weeks per calendar month across one county's waters. Needs: county,
+   county_months (None below three listed weeks, which shows nothing). #}
+{% if county_months %}
+<section class="county-months" aria-label="{{ county }} County listed weeks by month">
+  <h2>{{ county }} County by month in the weeks recorded here</h2>
+  <p>
+    In the weeks recorded here, since the {{ county_months.since_label }},
+    {{ county_months.water_count }} {{ "water" if county_months.water_count == 1 else "waters" }}
+    in {{ county }} County had {{ county_months.total }} listed
+    {{ "week" if county_months.total == 1 else "weeks" }}{% if county_months.water_count > 1 %} between them, counting each water's weeks separately{% endif %}.
+    {% if county_months.peak_tied %}{{ county_months.peak_months }} share the highest count, {{ county_months.peak_weeks }} each.{% else %}{{ county_months.peak_months }} has the highest count, {{ county_months.peak_weeks }}.{% endif %}
+  </p>
+  <table>
+    <caption class="visually-hidden">Listed weeks across {{ county }} County waters, by month, since the {{ county_months.since_label }}</caption>
+    <thead>
+      <tr><th scope="col">Month</th><th scope="col">Listed weeks across the county's waters</th></tr>
+    </thead>
+    <tbody>
+      {% for row in county_months.rows %}
+      <tr><td>{{ row.month }}</td><td>{{ row.weeks }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">
+    A week counts in the month it begins. A month missing from the table has no
+    listed week at any {{ county }} County water in this record. This is a count
+    of recorded weeks, not a forecast, and a record this short is not a full season.
+  </p>
+</section>
+{% endif %}

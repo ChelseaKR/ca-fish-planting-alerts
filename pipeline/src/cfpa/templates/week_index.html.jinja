@@ -1,0 +1,32 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>CDFW planting schedule by week</h1>
+<p class="lede">
+  {{ week_rows|length }} past {{ "week" if week_rows|length == 1 else "weeks" }} of California's
+  planting schedule {{ "is" if week_rows|length == 1 else "are" }} on record here, most recent to oldest. Each page lists the waters
+  CDFW's schedule named for that week, by county. It is CDFW's schedule as this site
+  recorded it, and it is subject to change.
+</p>
+<p>This week's schedule is on <a href="{{ root }}">the home page</a>.</p>
+<table>
+  <caption class="visually-hidden">Past weeks of CDFW's planting schedule, with the number of waters listed</caption>
+  <thead>
+    <tr>
+      <th scope="col">Week</th>
+      <th scope="col">Waters listed</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in week_rows %}
+    <tr>
+      <td><a href="{{ root }}week/{{ r.start }}/">Week of {{ r.start }}</a></td>
+      <td>{{ r.count }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p>
+  <a href="{{ root }}county/">Every county</a> &middot;
+  <a href="{{ root }}guide/">plain guides</a>
+</p>
+{% endblock %}

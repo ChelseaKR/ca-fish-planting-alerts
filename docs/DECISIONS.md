@@ -856,7 +856,7 @@ the sitemap, the footer of every page and the home page.
   confusion the schedule itself invites; they are not a bet on a measured
   query. If they earn no impressions in 8 weeks after indexing, drop them in
   one edit (delete `guides.py`, the templates and the three links).
-- **Indexing is unchanged.** No noindex change, and no ranking claim.
+- **No ranking claim.** Only the thin weeks above are noindex.
 
 ## 0032 — Oregon is built and tested behind a flag that is off (2026-10-21)
 
@@ -1052,3 +1052,42 @@ commit step lists `pipeline/data/states/mi.json`, `ma.json` and `ny.json`
 beside `tn.json` (the one-line edit 0032 describes for Oregon), so each run
 commits the three histories and Massachusetts' rows accumulate past the end
 of its season instead of aging off.
+
+## 0038 — A page for each past week on record, at /week/YYYY-MM-DD/ (2026-10-22)
+
+(0036 and 0037 are reserved by other branches; 0035 is the last on main.)
+
+Each past week in which CDFW's schedule listed at least one water gets a
+permanent page, `/week/<week start>/`, and `/week/` lists them most recent to
+oldest. They are built by `pipeline/src/cfpa/weeks.py` from the snapshot's
+plants (the record the water pages and the species pages already read) and
+nothing else.
+
+- **Which weeks.** A week with at least one `listed` plant that starts before
+  the snapshot's current week. The current week is the home page and is
+  linked, not copied. A later week can still change and has no page. A week
+  with no listings gets no page, and with no such week at all `/week/` is not
+  written and nothing links to it.
+- **Thin weeks are not indexed (owner decision 2026-10-22).** A week with
+  fewer than `WEEK_INDEX_MIN_WATERS` = 8 listed waters keeps its page, is
+  linked from `/week/` like the others, and carries `robots` `noindex,follow`
+  and no sitemap entry. A week with 8 or more is indexed and in the sitemap.
+  The index says nothing about which is which.
+- **Removed entries are never shown.** A removed plant is not a listing;
+  a page says so in one sentence.
+- **Copy.** The week, the count, "CDFW's schedule for that week, as this
+  site recorded it", "subject to change", "scheduled, not confirmed". No
+  ranking, no "first", "only", "best", no "stocked", no day or time. Titles
+  stay under 60 characters and descriptions under 155, and a test checks every
+  title and description is unique across all page kinds.
+- **Past pages do not churn.** No page prints the check time or the day. A
+  week page's sitemap `lastmod` is the newest date one of its plants was first
+  listed or marked removed; the index's is the later of that and the day its
+  newest week became a past week. Only the share card's alt text (every page
+  has it) carries the check date.
+- **The demand evidence is thin.** Search Console shows two or three queries
+  about stocking dates and weekly schedules, none naming a week
+  (`trout-truck-query-evidence-2026-10-22.md`), so this is a bet on long-tail
+  date queries, not a measured one. If the week pages earn no impressions by
+  the next review, delete `weeks.py`, the two templates and the links to /week/.
+- **No ranking claim.** Only the thin weeks above are noindex.

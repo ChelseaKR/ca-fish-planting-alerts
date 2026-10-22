@@ -21,6 +21,7 @@ whose federal match is a point inside the water, and the page shows it.
 
 from __future__ import annotations
 
+import calendar
 import datetime as dt
 import itertools
 import json
@@ -33,7 +34,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import feeds, guides, opendata, share_cards, site_states
+from . import feeds, guides, opendata, share_cards, site_states, weeks
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -701,6 +702,43 @@ def _week_gaps(weeks: list[str]) -> list[int]:
     return [(b - a).days // 7 for a, b in itertools.pairwise(days)]
 
 
+MIN_WEEKS_FOR_MONTHS = 3
+"""A water (or a county) shows a by-month count only from this many listed
+weeks; fewer is too thin to call a pattern, so nothing is shown."""
+
+
+def _month_label(ym: str) -> str:
+    """ "2026-04" -> "April 2026" (calendar names, independent of locale)."""
+    year, month = ym.split("-")
+    return f"{calendar.month_name[int(month)]} {year}"
+
+
+def _month_counts(weeks: list[str]) -> list[tuple[str, int]]:
+    """Listed weeks per calendar month, oldest month first. A week belongs to
+    the month its start date falls in. Months with no listed week are left
+    out: the snapshot cannot say what happened in them, and a missing month
+    is not a count of zero."""
+    counts: dict[str, int] = {}
+    for start in weeks:
+        counts[start[:7]] = counts.get(start[:7], 0) + 1
+    return sorted(counts.items())
+
+
+def _most_months(months: list[tuple[str, int]]) -> tuple[list[str], int]:
+    """The month labels with the highest count (all of them on a tie, oldest
+    first) and that count."""
+    if not months:
+        return [], 0
+    peak = max(n for _, n in months)
+    return [_month_label(ym) for ym, n in months if n == peak], peak
+
+
+def _join_months(labels: list[str]) -> str:
+    if len(labels) <= 2:
+        return " and ".join(labels)
+    return ", ".join(labels[:-1]) + ", and " + labels[-1]
+
+
 def _water_record(w: dict[str, Any]) -> dict[str, Any]:
     """Facts about one water's own recorded weeks, from the snapshot alone.
 
@@ -720,8 +758,10 @@ def _water_record(w: dict[str, Any]) -> dict[str, Any]:
             if len(ordered) % 2
             else (ordered[mid - 1] + ordered[mid]) / 2
         )
+    months = _month_counts(weeks)
     return {
         "count": len(weeks),
+        "months": months,
         "first_week": weeks[0] if weeks else "",
         "latest_week": weeks[-1] if weeks else "",
         "span_weeks": sum(gaps),
@@ -732,6 +772,49 @@ def _water_record(w: dict[str, Any]) -> dict[str, Any]:
         "single_gap": gaps[0] if len(gaps) == 1 else None,
         "region_name": REGION_NAME_BY_CODE.get(w["region"], w["region"]),
     }
+
+
+def _months_view(
+    months: list[tuple[str, int]], *, recorded_since: str
+) -> dict[str, Any] | None:
+    """The rows and wording for a by-month block, or None below the minimum.
+    ``months`` come from listed weeks only (removed entries never reach here)."""
+    total = sum(n for _, n in months)
+    if total < MIN_WEEKS_FOR_MONTHS:
+        return None
+    labels, peak = _most_months(months)
+    return {
+        "rows": [{"month": _month_label(ym), "weeks": n} for ym, n in months],
+        "total": total,
+        "month_count": len(months),
+        "peak_months": _join_months(labels),
+        "peak_tied": len(labels) > 1,
+        "peak_weeks": peak,
+        "since_label": f"week of {recorded_since}",
+    }
+
+
+def _water_months(w: dict[str, Any], *, recorded_since: str) -> dict[str, Any] | None:
+    """Listed weeks per calendar month for one water, from its own record."""
+    return _months_view(_water_record(w)["months"], recorded_since=recorded_since)
+
+
+def _county_months(
+    members: list[dict[str, Any]], *, recorded_since: str
+) -> dict[str, Any] | None:
+    """Listed weeks per calendar month summed over a county's waters (a week
+    that two waters share counts twice, once per water)."""
+    totals: dict[str, int] = {}
+    waters = 0
+    for w in members:
+        months = _water_record(w)["months"]
+        waters += bool(months)
+        for ym, n in months:
+            totals[ym] = totals.get(ym, 0) + n
+    view = _months_view(sorted(totals.items()), recorded_since=recorded_since)
+    if view is not None:
+        view["water_count"] = waters
+    return view
 
 
 def _weeks_phrase(n: float) -> str:
@@ -1382,6 +1465,7 @@ class _PageContext:
     source_checked_on: str = ""
     waters_by_region: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     coords: dict[str, list[Any]] = field(default_factory=dict)
+    recorded_since: str = ""
 
     @property
     def home_crumb(self) -> tuple[str, str]:
@@ -1491,6 +1575,7 @@ def _render_water_page(
         region_related=[{"slug": r["slug"], "name": r["name"]} for r in region_related],
         region_name=view["region_name"],
         water_record=_water_record(w),
+        water_months=_water_months(w, recorded_since=recorded_since),
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
         recorded_since_label=f"week of {recorded_since}" if recorded_since else "",
@@ -1619,6 +1704,7 @@ def _render_county_page(
         region_name=region_name,
         region_link=region_link,
         water_count=len(members),
+        county_months=_county_months(members, recorded_since=ctx.recorded_since),
         this_week_rows=this_week_rows,
         later_rows=later_rows,
         rows=rows,
@@ -2345,6 +2431,10 @@ def build_site(
         for sp in species_pages
     ]
 
+    # The past-week pages (DECISIONS 0038); the home page and the county index
+    # link to /week/ only when it exists.
+    common["week_archive"] = bool(weeks.week_entries(snapshot))
+
     # ---- assets/
     coords = water_coords(snapshot_v2)
     _write_assets(out_dir, written, app_store_live=app_store_live, coords=coords)
@@ -2603,6 +2693,7 @@ def build_site(
         source_checked_on=snapshot["source"]["fetched_at"][:10],
         waters_by_region=waters_by_region,
         coords=coords,
+        recorded_since=recorded_since,
     )
 
     # ---- per-water pages + ics
@@ -2671,6 +2762,24 @@ def build_site(
     # each species in the data.
     species_entries = [_render_species_page(ctx, snapshot, sp) for sp in species_pages]
 
+    # ---- past-week pages under /week/ (DECISIONS 0038)
+    week_entries = weeks.render_weeks(
+        env=env,
+        out_dir=out_dir,
+        written=written,
+        base_url=base_url,
+        common=common,
+        site_name=SITE_NAME,
+        snapshot=snapshot,
+        county_slug=county_slug,
+        species_phrase=species_phrase,
+        write_page=_write_page,
+        ld_graph=_ld_graph,
+        ld_breadcrumb=_ld_breadcrumb,
+        ld_page=_ld_page,
+        relative_trail=_relative_trail,
+    )
+
     # ---- guides: plain explanations under /guide/ (DECISIONS 0031)
     guide_entries = guides.render_guides(
         env=env,
@@ -2731,6 +2840,7 @@ def build_site(
         *guide_entries,
         *region_lastmods.items(),
         *species_entries,
+        *week_entries,
         *county_lastmods.items(),
         *water_lastmods.items(),
         *state_entries,

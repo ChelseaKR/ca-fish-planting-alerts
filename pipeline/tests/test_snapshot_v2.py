@@ -355,8 +355,11 @@ def test_report_states_say_stocked_and_michigan_says_how_late_it_is(built: Path)
 
 def test_state_titles_put_stocking_first_and_structured_data_parses(built: Path):
     page = _Page(_page(built, "tn/water/tellico-river-monroe-county/index.html"))
-    assert page.title.startswith(
-        "Tellico River trout stocking schedule (Monroe County, Tennessee)"
+    # The whole title is over the 60 a results page shows with either form,
+    # so it takes "TN"; the h1 keeps the state's name (see
+    # test_site_empty_week_tn.py).
+    assert page.title == (
+        "Tellico River trout stocking schedule (Monroe County, TN) | Trout Truck"
     )
     assert len(page.json_ld) == 1
     ld = json.loads(page.json_ld[0])

@@ -1,0 +1,87 @@
+name: publish health
+
+# publish.yml opens an issue when a run fails. This workflow covers what that
+# cannot see, by reading what the site serves: a daily run that never ran or
+# never deployed, and a state source that has failed for days while the run
+# stayed green (Tennessee, from 2026-10-15). Thresholds are constants in
+# scripts/check_publish_health.py. It writes nothing but one issue, with a
+# fixed title: opened on the first unhealthy check, commented daily while
+# unhealthy, commented and closed on the first healthy check.
+#
+# 17:43 UTC is about four hours after the 13:17 publish, off the top of the
+# hour. About one billed minute per run (~30 per month).
+on:
+  schedule:
+    - cron: "43 17 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: install dependencies
+        working-directory: pipeline
+        run: uv sync --locked
+
+      - name: read the live snapshot
+        id: health
+        env:
+          SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
+        run: |
+          set -u
+          status=0
+          (cd pipeline && uv run --frozen python ../scripts/check_publish_health.py \
+            --base-url "$SITE_BASE_URL" --out "$RUNNER_TEMP/health-report.md") || status=$?
+          # 0 healthy, 1 unhealthy; anything else is a broken check and fails the step.
+          if [ "$status" -eq 0 ]; then
+            echo "healthy=true" >> "$GITHUB_OUTPUT"
+          elif [ "$status" -eq 1 ]; then
+            echo "healthy=false" >> "$GITHUB_OUTPUT"
+          else
+            exit "$status"
+          fi
+
+      - name: open, update or close the health issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HEALTHY: ${{ steps.health.outputs.healthy }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ISSUE_TITLE: "publish: the live site is stale or a state source is failing"
+        run: |
+          set -euo pipefail
+          existing="$(gh issue list --state open --search "\"${ISSUE_TITLE}\" in:title" \
+            --json number,title | jq -r --arg t "$ISSUE_TITLE" '[.[] | select(.title == $t)][0].number // empty')"
+          if [ "$HEALTHY" = "true" ]; then
+            if [ -n "$existing" ]; then
+              printf 'The health check passed. Closing.\n\nRun: %s\n' "$RUN_URL" > "$RUNNER_TEMP/recovered.md"
+              gh issue comment "$existing" --body-file "$RUNNER_TEMP/recovered.md"
+              gh issue close "$existing"
+            fi
+            exit 0
+          fi
+          report="$RUNNER_TEMP/health-report.md"
+          printf '\nRun: %s\n' "$RUN_URL" >> "$report"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file "$report"
+          else
+            gh issue create --title "$ISSUE_TITLE" --body-file "$report" --label bug
+          fi

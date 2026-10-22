@@ -58,8 +58,8 @@
     {{ st.agency.short_name }} gives when in its own words, such as "April -
     third week", and this site keeps them verbatim in <code>period_label</code>
     with the year. <code>period_precision</code> is <code>approximate</code>,
-    and the start and end columns only bound the period. They are plans, not
-    dates and not confirmed stockings.
+    and the start and end columns are the period's bounds, not dates. They
+    are plans, not dates and not confirmed stockings.
   </p>
   {% elif "day" in st.precisions or "month" in st.precisions %}
   <p>

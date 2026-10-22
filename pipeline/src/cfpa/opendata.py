@@ -69,7 +69,7 @@ COLUMNS: tuple[tuple[str, str, str], ...] = (
         "How exact the agency's date is: week, day, month or approximate. "
         "California is always week. approximate is the agency's own words "
         "(New York: April - third week, 2026); period_start and period_end "
-        "only bound it.",
+        "are its bounds, not dates.",
     ),
     (
         "period_start",

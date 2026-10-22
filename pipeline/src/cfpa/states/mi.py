@@ -252,7 +252,7 @@ SOURCE = StateSource(
         "Trout Truck is independent and is not affiliated with or endorsed by the "
         "Michigan DNR or the State of Michigan. The State provides this dataset "
         '"AS IS" and makes no warranty of its accuracy, timeliness or '
-        "completeness. Trout stockings into public waters only."
+        "completeness. Trout stockings into public waters, and no others."
     ),
     license_summary=(
         "The Michigan DNR's stocking dataset is a public record with no "

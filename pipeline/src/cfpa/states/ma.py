@@ -251,7 +251,7 @@ SOURCE = StateSource(
     license_summary=(
         "The stocking layer's own license grants permission to copy and use it. "
         "It is read through ArcGIS Hub's public download API; the mass.gov page, "
-        "which allows fair use only, is never read."
+        "whose terms allow fair use and nothing more, is never read."
     ),
     license_sources=(LICENSE,),
     regions=(),

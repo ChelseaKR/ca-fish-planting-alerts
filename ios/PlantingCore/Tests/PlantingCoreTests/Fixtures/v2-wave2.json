@@ -158,7 +158,7 @@
       },
       "disclaimer": "Trout Truck is independent and is not affiliated with or endorsed by MassWildlife or the Commonwealth of Massachusetts. These are stockings MassWildlife has reported as done, by the day.",
       "license": {
-        "summary": "The stocking layer's own license grants permission to copy and use it. It is read through ArcGIS Hub's public download API; the mass.gov page, which allows fair use only, is never read.",
+        "summary": "The stocking layer's own license grants permission to copy and use it. It is read through ArcGIS Hub's public download API; the mass.gov page, whose terms allow fair use and nothing more, is never read.",
         "sources": [
           {
             "name": "MassWildlife Stocked Fish (View), ArcGIS item license",
@@ -217,7 +217,7 @@
         "text": "Data: Michigan Department of Natural Resources, fish stocking data (https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f).",
         "url": "https://midnr.maps.arcgis.com/apps/dashboards/77581b13c6984b919ab8ed927496a31f"
       },
-      "disclaimer": "Trout Truck is independent and is not affiliated with or endorsed by the Michigan DNR or the State of Michigan. The State provides this dataset \"AS IS\" and makes no warranty of its accuracy, timeliness or completeness. Trout stockings into public waters only.",
+      "disclaimer": "Trout Truck is independent and is not affiliated with or endorsed by the Michigan DNR or the State of Michigan. The State provides this dataset \"AS IS\" and makes no warranty of its accuracy, timeliness or completeness. Trout stockings into public waters, and no others.",
       "license": {
         "summary": "The Michigan DNR's stocking dataset is a public record with no restrictions on use, reproduction or distribution. Its terms also ask users to release and indemnify the State, which the owner accepted on 2026-10-13.",
         "sources": [

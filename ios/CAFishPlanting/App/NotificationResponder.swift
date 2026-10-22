@@ -31,7 +31,10 @@ final class NotificationResponder: NSObject, UNUserNotificationCenterDelegate {
         guard let id = WaterLink.waterID(fromNotificationUserInfo: response.notification.request.content.userInfo) else { return }
         switch response.actionIdentifier {
         case UNNotificationDefaultActionIdentifier:
-            await MainActor.run { AppRouter.shared.request(waterID: id) }
+            await MainActor.run {
+                AppEnvironment.shared?.notePlantingAlertOpened(id)
+                AppRouter.shared.request(waterID: id)
+            }
         case PlantingAlertAction.muteIdentifier:
             // `AppEnvironment.shared` is set in `App.init()`, which runs
             // before this on a background launch too.

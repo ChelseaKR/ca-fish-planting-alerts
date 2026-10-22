@@ -98,6 +98,14 @@ This repository was republished with a new history on 2026-09-18
   faces and the Smart Stack. It shows what the iPhone app sends, so it
   needs the iPhone app and makes no network request. "Mute this water"
   works from an alert on the watch too.
+- The app may ask for an App Store rating with iOS's own prompt, and only
+  when someone goes back from a water's page: after opening a planting
+  alert, or from the third launch on with at least one favorite. Never on
+  the first launch, never over another screen, at most once per app
+  version, 120 days apart and three times a year. Nothing is offered for a
+  rating. Any state's alerts and favorites count; nothing depends on which
+  state was bought. About has a "Rate Trout Truck" row that opens the App
+  Store's review page (DECISIONS 0035).
 - A round Lock Screen size for the Favorite waters widget: how many of
   your favorites are scheduled this week.
 - A California water page with nothing on CDFW's schedule this week or later

@@ -481,8 +481,8 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
   else in the introduction is the iOS app's California copy from before
   more states (0025), word for word, and a test pins it.
 - **Review prompt.** Google Play's in-app review card, with the iOS rating
-  lane's rules (feat/ratings-and-water-seo, not yet on main), and an About
-  row that opens the app's Play Store page.
+  lane's rules (0035), and an About row that opens the app's Play Store
+  page.
 - **Not ported.** Shortcuts and Siri (`ScheduleIntents`) and the Apple
   Watch (0027) have no direct Android twin in this change.
 
@@ -854,3 +854,43 @@ silent on reuse, and 0004 says unknown is not used.
   tests: "scheduled", never "planted" or "stocked on"; a week, never a day;
   ODFW's size-class words with no inch sizes; a water's frequency is ODFW's
   plan for the weeks read, not a rate.
+
+## 0035 — Ask for App Store ratings only at the end of a task (2026-10-12; recorded 2026-10-21)
+
+(Written as 0028 on the branch that carried it, feat/ratings-and-water-seo;
+0028 on main is the website's App Store launch value, and 0030 to 0034 are
+taken by the gear guide, the guides, Oregon, the email ADR and the second
+wave of states, so this is the next free number.)
+
+**Context.** Every stocking app in App Store search has 0 to 6 ratings
+(`_agent-tools/remediate-2026-10-12/seamline/COMPETE.md`, move 3), so the
+first honest ratings matter. The owner approved asking for them: "do 3 and
+5. do 3 across my ios apps". App Review Guideline 5.6.1 allows only the
+system prompt, with no reward and no step that sorts people by whether
+they like the app.
+
+**Decision.** The app calls `AppStore.requestReview` (StoreKit) and has no
+prompt of its own. It asks only when someone goes back from a water's page:
+after opening a planting alert (second launch on), or from the third launch
+on with at least one favorite. Both are state-agnostic: an alert exists
+only for a state the person unlocked, whichever state that is, and a
+favorite in any state counts. Nothing is tied to California's product
+(0025). It never asks on the first launch, over a sheet, the introduction
+or a refresh, more than once per app version, within 120 days of the last
+ask, or more than three times in 365 days. iOS has the same yearly cap,
+but the app counts the asks iOS chose not to show. Debug builds never ask
+unless launched with `-ReviewPrompt allow`. About has a "Rate Trout Truck"
+row that opens the App Store's write-review page.
+
+The state (`review-prompt.json`: launch count, ask dates, versions asked)
+lives in Application Support, like favorites, so the app still calls no
+required-reason API and its privacy manifest is unchanged. The rules are
+in PlantingCore (`ReviewPromptPolicy`, `ReviewPrompter`) behind an
+injectable clock. The Android app (0022) carries the same rules in
+`android/core/.../ReviewPrompt.kt`.
+
+**Consequences.** iPad users are asked less often: choosing another water
+beside the list is not "going back". A rating prompt cannot be tested on
+TestFlight (Apple never shows it there), so only the trigger logic is
+tested. `HostAllowlistTests` allows `apps.apple.com` in one file, as a
+link the system opens rather than a request the app makes.

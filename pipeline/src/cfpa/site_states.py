@@ -66,7 +66,7 @@ def when_label(period: dict[str, str]) -> str:
 
 
 def words(state: dict[str, Any]) -> dict[str, str]:
-    """A schedule's words, or a plan's (New York, DECISIONS 0028): a plan is
+    """A schedule's words, or a plan's (New York, DECISIONS 0034): a plan is
     "planned", never "scheduled", and never a confirmed stocking."""
     if state["semantics"] == "plan":
         return {"kind": "plan", "verb": "planned", "Verb": "Planned"}

@@ -73,7 +73,7 @@ all_pages="$work/all-pages.txt"
 (cd "$site" && find . -name '*.html' | LC_ALL=C sort) \
   | sed -e 's#^\./##' -e 's#index\.html$##' -e 's#^$#./#' > "$all_pages"
 # Every California page, every state hub and /states/ are checked. The other
-# states' water pages (about 1,450 of them, one template; DECISIONS 0028) are
+# states' water pages (about 1,450 of them, one template; DECISIONS 0034) are
 # checked as a fixed sample of the first 12 per state in sorted order, so the
 # job stays inside its timeout. A state with a broken template still fails.
 awk -F/ '$1 ~ /^[a-z][a-z]$/ && $2 == "water" { if (++n[$1] > 12) next } { print }' \

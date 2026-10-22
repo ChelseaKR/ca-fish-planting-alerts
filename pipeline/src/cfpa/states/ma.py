@@ -6,7 +6,7 @@ https://www.mass.gov/info-details/trout-stocking-report. Its item text:
 "This view only excludes planned stocking activities and only shows stocking
 activities that have been fulfilled."
 
-**The route** (the owner's decision of 2026-10-13, DECISIONS 0028): the
+**The route** (the owner's decision of 2026-10-13, DECISIONS 0034): the
 ArcGIS Hub download API on ``hub.arcgis.com``, whose robots.txt is readable
 (200, ``Crawl-delay: 60``, ``/api/`` allowed). The layer's own host,
 ``services1.arcgis.com``, answers its robots.txt with 403 and is never

@@ -13,7 +13,7 @@ Range, Section, Species, Strain, Marking_Group, Stocking_Date (MM/DD/YYYY),
 Number_Fish_Stocked, Average_Length_Inches, Operation``. Species values carry
 padding spaces. There is no water id, so a water is county + water + site.
 
-What is kept (DECISIONS 0028):
+What is kept (DECISIONS 0034):
 
 - **Trout only**: brown, rainbow, brook and lake trout (every species whose
   name contains "trout"). The product is Trout Truck.

@@ -797,6 +797,27 @@ about 2027-04-17, and the links come out in one edit if there are none.
 - **Guards.** `tests/test_site_gear_guide.py` (with negative controls) and
   the widened page list in `tests/test_site_affiliate.py`.
 
+## 0031 — Plain explainer pages under /guide/ (2026-10-21)
+
+Three short pages and an index explain the schedule the site already shows:
+how to read it, scheduled vs. confirmed, and what a trout plant is. They are built by
+`pipeline/src/cfpa/guides.py` from `guide_*.html.jinja` templates and are in
+the sitemap, the footer of every page and the home page.
+
+- **A claim has a source or is cut.** Each statement is either computed from
+  the snapshot (counts, the earliest recorded week) or taken from a CDFW page
+  fetched with curl and read on `guides.CDFW_READ_ON`. Every guide names that
+  day and links the page. A license guide was drafted from CDFW's license page and dropped
+  by the owner before merge.
+- **No recommendations.** No product, no affiliate link, no outbound link to
+  anything but CDFW. A test fails on any other host.
+- **The demand evidence is weak.** Search Console has 5 days of data, and none
+  of its visible queries asks a how-to question. The pages answer
+  confusion the schedule itself invites; they are not a bet on a measured
+  query. If they earn no impressions in 8 weeks after indexing, drop them in
+  one edit (delete `guides.py`, the templates and the three links).
+- **Indexing is unchanged.** No noindex change, and no ranking claim.
+
 ## 0032 — Oregon is built and tested behind a flag that is off (2026-10-21)
 
 (0030 is the /gear/ guide on main, so this is the next free number.)

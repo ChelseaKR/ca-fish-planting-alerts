@@ -1,0 +1,84 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>{{ guide.h1 }}</h1>
+<p class="lede">
+  Every plant on this site is labeled scheduled. None is labeled confirmed,
+  because nothing this site reads can confirm one. This page explains the
+  difference and what can move a plant.
+</p>
+
+<h2 id="cdfw">What CDFW says</h2>
+<p>
+  CDFW's <a href="{{ cdfw_schedule_url }}">Fish Planting Schedule</a> carries
+  this notice: &ldquo;Although it contains current information, all fish plants
+  are subject to change depending on road, water, weather and operational
+  conditions.&rdquo; It adds that &ldquo;conditions permitting, the waters
+  listed here will be restocked with catchable-size fish from CDFW hatcheries,
+  according to this schedule.&rdquo;
+</p>
+<p>
+  So a listing is a plan with conditions attached. It is not a report that
+  fish were delivered.
+</p>
+
+<h2 id="shows">What this site shows</h2>
+<ul>
+  <li><strong>Scheduled</strong>: CDFW lists a plant at that water for that
+      week, as of the last check ({{ source_fetched_label }}).</li>
+  <li><strong>Schedule changed</strong>: CDFW listed that week earlier and
+      later removed it.</li>
+</ul>
+{% if plant_entries %}
+<p>
+  In the weeks this site has recorded, {{ plant_entries }} plant
+  {{ "entry has" if plant_entries == 1 else "entries have" }} been on CDFW's
+  schedule at some point, and {{ removed_entries }}
+  {{ "was" if removed_entries == 1 else "were" }} later removed. That count
+  comes from this site's own record; it says nothing about why a plant was
+  removed.
+</p>
+{% endif %}
+
+<h2 id="cannot">What this site cannot show</h2>
+<p>
+  It has no source for whether a truck arrived, on what day, or how many fish
+  were delivered, so it shows none of those. It also cannot tell you whether
+  conditions at a water have changed since its last check.
+</p>
+
+<h2 id="conditions">Why conditions matter</h2>
+<p>
+  CDFW publishes temperature and flow criteria for catchable trout. For
+  example, it says catchable trout are not planted in lakes or reservoirs once
+  surface water temperatures reach 78&deg;F and are expected to stay there.
+  The full list is on
+  <a href="{{ root }}guide/what-is-a-trout-plant/#criteria">what is a trout plant</a>.
+</p>
+
+<h2 id="before">Before you go</h2>
+<p>
+  CDFW's page asks that questions about fish planting go to the regional
+  office that covers the area, and lists a number for each region. For any
+  one water, start from its page: find it under
+  <a href="{{ root }}county/">its county</a> or
+  <a href="{{ root }}">this week's schedule</a>. A water page shows when the
+  schedule was last checked, so you can judge how recent its information is.
+</p>
+
+<h2>Keep reading</h2>
+<ul>
+  <li><a href="{{ root }}guide/how-to-read-the-schedule/">How to read the schedule</a></li>
+  <li><a href="{{ root }}guide/what-is-a-trout-plant/">What is a trout plant?</a></li>
+  <li><a href="{{ root }}guide/">All guides</a></li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<p class="muted">
+  Quotations are from CDFW's
+  <a href="{{ cdfw_schedule_url }}">Fish Planting Schedule</a> and
+  <a href="{{ cdfw_criteria_url }}">Temperature and Flow Criteria for Planting
+  Catchable Trout</a>, both fetched and read on {{ cdfw_read_on }}. Counts come
+  from this site's own record. This site is independent and is not affiliated
+  with CDFW.
+</p>
+{% endblock %}

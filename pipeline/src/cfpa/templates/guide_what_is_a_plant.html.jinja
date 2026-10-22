@@ -1,0 +1,85 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>{{ guide.h1 }}</h1>
+<p class="lede">
+  A plant is a delivery of catchable-size fish from a CDFW hatchery to a
+  water. The schedule this site mirrors lists which waters CDFW plans to
+  plant in which week.
+</p>
+
+<h2 id="meaning">What the words mean</h2>
+<p>
+  CDFW's <a href="{{ cdfw_schedule_url }}">Fish Planting Schedule</a> says the
+  waters on it &ldquo;will be restocked with catchable-size fish from CDFW
+  hatcheries,&rdquo; conditions permitting. CDFW calls the schedule a
+  planting schedule and links a provisional stocking document from it, so
+  &ldquo;plant&rdquo; and &ldquo;stocking&rdquo; are used for the same activity. This site
+  says &ldquo;scheduled&rdquo; for every listing because a listing is a plan (see
+  <a href="{{ root }}guide/scheduled-vs-confirmed/">scheduled vs. confirmed</a>).
+</p>
+<p>
+  The name Trout Truck comes from what anglers call the hatchery truck that
+  delivers planted trout. The site shows CDFW's weekly schedule, not where any
+  truck is right now.
+</p>
+
+<h2 id="criteria">The limits CDFW sets for trout</h2>
+<p>
+  CDFW's page on
+  <a href="{{ cdfw_criteria_url }}">temperature and flow criteria for planting
+  catchable trout</a> says, in summary:
+</p>
+<ul>
+  <li><strong>Streams</strong>: catchable trout are not planted when water
+      temperatures reach 75&deg;F and are expected to keep reaching it, or when
+      flows drop below 10 cfs. Streams with flows between 2 and 10 cfs may be
+      planted if temperatures do not exceed 70&deg;F and other conditions are
+      satisfactory. None are planted until afternoon temperatures reach
+      45&deg;F or higher most days. Planting is discontinued if shallow water,
+      lack of pools, algae growth or poor water quality make a stream
+      unsuitable.</li>
+  <li><strong>Lakes and reservoirs</strong>: not planted after surface
+      temperatures reach 78&deg;F and are expected to keep reaching it, or after a
+      die-off is attributed in whole or part to low oxygen, and not until
+      afternoon temperatures reach 42&deg;F or higher most days. Planting may be
+      suspended in reservoirs during spill. It is discontinued if algae
+      blooms, weed growth, turbidity or alkalinity make a lake unsuitable.</li>
+</ul>
+<p>
+  These criteria are for catchable trout. This site has not read a CDFW
+  criteria page for any other species.
+</p>
+
+<h2 id="species">Species on this site</h2>
+<p>
+  Nearly every water on the schedule is trout; catfish are occasional. Each
+  species has a page:
+  {% for l in species_links %}<a href="{{ root }}species/{{ l.slug }}/">{{ l.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+</p>
+
+<h2 id="where">Where plants are scheduled</h2>
+<p>
+  {{ water_count }} {{ "water is" if water_count == 1 else "waters are" }} in
+  this site's record, across {{ county_counts|length }}
+  {{ "county" if county_counts|length == 1 else "counties" }}. Browse by
+  <a href="{{ root }}county/">county</a>, or by CDFW region:
+  {% for r in region_links %}<a href="{{ root }}region/{{ r.slug }}/">{{ r.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+</p>
+
+<h2>Keep reading</h2>
+<ul>
+  <li><a href="{{ root }}guide/how-to-read-the-schedule/">How to read the schedule</a></li>
+  <li><a href="{{ root }}guide/scheduled-vs-confirmed/">Scheduled vs. confirmed</a></li>
+  <li><a href="{{ root }}guide/">All guides</a></li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<p class="muted">
+  Quotations and criteria are from CDFW's
+  <a href="{{ cdfw_schedule_url }}">Fish Planting Schedule</a> and
+  <a href="{{ cdfw_criteria_url }}">Temperature and Flow Criteria for Planting
+  Catchable Trout</a>, both fetched and read on {{ cdfw_read_on }}. Counts come
+  from this site's own record. This site is independent and is not affiliated
+  with CDFW.
+</p>
+{% endblock %}

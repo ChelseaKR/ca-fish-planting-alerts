@@ -1,0 +1,19 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>Guides to the California trout planting schedule</h1>
+<p class="lede">
+  Short explanations of the schedule this site mirrors. Each one says where
+  its facts come from: this site's own record, or a California Department of
+  Fish and Wildlife (CDFW) page that was read on {{ cdfw_read_on }}.
+</p>
+<ul class="water-index">
+  {% for g in guides %}
+  <li><a href="{{ root }}guide/{{ g.slug }}/">{{ g.crumb }}</a> <span class="muted">{{ g.summary }}</span></li>
+  {% endfor %}
+</ul>
+<p>
+  To see the schedule itself: <a href="{{ root }}">this week, statewide</a>
+  &middot; <a href="{{ root }}county/">every county</a>
+  &middot; <a href="{{ root }}about/">about &amp; attribution</a>.
+</p>
+{% endblock %}

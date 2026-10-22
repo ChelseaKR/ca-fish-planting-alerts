@@ -1,0 +1,102 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h1>{{ guide.h1 }}</h1>
+<p class="lede">
+  CDFW publishes a Fish Planting Schedule, and this site copies it into pages
+  for each water, county and region. Here is what each part of it means.
+  Every entry is scheduled, not confirmed (see
+  <a href="{{ root }}guide/scheduled-vs-confirmed/">scheduled vs. confirmed</a>).
+</p>
+
+<h2 id="source">Where the schedule comes from</h2>
+<p>
+  CDFW describes its
+  <a href="{{ cdfw_schedule_url }}">Fish Planting Schedule</a> as
+  &ldquo;updated in real time, directly by CDFW Hatchery staff.&rdquo; This
+  site reads that page once a day; it last did so {{ source_fetched_label }},
+  when CDFW's current week was the {{ source_week_label }}. The
+  <a href="{{ root }}support/#schedule">support page</a> and the
+  <a href="{{ root }}about/#data">about page</a> say more.
+</p>
+
+<h2 id="weeks">Dates are weeks</h2>
+<p>
+  Every date on this site is a week, Sunday through Saturday, written as
+  &ldquo;week of&rdquo; its Sunday. CDFW does not give a day. Its page says why:
+  &ldquo;More specific dates are not given to avoid focusing excess fishing
+  activity immediately after a plant.&rdquo; Calendar feeds from this site
+  span the whole week for the same reason.
+</p>
+
+<h2 id="rows">What a row tells you</h2>
+<p>
+  A row names a water, the county or counties CDFW files it under, and a
+  species. {{ water_count }} {{ "water is" if water_count == 1 else "waters are" }}
+  in this site's record. A water that CDFW files under more than one county
+  appears on each county's page. To see rows, start with
+  <a href="{{ root }}">this week, statewide</a> or
+  <a href="{{ root }}county/">pick a county</a>. Rows can also be read by species:
+  {% for l in species_links %}<a href="{{ root }}species/{{ l.slug }}/">{{ l.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+</p>
+
+<h2 id="regions">CDFW regions</h2>
+<p>
+  CDFW's schedule lets you filter by its six regions: Northern (R1), North
+  Central (R2), Bay Delta (R3), Central (R4), South Coast (R5) and Inland
+  Deserts (R6). This site has a page for each region that has a water on the
+  schedule:
+</p>
+<ul class="water-index">
+  {% for r in region_links %}
+  <li><a href="{{ root }}region/{{ r.slug }}/">{{ r.name }}</a> <span class="muted">({{ r.county_count }} {{ "county" if r.county_count == 1 else "counties" }})</span></li>
+  {% endfor %}
+</ul>
+
+<h2 id="blank">What a blank week means</h2>
+<p>
+  If a water is not on the schedule for a week, no plant is scheduled for it
+  that week, not that there are no fish. Each water page says so in similar
+  words when nothing is current.
+</p>
+
+<h2 id="history">How far back it goes</h2>
+<p>
+  CDFW's page says it shows &ldquo;the current week, one week in the future,
+  and six months in the past.&rdquo; This site keeps the weeks it has
+  recorded{% if recorded_since_label %}, the earliest being the {{ recorded_since_label }}{% endif %},
+  so a water page can list more weeks than CDFW's page does today. A week
+  marked &ldquo;Schedule changed&rdquo; is one CDFW listed and later removed.
+</p>
+
+<h2 id="maps">Map locations</h2>
+<p>
+  CDFW notes that the map markers on its schedule show the general location
+  of a water, not the exact or sole planting locations. Treat any map of a
+  water the same way: it says roughly where the water is, not where fish are
+  delivered. This site takes
+  locations from federal data, described under
+  <a href="{{ root }}about/#locations">water locations</a>.
+</p>
+
+<h2 id="questions">Questions about a plant</h2>
+<p>
+  CDFW's page asks that questions about fish planting go to the regional
+  office that covers the area. It lists a number for each region. This site
+  cannot answer them; it has no source beyond the schedule.
+</p>
+
+<h2>Keep reading</h2>
+<ul>
+  <li><a href="{{ root }}guide/scheduled-vs-confirmed/">Scheduled vs. confirmed</a></li>
+  <li><a href="{{ root }}guide/what-is-a-trout-plant/">What is a trout plant?</a></li>
+  <li><a href="{{ root }}guide/">All guides</a></li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<p class="muted">
+  Quotations are from CDFW's
+  <a href="{{ cdfw_schedule_url }}">Fish Planting Schedule</a>, fetched and
+  read on {{ cdfw_read_on }}. Counts and dates come from this site's own
+  record. This site is independent and is not affiliated with CDFW.
+</p>
+{% endblock %}

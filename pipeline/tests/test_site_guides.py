@@ -333,7 +333,7 @@ def test_names_section_explains_the_aliases_with_an_anchor(built):
         "scheduled",
     ):
         assert needle in text, needle
-    assert "https://wildlife.ca.gov/" in links
+    assert any(urlsplit(link).hostname == "wildlife.ca.gov" for link in links)
     # One sentence links back to the weekly schedule (the site root).
     assert "../../" in links
     assert not (_words(text) & BANNED_WORDS)

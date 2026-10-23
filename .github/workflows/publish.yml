@@ -162,6 +162,26 @@ jobs:
               push origin HEAD:main
           fi
 
+      - name: pick the pages to announce to IndexNow (custom domain only)
+        # Runs BEFORE the push below replaces the live site, because the
+        # previous deploy's sitemap.xml is what this build is compared with:
+        # a page is announced when it is new or its <lastmod> changed. Only
+        # https URLs on the site's own host, only built pages without a
+        # robots noindex, at most 10,000. Selection only: nothing is sent
+        # here, and a problem is a notice, never a failed run. No secret is
+        # involved; the key is public by design (pipeline/src/cfpa/indexnow.py).
+        if: vars.SITE_BASE_URL != ''
+        continue-on-error: true
+        working-directory: pipeline
+        env:
+          SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
+        run: |
+          set -euo pipefail
+          uv run python -m cfpa.indexnow select \
+            --site-dir ../site --base-url "${SITE_BASE_URL%/}" \
+            --kind sitemap --file sitemap.xml --missing-is-empty \
+            --out "$RUNNER_TEMP/indexnow-urls.json"
+
       - name: push the domain site to its Pages repository (custom domain only)
         # DECISIONS 0019, option B. This repository's own Pages site never
         # gets the custom domain: GitHub answers every github.io URL of a
@@ -241,6 +261,19 @@ jobs:
           done
           echo "::error::${url} did not serve this run's snapshot (sha256 ${want}) within 10 minutes; the github.io site was left as it was"
           exit 1
+
+      - name: announce the new and changed pages to IndexNow (custom domain only)
+        # After the domain has been verified to serve this run's snapshot, so
+        # a crawler that follows the announcement finds the new pages. A
+        # failed or refused ping only logs a notice (the engines still find
+        # the pages through the sitemap); it never fails the publish.
+        # https://www.indexnow.org/documentation
+        if: vars.SITE_BASE_URL != ''
+        continue-on-error: true
+        working-directory: pipeline
+        run: |
+          set -euo pipefail
+          uv run python -m cfpa.indexnow submit --list "$RUNNER_TEMP/indexnow-urls.json"
 
       - name: upload site as a Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1

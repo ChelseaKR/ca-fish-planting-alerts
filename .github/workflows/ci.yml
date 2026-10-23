@@ -60,7 +60,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     # Measured locally at ~30 s for the whole target; the margin covers a
-    # cold uv cache, the semgrep install and the ruleset download.
+    # cold uv cache, the semgrep install, the ruleset download and the
+    # one-off Go build of the greenlight scanner.
     timeout-minutes: 15
     permissions:
       contents: read
@@ -101,6 +102,15 @@ jobs:
           echo "${OSV_SCANNER_SHA256}  $bin/osv-scanner" | sha256sum --check --strict
           chmod +x "$bin/osv-scanner"
           echo "$bin" >> "$GITHUB_PATH"
+
+      - name: install go for the pinned greenlight scanner
+        # `make greenlight` (part of `make verify`) builds Greenlight at a
+        # pinned commit with `go install`; scripts/check_greenlight.py holds
+        # the pin and fails the job under CI if the scanner is not there.
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.3"
+          cache: false
 
       - name: make verify
         run: make verify

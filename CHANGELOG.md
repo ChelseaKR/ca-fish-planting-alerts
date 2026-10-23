@@ -13,6 +13,19 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- `make verify` runs Greenlight, a third-party App Store and Google Play
+  preflight scanner, on the iOS app, the widget extension and the Android
+  project (`scripts/check_greenlight.py`, `make greenlight`). It fails on any
+  critical or high finding. The scanner is built from a pinned commit
+  (v0.2.0) into `build/tools/bin` and its module hash is checked after the
+  build; CI installs Go for it, and a skipped scan fails in CI. Locally, with
+  no Go, the gate prints `SKIPPED: greenlight not installed` and the last line
+  of `make verify` says the run is not a full pass. Negative controls seed a
+  missing privacy manifest and a restricted SMS permission in copies of the
+  targets (`pipeline/tests/test_check_greenlight.py`). The widget extension's
+  Info.plist now declares `ITSAppUsesNonExemptEncryption` false, as the app's
+  already does.
+
 - After each production deploy, the pages that are new or changed since the
   previous deploy are announced to IndexNow (https://www.indexnow.org/documentation)
   so search engines can crawl them sooner. The list comes from comparing the new `sitemap.xml` with the live one. Only https URLs on this site's own

@@ -6,8 +6,10 @@
 # `verify` job runs `make verify` and nothing else for stages 1-5, so a green
 # `make verify` locally is the same claim as a green `verify` check.
 #
-# Needs: uv >= 0.11, gitleaks 8.30.1, osv-scanner 2.x on PATH. CI installs the
-# pinned binaries itself (.github/workflows/ci.yml).
+# Needs: uv >= 0.11, gitleaks 8.30.1, osv-scanner 2.x on PATH, and Go for the
+# greenlight gate (it builds its pinned scanner into build/tools/bin; without
+# Go it prints SKIPPED and verify's last line says it did not pass). CI
+# installs the pinned binaries itself (.github/workflows/ci.yml).
 #
 # No recipe here pipes one command into another: macOS ships GNU Make 3.81,
 # which ignores .SHELLFLAGS, so a pipe could hide a failing command. Each line
@@ -20,10 +22,11 @@ SEMGREP_VERSION := 1.166.0
 # subdirectory, so nothing lands inside the checkout.
 TMP := $(shell mktemp -d 2>/dev/null || mktemp -d -t cfpa)
 
-.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore
+.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
 
 # Stage order per CI-CD-STANDARD §1: format, lint, type, test, security.
-verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore
+verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
+	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --summary $(TMP)/greenlight/status
 
 # CQ-09: `uv lock --check` first. `--frozen` installs from uv.lock without
 # reading pyproject.toml, so it cannot notice drift, and a bare `uv run`
@@ -112,3 +115,12 @@ hygiene:
 appstore:
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_app_store.py --self-test
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_app_store.py
+
+# App Store and Google Play rejection risks, by Greenlight, a pinned third-party
+# scanner built into build/tools/bin (the pin and the reasons are in the
+# script's header). Fails on any CRITICAL or HIGH finding. Self-test first, as
+# for hygiene; the negative controls that seed a violation are in
+# pipeline/tests/test_check_greenlight.py.
+greenlight:
+	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --self-test
+	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --status-file $(TMP)/greenlight/status

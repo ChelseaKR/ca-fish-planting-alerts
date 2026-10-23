@@ -58,6 +58,11 @@ ignore = ["E501"]            # line length owned by the formatter
 # S314: test_site_feeds.py parses the Atom files this build just wrote, never
 # fetched or caller-supplied XML (no defusedxml dependency is added for it).
 "tests/**" = ["S101", "S603", "S314"]
+# scripts/check_greenlight.py runs `go` and the pinned scanner with argument
+# lists built from constants and repository paths, never a shell or input.
+# Both spellings: `make lint` runs from pipeline/, the pre-commit hook from the root.
+"../scripts/check_greenlight.py" = ["S603"]
+"scripts/check_greenlight.py" = ["S603"]
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 [tool.ruff.format]

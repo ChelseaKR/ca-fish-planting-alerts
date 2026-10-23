@@ -13,6 +13,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- The privacy page no longer says the iPhone app has an Apple Watch app or
+  watch complications; the 1.0.0 binary has neither (the watch target is
+  unreleased). `docs/APP-STORE.md` and the Android README now say that
+  only California and Tennessee are sold today, because the published
+  `snapshot/v2.json` lists only those two. `tests/test_site_privacy_accuracy.py`.
 - Three claims from the 2026-10-21 structured-data audit now match what the
   site does. /about/ says in visible text the license stated for the snapshot,
   from the same constant that already feeds the Dataset and the /data/ page

@@ -82,9 +82,12 @@ than one state. Each state is its own Google Play one-time product
 
 A Play product ID already belongs to this one app, so the Play IDs drop the
 package-name prefix. A state's product unlocks alerts for that state's
-favorites and lists them in the widget. Massachusetts and Michigan are off
-(DECISIONS 0025), so their products are placeholders and need nothing in
-Play Console.
+favorites and lists them in the widget. Only California and Tennessee are
+sold today: they are the two states in the published `snapshot/v2.json`
+(checked 2026-10-22). Massachusetts and Michigan have no data in a published
+snapshot, so their products are placeholders that need nothing in Play
+Console. New York has no Android product id at all yet (the iOS app has one);
+add it to `StateProducts` before a New York snapshot is published.
 
 ## Debug switches
 

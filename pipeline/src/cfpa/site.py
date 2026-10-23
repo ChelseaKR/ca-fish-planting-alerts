@@ -34,7 +34,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import feeds, guides, llms, opendata, share_cards, site_states, weeks
+from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -2910,5 +2910,10 @@ def build_site(
         cname_path = out_dir / "CNAME"
         cname_path.write_text(f"{cname}\n", encoding="utf-8")
         written.append(cname_path)
+        # The IndexNow ownership file (pipeline/src/cfpa/indexnow.py), served
+        # from the domain's root. Public by design; only the custom-domain
+        # build carries it because the key proves ownership of that host.
+        # find_key reads TEMPLATES_DIR, which holds exactly one such file.
+        written.append(indexnow.copy_key_file(TEMPLATES_DIR, out_dir))
 
     return written

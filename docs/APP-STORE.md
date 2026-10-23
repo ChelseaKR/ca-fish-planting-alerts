@@ -359,9 +359,12 @@ which is the one call site that checks it before
 Each state beyond California is its own Non-Consumable in the same app
 (Guideline 4.3(a): one app, variations as in-app purchases). California's
 product above is unchanged. A state is sold only once it has data in the
-published snapshot. Tennessee has since 2026-10-12; Michigan,
-Massachusetts and New York since their live fetches worked on 2026-10-13.
-All four ids and the USD 9.99 price are the owner's (DECISIONS 0025 and
+published snapshot. Today that is California (the Full Access product
+above) and Tennessee (since 2026-10-12); the published `snapshot/v2.json`
+(checked read-only on 2026-10-22) lists only CA and TN. Michigan,
+Massachusetts and New York are built and merged (DECISIONS 0034) but are not
+in a published snapshot yet, so none of those three is sold until one is.
+Tennessee's data was last checked 2026-10-15. All four ids and the USD 9.99 price are the owner's (DECISIONS 0025 and
 0034). A changed id must also change `StateAccess.productIDsByState` and
 `Configuration.storekit`.
 

@@ -6,6 +6,9 @@
   The {{ site_name }} website uses Google Analytics 4 to count visits and see
   which pages are read, unless your browser sends Global Privacy Control or
   Do Not Track, or you opt out.
+  {% if ads_enabled %}
+  Some of its pages also show one Google ad; see <a href="#ads">Ads</a>.
+  {% endif %}
   {# correction 1 (apps coverage): lede begins #}
   The {{ site_name }} apps for iPhone (with widgets) and for
   Android collect no data: no analytics, no tracking, no advertising and no
@@ -68,8 +71,14 @@
   <li><strong>No advertising use.</strong> Google signals and ad
       personalization are turned off, and the advertising consent signals
       (ad storage, ad user data, ad personalization) are denied everywhere.
+{% if ads_enabled %}
+      Analytics data is not used for the ads described under
+      <a href="#ads">Ads</a>, and the gear links described under
+      &ldquo;Gear links&rdquo; below are plain affiliate links, not ads.</li>
+{% else %}
       There are no ads on this site; the gear links described under
       &ldquo;Gear links&rdquo; below are plain affiliate links.</li>
+{% endif %}
   <li><strong>Retention:</strong> Google Analytics keeps event-level data for
       14 months, then deletes it. Aggregated reports, such as page-view
       totals, are kept longer.</li>
@@ -161,6 +170,9 @@
   <li>The links never change what this site says about a water or a planting
       schedule.</li>
 </ul>
+{% if ads_enabled %}
+{% include "_privacy_ads.html.jinja" %}
+{% endif %}
 
 <h2 id="app">The apps</h2>
 <ul>

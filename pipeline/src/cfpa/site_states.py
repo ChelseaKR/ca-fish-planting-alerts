@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -56,6 +57,26 @@ class StatesContext:
     # How much of a title a results page shows (site.WATER_TITLE_MAX), brand
     # included. Passed in because site.py imports this module.
     title_max: int = 60
+    # The Amazon gear block (DECISIONS 0039): site.gear_links(),
+    # site.AFFILIATE_LINK_REL and site.gear_endorsement, passed in for the
+    # same reason. With no links, no state page carries the block.
+    gear_links: tuple[dict[str, str], ...] = ()
+    affiliate_rel: str = ""
+    gear_endorsement: Callable[[str], str] | None = None
+
+
+def gear_allowed(state: dict[str, Any], species: str) -> bool:
+    """Whether a state's water page may carry the Amazon gear block
+    (DECISIONS 0039): every license source the state's data comes from says
+    commercial reuse is permitted, and the water's species word is trout, the
+    only gear the block offers. Anything else, including a missing license
+    list or an "unknown" answer, keeps the page free of affiliate links."""
+    sources = state.get("license", {}).get("sources", [])
+    if not sources:
+        return False
+    if any(s.get("commercial_reuse") != "permitted" for s in sources):
+        return False
+    return "trout" in species.lower()
 
 
 def when_label(period: dict[str, str]) -> str:
@@ -244,8 +265,15 @@ def _state_common(
     ctx: StatesContext, state: dict[str, Any], root: str
 ) -> dict[str, Any]:
     seg = state["code"].lower()
+    endorsement = (
+        ctx.gear_endorsement(state["agency"]["short_name"])
+        if ctx.gear_endorsement is not None
+        else ""
+    )
     return {
         **ctx.common,
+        # The gear block names the agency whose data the page shows, never CDFW.
+        "gear_endorsement": endorsement,
         "attribution_text": state["attribution"]["text"],
         "attribution_url": state["attribution"]["url"],
         "footer_disclaimer": state["disclaimer"],
@@ -559,6 +587,8 @@ def _render_water(
         has_counts=any(p["count"] is not None for p in plants),
         has_removed=any(p["removed"] for p in plants),
         neighbors=neighbors,
+        gear_links=list(ctx.gear_links) if gear_allowed(state, species) else [],
+        affiliate_rel=ctx.affiliate_rel,
         neighbors_heading=(
             f"Other {', '.join(w['counties'])} County waters on record"
             if w["counties"]

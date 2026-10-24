@@ -396,3 +396,83 @@ def test_negative_control_a_disclosure_after_the_links_is_caught(built: Path) ->
     sabotaged = text.replace(block, moved)
     assert sabotaged != text  # the sabotage applied
     assert _gear_order_problems({name: sabotaged})
+
+
+# ---- a/an, and the carried-states table on a phone
+
+
+@pytest.mark.parametrize(
+    ("word", "article"),
+    [
+        ("Inyo", "an"),
+        ("Alpine", "an"),
+        ("El Dorado", "an"),
+        ("Orange", "an"),
+        ("Imperial", "an"),
+        ("Modoc", "a"),
+        ("Trinity", "a"),
+        ("Eureka", "a"),
+        ("Union", "a"),
+        ("hour", "an"),
+    ],
+)
+def test_indefinite_article_follows_the_first_sound(word: str, article: str) -> None:
+    assert site.indefinite_article(word) == article
+
+
+A_BEFORE_VOWEL = re.compile(
+    r"\ba (?:Alameda|Alpine|Amador|El Dorado|Imperial|Inyo|Orange)\b"
+)
+
+
+def test_no_county_takes_the_wrong_article(built: Path) -> None:
+    pages = _pages(built)
+    assert "Planning a trip to an Inyo County water?" in pages["county/inyo/index.html"]
+    assert [n for n, t in pages.items() if A_BEFORE_VOWEL.search(t)] == []
+
+
+def test_negative_control_a_before_a_vowel_is_caught(built: Path) -> None:
+    text = (built / "county" / "inyo" / "index.html").read_text(encoding="utf-8")
+    sabotaged = text.replace("to an Inyo County", "to a Inyo County", 1)
+    assert sabotaged != text  # the sabotage applied
+    assert A_BEFORE_VOWEL.search(sabotaged)
+
+
+def _stack_table_problems(text: str) -> list[str]:
+    table = _search(r'<table class="stack-table".*?</table>', text, re.S).group(0)
+    headers = re.findall(r'<th scope="col" role="columnheader">(.*?)</th>', table)
+    problems = []
+    rows = re.findall(r'<tr role="row">\s*(<td.*?)</tr>', table, re.S)
+    if not rows:
+        problems.append("no body rows")
+    for row in rows:
+        labels = re.findall(r'<td role="cell" data-label="([^"]*)">', row)
+        if labels != headers:
+            problems.append(f"labels {labels} are not the headers {headers}")
+    return problems
+
+
+def test_carried_states_table_stacks_with_labels_that_match_its_headers(
+    built: Path,
+) -> None:
+    text = (built / "states" / "index.html").read_text(encoding="utf-8")
+    assert _stack_table_problems(text) == []
+    css = (site.TEMPLATES_DIR / "style.css").read_text(encoding="utf-8")
+    assert (
+        ".stack-table th, .stack-table td { overflow-wrap: normal; word-break: normal; }"
+        in css
+    )
+    narrow = css.split("@media (max-width: 40rem) {", 1)[1]
+    assert (
+        ".stack-table, .stack-table tbody, .stack-table tr, .stack-table td { display: block; }"
+        in narrow
+    )
+
+
+def test_negative_control_a_label_out_of_step_with_its_header_is_caught(
+    built: Path,
+) -> None:
+    text = (built / "states" / "index.html").read_text(encoding="utf-8")
+    sabotaged = text.replace('data-label="Agency"', 'data-label="Waters"', 1)
+    assert sabotaged != text  # the sabotage applied
+    assert _stack_table_problems(sabotaged)

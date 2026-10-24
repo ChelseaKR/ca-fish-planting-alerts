@@ -17,25 +17,30 @@
   precision the agency gives it: a day, a week, a month, or the agency's own
   words, such as "April - third week".
 </p>
-<table>
+{# On a phone the five columns stack into one block per state, each value
+   labeled, so a state name never breaks mid-word (style.css .stack-table).
+   The explicit roles keep it a table for screen readers when the CSS
+   changes its display; the visible labels are hidden from them, because
+   each cell already has its column header. #}
+<table class="stack-table" role="table">
   <caption class="visually-hidden">States {{ site_name }} carries, with each agency and when its data was last checked</caption>
-  <thead>
-    <tr>
-      <th scope="col">State</th>
-      <th scope="col">Agency</th>
-      <th scope="col">What it publishes</th>
-      <th scope="col">Waters</th>
-      <th scope="col">Last checked</th>
+  <thead role="rowgroup">
+    <tr role="row">
+      <th scope="col" role="columnheader">State</th>
+      <th scope="col" role="columnheader">Agency</th>
+      <th scope="col" role="columnheader">What it publishes</th>
+      <th scope="col" role="columnheader">Waters</th>
+      <th scope="col" role="columnheader">Last checked</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody role="rowgroup">
     {% for r in rows %}
-    <tr>
-      <td><a href="{{ r.href }}">{{ r.name }}</a></td>
-      <td>{{ r.agency }}</td>
-      <td>{{ r.kind }}</td>
-      <td>{{ r.waters }}</td>
-      <td>{{ r.checked }}</td>
+    <tr role="row">
+      <td role="cell" data-label="State"><a href="{{ r.href }}">{{ r.name }}</a></td>
+      <td role="cell" data-label="Agency">{{ r.agency }}</td>
+      <td role="cell" data-label="What it publishes">{{ r.kind }}</td>
+      <td role="cell" data-label="Waters">{{ r.waters }}</td>
+      <td role="cell" data-label="Last checked">{{ r.checked }}</td>
     </tr>
     {% endfor %}
   </tbody>

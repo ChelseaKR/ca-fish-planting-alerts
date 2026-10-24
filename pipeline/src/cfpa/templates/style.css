@@ -362,6 +362,38 @@ dd .tt-badge { margin-right: var(--space-2); }
 .gear li { margin: var(--space-1) 0; }
 .gear #gear-disclosure { font-size: 0.9rem; line-height: 1.45; }
 
+/* A table whose rows stack on a phone (the carried states on /states/).
+   Its cells wrap only between words: overflow-wrap: anywhere, set on body
+   for long URLs, broke "California" into "Califo / rnia" in five narrow
+   columns. Under 40rem each row becomes a block of labeled lines, so every
+   word has room (SC 1.4.10 without mid-word breaks). The labels' alt text
+   is empty, so a screen reader hears each column header once. */
+.stack-table th, .stack-table td { overflow-wrap: normal; word-break: normal; }
+@media (max-width: 40rem) {
+  .stack-table thead {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .stack-table, .stack-table tbody, .stack-table tr, .stack-table td { display: block; }
+  .stack-table tr { border-bottom: 1px solid var(--border); padding: var(--space-2) 0; }
+  .stack-table tbody tr:nth-child(even) { background: var(--row-alt); }
+  .stack-table td {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: var(--space-2);
+    border-bottom: none;
+    padding: var(--space-1) var(--space-cell-x);
+  }
+  .stack-table td::before {
+    content: attr(data-label);
+    content: attr(data-label) / "";
+    font-weight: 700;
+  }
+}
+
 /* Every state (/states/): one card per state, alphabetical. Covered states
    sit on the paper ground; the rest on the page ground. */
 .tt-states {

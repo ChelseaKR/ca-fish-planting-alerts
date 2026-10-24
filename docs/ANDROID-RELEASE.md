@@ -125,19 +125,30 @@ bundle is signed and carries the committed `assets/snapshot.json`. The run
 prints the bundle's SHA-256; the downloaded file should match it
 (`shasum -a 256 app-release.aab`).
 
-### 6. Owner: create the in-app product
+### 6. Owner: create the in-app products
 
-In Play Console, Monetize, In-app products, create a one-time product:
+In Play Console, Monetize, In-app products, create one one-time product per
+state that is on sale. Today that is two: California and Tennessee, the two
+states in the published snapshot (`android/README.md`, "States and
+purchases"). Both are USD 9.99, matching iOS. The app shows the price Play
+returns; none is hard-coded.
 
-- Product ID: `fullaccess`. This is `ProductCatalog.CALIFORNIA_FULL_ACCESS`
-  in `android/core`. Google does not let a product ID change after it is
-  created, so decide now. If you want a different ID, change that one
-  constant in a reviewed change before the initial upload and rebuild.
-- Name `Full Access`, description `Alerts and a widget for your favorite waters`.
-- Price USD 9.99, matching the iOS Full Access price. The app shows the
-  price Play returns; none is hard-coded.
-- Activate it. It may become purchasable once a bundle that declares the
-  billing permission is on a testing track.
+| Product ID | State | Name | Description |
+|---|---|---|---|
+| `fullaccess` | California | Full Access | Alerts and a widget for your favorite waters |
+| `state_tn` | Tennessee | Tennessee alerts and widget | Alerts and a widget for your favorite Tennessee waters |
+
+- The IDs are `StateProducts.CALIFORNIA` and `StateProducts.TENNESSEE` in
+  `android/core` (`Products.kt`). Google does not let a product ID change
+  after it is created, so decide now. If you want a different ID, change it
+  there in a reviewed change before the initial upload and rebuild.
+- Massachusetts (`state_ma`) and Michigan (`state_mi`) are placeholders with
+  no data in a published snapshot; create them in Play Console only when
+  those states go on sale. New York has no Android product yet (the iOS app
+  has one); add it to `StateProducts` before a New York snapshot is
+  published.
+- Activate each product. It may become purchasable once a bundle that
+  declares the billing permission is on a testing track.
 
 Add yourself and your testers under Settings, License testing, so test
 purchases cost nothing.
@@ -225,10 +236,10 @@ From `android/` with JDK 21 and the Android SDK (`ANDROID_HOME`):
 
 ## Known gaps to close before production
 
-- The privacy page (`https://trouttruck.com/privacy/`) says it "Covers this
-  website and the Trout Truck iOS app." Play needs a privacy policy that
-  covers the Android app. Add the Android app to that page (the app collects
-  no data, as on iOS) before the Data safety form is submitted.
+- The privacy page (`https://trouttruck.com/privacy/`) covers the Android
+  app (checked live 2026-10-24: "Covers this website and the Trout Truck
+  apps for iPhone and Android"). Re-check it just before the Data safety
+  form is submitted.
 - The app fetches its snapshot from `chelseakr.github.io`
   (`SnapshotEndpoint.URL`). The site has moved to `trouttruck.com`, and the
   old address still serves the file; keep it serving until a later Android

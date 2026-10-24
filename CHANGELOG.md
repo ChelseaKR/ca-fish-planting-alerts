@@ -13,6 +13,18 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- App: each state's purchase sheet says when that state's data was last
+  read, and says plainly before the buy button when the newest check of the
+  agency's page failed (`PaywallCopy`). Its footnote no longer says
+  "forever"; it says one payment per state, no subscription, and that
+  Restore purchases brings it back on a new device. New York's product
+  description now says "Reminders", which is what its purchase adds.
+  `docs/app-store/LISTING-MULTISTATE.md` is the listing for the multistate
+  version, checked against App Store Connect's limits and the StoreKit file
+  by `StateProductListingTests`, and `docs/app-store/OWNER-STEPS.md` lists
+  the four products to create. More StoreKit Test cases cover New York, a
+  refund, a failed purchase and Ask to Buy for a state.
+
 - The Amazon gear block now appears on each California county page and on
   each other state's water page whose data terms permit commercial reuse
   (Tennessee on the live site; Massachusetts, Michigan and New York also

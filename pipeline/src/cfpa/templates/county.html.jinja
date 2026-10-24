@@ -100,7 +100,7 @@
   </tbody>
 </table>
 {% else %}
-<p>No later week is scheduled for a {{ county }} County water. That means nothing beyond the {{ source_week_label }} is on CDFW's schedule here right now, not that there are no fish.</p>
+<p>No later week is scheduled for {{ county|a_an }} County water. That means nothing beyond the {{ source_week_label }} is on CDFW's schedule here right now, not that there are no fish.</p>
 {% endif %}
 
 {# The county's most recent past weeks with a listed water (site.py
@@ -133,7 +133,7 @@
 {% endif %}
 
 {% set gear_heading = "Gear for " ~ county ~ " County waters" %}
-{% set gear_intro = "Planning a trip to a " ~ county ~ " County water?" %}
+{% set gear_intro = "Planning a trip to " ~ county|a_an ~ " County water?" %}
 {% set gear_placement = "county" %}
 {% include "_gear_block.html.jinja" %}
 

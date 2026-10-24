@@ -483,7 +483,10 @@ def _status_cells(html: str) -> list[str]:
     return [
         re.sub(r"\s+", " ", m).strip()
         for m in re.findall(
-            r"<tr>\s*<td>[^<]*</td>\s*<td>[^<]*</td>\s*<td>([^<]*)</td>", table
+            # The week cell may link the week's /week/ page.
+            r"<tr>\s*<td>(?:<a [^>]*>)?[^<]*(?:</a>)?</td>\s*<td>[^<]*</td>"
+            r"\s*<td>([^<]*)</td>",
+            table,
         )
     ]
 

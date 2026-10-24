@@ -557,8 +557,15 @@ def _water_view(
         "plants": [
             {
                 "label": p["week"]["label"],
+                "start": p["week"]["start"],
                 "species": p["species"],
                 "status": p["status"],
+                # A listed week before the current one has a /week/ page
+                # (weeks.week_entries) that names this water, so the row links
+                # it. A removed week is not on that page, and the current or a
+                # later week has no page, so neither links.
+                "week_page": p["status"] == "listed"
+                and p["week"]["start"] < source_week_start,
             }
             for p in plants_sorted
         ],
@@ -1608,6 +1615,125 @@ def _render_water_page(
     )
 
 
+COUNTY_RECENT_WEEKS = 4
+"""A county page lists this many of its most recent past weeks with a listed
+water, newest first, when the record has that many."""
+
+COUNTY_DESCRIPTION_MAX = WATER_DESCRIPTION_MAX
+
+
+def _county_recent_weeks(
+    members: list[dict[str, Any]], *, source_week_start: str
+) -> dict[str, Any]:
+    """The county's most recent past weeks with a listed plant, at most
+    ``COUNTY_RECENT_WEEKS`` of them, as one row per listed plant (week, water,
+    species), newest week first and then by name: the same shape as the
+    later-weeks table.
+
+    "Past" means before the snapshot's current week, the same rule as the
+    /week/ pages (weeks.week_entries), so every week here has a page to link.
+    A removed entry is never shown. A county with no such week gets no rows,
+    and the page says so in words, not as a zero."""
+    listed = [
+        (p["week"]["start"], w, p["species"])
+        for w in members
+        for p in w["plants"]
+        if p["status"] == "listed" and p["week"]["start"] < source_week_start
+    ]
+    weeks = sorted({start for start, _, _ in listed}, reverse=True)
+    kept = set(weeks[:COUNTY_RECENT_WEEKS])
+    rows = [
+        {"week": start, "slug": w["slug"], "name": w["name"], "species": species}
+        for start, w, species in listed
+        if start in kept
+    ]
+    rows.sort(key=lambda r: (r["name"], r["slug"], r["species"]))
+    rows.sort(key=lambda r: r["week"], reverse=True)
+    return {"rows": rows, "week_count": len(kept)}
+
+
+def _join_names(names: list[str]) -> str:
+    if len(names) <= 2:
+        return " and ".join(names)
+    return ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def _fit_names(prefix: str, names: list[str], suffix: str, limit: int) -> str | None:
+    """``prefix`` + as many of ``names`` as fit + ``suffix`` within ``limit``,
+    the rest counted as "and N more"; None when not even one name fits."""
+    for keep in range(len(names), 0, -1):
+        rest = len(names) - keep
+        shown = names[:keep]
+        listed = (
+            _join_names(shown) if rest == 0 else f"{', '.join(shown)} and {rest} more"
+        )
+        text = f"{prefix}{listed}{suffix}"
+        if len(text) <= limit:
+            return text
+    return None
+
+
+def _county_description(
+    county: str,
+    *,
+    species: str,
+    water_count: int,
+    this_week_names: list[str],
+    source_week_label: str,
+    next_week: str,
+    next_names: list[str],
+    last_week: str,
+) -> str:
+    """The meta description: the county, the stocking wording people search
+    with, then what the schedule says now, from the snapshot alone.
+
+    This week's waters, by name, when there are any; otherwise the soonest
+    later week and its waters; otherwise the last week a county water was
+    listed. A county with none of those says no week is listed. The current
+    week's date appears only when a water is listed for it, so the
+    description changes at a rollover only for a county whose lastmod already
+    counts that rollover (``_rollover_sensitive``)."""
+    head = f"{county} County {species} stocking schedule: "
+    history = (
+        " CDFW planting history for the water."
+        if water_count == 1
+        else f" CDFW planting history for its {water_count} waters."
+    )
+    # Longest tail first; a water's name outranks the tail, so the tail
+    # shortens before the names give way to a count.
+    tails = (history, " CDFW planting history.", "")
+    if this_week_names:
+        prefix = f"{head}scheduled this week, the {source_week_label}, at "
+        names = this_week_names
+    elif next_week:
+        prefix = f"{head}none scheduled this week; next the week of {next_week}, at "
+        names = next_names
+    else:
+        prefix, names = "", []
+    if names:
+        for tail in tails:
+            fitted = _fit_names(prefix, names, f".{tail}", COUNTY_DESCRIPTION_MAX)
+            if fitted is not None:
+                return fitted
+        return _with_tail(f"{prefix}{_plural(len(names), 'water', 'waters')}.", tails)
+    if last_week:
+        return _with_tail(
+            f"{head}nothing scheduled this week or later; last scheduled "
+            f"the week of {last_week}.",
+            tails,
+        )
+    return _with_tail(f"{head}no week currently listed.", tails)
+
+
+def _with_tail(body: str, tails: tuple[str, ...]) -> str:
+    """``body`` with the longest of ``tails`` that keeps it within
+    ``COUNTY_DESCRIPTION_MAX``; ``body`` alone when none does."""
+    for tail in tails:
+        if len(body) + len(tail) <= COUNTY_DESCRIPTION_MAX:
+            return body + tail
+    return body
+
+
 def _render_county_page(
     ctx: _PageContext,
     county: str,
@@ -1615,8 +1741,13 @@ def _render_county_page(
     this_week: list[dict[str, Any]],
     region_name: str,
     region_link: dict[str, str] | None = None,
+    region_counties: list[dict[str, str]] | None = None,
 ) -> str:
-    """Write one county's page. Returns its URL."""
+    """Write one county's page. Returns its URL.
+
+    ``region_counties`` are the other counties of the same CDFW region that
+    have a page, for the "more counties" links; the caller counts the day
+    each first appeared in this page's lastmod."""
     members = ctx.waters_by_county[county]
     page_url = f"{ctx.base_url}/county/{county_slug(county)}/"
     species = species_phrase({p["species"] for w in members for p in w["plants"]})
@@ -1674,13 +1805,23 @@ def _render_county_page(
         f"{county} County {species} planting schedule: fish plants this week"
         f" | {SITE_NAME}"
     )
+    next_week = later_rows[0]["week"] if later_rows else ""
+    next_names = sorted(
+        {r["name"] for r in later_rows if r["week"] == next_week},
+    )
+    last_week = max((r["latest_start"] for r in rows), default="")
     html = ctx.env.get_template("county.html.jinja").render(
         title=title,
-        description=(
-            f"Which {county} County waters are on CDFW's {species} planting "
-            f"schedule this week, and the latest scheduled week at each of its "
-            f"{_plural(len(members), 'water', 'waters')}, with every water's "
-            "stocking history."
+        description=_county_description(
+            county,
+            species=species,
+            water_count=len(members),
+            # One name per water, even when it has two species this week.
+            this_week_names=sorted({r["name"] for r in this_week_rows}),
+            source_week_label=ctx.source_week_label,
+            next_week=next_week,
+            next_names=next_names,
+            last_week=last_week,
         ),
         canonical_url=page_url,
         root="../../",
@@ -1707,6 +1848,10 @@ def _render_county_page(
         county_months=_county_months(members, recorded_since=ctx.recorded_since),
         this_week_rows=this_week_rows,
         later_rows=later_rows,
+        recent_weeks=_county_recent_weeks(
+            members, source_week_start=ctx.source_week_start
+        ),
+        region_counties=region_counties or [],
         rows=rows,
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
@@ -2716,16 +2861,38 @@ def build_site(
             this_week_by_county.setdefault(c, []).append(e)
     county_lastmods: dict[str, str] = {}
     counties_by_region: dict[str, list[dict[str, Any]]] = {}
+    # A county page links the other counties of its CDFW region by name only,
+    # so its lastmod also counts the day each of them first got a page (its
+    # first water's first appearance), and nothing else about them.
+    county_first_seen = {
+        c: min(first_seen[w["id"]] for w in waters_by_county[c]) for c in county_names
+    }
     for c in county_names:
         members = waters_by_county[c]
+        code = region_by_county.get(c, "")
+        region_counties = (
+            [
+                county_link[o]
+                for o in county_names
+                if o != c and region_by_county.get(o, "") == code
+            ]
+            if code
+            else []
+        )
         page_url = _render_county_page(
             ctx,
             c,
             this_week=this_week_by_county.get(c, []),
-            region_name=region_name_by_code.get(region_by_county.get(c, ""), ""),
-            region_link=region_link_by_code.get(region_by_county.get(c, "")),
+            region_name=region_name_by_code.get(code, ""),
+            region_link=region_link_by_code.get(code),
+            region_counties=region_counties,
         )
-        county_lastmods[page_url] = max(data_lastmods[w["id"]] for w in members)
+        county_lastmods[page_url] = max(
+            [
+                *(data_lastmods[w["id"]] for w in members),
+                *(county_first_seen[o["name"]] for o in region_counties),
+            ]
+        )
         counties_by_region.setdefault(region_by_county.get(c, ""), []).append(
             {**county_link[c], "count": len(members)}
         )

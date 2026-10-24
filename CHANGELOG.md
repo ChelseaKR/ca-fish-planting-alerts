@@ -13,6 +13,19 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- County pages answer "<county> trout planting schedule" from the data. The
+  meta description names this week's waters, or the soonest later week and its
+  waters, or the last week a county water was listed (each county's own, so no
+  two are alike). A "Recently on the schedule" table lists the county's latest
+  four earlier weeks with a listed water, each linked to its `/week/` page,
+  and says so in words when there is none. A list links the other counties of
+  the same CDFW region, and the iOS app line now appears on county pages too
+  (placement `county`). Water pages link each past listed week in their
+  history table to its `/week/` page. A county's sitemap `lastmod` also counts
+  the day another county in its region first appeared, since it now links to
+  it (`docs/adr/0013`, addendum 2026-10-23;
+  `pipeline/tests/test_site_county_search.py`).
+
 - `make verify` runs Greenlight, a third-party App Store and Google Play
   preflight scanner, on the iOS app, the widget extension and the Android
   project (`scripts/check_greenlight.py`, `make greenlight`). It fails on any

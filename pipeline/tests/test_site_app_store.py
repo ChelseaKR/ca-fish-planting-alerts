@@ -488,7 +488,13 @@ def test_badge_click_is_sent_through_the_existing_tag(tmp_path, live_tag_js):
 
 @pytest.mark.parametrize(
     ("placement", "kind"),
-    [("home", "link"), ("about", "link"), ("water", "link"), ("support", "badge")],
+    [
+        ("home", "link"),
+        ("about", "link"),
+        ("water", "link"),
+        ("county", "link"),
+        ("support", "badge"),
+    ],
 )
 def test_every_placement_is_reported_with_its_kind(
     tmp_path, live_tag_js, placement, kind
@@ -512,7 +518,7 @@ def test_every_placement_in_the_templates_is_one_the_tag_reports(tmp_path):
     seen = set()
     for html in _pages(out).values():
         seen.update(re.findall(r'data-app-store-placement="([a-z]+)"', html))
-    assert seen == {"home", "support", "about", "water"}
+    assert seen == {"home", "support", "about", "water", "county"}
 
 
 @pytest.mark.parametrize(

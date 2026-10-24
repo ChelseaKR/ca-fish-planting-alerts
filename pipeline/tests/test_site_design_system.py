@@ -352,3 +352,41 @@ def test_fonts_are_first_party_preloaded_and_swap(built: Path) -> None:
     for text in pages.values():
         assert "fonts.googleapis.com" not in text
         assert "fonts.gstatic.com" not in text
+
+
+# ---- gear block
+
+
+def _gear_order_problems(pages: dict[str, str]) -> list[str]:
+    problems = []
+    for name, text in pages.items():
+        for block in re.findall(r'<section class="gear".*?</section>', text, re.S):
+            label = block.find(">Affiliate links</p>")
+            disclosure = block.find(
+                "As an Amazon Associate I earn from qualifying purchases."
+            )
+            first_link = block.find('rel="sponsored')
+            if not 0 <= label < disclosure < first_link:
+                problems.append(f"{name}: label, disclosure and links out of order")
+    return problems
+
+
+def test_gear_block_label_and_disclosure_come_before_the_links(built: Path) -> None:
+    pages = _pages(built)
+    blocks = sum(t.count('<section class="gear"') for t in pages.values())
+    assert blocks > 30
+    assert _gear_order_problems(pages) == []
+
+
+def test_negative_control_a_disclosure_after_the_links_is_caught(built: Path) -> None:
+    pages = _pages(built)
+    name = next(n for n, t in pages.items() if '<section class="gear"' in t)
+    text = pages[name]
+    block = re.search(r'<section class="gear".*?</section>', text, re.S).group(0)  # type: ignore[union-attr]
+    disclosure = re.search(
+        r'<p class="muted" id="gear-disclosure">.*?</p>', block, re.S
+    ).group(0)  # type: ignore[union-attr]
+    moved = block.replace(disclosure, "").replace("</ul>", "</ul>" + disclosure, 1)
+    sabotaged = text.replace(block, moved)
+    assert sabotaged != text  # the sabotage applied
+    assert _gear_order_problems({name: sabotaged})

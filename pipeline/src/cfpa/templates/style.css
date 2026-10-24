@@ -348,6 +348,16 @@ dd .tt-badge { margin-right: var(--space-2); }
 .tt-card__body p { margin: 0 0 var(--space-2); }
 .tt-card__body p:last-child, .gear p:last-child { margin-bottom: 0; }
 .gear h2 { margin-bottom: var(--space-2); }
+.gear-label {
+  display: inline-block;
+  margin: 0 0 var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--fg);
+}
 .gear ul { padding-left: 1.1rem; }
 .gear li { margin: var(--space-1) 0; }
 .gear #gear-disclosure { font-size: 0.9rem; line-height: 1.45; }

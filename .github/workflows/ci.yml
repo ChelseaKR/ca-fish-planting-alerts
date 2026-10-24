@@ -59,10 +59,12 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    # Measured locally at ~30 s for the whole target; the margin covers a
-    # cold uv cache, the semgrep install, the ruleset download and the
-    # one-off Go build of the greenlight scanner.
-    timeout-minutes: 15
+    # Measured on CI at 9.5 to 12.6 minutes for passing runs (2026-10-23);
+    # main hit the old 15-minute limit and was cancelled four times that
+    # day, with pytest near the end. 25 leaves room for a cold uv cache,
+    # the semgrep install, the ruleset download and the one-off Go build
+    # of the greenlight scanner.
+    timeout-minutes: 25
     permissions:
       contents: read
     steps:

@@ -12,13 +12,22 @@ same claim as the green check on a pull request
 (`docs/standards/CI-CD-STANDARD.md` §9). It runs, in order: lockfile drift,
 format, lint, strict type checks, tests with a branch-coverage floor, an
 offline build of the site from a fixture, the wheel build, a dependency
-audit, semgrep, gitleaks, and a hygiene check.
+audit, semgrep, gitleaks, a hygiene check, the App Store readiness check, and
+Greenlight (below).
 
-It needs `uv`, `gitleaks` and `osv-scanner` on your `PATH`. On macOS:
+It needs `uv`, `gitleaks` and `osv-scanner` on your `PATH`, and Go for the
+Greenlight gate. On macOS:
 
 ```sh
-brew install uv gitleaks osv-scanner
+brew install uv gitleaks osv-scanner go
 ```
+
+Greenlight (`make greenlight`, `scripts/check_greenlight.py`) is a third-party
+App Store and Google Play preflight scanner. The gate builds it at a pinned
+commit into `build/tools/bin` and runs its offline `preflight` on the iOS app,
+the iOS widget extension and the Android project, failing on any CRITICAL or
+HIGH finding. Without Go it prints `SKIPPED: greenlight not installed`, and the
+last line of `make verify` says the run is not a full pass; in CI a skip fails.
 
 The Swift package has its own gate:
 

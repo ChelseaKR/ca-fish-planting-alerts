@@ -101,26 +101,11 @@
   {% if water.other_names %}<dt>Also listed by CDFW as</dt><dd>{{ water.other_names }}</dd>{% endif %}
 </dl>
 
-<section class="gear" aria-labelledby="gear-heading">
-  <h2 id="gear-heading">Gear for this water</h2>
-  <p>
-    Planning a trip to {{ water.name }}? These links search Amazon for common
-    trout gear. They point to search results, not to any one product.
-  </p>
-  <ul>
-    {% for g in gear_links %}
-    <li><a href="{{ g.url }}" rel="{{ affiliate_rel }}" data-ga-event="gear_click" data-ga-placement="water" data-ga-type="amazon_search">{{ g.label }}</a></li>
-    {% endfor %}
-  </ul>
-  <p class="muted" id="gear-disclosure">
-    These are affiliate links: if you buy something after following one, this
-    site earns a commission, and it costs you nothing extra.
-    {{ amazon_disclosure }}
-    {{ gear_endorsement }}
-    <a href="{{ root }}privacy/#affiliate">More in the privacy policy</a>.
-  </p>
-  <p><a href="{{ root }}gear/">More gear ideas: what to bring for a day at the water</a></p>
-</section>
+{% set gear_heading = "Gear for this water" %}
+{% set gear_intro = "Planning a trip to " ~ water.name ~ "?" %}
+{% set gear_placement = "water" %}
+{% include "_gear_block.html.jinja" %}
+
 
 {% for c in other_waters_by_county %}
 <section aria-labelledby="others-{{ c.slug }}">

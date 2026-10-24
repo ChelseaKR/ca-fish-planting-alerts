@@ -52,6 +52,14 @@
 {% endif %}
 {% endif %}
 
+{% if gear_links %}
+{% set gear_heading = "Gear for this water" %}
+{% set gear_intro = "Planning a trip to " ~ water.name ~ "?" %}
+{% set gear_placement = "state_water" %}
+{% set gear_guide_link = false %}
+{% include "_gear_block.html.jinja" %}
+
+{% endif %}
 <h2>About this water</h2>
 <dl>
   {% if water.counties %}<dt>{{ "County" if water.counties|length == 1 else "Counties" }}</dt><dd>{{ water.counties|join(", ") }}</dd>{% endif %}

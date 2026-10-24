@@ -776,7 +776,8 @@ the links come out in one edit (delete `GEAR_CATEGORIES` and the block in
   page, and a "Gear links" section on the privacy page. **The website, never the app.**
   The iOS app has no web view and never shows these links; the report-state
   pages, the home, county, support and about pages carry none. The about
-  page's privacy note mentions them in a sentence.
+  page's privacy note mentions them in a sentence. (0039, 2026-10-23, adds
+  California county pages and other states' water pages.)
 - **Why search links.** Each link is `https://www.amazon.com/s?k=<terms>&tag=trouttruck-20`,
   a search for a generic category (trout rod and reel combo, trout lure and
   tackle assortment, fishing waders, landing net for trout). A search has no
@@ -1102,3 +1103,44 @@ nothing else.
   date queries, not a measured one. If the week pages earn no impressions by
   the next review, delete `weeks.py`, the two templates and the links to /week/.
 - **No ranking claim.** Only the thin weeks above are noindex.
+
+## 0039 — Gear links on the pages people land on (2026-10-23)
+
+Extends 0029 and 0030. Same Amazon Associates account (`trouttruck-20`), same
+search links, same deadline: 3 qualifying sales by about 2027-04-17, or the
+links come out in one edit.
+
+- **Why.** GA4, 28 days to 2026-10-23: 48 engaged sessions. By landing page,
+  14 began on a Tennessee water page, 11 on a California water page, 8 on a
+  California county page and 8 on the home page. 0029 put the gear block on
+  California water pages alone, so more than half of the engaged landings
+  that reached a water or county page never saw a gear link. GA4 recorded
+  no `gear_click` in that window, and the click label has only been live
+  since 2026-10-21, so this is a bet on reach, not a measured conversion.
+- **Where it is added.** Each California county page, after "Recently on the
+  schedule", and each other state's water page, after its stocking table.
+  California water pages and `/gear/` are unchanged byte for byte (checked
+  against a build of main). The home page, hubs, `/states/`,
+  `/county/`, region, species, week and guide pages still carry none.
+- **Which states.** `site_states.gear_allowed()` allows the block only when
+  every license source of the state's data says `commercial_reuse:
+  "permitted"` and the water's species word is trout, the only gear the block
+  offers. Tennessee, the only other state on the live site today, passes, and
+  so would Massachusetts, Michigan and New York if they are switched on. Oregon's
+  terms are `unknown`, so it would get none if it is switched on. TN.gov's
+  linking policy asks for no implied endorsement, so the sentence names the
+  page's own agency ("The links are Trout Truck's, not TWRA's, and TWRA does
+  not endorse them or Amazon."), and a test fails if a state page names CDFW.
+- **One block.** `templates/_gear_block.html.jinja` holds the markup for every
+  page kind; each page sets the heading, the opening question and the click
+  placement (`water`, `county`, `state_water`). The other states' blocks leave
+  out the link to `/gear/`, because that guide is about California waters.
+- **Copy.** Unchanged in kind: categories, never products; no price, rating,
+  image, brand or "best"; Amazon's disclosure sentence exactly; the plain
+  "costs you nothing extra" sentence; `rel="sponsored nofollow noopener"`.
+  The privacy page's "Gear links" section and the about page say where the
+  links now are.
+- **Guards.** `tests/test_site_affiliate.py` allows tagged links on these page
+  kinds alone, checks the agency sentence per page, and has negative controls
+  for a state with unknown terms (no links), CDFW named on a state page, and
+  a link on a state hub.

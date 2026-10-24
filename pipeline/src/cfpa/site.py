@@ -1856,6 +1856,8 @@ def _render_county_page(
         rows=rows,
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
+        gear_links=gear_links(),
+        affiliate_rel=AFFILIATE_LINK_REL,
     )
     _write_page(ctx.out_dir, f"county/{county_slug(county)}", html, ctx.written)
     return page_url
@@ -3007,6 +3009,9 @@ def build_site(
             ld_page=_ld_page,
             relative_trail=_relative_trail,
             title_max=WATER_TITLE_MAX,
+            gear_links=tuple(gear_links()),
+            affiliate_rel=AFFILIATE_LINK_REL,
+            gear_endorsement=gear_endorsement,
         ),
         snapshot_v2,
     )

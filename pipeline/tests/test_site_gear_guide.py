@@ -223,7 +223,8 @@ def _gear_problems(out: Path) -> list[str]:
 
 
 def _outside_problems(out: Path) -> list[str]:
-    """Amazon anywhere that is not a California water page or the guide."""
+    """Amazon anywhere that is not a California water or county page or the
+    guide (DECISIONS 0029, 0030, 0039). This build has no other state."""
     found: list[str] = []
     for path in sorted(out.rglob("*")):
         if not path.is_file():
@@ -231,7 +232,11 @@ def _outside_problems(out: Path) -> list[str]:
         rel = path.relative_to(out).parts
         allowed = path.suffix == ".html" and (
             rel == ("gear", "index.html")
-            or (len(rel) == 3 and rel[0] == "water" and rel[2] == "index.html")
+            or (
+                len(rel) == 3
+                and rel[0] in ("water", "county")
+                and rel[2] == "index.html"
+            )
         )
         if allowed:
             continue

@@ -13,6 +13,15 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- The Amazon gear block now appears on each California county page and on
+  each other state's water page whose data terms permit commercial reuse
+  (Tennessee on the live site; Massachusetts, Michigan and New York also
+  pass), with the same four search links, Amazon's disclosure, and a
+  non-endorsement sentence naming that page's own agency. One template,
+  `_gear_block.html.jinja`, serves every page kind; California water pages
+  are unchanged. Clicks carry placement `county` or `state_water`
+  (`docs/DECISIONS.md` 0039; `pipeline/tests/test_site_affiliate.py`).
+
 - County pages answer "<county> trout planting schedule" from the data. The
   meta description names this week's waters, or the soonest later week and its
   waters, or the last week a county water was listed (each county's own, so no

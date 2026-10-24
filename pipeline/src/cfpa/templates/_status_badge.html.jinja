@@ -1,0 +1,10 @@
+{#
+  The status badge (the design system's StatusBadge). `state` is "now",
+  "next" or "none" (site.schedule_status); the words come from
+  site.STATUS_BADGE_WORDS, so nothing scheduled reads "None scheduled",
+  never a number. A template imports it with
+  {% from "_status_badge.html.jinja" import status_badge %}.
+#}
+{% macro status_badge(state) -%}
+<span class="tt-badge tt-badge--{{ state }}">{{ status_words[state] }}</span>
+{%- endmacro %}

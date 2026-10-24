@@ -22,6 +22,12 @@
 {# Atom autodiscovery (feeds.py). A plain static file, no script. #}
 <link rel="alternate" type="application/atom+xml" title="{{ feed_title }}" href="{{ root }}{{ feed_path }}">
 {% endif %}
+{# The design system's two web fonts (site.py FONT_FILES), first-party, so
+   the preload makes no third-party request. crossorigin is required for a
+   font preload to be reused, even on the same origin. #}
+{% for font in font_files|default([]) %}
+<link rel="preload" href="{{ root }}{{ font }}" as="font" type="font/woff2" crossorigin>
+{% endfor %}
 <link rel="stylesheet" href="{{ root }}assets/style.css">
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ title }}">

@@ -68,7 +68,7 @@
   <tbody>
     {% for p in water.plants %}
     <tr>
-      <td>{{ p.label }}</td>
+      <td>{% if p.week_page %}<a href="{{ root }}week/{{ p.start }}/">{{ p.label }}</a>{% else %}{{ p.label }}{% endif %}</td>
       <td>{{ p.species }}</td>
       <td>{{ "Scheduled" if p.status == "listed" else "Schedule changed" }}</td>
     </tr>

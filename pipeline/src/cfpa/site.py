@@ -236,6 +236,26 @@ STATUS_BADGE_WORDS: dict[str, str] = {
 COUNTY_CARD_MAX_WATERS = 5
 
 
+# Words spelled with a vowel that start with a consonant sound ("a Eureka
+# water", "a Union Lake"), and with a consonant that start with a vowel sound
+# ("an hour"). Lowercase prefixes; the first match decides.
+_CONSONANT_SOUND_PREFIXES = ("eu", "uni", "use", "usu", "uti", "one", "once")
+_VOWEL_SOUND_PREFIXES = ("hour", "honest", "honor", "heir")
+
+
+def indefinite_article(word: str) -> str:
+    """ "a" or "an" for ``word``, by its first sound: "an Inyo County water",
+    "a Modoc County water". A small rule, not a dictionary: a vowel letter
+    takes "an" unless the word starts with one of the consonant-sound
+    prefixes above, and a silent "h" in the list takes "an"."""
+    w = word.strip().lower()
+    if w.startswith(_VOWEL_SOUND_PREFIXES):
+        return "an"
+    if w.startswith(_CONSONANT_SOUND_PREFIXES):
+        return "a"
+    return "an" if w[:1] in ("a", "e", "i", "o", "u") else "a"
+
+
 def schedule_status(*, this_week: bool, next_week: bool) -> str:
     """The badge state for a water or county: on CDFW's schedule this week
     wins over next week, and anything else is "none"."""
@@ -443,6 +463,8 @@ def _env() -> jinja2.Environment:
     )
     # A global, not page context, so the imported badge macro can read it.
     env.globals["status_words"] = STATUS_BADGE_WORDS
+    # "{{ county|a_an }} County water": "an Inyo", "a Modoc".
+    env.filters["a_an"] = lambda word: f"{indefinite_article(word)} {word}"
     return env
 
 

@@ -1,0 +1,87 @@
+{#
+  The privacy policy's "Ads" section (cfpa/ads.py, docs/adr/0040), included
+  by privacy.html.jinja only when ads are on. The "Turn off ads" button sets
+  the same localStorage flag that _ad_slot.html.jinja reads before it loads
+  anything from Google.
+#}
+<h2 id="ads">Ads</h2>
+<p>
+  Since {{ ads_effective_date }}, some pages on this website show one ad from
+  Google AdSense: the water, county, region, species and past-week pages, and
+  the other states&rsquo; pages. It sits at the end of the page, under the
+  label &ldquo;Advertisement&rdquo;. Google, not this site, chooses the ad,
+  and the site&rsquo;s owner earns money when ads are shown or clicked. The
+  ad is separate from the gear links above, which are links this site
+  chose.
+</p>
+<ul>
+  <li><strong>Non-personalized ads only.</strong> The site asks Google for
+      non-personalized ads, which are chosen from the page&rsquo;s content and
+      your approximate location (about city level), not from your past
+      browsing. Google still uses cookies or similar storage for these ads,
+      to limit how often you see the same ad, to count ads in aggregate and
+      to stop fraud. Google&rsquo;s script, from googlesyndication.com, loads
+      only on the pages listed above.</li>
+  <li><strong>Restricted data processing.</strong> The site&rsquo;s AdSense
+      account uses Google&rsquo;s restricted data processing for visitors from
+      US states with privacy laws, including California. Google then acts as
+      this site&rsquo;s service provider for the ad data and does not build or
+      use advertising profiles from it.</li>
+  <li><strong>Do Not Sell or Share.</strong> This site does not sell or share
+      your personal information, as those terms are used in California
+      privacy law. You can still turn the ads off on this device:</li>
+  <li><strong>Global Privacy Control and Do Not Track are honored.</strong>
+      If your browser sends either signal, the ad script is never loaded:
+      nothing is requested from Google for ads and no ad cookie is set.</li>
+  <li id="ads-opt-out"><strong>Turning ads off on this device.</strong> The
+      button below saves that choice in this browser&rsquo;s local storage for
+      this site, not in a cookie, and it is never sent anywhere. Every page
+      checks it before loading the ad script. Press the button again to undo
+      it. Ad cookies Google set before you turned ads off stay in your browser
+      until they expire or you clear them.
+      <span id="ads-choice" hidden><button type="button" id="ads-toggle" class="link-button">Turn off ads</button> <span id="ads-status" role="status"></span></span></li>
+  <li><strong>The EEA, the UK and Switzerland:</strong> Google&rsquo;s own
+      consent message asks before any ad cookie is set there.</li>
+  <li><strong>Where there are never ads:</strong> the home page, the
+      &ldquo;What to bring&rdquo; page, the about, privacy, support and data
+      pages, the guides, any email from this site, and the iPhone and Android
+      apps.</li>
+  <li><strong>No ad, no box.</strong> If Google has no ad for a page, or the
+      ad is blocked, nothing is shown in its place.</li>
+  <li><strong>Google&rsquo;s terms:</strong>
+      <a href="https://policies.google.com/technologies/partner-sites">how
+      Google uses information from sites that use its services</a> and
+      <a href="https://policies.google.com/technologies/ads">how Google uses
+      cookies in advertising</a>.</li>
+</ul>
+<script>
+(function () {
+  var w = window, d = document, key = "trout-truck:ads-opt-out";
+  d.addEventListener("DOMContentLoaded", function () {
+    var box = d.getElementById("ads-choice");
+    var button = d.getElementById("ads-toggle");
+    var status = d.getElementById("ads-status");
+    if (!box || !button || !status) return;
+    var off = false;
+    try { off = w.localStorage.getItem(key) === "1"; } catch (e) {}
+    function show(message) {
+      button.textContent = off ? "Turn ads back on" : "Turn off ads";
+      status.textContent = message;
+    }
+    box.hidden = false;
+    show(off ? "Ads are off on this device." : "");
+    button.addEventListener("click", function () {
+      off = !off;
+      try {
+        if (off) w.localStorage.setItem(key, "1");
+        else w.localStorage.removeItem(key);
+      } catch (e) {
+        off = !off;
+        show("Your browser would not save this choice. Global Privacy Control turns ads off without it.");
+        return;
+      }
+      show(off ? "Ads are off on this device." : "Ads are back on from the next page you open.");
+    });
+  });
+})();
+</script>

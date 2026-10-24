@@ -47,6 +47,10 @@
    GOOGLE_SITE_VERIFICATION, docs/SEARCH-CONSOLE.md). Home page only. #}
 <meta name="google-site-verification" content="{{ google_site_verification }}">
 {% endif %}
+{% if adsense_account %}
+{# Connects the site to the AdSense account (cfpa/ads.py, docs/adr/0040). #}
+<meta name="google-adsense-account" content="{{ adsense_account }}">
+{% endif %}
 {% if structured_data %}
 {# schema.org data for search engines (docs/adr/0013). Not JavaScript: the
    browser never runs it and it fetches nothing. tojson escapes <, > and &,
@@ -91,6 +95,12 @@
 </nav>
 {% endif %}
 {% block content %}{% endblock %}
+{# Display ads, off by default (cfpa/ads.py, docs/adr/0040). ad_slot() is
+   None unless ads are on and this page is one of ads.AD_PAGES. #}
+{% set ad = ad_slot() if ad_slot is defined else none %}
+{% if ad %}
+{% include "_ad_slot.html.jinja" %}
+{% endif %}
 </main>
 <footer class="site-footer">
   <div class="wrap">
@@ -100,6 +110,9 @@
     <p>{{ attribution_text }} {{ site_name }} is independent and is not affiliated with or endorsed by CDFW.</p>
     {% endif %}
     <p><a href="{{ attribution_url }}">{{ attribution_url }}</a> &middot; <a href="{{ root }}about/">about &amp; attribution</a> &middot; <a href="{{ root }}gear/">what to bring</a> &middot; {% if open_data %}<a href="{{ root }}data/">open data</a> &middot; {% endif %}<a href="{{ root }}privacy/">privacy</a> &middot; <a href="{{ root }}support/">support</a> &middot; <a href="{{ root }}guide/">guides</a></p>
+    {% if ads_enabled %}
+    <p><a href="{{ root }}privacy/#ads">Ad choices: turn off ads on this device</a></p>
+    {% endif %}
     {% if ga4_measurement_id %}
     {# Hidden until the GA4 tag's script shows it: with no JavaScript there
        is no analytics to opt out of. See _ga4.html.jinja. #}

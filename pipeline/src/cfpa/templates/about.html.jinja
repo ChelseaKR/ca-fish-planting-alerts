@@ -27,7 +27,10 @@
       set.</li>
   <li>Otherwise, Google's analytics script records the pages you view, your
       browser and device type, and your approximate location. Google signals
-      and ad personalization are off, and there are no ads on this site. California water pages do carry
+      and ad personalization are off{% if ads_enabled %}. Some pages show one
+      non-personalized Google ad, labeled &ldquo;Advertisement&rdquo; and
+      described in the <a href="{{ root }}privacy/#ads">privacy policy</a>,
+      which also says how to turn ads off.{% else %}, and there are no ads on this site.{% endif %} California water pages do carry
       disclosed affiliate links to Amazon, described in the privacy policy.</li>
   <li>In the EEA, the UK and Switzerland, analytics cookies are denied by
       default, so Google Analytics sets no cookie there.</li>

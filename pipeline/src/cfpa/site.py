@@ -34,6 +34,7 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
+from . import ads as ads_mod
 from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
 from .snapshot import week_of
 
@@ -2328,6 +2329,26 @@ def _share_card_kinds(
     return kinds
 
 
+def _privacy_description(*, ads_enabled: bool, analytics: bool) -> str:
+    """The privacy page's meta description, for the build's state."""
+    if ads_enabled:
+        return (
+            f"What the {SITE_NAME} trout planting site and iOS app collect: the "
+            "website uses Google Analytics and shows non-personalized Google "
+            "ads; the app collects nothing. No account."
+        )
+    if analytics:
+        return (
+            f"What the {SITE_NAME} trout planting site and iOS app collect: the "
+            "website uses Google Analytics; the app collects nothing. No account, "
+            "no ads."
+        )
+    return (
+        f"What the {SITE_NAME} trout planting site and iOS app collect: "
+        "nothing. No account, no analytics, no tracking."
+    )
+
+
 def build_site(
     snapshot: dict[str, Any],
     out_dir: Path,
@@ -2341,6 +2362,7 @@ def build_site(
     dataset_license_url: str | None = DATASET_LICENSE_URL,
     cname: str | None = None,
     snapshot_v2: dict[str, Any] | None = None,
+    ads: ads_mod.AdsConfig | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
 
@@ -2362,13 +2384,20 @@ def build_site(
     tag to every page and the App Store badge to the home and support pages,
     and links the app to ``APP_STORE_CANONICAL_URL`` unless ``app_store_url``
     names another URL. Off, the build is exactly what it was without it.
+
+    ``ads`` (cfpa/ads.py, docs/adr/0040) defaults to the committed ads
+    settings, which are off. Off, the build is exactly what it was without
+    it; on, the pages in ``ads.AD_PAGES`` carry one ad unit, the footer
+    links to the ad choices and the root has an ads.txt.
     """
     # Checked before anything is written: a bad ID must not half-build.
     ga4_measurement_id = ga4_measurement_id_or_none(ga4_measurement_id)
+    ads = ads_mod.for_build(ads, analytics=ga4_measurement_id is not None)
     google_site_verification = google_site_verification_or_none(
         google_site_verification
     )
     env = _env()
+    ads_common = ads_mod.install(env, ads)
     written: list[Path] = []
     base_url = base_url.rstrip("/")
 
@@ -2414,6 +2443,7 @@ def build_site(
         # describe a state the build is not in.
         "ga4_measurement_id": ga4_measurement_id,
         "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
+        **ads_common,
     }
     # The header's "Other states" link, only when v2 has another state, so a
     # California-only build keeps its header byte for byte.
@@ -2438,6 +2468,7 @@ def build_site(
     # ---- assets/
     coords = water_coords(snapshot_v2)
     _write_assets(out_dir, written, app_store_live=app_store_live, coords=coords)
+    ads_mod.write_files(out_dir, written, ads, minify=minify_css)
     share_cards.write_cards(
         out_dir,
         share_card_kinds,
@@ -2604,17 +2635,9 @@ def build_site(
     )
 
     # ---- privacy + support: the URLs App Store Connect asks for
-    if ga4_measurement_id:
-        privacy_description = (
-            f"What the {SITE_NAME} trout planting site and iOS app collect: the "
-            "website uses Google Analytics; the app collects nothing. No account, "
-            "no ads."
-        )
-    else:
-        privacy_description = (
-            f"What the {SITE_NAME} trout planting site and iOS app collect: "
-            "nothing. No account, no analytics, no tracking."
-        )
+    privacy_description = _privacy_description(
+        ads_enabled=ads.enabled, analytics=ga4_measurement_id is not None
+    )
     for slug, template, title, description in (
         (
             "privacy",

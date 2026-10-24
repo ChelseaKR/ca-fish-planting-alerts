@@ -29,6 +29,32 @@
   {% endif %}
 </p>
 
+{# The county's first answer (site._county_card). Each water is its own link;
+   with nothing scheduled the card says so in words, never "0 waters". #}
+{% from "_status_badge.html.jinja" import status_badge %}
+<section class="tt-card" aria-labelledby="county-card-heading">
+  <div class="tt-card__head">
+    <h2 id="county-card-heading">{{ county }} County at a glance</h2>
+    {{ status_badge(county_card.state) }}
+  </div>
+  <div class="tt-card__body">
+    {% if county_card.state == "none" %}
+    <p>No {{ county }} County water is on CDFW's schedule this week or next. That means no plant is scheduled, not that there are no fish.</p>
+    {% else %}
+    <p>{% if county_card.state == "next" %}Nothing this week. {% endif %}{{ county_card.count }} {{ "water is" if county_card.count == 1 else "waters are" }} on CDFW's schedule {{ "this week" if county_card.state == "now" else "next week" }}{% if county_card.also_next %}, and more are scheduled next week{% endif %}:</p>
+    <ul>
+      {% for w in county_card.waters %}
+      <li><a href="{{ root }}water/{{ w.slug }}/">{{ w.name }}</a></li>
+      {% endfor %}
+    </ul>
+    {% if county_card.more %}
+    <p>And {{ county_card.more }} more, listed below.</p>
+    {% endif %}
+    <p class="muted">{{ "The " ~ source_week_label if county_card.state == "now" else "The week of " ~ county_card.next_week }}. Scheduled, not confirmed.</p>
+    {% endif %}
+  </div>
+</section>
+
 <h2>Scheduled this week</h2>
 {% if this_week_rows %}
 <table>

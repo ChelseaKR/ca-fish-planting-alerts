@@ -33,6 +33,7 @@ from zoneinfo import ZoneInfo
 
 import jinja2
 
+from . import state_coverage
 from .states import SOURCES
 
 UPCOMING_DAYS = 60
@@ -331,6 +332,23 @@ def _trail_root(ctx: StatesContext) -> list[tuple[str, str]]:
     ]
 
 
+def _join_names(names: list[str]) -> str:
+    """ "A", "A and B", "A, B and C"."""
+    if len(names) <= 2:
+        return " and ".join(names)
+    return ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def _index_description(live: list[str], soon: list[str]) -> str:
+    """The /states/ meta description: what is live, what is coming, and that
+    every other state links to its agency. Under 160 characters for the
+    states as they are; a longer list still says the same thing."""
+    text = f"{_join_names(live)} trout stocking schedules"
+    if soon:
+        text += f"; {_join_names(soon)} coming soon"
+    return text + ". Every other state links to its agency's official page."
+
+
 def _render_index(
     ctx: StatesContext, states: list[dict[str, Any]], lastmod: str
 ) -> tuple[str, str | None]:
@@ -350,15 +368,18 @@ def _render_index(
         }
         for s in states
     ]
-    title = f"Trout stocking schedules by state | {ctx.site_name}"
+    title = f"Trout stocking schedules in all 50 states | {ctx.site_name}"
+    live = {s["code"]: row["href"] for s, row in zip(states, rows, strict=True)}
+    entries = state_coverage.coverage(live)
+    live_names = [e["name"] for e in entries if e["status"] == "live"]
+    soon_names = [e["name"] for e in entries if e["status"] == "soon"]
     trail = _trail_root(ctx)
     html = ctx.env.get_template("states.html.jinja").render(
         title=title,
-        description=(
-            "Trout stocking schedules and reports from state wildlife agencies: "
-            + ", ".join(s["name"] for s in states)
-            + ". Every water's stocking history, with each agency's own dates."
-        ),
+        description=_index_description(live_names, soon_names),
+        live_names=_join_names(live_names),
+        coverage=entries,
+        coverage_checked=state_coverage.LINKS_CHECKED,
         canonical_url=page_url,
         root="../",
         **ctx.common,

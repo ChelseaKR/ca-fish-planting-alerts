@@ -1,4 +1,33 @@
-/* Trout Truck -- plain, accessible, no build step. */
+/* Trout Truck -- plain, accessible, no build step.
+
+   Colors, type, spacing and radius come from the Trout Truck design system
+   (tokens.json, synced from main@f9e0f32 on 2026-10-23). Values the site
+   already had keep their names and hex values; the rest are new tokens from
+   that system. */
+
+/* Bitter (display) and Atkinson Hyperlegible Next (body), both SIL Open Font
+   License 1.1 (assets/fonts/OFL-*.txt). Each file is Google Fonts' own Latin
+   subset, served from this site instead of fonts.googleapis.com so a page
+   still makes no request to another server (privacy policy, "The website").
+   One variable file per family covers the weights in use: Bitter 700 and
+   800, Atkinson 400 and 700. `swap` shows the system font at once and swaps
+   when the file arrives; a reader with fonts blocked sees the old site. */
+@font-face {
+  font-family: "Bitter";
+  font-style: normal;
+  font-weight: 700 800;
+  font-display: swap;
+  src: url("fonts/bitter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("fonts/atkinson-hyperlegible-next-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 :root {
   color-scheme: light dark;
@@ -11,6 +40,46 @@
   --header-bg: #eef5f0;
   --row-alt: #f4f8f5;
   --focus: #0b5d3b;
+  --surface-card: #f7f5ee;
+  --border-strong: #6b7d72;
+  --trout-gold: #e6bd6d;
+  --on-gold: #14231c;
+  --masthead-bg: #08402a;
+  --masthead-fg: #f7f1e1;
+  --masthead-link: #f7f1e1;
+  --masthead-gold: var(--trout-gold);
+  --focus-on-masthead: var(--trout-gold);
+  --status-now-bg: #0b5d3b;
+  --status-now-fg: #ffffff;
+  --status-next-bg: #f6e3b4;
+  --status-next-fg: #4a3210;
+  --status-next-border: #a8752a;
+  --status-none-fg: var(--muted);
+
+  --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Bitter", "Iowan Old Style", Georgia, serif;
+  --font-body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", var(--font-system);
+
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-cell-x: 0.6rem;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --measure: 62rem;
+  --tap-min: 24px;
+  --tap-comfort: 44px;
+  --focus-width: 3px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,6 +93,16 @@
     --header-bg: #16211a;
     --row-alt: #141d17;
     --focus: #7fd9a8;
+    --surface-card: #18221c;
+    --border-strong: #7d9186;
+    --masthead-bg: #0b2c1e;
+    --masthead-fg: #eaf1ec;
+    --masthead-link: #cfe9da;
+    --status-now-bg: #7fd9a8;
+    --status-now-fg: #101713;
+    --status-next-bg: #3a2c12;
+    --status-next-fg: #f2d9a0;
+    --status-next-border: #c98a3a;
   }
 }
 
@@ -35,7 +114,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
   line-height: 1.55;
   /* The CDFW source URL appears as plain text and as link text in every
      footer. Without this it cannot break, and the page scrolls sideways on
@@ -44,15 +123,15 @@ body {
 }
 
 .wrap {
-  max-width: 62rem;
+  max-width: var(--measure);
   margin: 0 auto;
-  padding: 1rem 1.25rem;
+  padding: var(--space-4) var(--space-5);
 }
 
 a { color: var(--link); text-underline-offset: 0.15em; }
 a:visited { color: var(--link-visited); }
 a:focus-visible, button:focus-visible, input:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: var(--focus-width) solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -79,16 +158,41 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   white-space: nowrap;
 }
 
-.site-header, .site-footer {
-  background: var(--header-bg);
+/* Header: the river-deep masthead band. Its links keep one color whether
+   visited or not (link-visited is too dark on the band), stay underlined,
+   and take the gold focus ring, because focus green is 1.5:1 on the band. */
+.site-header {
+  background: var(--masthead-bg);
+  color: var(--masthead-fg);
   border-bottom: 1px solid var(--border);
 }
-.site-footer { border-top: 1px solid var(--border); border-bottom: none; margin-top: 2rem; }
-.site-header .wrap { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: baseline; justify-content: space-between; }
-.site-name a { font-weight: 700; text-decoration: none; font-size: 1.1rem; }
-.site-tagline { color: var(--muted); font-size: 0.9rem; }
-nav a { margin-right: 1rem; }
-.site-footer p { color: var(--muted); font-size: 0.9rem; }
+.site-header .wrap { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-6); align-items: baseline; justify-content: space-between; }
+.site-name { margin: var(--space-2) 0; }
+.site-name a, .site-name a:visited {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  color: var(--masthead-gold);
+  text-decoration: none;
+}
+.site-tagline { color: var(--masthead-fg); font-size: 0.9rem; margin-left: var(--space-1); }
+nav a { margin-right: var(--space-4); }
+.site-header nav a, .site-header nav a:visited {
+  color: var(--masthead-link);
+  display: inline-block;
+  min-height: var(--tap-min);
+  padding: var(--space-0-5) 0;
+}
+.site-header nav a:last-child { margin-right: 0; }
+.site-header a:focus-visible { outline-color: var(--focus-on-masthead); }
+
+.site-footer {
+  background: var(--header-bg);
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-12);
+}
+.site-footer p { color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
 /* The footer's analytics opt-out is a button, because it changes a setting
    rather than going anywhere, drawn like the links next to it. The padding
    keeps it a 24px target (WCAG 2.2 SC 2.5.8). */
@@ -104,29 +208,35 @@ nav a { margin-right: 1rem; }
   cursor: pointer;
 }
 
-h1 { font-size: 1.6rem; margin-top: 1.25rem; }
-h2 { font-size: 1.2rem; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.25rem; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; }
+h1 { font-size: 1.6rem; line-height: 1.2; margin-top: var(--space-5); }
+h2 { font-size: 1.2rem; line-height: 1.3; margin-top: var(--space-8); border-top: 1px solid var(--border); padding-top: var(--space-5); }
+h3 { font-size: 1.05rem; line-height: 1.3; }
 .lede { font-size: 1.05rem; }
 .muted { color: var(--muted); }
+code { font-size: 0.95em; }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1rem 0;
+  margin: var(--space-4) 0;
 }
 th, td {
   text-align: left;
-  padding: 0.5rem 0.6rem;
+  padding: var(--space-2) var(--space-cell-x);
   border-bottom: 1px solid var(--border);
+  vertical-align: top;
 }
 thead th {
   border-bottom: 2px solid var(--fg);
   white-space: nowrap;
+  font-weight: 700;
+  line-height: 1.3;
 }
 tbody tr:nth-child(even) { background: var(--row-alt); }
 
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; }
-dt { font-weight: 600; }
+dt { font-weight: 700; }
 dd { margin: 0; }
 
 ul.water-index {
@@ -179,9 +289,98 @@ ul.water-index li { break-inside: avoid; }
    width, so a long water name cannot push the page sideways (SC 1.4.10). */
 .closest button {
   font: inherit;
+  font-weight: 700;
   padding: 0.5rem 1rem;
-  min-height: 44px;
+  min-height: var(--tap-comfort);
   cursor: pointer;
+  color: var(--fg);
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
 }
 .closest-list { padding-left: 1.5rem; overflow-wrap: anywhere; }
 .closest-list li { margin: 0.25rem 0; }
+
+/* Status badge: the word is the status and color only repeats it. The three
+   looks differ in fill as well as hue (solid, tinted, dashed outline), so they
+   hold up in glare and for color-blind readers. Never a number. */
+.tt-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.tt-badge--now { background: var(--status-now-bg); color: var(--status-now-fg); border-color: var(--status-now-bg); }
+.tt-badge--next { background: var(--status-next-bg); color: var(--status-next-fg); border-color: var(--status-next-border); }
+.tt-badge--none { background: none; color: var(--status-none-fg); border: 1px dashed var(--border-strong); font-weight: 400; }
+dd .tt-badge { margin-right: var(--space-2); }
+
+/* Card: the county summary and the gear block sit on a paper ground with a
+   visible edge, so they read as one object in bright light. No shadows. */
+.tt-card, .gear {
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-8) 0;
+}
+@media (min-width: 40rem) {
+  .tt-card { padding: var(--space-6); }
+}
+.tt-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+.tt-card h2, .gear h2 { margin: 0; border-top: none; padding-top: 0; }
+.tt-card__body { margin: var(--space-3) 0 0; }
+.tt-card__body p { margin: 0 0 var(--space-2); }
+.tt-card__body p:last-child, .gear p:last-child { margin-bottom: 0; }
+.gear h2 { margin-bottom: var(--space-2); }
+.gear-label {
+  display: inline-block;
+  margin: 0 0 var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+.gear ul { padding-left: 1.1rem; }
+.gear li { margin: var(--space-1) 0; }
+.gear #gear-disclosure { font-size: 0.9rem; line-height: 1.45; }
+
+/* Every state (/states/): one card per state, alphabetical. Covered states
+   sit on the paper ground; the rest on the page ground. */
+.tt-states {
+  list-style: none;
+  margin: var(--space-4) 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+}
+.tt-state {
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+.tt-state--live { background: var(--surface-card); }
+.tt-state h3 { margin: 0 0 var(--space-1); font-size: 1.05rem; line-height: 1.3; }
+.tt-state p { margin: 0; font-size: 0.9rem; line-height: 1.45; }
+.tt-state p + p { margin-top: var(--space-1); }
+.tt-state .tt-badge { margin-right: var(--space-2); }
+.tt-state a { display: inline-block; min-height: var(--tap-min); padding: var(--space-0-5) 0; }

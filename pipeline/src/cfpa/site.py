@@ -208,6 +208,44 @@ APP_STORE_CANONICAL_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
 # minimum, with a quarter of its height (10px) of clear space around it.
 APP_STORE_BADGE_FILE = "app-store-badge.svg"
 
+# The design system's two typefaces (style.css @font-face): Google Fonts'
+# own Latin woff2 files, unmodified, under the SIL Open Font License 1.1 (see
+# NOTICE). Served from assets/fonts/ rather than fonts.googleapis.com, so the
+# site still makes no third-party request when analytics are off. Every page
+# preloads them (base.html.jinja), and font-display: swap keeps text visible
+# while they load.
+FONTS_DIR = "fonts"
+FONT_FILES: tuple[str, ...] = (
+    "atkinson-hyperlegible-next-latin.woff2",
+    "bitter-latin.woff2",
+)
+FONT_LICENSE_FILES: tuple[str, ...] = (
+    "OFL-AtkinsonHyperlegibleNext.txt",
+    "OFL-Bitter.txt",
+)
+
+# The status badge's words (the design system's StatusBadge). The word is the
+# status: a water or county with nothing scheduled says "None scheduled",
+# never a 0, a dash or an empty badge. _status_badge.html.jinja reads these.
+STATUS_BADGE_WORDS: dict[str, str] = {
+    "now": "This week",
+    "next": "Next week",
+    "none": "None scheduled",
+}
+# How many waters a county card names before "and N more".
+COUNTY_CARD_MAX_WATERS = 5
+
+
+def schedule_status(*, this_week: bool, next_week: bool) -> str:
+    """The badge state for a water or county: on CDFW's schedule this week
+    wins over next week, and anything else is "none"."""
+    if this_week:
+        return "now"
+    if next_week:
+        return "next"
+    return "none"
+
+
 # The image link previews show (Open Graph and Twitter cards): one 1200x630
 # card per kind of page, drawn at build time by share_cards.py. The kind a
 # page uses is named in its template (``share_card_kind``); a page that names
@@ -397,12 +435,15 @@ def region_slug(snapshot_name: str) -> str:
 
 
 def _env() -> jinja2.Environment:
-    return jinja2.Environment(
+    env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(TEMPLATES_DIR)),
         autoescape=jinja2.select_autoescape(["html.jinja"]),
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    # A global, not page context, so the imported badge macro can read it.
+    env.globals["status_words"] = STATUS_BADGE_WORDS
+    return env
 
 
 def _fmt_dt(iso_z: str) -> str:
@@ -643,6 +684,9 @@ def _water_status(
         "in_this_week": source_week_start in listed,
         "next_week": next_week,
         "in_next_week": next_week in listed,
+        "badge": schedule_status(
+            this_week=source_week_start in listed, next_week=next_week in listed
+        ),
         "later_week": later[0] if later else "",
         "weeks_on_schedule": count,
         "recorded_since": recorded_since,
@@ -1735,6 +1779,37 @@ def _with_tail(body: str, tails: tuple[str, ...]) -> str:
     return body
 
 
+def _county_card(
+    this_week_rows: list[dict[str, Any]],
+    later_rows: list[dict[str, Any]],
+    *,
+    next_week_start: str,
+) -> dict[str, Any]:
+    """The county page's first answer (the design system's CountyCard): its
+    badge state and the waters behind it, one entry per water, alphabetical,
+    the first COUNTY_CARD_MAX_WATERS by name and a count of the rest. With
+    nothing this week or next the list is empty and the page says so in
+    words; the card never shows a count of zero."""
+    this_week = {r["slug"]: r["name"] for r in this_week_rows}
+    next_week = {
+        r["slug"]: r["name"] for r in later_rows if r["week"] == next_week_start
+    }
+    state = schedule_status(this_week=bool(this_week), next_week=bool(next_week))
+    chosen = this_week if state == "now" else next_week
+    waters = sorted(
+        ({"slug": s, "name": n} for s, n in chosen.items()),
+        key=lambda w: (w["name"], w["slug"]),
+    )
+    return {
+        "state": state,
+        "count": len(waters),
+        "waters": waters[:COUNTY_CARD_MAX_WATERS],
+        "more": max(0, len(waters) - COUNTY_CARD_MAX_WATERS),
+        "next_week": next_week_start,
+        "also_next": state == "now" and bool(next_week),
+    }
+
+
 def _render_county_page(
     ctx: _PageContext,
     county: str,
@@ -1812,6 +1887,13 @@ def _render_county_page(
     )
     last_week = max((r["latest_start"] for r in rows), default="")
     html = ctx.env.get_template("county.html.jinja").render(
+        county_card=_county_card(
+            this_week_rows,
+            later_rows,
+            next_week_start=(
+                dt.date.fromisoformat(ctx.source_week_start) + dt.timedelta(days=7)
+            ).isoformat(),
+        ),
         title=title,
         description=_county_description(
             county,
@@ -2435,6 +2517,14 @@ def _write_assets(
     style_path.parent.mkdir(parents=True, exist_ok=True)
     style_path.write_text(minify_css(style_src), encoding="utf-8")
     written.append(style_path)
+    # The two web fonts style.css names, with their licenses, copied as they
+    # are: first-party files, so no page requests another server for them.
+    fonts_dir = out_dir / "assets" / FONTS_DIR
+    fonts_dir.mkdir(parents=True, exist_ok=True)
+    for name in (*FONT_FILES, *FONT_LICENSE_FILES):
+        font_path = fonts_dir / name
+        font_path.write_bytes((TEMPLATES_DIR / FONTS_DIR / name).read_bytes())
+        written.append(font_path)
     if coords:
         js_path = out_dir / "assets" / CLOSEST_JS_FILE
         js_path.write_text(
@@ -2581,6 +2671,8 @@ def build_site(
             for kind in share_card_kinds
         },
         "share_card_default_kind": SHARE_CARD_DEFAULT_KIND,
+        # base.html.jinja preloads each, relative to the page's root.
+        "font_files": [f"assets/{FONTS_DIR}/{name}" for name in FONT_FILES],
         "support_email": support_email,
         "site_name": SITE_NAME,
         "amazon_disclosure": AMAZON_ASSOCIATE_DISCLOSURE,

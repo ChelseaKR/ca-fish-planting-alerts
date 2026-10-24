@@ -177,6 +177,10 @@ internal object SnapshotV2Decoding {
             DatePrecision.MONTH -> if (start.day != 1 || start.month != end.month || d.label.contains("-")) {
                 throw bad("$field is a month but reads ${d.label}")
             }
+            // The agency's words and the year, verbatim: "April - third week, 2026".
+            DatePrecision.APPROXIMATE -> if (!d.label.endsWith(", ${start.year}") || d.label.length <= 6) {
+                throw bad("$field is approximate but reads ${d.label}")
+            }
         }
         return Week(start, end, d.label, precision)
     }
@@ -207,7 +211,11 @@ internal object SnapshotV2Decoding {
                 ignoredPlants++
                 continue
             }
-            val fits = if (state.semantics == StateSemantics.REPORT) status == PlantStatus.REPORTED else status != PlantStatus.REPORTED
+            val fits = when (state.semantics) {
+                StateSemantics.REPORT -> status == PlantStatus.REPORTED
+                StateSemantics.SCHEDULE -> status != PlantStatus.REPORTED
+                StateSemantics.PLAN -> status == PlantStatus.LISTED
+            }
             if (!fits) throw bad("waters[$id] has a ${p.status} plant in a ${state.semantics.wire} state")
             val species = p.species.trim()
             if (species.isEmpty()) throw bad("waters[$id] has a plant with an empty species")

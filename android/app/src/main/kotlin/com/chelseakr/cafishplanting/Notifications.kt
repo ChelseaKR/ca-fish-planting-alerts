@@ -44,39 +44,48 @@ class Notifications(private val context: Context) {
      */
     fun shouldAsk(): Boolean = Build.VERSION.SDK_INT >= 33 && !allowed()
 
-    fun post(n: PlannedNotification) {
+    fun post(n: PlannedNotification) = post(n.id, n.waterID, n.title, n.body())
+
+    /**
+     * A planned-period reminder (New York), shown by [ReminderWorker] on the
+     * first day of the period. It looks and acts like an alert: tap to open
+     * the water, one button to mute it.
+     */
+    fun postReminder(id: String, waterID: String, title: String, body: String) = post(id, waterID, title, body)
+
+    private fun post(id: String, waterID: String, title: String, body: String) {
         if (!allowed()) return
         val open = PendingIntent.getActivity(
             context,
-            n.id.hashCode(),
-            Intent(Intent.ACTION_VIEW, WaterLink.url(n.waterID).toUri(), context, MainActivity::class.java)
+            id.hashCode(),
+            Intent(Intent.ACTION_VIEW, WaterLink.url(waterID).toUri(), context, MainActivity::class.java)
                 .putExtra(EXTRA_FROM_ALERT, true),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val mute = PendingIntent.getBroadcast(
             context,
-            n.id.hashCode(),
+            id.hashCode(),
             Intent(context, MuteReceiver::class.java)
                 .setAction(ACTION_MUTE)
-                .putExtra(WaterLink.NOTIFICATION_WATER_ID_KEY, n.waterID)
-                .putExtra(EXTRA_TAG, n.id),
+                .putExtra(WaterLink.NOTIFICATION_WATER_ID_KEY, waterID)
+                .putExtra(EXTRA_TAG, id),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_trout)
-            .setContentTitle(n.title)
-            .setContentText(n.body())
-            .setStyle(NotificationCompat.BigTextStyle().bigText(n.body()))
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setContentIntent(open)
             .setAutoCancel(true)
-            .setGroup(n.waterID)
+            .setGroup(waterID)
             .addAction(NotificationCompat.Action.Builder(R.drawable.ic_bell_off, PlantingAlertAction.MUTE_TITLE, mute).build())
-            .addExtras(android.os.Bundle().apply { putString(WaterLink.NOTIFICATION_WATER_ID_KEY, n.waterID) })
+            .addExtras(android.os.Bundle().apply { putString(WaterLink.NOTIFICATION_WATER_ID_KEY, waterID) })
             .build()
         try {
             // The tag is the planner's deterministic id, so posting one evaluation twice shows one alert.
-            manager.notify(n.id, NOTIFICATION_ID, notification)
+            manager.notify(id, NOTIFICATION_ID, notification)
         } catch (_: SecurityException) {
             // Permission withdrawn between the check and the post: nothing to show.
         }

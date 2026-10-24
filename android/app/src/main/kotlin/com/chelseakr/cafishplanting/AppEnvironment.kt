@@ -13,6 +13,8 @@ import com.chelseakr.cafishplanting.core.FreeTier
 import com.chelseakr.cafishplanting.core.MutedWaters
 import com.chelseakr.cafishplanting.core.OnboardingCopy
 import com.chelseakr.cafishplanting.core.OnboardingState
+import com.chelseakr.cafishplanting.core.PlainDate
+import com.chelseakr.cafishplanting.core.ReminderPlanner
 import com.chelseakr.cafishplanting.core.PurchaseEntitlement
 import com.chelseakr.cafishplanting.core.RefreshOutcome
 import com.chelseakr.cafishplanting.core.RefreshThrottle
@@ -40,6 +42,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.Instant
+import java.time.LocalDate
 
 /** Everything the screens show, in one value. */
 data class AppState(
@@ -151,6 +154,26 @@ class AppEnvironment(
         val s = store
         _state.update { it.copy(snapshot = s?.snapshot, origin = s?.origin, meta = s?.meta) }
         publishWidgetDigest()
+        replanReminders()
+    }
+
+    /**
+     * Replaces the pending planned-period reminders (New York) with the ones
+     * the current favorites, purchases and mutes call for. Runs after a
+     * refresh and after any of those change, as `replanReminders` on iOS.
+     */
+    fun replanReminders(now: Instant = Instant.now()) {
+        val st = _state.value
+        val snapshot = st.snapshot ?: return
+        val local = LocalDate.now(java.time.ZoneId.systemDefault())
+        val reminders = ReminderPlanner.reminders(
+            snapshot = snapshot,
+            favorites = st.favorites.ids,
+            entitledStates = st.entitlements.entitledStates,
+            muted = st.favorites.ids.filter { st.muted.contains(it) }.toSet(),
+            today = PlainDate.of(local),
+        )
+        ReminderWorker.replace(context, reminders, now)
     }
 
     /**
@@ -194,6 +217,7 @@ class AppEnvironment(
             _state.update { it.copy(favorites = updated, muted = muted, primingFor = if (prime) water else it.primingFor) }
         }
         publishWidgetDigest()
+        replanReminders()
     }
 
     /** For a favorite the snapshot no longer has. */
@@ -210,6 +234,7 @@ class AppEnvironment(
             _state.update { it.copy(favorites = updated, muted = muted) }
         }
         publishWidgetDigest()
+        replanReminders()
     }
 
     // Mutes
@@ -221,6 +246,7 @@ class AppEnvironment(
         val updated = if (muted) current.muting(id) else current.unmuting(id)
         stores.saveMuted(updated)
         _state.update { it.copy(muted = updated) }
+        replanReminders()
     }
 
     fun setMutedAsync(muted: Boolean, id: String) = scope.launch { setMuted(muted, id) }
@@ -240,6 +266,8 @@ class AppEnvironment(
         _state.update { it.copy(entitlements = entitlements) }
         // The widget is part of full access: a purchase or a refund redraws it straight away.
         publishWidgetDigest()
+        // A New York purchase, restore or refund changes which planned periods this device reminds about.
+        replanReminders()
     }
 
     // States

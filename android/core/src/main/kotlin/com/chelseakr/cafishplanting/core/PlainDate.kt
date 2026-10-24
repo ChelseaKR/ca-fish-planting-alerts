@@ -45,12 +45,19 @@ data class PlainDate(val year: Int, val month: Int, val day: Int) : Comparable<P
  * How precisely an agency dates a record (`DatePrecision.swift`). California
  * only ever gives a week. Tennessee gives a day, the week of a Sunday, or a
  * month with the day not set yet. Massachusetts and Michigan report the day.
+ * New York gives its own words for when ([APPROXIMATE]).
  */
 @Serializable
 enum class DatePrecision(val wire: String) {
     @SerialName("day") DAY("day"),
     @SerialName("week") WEEK("week"),
     @SerialName("month") MONTH("month"),
+
+    /**
+     * The agency's own words for when, verbatim (New York: "April - third
+     * week, 2026", "Spring, 2026"). Never shown or treated as a date.
+     */
+    @SerialName("approximate") APPROXIMATE("approximate"),
     ;
 
     companion object {
@@ -80,6 +87,9 @@ data class Week(
 
     /** The words after "scheduled for" or "last stocked": "the week of 2026-10-11", "2026-10-14", "December 2026". */
     val phrase: String get() = if (precision == DatePrecision.WEEK) "the $label" else label
+
+    /** Days the period spans, counting both ends. */
+    val spanDays: Int get() = (end.toLocalDate().toEpochDay() - start.toLocalDate().toEpochDay()).toInt() + 1
 
     /** True when the period overlaps [other] (a state's current week). */
     fun overlaps(other: Week): Boolean = start <= other.end && end >= other.start

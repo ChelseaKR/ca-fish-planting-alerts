@@ -478,9 +478,11 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
   is one Google Play one-time product that unlocks alerts for that state's
   favorites and lists them in the home screen widget; the widget unlocks
   with any state and counts, never shows, favorites in states not bought.
-  California's is `fullaccess`, unchanged. Tennessee's is `state_tn`, USD
-  9.99. `state_ma` and `state_mi` are placeholders while those states are
-  off. A Play product ID already belongs to this one app, so these drop the
+  California's is `fullaccess`, unchanged. Tennessee's is `state_tn`,
+  Massachusetts' `state_ma`, Michigan's `state_mi` and New York's
+  `state_ny` (added 2026-10-24, with New York's `plan` semantics,
+  `approximate` precision and reminders, as 0034), each USD 9.99. A Play
+  product ID already belongs to this one app, so these drop the
   package-name prefix the App Store IDs carry; `StateProducts` in `core`
   records the mapping, and a test checks it against `StateAccess.swift`.
   Play Billing only; the app never links to another way to pay.
@@ -1004,7 +1006,8 @@ three, each as its own in-app purchase, while 1.0.0 is in Apple's review.)
   DEC's words and the year, verbatim ("April - third week, 2026"); start
   and end only bound it, for ordering and reminders. The 25 forms in the
   2026 file are read; any other form refuses the feed.
-- **Reminders** (iOS). For a New York favorite in a bought state and not
+- **Reminders** (iOS; Android from 2026-10-24, `ReminderPlanner` in
+  `android/core`). For a New York favorite in a bought state and not
   muted, the app schedules a local reminder at 9 a.m. on the first day of
   each planned period no longer than 31 days ("April - third week",
   "May", "Mid April"), saying the period in DEC's words and that it is a

@@ -79,15 +79,20 @@ than one state. Each state is its own Google Play one-time product
 | TN    | `state_tn`   | `com.chelseakr.cafishplanting.state.tn`   |
 | MA    | `state_ma`   | `com.chelseakr.cafishplanting.state.ma`   |
 | MI    | `state_mi`   | `com.chelseakr.cafishplanting.state.mi`   |
+| NY    | `state_ny`   | `com.chelseakr.cafishplanting.state.ny`   |
 
 A Play product ID already belongs to this one app, so the Play IDs drop the
-package-name prefix. A state's product unlocks alerts for that state's
-favorites and lists them in the widget. Only California and Tennessee are
-sold today: they are the two states in the published `snapshot/v2.json`
-(checked 2026-10-22). Massachusetts and Michigan have no data in a published
-snapshot, so their products are placeholders that need nothing in Play
-Console. New York has no Android product id at all yet (the iOS app has one);
-add it to `StateProducts` before a New York snapshot is published.
+package-name prefix. A state's product unlocks that state's favorites'
+notifications and lists them in the widget. All five are sold: they are the
+five states in the published `snapshot/v2.json` (checked 2026-10-24). A
+state missing from the snapshot is left out of the app, product and all.
+
+New York is a plan state (DECISIONS 0034): NYS DEC publishes a spring plan
+once a year in its own words ("April - third week, 2026"). The app shows
+those words verbatim, never as a date, and its purchase adds a reminder on
+the first day of each favorite's planned period of a month or less
+(`ReminderPlanner` in `core`, scheduled by `ReminderWorker` at 9 a.m. local
+time), as the iOS app does.
 
 ## Debug switches
 
@@ -114,11 +119,13 @@ The app can't reach testers until these are done in Play Console.
    it. No key or keystore password goes in this repository.
    `docs/ANDROID-RELEASE.md` has the exact commands, and the manual
    `android-release` workflow builds the signed bundle.
-3. In-app products: create two one-time products. `fullaccess` is
-   California, at the iOS price. `state_tn` is Tennessee, at USD 9.99. Each
-   unlocks alerts and the home screen widget for its own state. The IDs are
-   in `StateProducts` in `core`; if Play needs a different one, change it
-   there.
+3. In-app products: create five one-time products, each USD 9.99:
+   `fullaccess` (California), `state_tn` (Tennessee), `state_ma`
+   (Massachusetts), `state_mi` (Michigan) and `state_ny` (New York). Each
+   unlocks its own state's notifications and home screen widget; New York's
+   are reminders. Names and descriptions are in `docs/ANDROID-RELEASE.md`,
+   step 6. The IDs are in `StateProducts` in `core`; if Play needs a
+   different one, change it there.
 4. Data safety: no data collected or shared. The app has no account,
    analytics or crash reporting. Its only requests are plain GETs of the
    public snapshot (v2, or v1 when v2 isn't there). Favorites, mutes and

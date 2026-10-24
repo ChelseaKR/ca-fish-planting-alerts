@@ -33,11 +33,18 @@ data class PlantKey(
      * (California's, all weeks) still matches; a day or a month otherwise.
      */
     val precision: DatePrecision? = null,
+    /**
+     * The agency's words, for an approximate period only (they can't be
+     * rebuilt from a start date). `null` otherwise, and in every baseline
+     * stored before New York.
+     */
+    val text: String? = null,
 ) : Comparable<PlantKey> {
     constructor(plant: Plant) : this(
         plant.week.start,
         plant.species,
         plant.week.precision.takeIf { it != DatePrecision.WEEK },
+        plant.week.label.takeIf { plant.week.precision == DatePrecision.APPROXIMATE },
     )
 
     /** The period the key names: "the week of 2026-10-11", "2026-10-14", or "December 2026". */
@@ -46,6 +53,7 @@ data class PlantKey(
             DatePrecision.WEEK -> "the week of ${weekStart.isoDate}"
             DatePrecision.DAY -> weekStart.isoDate
             DatePrecision.MONTH -> "${MONTH_NAMES[weekStart.month - 1]} ${weekStart.year}"
+            DatePrecision.APPROXIMATE -> text ?: "${weekStart.year}"
         }
 
     companion object {
@@ -69,7 +77,7 @@ data class AlertState(val lastListed: Map<String, Set<PlantKey>> = emptyMap())
  * `PlannedNotification` in ios/PlantingCore. A schedule's alert says
  * "scheduled" and names each period at the agency's precision; California's
  * words are exactly as before. A report's alert says "stocked", in
- * [ReportWording].
+ * [ReportWording]. A plan's (New York) says "planned for", in the agency's words.
  */
 class PlannedNotification(
     val waterID: String,
@@ -97,13 +105,22 @@ class PlannedNotification(
     }
 
     val title: String
-        get() = if (semantics == StateSemantics.REPORT) ReportWording.alertTitle(waterName) else "$waterName is on the stocking schedule"
+        get() = when (semantics) {
+            StateSemantics.REPORT -> ReportWording.alertTitle(waterName)
+            StateSemantics.PLAN -> "$waterName is in the stocking plan"
+            StateSemantics.SCHEDULE -> "$waterName is on the stocking schedule"
+        }
 
     fun body(): String {
         val species = newKeys.map { it.species }.distinct()
         val what = if (species.isEmpty()) "species not stated" else species.joinToString(", ")
         if (semantics == StateSemantics.REPORT) {
             return ReportWording.alertBody(newKeys.map { it.phrase }.distinct(), what, agencyShortName, lagging)
+        }
+        if (semantics == StateSemantics.PLAN) {
+            val periods = newKeys.map { it.phrase }.distinct()
+            return "Planned for ${periods.joinToString(" and ")} ($what), in $agencyShortName's own words. " +
+                "A plan, not a date, and not a confirmed stocking."
         }
         if (newKeys.all { it.precision == null }) {
             // Weeks only: California's words, exactly as before.

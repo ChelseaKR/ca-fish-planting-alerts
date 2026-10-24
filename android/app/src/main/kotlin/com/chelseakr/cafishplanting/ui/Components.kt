@@ -128,7 +128,11 @@ fun StateFreshnessRow(state: StateInfo, now: Instant = Instant.now()) {
             .semantics(mergeDescendants = true) {},
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        val kind = if (state.semantics == StateSemantics.SCHEDULE) "stocking schedule" else "stocking report"
+        val kind = when (state.semantics) {
+            StateSemantics.SCHEDULE -> "stocking schedule"
+            StateSemantics.REPORT -> "stocking report"
+            StateSemantics.PLAN -> "spring stocking plan"
+        }
         Text("${state.agencyShortName} $kind", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
         state.newestRecord?.let { Text("Newest date in it: ${it.label}", style = MaterialTheme.typography.bodySmall) }
         state.recencyNote?.let { Text(it, style = MaterialTheme.typography.bodySmall) }

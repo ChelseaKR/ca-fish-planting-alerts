@@ -83,7 +83,7 @@ data class Snapshot(
     fun alertBasis(water: Water): List<Plant> {
         val week = currentWeek(water)
         return when (water.semantics) {
-            StateSemantics.SCHEDULE -> water.listedPlants(week)
+            StateSemantics.SCHEDULE, StateSemantics.PLAN -> water.listedPlants(week)
             StateSemantics.REPORT -> {
                 val since = week.start.plusDays(-REPORT_LOOKBACK_DAYS)
                 water.plants.filter { it.status == PlantStatus.REPORTED && it.week.start >= since }
@@ -106,6 +106,9 @@ enum class StateSemantics(val wire: String) {
 
     /** The agency reports stockings already done. Say "stocked". */
     REPORT("report"),
+
+    /** A once-a-year plan in the agency's own words (New York). Say "planned for"; nothing is ever inferred as removed from it. */
+    PLAN("plan"),
     ;
 
     companion object {
@@ -144,8 +147,13 @@ data class StateInfo(
     val counties: List<County>,
     val watersCount: Int,
 ) {
-    /** "Stocking schedule" or "Stocking report", for a list of states. */
-    val kindLabel: String get() = if (semantics == StateSemantics.SCHEDULE) "Stocking schedule" else "Stocking report"
+    /** "Stocking schedule", "Stocking report" or "Spring stocking plan", for a list of states. */
+    val kindLabel: String
+        get() = when (semantics) {
+            StateSemantics.SCHEDULE -> "Stocking schedule"
+            StateSemantics.REPORT -> "Stocking report"
+            StateSemantics.PLAN -> "Spring stocking plan"
+        }
 
     companion object {
         const val CALIFORNIA_DISCLAIMER = "Trout Truck is independent and is not affiliated with or endorsed by CDFW. " +

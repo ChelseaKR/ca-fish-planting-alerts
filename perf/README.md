@@ -38,19 +38,23 @@ deliberate: a script file on this site is a decision.
 
 ## The checkers' own dependencies
 
-`tools/site-checks/package.json` pins pa11y-ci 4.1.1, @lhci/cli 0.15.1,
-puppeteer 24.43.1 and @axe-core/puppeteer 4.13.0, and `package-lock.json`
+`tools/site-checks/package.json` pins pa11y-ci 5.0.0, @lhci/cli 0.15.1,
+puppeteer 25.16.0 and @axe-core/puppeteer 4.13.0, and `package-lock.json`
 locks the rest. As published, that tree carries advisories in three
-places. One is `extract-zip`, reached through `@puppeteer/browsers` 2.x,
-which unzips the Chrome download (HIGH). Another is `tmp`, reached through
-`@lhci/cli`'s interactive wizard (HIGH). The third is `uuid`, which
-`@lhci/cli` 0.15.1 asks for as `^8.3.1` (medium, GHSA-w5hq-g745-h8pq, "missing
-buffer bounds check in v3/v5/v6 when buf is provided"; fixed in 14.0.0).
-`overrides` moves `@puppeteer/browsers` to 3.2.2, which no longer uses
-`extract-zip`, `tmp` to 0.2.7 and `uuid` to 14.0.2. The full gate was re-run
-on the overridden tree and passes. `run.sh` starts with
+places. One is `lighthouse`: @lhci/cli 0.15.1 pins 12.6.1, which asks for
+puppeteer-core 24, which nests chromium-bidi 14 and zod 3.25.76
+(GHSA-mrhx-c7xc-m3w5, HIGH, fixed in zod 4.6.6, published 2026-10-23; zod 3
+has no fix). `overrides` moves `lighthouse` to 13.5.0, which uses
+puppeteer-core 25 and so the same chromium-bidi and zod 4.6.7 as puppeteer
+25.16.0. Another is `tmp`, reached through `@lhci/cli`'s interactive wizard
+(HIGH). The third is `uuid`, which `@lhci/cli` 0.15.1 asks for as `^8.3.1`
+(medium, GHSA-w5hq-g745-h8pq, "missing buffer bounds check in v3/v5/v6 when
+buf is provided"; fixed in 14.0.0). `overrides` moves `tmp` to 0.2.7 and
+`uuid` to 14.0.2. puppeteer 25 brings `@puppeteer/browsers` 3.2.6 itself, so
+that override is gone. `run.sh` starts with
 `npm audit --audit-level=high`, so a HIGH or CRITICAL with a fix fails the
-run.
+run. Drop the `lighthouse` override when an `@lhci/cli` release asks for
+Lighthouse 13 or later.
 
 About the `uuid` override. Dependabot could not raise `uuid` on its own,
 because `@lhci/cli` 0.15.1 declares `uuid@^8.3.1`, so its security update
@@ -66,8 +70,9 @@ axe, pa11y-ci and Lighthouse CI, whose `collect` step is the code that loads
 `uuid`) passed on Node 22.23.2 with the override in place. Drop the override
 when an `@lhci/cli` release asks for `uuid` 14 or later.
 
-Overriding `puppeteer` itself to 25.x was tried first and rejected. With it,
-`lighthouse` 12.6.1 did not finish its first run.
+Overriding `puppeteer` alone to 25.x, with `lighthouse` left at 12.6.1, was
+tried earlier and rejected: `lighthouse` 12.6.1 did not finish its first run.
+Moving `lighthouse` to 13.5.0 as well runs clean (2026-10-23, `run.sh` passes).
 
 ## N/A
 

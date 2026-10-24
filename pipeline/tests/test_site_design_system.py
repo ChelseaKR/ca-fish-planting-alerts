@@ -72,6 +72,12 @@ def _text(fragment: str) -> str:
     return " ".join(html_mod.unescape(TAG_RE.sub("", fragment)).split())
 
 
+def _search(pattern: str, text: str, flags: int = 0) -> re.Match[str]:
+    m = re.search(pattern, text, flags)
+    assert m is not None, pattern
+    return m
+
+
 def _pages(out: Path) -> dict[str, str]:
     return {
         str(p.relative_to(out)): p.read_text(encoding="utf-8")
@@ -309,7 +315,7 @@ def test_every_state_that_can_be_not_covered_has_an_agency_link() -> None:
 def test_states_page_title_description_and_sitemap(built: Path) -> None:
     pages = _pages(built)
     text = pages["states/index.html"]
-    title = re.search(r"<title>(.*?)</title>", text).group(1)  # type: ignore[union-attr]
+    title = _search(r"<title>(.*?)</title>", text).group(1)
     assert title == "Trout stocking schedules in all 50 states | Trout Truck"
     others = [
         n
@@ -317,7 +323,7 @@ def test_states_page_title_description_and_sitemap(built: Path) -> None:
         if n != "states/index.html" and f"<title>{title}</title>" in t
     ]
     assert others == []
-    desc = re.search(r'<meta name="description" content="([^"]*)"', text).group(1)  # type: ignore[union-attr]
+    desc = _search(r'<meta name="description" content="([^"]*)"', text).group(1)
     assert len(html_mod.unescape(desc)) <= 160
     assert "Massachusetts, Michigan and New York coming soon" in html_mod.unescape(desc)
     sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
@@ -382,10 +388,10 @@ def test_negative_control_a_disclosure_after_the_links_is_caught(built: Path) ->
     pages = _pages(built)
     name = next(n for n, t in pages.items() if '<section class="gear"' in t)
     text = pages[name]
-    block = re.search(r'<section class="gear".*?</section>', text, re.S).group(0)  # type: ignore[union-attr]
-    disclosure = re.search(
+    block = _search(r'<section class="gear".*?</section>', text, re.S).group(0)
+    disclosure = _search(
         r'<p class="muted" id="gear-disclosure">.*?</p>', block, re.S
-    ).group(0)  # type: ignore[union-attr]
+    ).group(0)
     moved = block.replace(disclosure, "").replace("</ul>", "</ul>" + disclosure, 1)
     sabotaged = text.replace(block, moved)
     assert sabotaged != text  # the sabotage applied

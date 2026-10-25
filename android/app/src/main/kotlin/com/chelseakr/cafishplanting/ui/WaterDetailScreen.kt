@@ -187,6 +187,8 @@ fun WaterDetailScreen(
                             "Muted. ${water.name} stays in Favorites and the widget, with no alert when it is newly on the schedule."
                         } else if (water.state == "CA") {
                             "An alert on this device when ${water.name} is newly on CDFW's weekly schedule."
+                        } else if (water.semantics == StateSemantics.PLAN) {
+                            "An alert on this device when ${water.name} is in ${water.agencyShortName}'s spring plan, and a reminder when each planned period begins."
                         } else if (water.semantics == StateSemantics.REPORT) {
                             "An alert on this device when ${water.name} is new in ${water.agencyShortName}'s stocking report."
                         } else {
@@ -211,7 +213,14 @@ fun WaterDetailScreen(
                 }
             }
             item {
-                SectionHeader(if (water.semantics == StateSemantics.REPORT) "Stocking history" else "Schedule history", ReadableWidth)
+                SectionHeader(
+                    when (water.semantics) {
+                        StateSemantics.REPORT -> "Stocking history"
+                        StateSemantics.PLAN -> "Stocking plans"
+                        StateSemantics.SCHEDULE -> "Schedule history"
+                    },
+                    ReadableWidth,
+                )
                 Card(ReadableWidth) {
                     if (water.plants.isEmpty()) {
                         Text("No plants observed yet for this water.", color = secondaryText, modifier = Modifier.padding(16.dp))
@@ -275,7 +284,12 @@ private fun YearGroup(year: Int, plants: List<Plant>) {
 private fun PlantRow(plant: Plant) {
     val removed = plant.status == PlantStatus.REMOVED
     // The pipeline's own label, verbatim: a week is never shown as a day, and a month says its day isn't set.
-    val period = if (plant.week.precision == DatePrecision.MONTH) "${plant.week.label}, day not set" else plant.week.label
+    val period = when (plant.week.precision) {
+        DatePrecision.MONTH -> "${plant.week.label}, day not set"
+        // The agency's own words, said as a plan and never as a date.
+        DatePrecision.APPROXIMATE -> "Planned for ${plant.week.label}"
+        else -> plant.week.label
+    }
     val what = plant.count?.let { "${plant.species}, ${NumberFormat.getIntegerInstance(Locale.US).format(it)} fish" } ?: plant.species
     Row(
         Modifier

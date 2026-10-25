@@ -35,12 +35,13 @@ object FreeTier {
     /** The widget unlocks with any state's purchase, and then lists only favorites in states this device owns. */
     fun widgetsAllowed(entitledStates: Set<String>): Boolean = !WIDGETS_REQUIRE_FULL_ACCESS || entitledStates.isNotEmpty()
 
-    /** What a state's purchase unlocks, in the purchase screen's words. A report says "stocked", a schedule "scheduled". */
+    /** What a state's purchase unlocks, in the purchase screen's words. A report says "stocked", a schedule "scheduled", a plan "planned". */
     fun stateFeatures(stateName: String, agencyShortName: String, semantics: StateSemantics): List<String> {
-        val alert = if (semantics == StateSemantics.SCHEDULE) {
-            "An alert on this device when a $stateName favorite is newly on $agencyShortName's schedule"
-        } else {
-            ReportWording.alertFeature(stateName, agencyShortName)
+        val alert = when (semantics) {
+            StateSemantics.SCHEDULE -> "An alert on this device when a $stateName favorite is newly on $agencyShortName's schedule"
+            StateSemantics.REPORT -> ReportWording.alertFeature(stateName, agencyShortName)
+            StateSemantics.PLAN ->
+                "A reminder on this device when a $stateName favorite's planned stocking period begins, in $agencyShortName's own words"
         }
         return listOf(alert, "$stateName favorites in the Favorite waters widget")
     }

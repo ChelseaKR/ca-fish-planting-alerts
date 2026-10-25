@@ -62,6 +62,7 @@ import com.chelseakr.cafishplanting.PurchaseUi
 import com.chelseakr.cafishplanting.core.FreeTier
 import com.chelseakr.cafishplanting.core.NotificationAskMemory
 import com.chelseakr.cafishplanting.core.NotificationPrimingCopy
+import com.chelseakr.cafishplanting.core.PaywallCopy
 import com.chelseakr.cafishplanting.core.StateProducts
 import com.chelseakr.cafishplanting.core.StateSemantics
 import com.chelseakr.cafishplanting.rememberHaptics
@@ -241,11 +242,41 @@ fun PurchaseSheet(activity: Activity, env: AppEnvironment, purchases: PurchaseBa
                     }
                 }
                 Text(
-                    "One payment, forever, for this state. No subscription, no account. Each state is its own purchase.",
+                    PaywallCopy.terms(stateName),
                     style = MaterialTheme.typography.bodySmall,
                     color = secondaryText,
                     textAlign = TextAlign.Center,
                 )
+                // How current this state's data is, before the buy button: a
+                // failed check is said here too, not only on Browse (PaywallCopy).
+                info?.let { s ->
+                    Column(
+                        Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            if (!s.lastAttemptOK) {
+                                // Orange on the symbol only, as on Browse.
+                                Icon(Icons.Outlined.Warning, contentDescription = null, tint = Color(0xFFFF9500), modifier = Modifier.size(16.dp))
+                            }
+                            Text(
+                                PaywallCopy.freshness(s),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (s.lastAttemptOK) secondaryText else MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                        s.recencyNote?.let { note ->
+                            Text(
+                                note,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (s.lastAttemptOK) secondaryText else MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
+                }
                 val price = product?.let { ui.prices[it] }
                 Button(
                     onClick = { product?.let { purchases.purchase(activity, it) } },

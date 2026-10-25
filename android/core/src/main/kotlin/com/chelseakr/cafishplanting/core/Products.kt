@@ -14,12 +14,14 @@ package com.chelseakr.cafishplanting.core
  * | TN    | `com.chelseakr.cafishplanting.state.tn`   | `state_tn`   |
  * | MA    | `com.chelseakr.cafishplanting.state.ma`   | `state_ma`   |
  * | MI    | `com.chelseakr.cafishplanting.state.mi`   | `state_mi`   |
+ * | NY    | `com.chelseakr.cafishplanting.state.ny`   | `state_ny`   |
  *
  * A Play product ID already belongs to this one app, so it drops the
  * package-name prefix the App Store IDs carry. California's stays
  * `fullaccess`, the product the Android app shipped with, unchanged in ID,
- * price and meaning. Tennessee's is USD 9.99, one time. Massachusetts' and
- * Michigan's are placeholders, unused while those states are off.
+ * price and meaning. Every state's is USD 9.99, one time. A state is sold
+ * only once it is in the snapshot, and a build with no product for a state
+ * leaves it out ([isKnown]).
  */
 object StateProducts {
     /** California's product, the one the app has always sold. Never renamed, never repointed. */
@@ -31,6 +33,7 @@ object StateProducts {
         "TN" to TENNESSEE,
         "MA" to "state_ma",
         "MI" to "state_mi",
+        "NY" to "state_ny",
     )
 
     /** The App Store product for the same state, for checking the two catalogs agree. */
@@ -39,6 +42,7 @@ object StateProducts {
         "TN" to "com.chelseakr.cafishplanting.state.tn",
         "MA" to "com.chelseakr.cafishplanting.state.ma",
         "MI" to "com.chelseakr.cafishplanting.state.mi",
+        "NY" to "com.chelseakr.cafishplanting.state.ny",
     )
 
     val allProductIDs: Set<String> get() = productIDsByState.values.toSet()

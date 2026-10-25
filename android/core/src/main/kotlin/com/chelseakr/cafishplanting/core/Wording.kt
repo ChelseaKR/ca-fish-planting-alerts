@@ -16,15 +16,21 @@ object ScheduleWording {
 
     /** "Next scheduled: the week of 2026-09-20", or `null` if nothing upcoming (always `null` for a report). */
     fun nextScheduledLine(water: Water, sourceWeek: Week): String? {
-        if (water.semantics != StateSemantics.SCHEDULE) return null
+        if (water.semantics == StateSemantics.REPORT) return null
         val next = water.listedPlants(sourceWeek).firstOrNull()?.week ?: return null
-        return "Next scheduled: ${next.phrase}"
+        return if (water.semantics == StateSemantics.PLAN) "Planned for ${next.phrase}" else "Next scheduled: ${next.phrase}"
     }
 
     /** "Last scheduled for the week of 2026-09-06", "Last stocked on 2026-10-09", or an honest line when there is none. */
     fun lastScheduledLine(water: Water, sourceWeek: Week): String {
         if (water.semantics == StateSemantics.REPORT) {
             return water.lastListedWeek?.let(ReportWording::lastStocked) ?: NO_STOCKING_ON_RECORD
+        }
+        if (water.semantics == StateSemantics.PLAN) {
+            // A plan's future comes first: it is a reminder, not a record.
+            nextScheduledLine(water, sourceWeek)?.let { return it }
+            water.lastListedWeek?.let { return "Last planned for ${it.phrase}" }
+            return NO_SCHEDULED_WEEK_YET
         }
         water.lastListedWeek?.let { return "Last scheduled for ${it.phrase}" }
         nextScheduledLine(water, sourceWeek)?.let { return it }
@@ -76,6 +82,10 @@ data class NotificationPrimingCopy(
                 Point(
                     "calendar",
                     when {
+                        semantics == StateSemantics.PLAN ->
+                            "When $agencyShortName's spring plan lists $which, this device shows one alert, and a reminder " +
+                                "when each planned period begins. Both use $agencyShortName's own words, such as " +
+                                "\"April - third week\", never a date."
                         semantics == StateSemantics.REPORT ->
                             "When $agencyShortName's stocking report adds $which, this device shows one alert, " +
                                 "naming the day $agencyShortName gives."
@@ -92,7 +102,14 @@ data class NotificationPrimingCopy(
                     "Alerts are made on this device from the schedule it downloads. There is no account and no server, " +
                         "and nothing about you or your favorites leaves the device.",
                 ),
-                Point("quiet", "No other notifications: no marketing, no reminders, no badges."),
+                Point(
+                    "quiet",
+                    if (semantics == StateSemantics.PLAN) {
+                        "No other notifications: no marketing and no badges."
+                    } else {
+                        "No other notifications: no marketing, no reminders, no badges."
+                    },
+                ),
             )
             if (!isEntitled) {
                 points += Point(

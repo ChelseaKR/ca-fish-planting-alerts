@@ -128,25 +128,28 @@ prints the bundle's SHA-256; the downloaded file should match it
 ### 6. Owner: create the in-app products
 
 In Play Console, Monetize, In-app products, create one one-time product per
-state that is on sale. Today that is two: California and Tennessee, the two
-states in the published snapshot (`android/README.md`, "States and
-purchases"). Both are USD 9.99, matching iOS. The app shows the price Play
-returns; none is hard-coded.
+state. Today that is five: California, Tennessee, Massachusetts, Michigan
+and New York, the five states in the published `snapshot/v2.json` (checked
+2026-10-24; `android/README.md`, "States and purchases"). Each is USD 9.99,
+matching iOS. The app shows the price Play returns; none is hard-coded.
 
 | Product ID | State | Name | Description |
 |---|---|---|---|
 | `fullaccess` | California | Full Access | Alerts and a widget for your favorite waters |
 | `state_tn` | Tennessee | Tennessee alerts and widget | Alerts and a widget for your favorite Tennessee waters |
+| `state_ma` | Massachusetts | Massachusetts alerts and widget | Alerts and a widget for your favorite Massachusetts waters |
+| `state_mi` | Michigan | Michigan alerts and widget | Alerts and a widget for your favorite Michigan waters |
+| `state_ny` | New York | New York reminders and widget | Reminders and a widget for your favorite New York waters |
 
-- The IDs are `StateProducts.CALIFORNIA` and `StateProducts.TENNESSEE` in
-  `android/core` (`Products.kt`). Google does not let a product ID change
-  after it is created, so decide now. If you want a different ID, change it
-  there in a reviewed change before the initial upload and rebuild.
-- Massachusetts (`state_ma`) and Michigan (`state_mi`) are placeholders with
-  no data in a published snapshot; create them in Play Console only when
-  those states go on sale. New York has no Android product yet (the iOS app
-  has one); add it to `StateProducts` before a New York snapshot is
-  published.
+- New York's says "reminders", not "alerts": New York publishes a spring
+  plan once a year in its own words, so its purchase adds a reminder when a
+  favorite's planned period begins (as the iOS product does).
+- The IDs are `StateProducts.productIDsByState` in `android/core`
+  (`Products.kt`). Google does not let a product ID change after it is
+  created, so decide now. If you want a different ID, change it there in a
+  reviewed change before the initial upload and rebuild.
+- A state missing from the published snapshot is not shown in the app, so
+  its product is never offered, even when it exists in Play Console.
 - Activate each product. It may become purchasable once a bundle that
   declares the billing permission is on a testing track.
 
@@ -158,8 +161,9 @@ purchases cost nothing.
 Testing, Internal testing, Create new release, upload `app-release.aab`.
 Add a tester list (your own Google account to start) and open the opt-in
 link on a real Android phone. Smoke test: the app opens on the bundled
-schedule, a water can be favorited, the Full Access purchase succeeds with
-a license tester account and survives Restore purchases, an alert can be
+schedule, a water can be favorited, the Full Access purchase and one other
+state's (New York's, for its reminders) succeed with a license tester
+account and survive Restore purchases, an alert can be
 received, and the widget can be added.
 
 Internal testing is separate from the closed test. Google's Data safety page

@@ -53,6 +53,8 @@ data class WidgetDigest(
         val lastListedWeek: DigestWeek? = null,
         /** A report state's water: its rows say "stocked", never "scheduled". */
         val isReport: Boolean = false,
+        /** A plan state's water (New York): its rows say "planned for" in the agency's own words, never a date. */
+        val isPlan: Boolean = false,
     ) {
         val isListedThisWeek: Boolean get() = speciesThisWeek.isNotEmpty()
     }
@@ -100,6 +102,12 @@ data class WidgetDigest(
         if (favorite.isReport) {
             if (favorite.isListedThisWeek && !isStale(now)) return ReportWording.stockedThisWeek(favorite.speciesThisWeek)
             return favorite.lastListedWeek?.let { ReportWording.lastStocked(it.toWeek()) } ?: ReportWording.NO_STOCKING_ON_RECORD
+        }
+        if (favorite.isPlan) {
+            // The agency's words, never a date.
+            favorite.nextWeek?.let { return "Planned for ${it.label}" }
+            val last = favorite.lastListedWeek ?: return "No planned period on record"
+            return "No planned period ahead. Last planned for ${last.label}"
         }
         return when (val s = status(favorite, now)) {
             is Status.ScheduledThisWeek -> "Scheduled this week: ${s.species.joinToString(", ")}"
@@ -157,8 +165,10 @@ data class WidgetDigest(
         /**
          * 2: favorites carry their state's words ([Favorite.isReport]), and
          * favorites in a state without its purchase are counted, never shown.
+         * 3: a plan state's favorites ([Favorite.isPlan], New York) say
+         * "planned for" in the agency's own words.
          */
-        const val CURRENT_VERSION = 2
+        const val CURRENT_VERSION = 3
 
         /** No digest yet: the widget says to open the app, never "nothing scheduled". */
         const val NO_DIGEST_MESSAGE = "Open Trout Truck to load the schedule here."
@@ -191,10 +201,15 @@ data class WidgetDigest(
                     }
                     val week = snapshot.currentWeek(water)
                     val species = water.plants
-                        .filter { it.status != PlantStatus.REMOVED && it.week.precision != DatePrecision.MONTH && it.week.overlaps(week) }
+                        // A month ("December 2026") or the agency's own words ("April - third week, 2026")
+                        // is never "this week": neither names it.
+                        .filter {
+                            it.status != PlantStatus.REMOVED && it.week.precision != DatePrecision.MONTH &&
+                                it.week.precision != DatePrecision.APPROXIMATE && it.week.overlaps(week)
+                        }
                         .map { it.species }
                         .distinct()
-                    val next = if (water.semantics == StateSemantics.SCHEDULE) {
+                    val next = if (water.semantics != StateSemantics.REPORT) {
                         water.plants.firstOrNull { it.status == PlantStatus.LISTED && it.week.start > week.end }?.week
                     } else {
                         null
@@ -207,6 +222,7 @@ data class WidgetDigest(
                         nextWeek = next?.let(DigestWeek::of),
                         lastListedWeek = water.lastListedWeek?.let(DigestWeek::of),
                         isReport = water.semantics == StateSemantics.REPORT,
+                        isPlan = water.semantics == StateSemantics.PLAN,
                     )
                 }
             }

@@ -13,6 +13,18 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Android: New York, as on iOS. The app reads New York's `plan` semantics
+  and `approximate` periods (NYS DEC's own words, such as "April - third
+  week, 2026", never shown as a date), sells it as `state_ny`, and for a
+  bought, unmuted New York favorite shows a reminder at 9 a.m. on the first
+  day of each planned period of 31 days or less (`ReminderPlanner`,
+  `ReminderWorker`). The purchase sheet uses the iOS sheet's words
+  (`PaywallCopy`): no "forever", one payment per state, how Restore
+  purchases works, and when that state's data was last read, said plainly
+  before the buy button when the newest check failed. The widget digest is
+  version 3. `docs/ANDROID-RELEASE.md` and `android/README.md` list all
+  five Play products to create.
+
 - App: each state's purchase sheet says when that state's data was last
   read, and says plainly before the buy button when the newest check of the
   agency's page failed (`PaywallCopy`). Its footnote no longer says

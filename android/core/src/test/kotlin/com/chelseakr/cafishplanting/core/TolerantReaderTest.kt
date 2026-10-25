@@ -23,7 +23,9 @@ import java.io.File
  * `StatesWave2Tests.swift`. The documents are built from the pinned
  * `v2-all-states.json` (CA, MA, MI, TN), never from a daily-rewritten file,
  * by adding what states wave 2 adds: New York with `plan` semantics and the
- * `approximate` precision, and values this build has never heard of.
+ * `approximate` precision (known to this build since the New York product),
+ * and values this build has never heard of (a state with semantics from the
+ * future, a precision, a status).
  */
 class TolerantReaderTest {
     private val json = Json { prettyPrint = false }
@@ -73,7 +75,7 @@ class TolerantReaderTest {
     /** The pinned fixture plus New York (plan, approximate), a state with semantics from the future, and new values. */
     private fun wave2Document(): JsonObject {
         val ny = stateLike(stateModel(), "NY", "plan", listOf("approximate"), 2)
-        val xx = stateLike(stateModel(), "XX", "forecast", listOf("day"), 1)
+        val xx = stateLike(stateModel(), "XX", "forecast", listOf("day", "quarter"), 1)
         val nyWaters = listOf(
             newWater("ny-ulster-a", "NY", listOf(plant(approximate, "listed"))),
             newWater("ny-ulster-b", "NY", listOf(plant(approximate, "listed"))),
@@ -109,13 +111,14 @@ class TolerantReaderTest {
     @Test fun aWaveTwoDocumentDecodesWithOnlyTheKnownStatesWatersAndSaysWhatItLeftOut() {
         val decoded = decode(wave2Document())
         val snap = decoded.snapshot
-        assertEquals(listOf("CA", "MA", "MI", "TN"), snap.states.map { it.code })
-        assertEquals(setOf("CA", "MA", "MI", "TN"), snap.waters.map { it.state }.toSet())
-        assertEquals("every water of the known states is kept", 181, snap.waters.size)
-        assertNull(snap.water("ny-ulster-a"))
+        assertEquals(listOf("CA", "MA", "MI", "TN", "NY"), snap.states.map { it.code })
+        assertEquals(setOf("CA", "MA", "MI", "TN", "NY"), snap.waters.map { it.state }.toSet())
+        assertEquals("every water of the known states is kept, New York's two included", 183, snap.waters.size)
+        assertEquals(StateSemantics.PLAN, snap.water("ny-ulster-a")?.semantics)
+        assertEquals(DatePrecision.APPROXIMATE, snap.water("ny-ulster-a")?.plants?.single()?.week?.precision)
         assertNull(snap.water("xx-one"))
-        assertEquals(listOf("NY", "XX"), decoded.ignored.states)
-        assertEquals(listOf("ny-ulster-a", "ny-ulster-b", "xx-one"), decoded.ignored.waters)
+        assertEquals(listOf("XX"), decoded.ignored.states)
+        assertEquals(listOf("xx-one"), decoded.ignored.waters)
         assertEquals("a quarter and a paused plant", 2, decoded.ignored.plants)
         assertTrue(snap.waters.all { w -> w.plants.all { it.status in PlantStatus.entries } })
     }
@@ -129,16 +132,19 @@ class TolerantReaderTest {
     }
 
     @Test fun anUnknownValueIsNeverTakenForAKnownOne() {
-        assertNull(StateSemantics.fromWire("plan"))
-        assertNull(DatePrecision.fromWire("approximate"))
+        assertEquals(StateSemantics.PLAN, StateSemantics.fromWire("plan"))
+        assertEquals(DatePrecision.APPROXIMATE, DatePrecision.fromWire("approximate"))
+        assertNull(StateSemantics.fromWire("forecast"))
+        assertNull(DatePrecision.fromWire("quarter"))
         assertNull(PlantStatus.fromWire("paused"))
-        assertFalse(StateProducts.isKnown("NY"))
-        // Not a known state's semantics, and no default: a Michigan that says "plan" is left out whole, not read as a schedule.
+        assertTrue(StateProducts.isKnown("NY"))
+        assertFalse(StateProducts.isKnown("XX"))
+        // Not a known state's semantics, and no default: a Michigan that says "forecast" is left out whole, not read as a schedule.
         val doc = base.with(
             "states",
             JsonArray(
                 base.array("states").states().map {
-                    if (it.text("code") == "MI") it.with("semantics", JsonPrimitive("plan")) else it
+                    if (it.text("code") == "MI") it.with("semantics", JsonPrimitive("forecast")) else it
                 },
             ),
         )
@@ -164,11 +170,11 @@ class TolerantReaderTest {
     }
 
     @Test fun thisWeekFollowsADroppedWater() {
-        val tw = JsonObject(mapOf("water_id" to JsonPrimitive("ny-ulster-a"), "species" to JsonPrimitive("Rainbow Trout")))
+        val tw = JsonObject(mapOf("water_id" to JsonPrimitive("xx-one"), "species" to JsonPrimitive("Rainbow Trout")))
         val doc = wave2Document().with("this_week", JsonArray(base.array("this_week") + tw))
         val snap = decode(doc).snapshot
         assertEquals(4, snap.thisWeek.size)
-        assertTrue(snap.thisWeek.none { it.waterID == "ny-ulster-a" })
+        assertTrue(snap.thisWeek.none { it.waterID == "xx-one" })
     }
 
     // A corrupt document still fails loudly. Each case lands its damage on a known state.
@@ -236,7 +242,7 @@ class TolerantReaderTest {
     }
 
     @Test fun aDuplicateWaterIdStillThrowsEvenInAnIgnoredState() {
-        val doc = wave2Document().let { it.with("waters", JsonArray(it.array("waters") + newWater("ny-ulster-a", "NY", emptyList()))) }
+        val doc = wave2Document().let { it.with("waters", JsonArray(it.array("waters") + newWater("xx-one", "XX", emptyList()))) }
         assertTrue(refused(doc)?.message, refused(doc)?.message!!.contains("duplicate water id"))
     }
 
@@ -247,17 +253,17 @@ class TolerantReaderTest {
 
     /**
      * Negative control: the tolerance is what makes the wave 2 document decode,
-     * and the document really carries vocabulary this build lacks. Were Android
-     * taught "plan", "approximate" or a New York product, this would fail here
-     * rather than let the cases above pass without exercising anything. The
-     * strict rule the app had before is applied to the same document below, and
-     * it refuses it.
+     * and the document really carries vocabulary this build lacks (a state with
+     * "forecast" semantics, a "quarter" precision, a "paused" status). Were
+     * Android taught those, this would fail here rather than let the cases
+     * above pass without exercising anything. The strict rule the app had
+     * before is applied to the same document below, and it refuses it.
      */
     @Test fun negativeControlTheStrictRuleRefusesTheSameDocument() {
         val doc = wave2Document()
         val states = doc.array("states").states()
         val unknownSemantics = states.map { it.text("semantics") }.filter { StateSemantics.fromWire(it) == null }
-        assertEquals("the sabotage must land", listOf("plan", "forecast"), unknownSemantics)
+        assertEquals("the sabotage must land", listOf("forecast"), unknownSemantics)
         assertTrue(states.flatMap { it.array("date_precisions") }.any { DatePrecision.fromWire(it.jsonPrimitive.content) == null })
         assertNotEquals(base, doc)
         // The old rule, as the decoder had it: unknown semantics anywhere is a contract violation.

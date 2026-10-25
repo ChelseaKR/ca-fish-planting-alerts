@@ -240,10 +240,10 @@ From `android/` with JDK 21 and the Android SDK (`ANDROID_HOME`):
 
 ## Known gaps to close before production
 
-- The privacy page (`https://trouttruck.com/privacy/`) says it "Covers this
-  website and the Trout Truck iOS app." Play needs a privacy policy that
-  covers the Android app. Add the Android app to that page (the app collects
-  no data, as on iOS) before the Data safety form is submitted.
+- The privacy page (`https://trouttruck.com/privacy/`) covers the Android
+  app (checked live 2026-10-24: "Covers this website and the Trout Truck
+  apps for iPhone and Android"). Re-check it just before the Data safety
+  form is submitted.
 - The app fetches its snapshot from `chelseakr.github.io`
   (`SnapshotEndpoint.URL`). The site has moved to `trouttruck.com`, and the
   old address still serves the file; keep it serving until a later Android

@@ -1632,6 +1632,33 @@ def _relative_trail(
     return out
 
 
+_TITLE_RE = re.compile(r"<title>(.*?)</title>", re.S)
+
+
+def check_unique_titles(out_dir: Path, written: list[Path]) -> None:
+    """Refuse a build in which two pages share a <title>. A search engine
+    reads a repeated title as one page said twice; New York's river sections
+    did exactly that until each named its town (site_states.shared_names).
+    Raises ValueError naming every repeated title and its pages."""
+    pages: dict[str, list[str]] = {}
+    for path in written:
+        if path.suffix != ".html":
+            continue
+        m = _TITLE_RE.search(path.read_text(encoding="utf-8"))
+        if m:
+            title = " ".join(m.group(1).split())
+            pages.setdefault(title, []).append(str(path.relative_to(out_dir)))
+    repeated = {t: ps for t, ps in pages.items() if len(ps) > 1}
+    if repeated:
+        lines = [
+            f"  {t!r}: {', '.join(sorted(ps))}" for t, ps in sorted(repeated.items())
+        ]
+        raise ValueError(
+            f"{len(repeated)} page title(s) used by more than one page:\n"
+            + "\n".join(lines)
+        )
+
+
 def _write_page(out_dir: Path, rel_dir: str, html: str, written: list[Path]) -> None:
     page_dir = out_dir / rel_dir if rel_dir else out_dir
     page_dir.mkdir(parents=True, exist_ok=True)
@@ -3361,4 +3388,5 @@ def build_site(
         # find_key reads TEMPLATES_DIR, which holds exactly one such file.
         written.append(indexnow.copy_key_file(TEMPLATES_DIR, out_dir))
 
+    check_unique_titles(out_dir, written)
     return written

@@ -105,7 +105,18 @@ def status_label(status: str, semantics: str = "schedule") -> str:
     }[status]
 
 
-def place_phrase(w: dict[str, Any], state_name: str, region_name: str = "") -> str:
+def place_phrase(
+    w: dict[str, Any],
+    state_name: str,
+    region_name: str = "",
+    with_towns: bool = False,
+) -> str:
+    """Where a water is: its counties, else its towns, else the agency's
+    region. ``with_towns`` puts the agency's town before the county
+    ("North Elba, Essex County, New York"), for a water whose name and
+    county another water of the state shares: New York lists a river once
+    per town section, and the town is what tells those pages apart (it is
+    also in each one's URL)."""
     if w["counties"]:
         cs = w["counties"]
         county = (
@@ -113,6 +124,8 @@ def place_phrase(w: dict[str, Any], state_name: str, region_name: str = "") -> s
             if len(cs) == 1
             else f"{', '.join(cs[:-1])} and {cs[-1]} counties"
         )
+        if with_towns and w["towns"]:
+            return f"{', '.join(w['towns'])}, {county}, {state_name}"
         return f"{county}, {state_name}"
     if w["towns"]:
         return f"{', '.join(w['towns'])}, {state_name}"
@@ -122,12 +135,26 @@ def place_phrase(w: dict[str, Any], state_name: str, region_name: str = "") -> s
 
 
 def short_place_phrase(
-    w: dict[str, Any], state: dict[str, Any], region_name: str = ""
+    w: dict[str, Any],
+    state: dict[str, Any],
+    region_name: str = "",
+    with_towns: bool = False,
 ) -> str:
     """``place_phrase`` with the state's postal code in place of its name:
     "Monroe County, TN". Only for a title that would not fit otherwise; the
     h1, description and structured data keep the name."""
-    return place_phrase(w, state["code"], region_name)
+    return place_phrase(w, state["code"], region_name, with_towns)
+
+
+def shared_names(waters: list[dict[str, Any]]) -> set[tuple[str, tuple[str, ...]]]:
+    """The (name, counties) pairs more than one of a state's waters has. A
+    water in one of them names its towns in its title, h1 and description
+    (``place_phrase(with_towns=True)``), so no two pages share a title."""
+    seen: dict[tuple[str, tuple[str, ...]], int] = {}
+    for w in waters:
+        key = (w["name"], tuple(w["counties"]))
+        seen[key] = seen.get(key, 0) + 1
+    return {k for k, n in seen.items() if n > 1}
 
 
 def fit_title(candidates: list[str], site_name: str, limit: int) -> str:
@@ -307,9 +334,18 @@ def render_states(
         waters = sorted(by_state[state["code"]], key=lambda w: (w["name"], w["slug"]))
         lastmods = {w["id"]: _water_lastmod(w, state) for w in waters}
         state_species = _species_word([p for w in waters for p in w["plants"]])
+        shared = shared_names(waters)
         for w in waters:
             entries.append(
-                _render_water(ctx, state, w, waters, lastmods[w["id"]], state_species)
+                _render_water(
+                    ctx,
+                    state,
+                    w,
+                    waters,
+                    lastmods[w["id"]],
+                    state_species,
+                    with_towns=(w["name"], tuple(w["counties"])) in shared,
+                )
             )
         hub_lastmods[state["code"]] = max(lastmods.values())
         entries.append(
@@ -491,6 +527,7 @@ def _render_water(
     waters: list[dict[str, Any]],
     lastmod: str,
     state_species: str,
+    with_towns: bool = False,
 ) -> tuple[str, str | None]:
     seg = state["code"].lower()
     page_url = f"{ctx.base_url}{w['site_path']}"
@@ -501,6 +538,7 @@ def _render_water(
         w,
         state["name"],
         "" if w["counties"] or w["towns"] else _place(w, state),
+        with_towns,
     )
     plants = [
         {
@@ -529,7 +567,7 @@ def _render_water(
     noun = f"stocking {wd['kind']}" if schedule else "stocking history"
     head = f"{w['name']} {species} {noun}"
     short = short_place_phrase(
-        w, state, "" if w["counties"] or w["towns"] else _place(w, state)
+        w, state, "" if w["counties"] or w["towns"] else _place(w, state), with_towns
     )
     title = fit_title(
         [f"{head} ({place})", f"{head} ({short})"], ctx.site_name, ctx.title_max

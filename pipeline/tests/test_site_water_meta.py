@@ -23,7 +23,7 @@ from typing import Any
 
 import pytest
 
-from cfpa import cli, site
+from cfpa import cli, locations, site
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
@@ -45,6 +45,7 @@ def built(tmp_path_factory: pytest.TempPathFactory) -> dict[str, dict[str, Any]]
         run_today=dt.date(2026, 9, 13),
     )
     names = Counter(w["name"] for w in snap["waters"])
+    usgs = locations.load_usgs_lake_names(cli.DEFAULT_LOCATIONS_PATH)
     pages: dict[str, dict[str, Any]] = {}
     for w in snap["waters"]:
         page = (root / "site" / "water" / w["slug"] / "index.html").read_text(
@@ -52,8 +53,13 @@ def built(tmp_path_factory: pytest.TempPathFactory) -> dict[str, dict[str, Any]]
         )
         title = re.search(r"<title>([^<]+)</title>", page).group(1)
         desc = re.search(r'<meta name="description" content="([^"]+)">', page).group(1)
+        h1 = re.search(r"<h1>([^<]+)</h1>", page).group(1)
+        lede = re.search(r'<p class="lede">(.*?)</p>', page, re.S).group(1)
         pages[w["slug"]] = {
             "name": w["name"],
+            "usgs": site.usgs_lake_name(w["name"], usgs.get(w["cdfw_stock_id"])),
+            "h1": htmllib.unescape(h1),
+            "lede": " ".join(htmllib.unescape(lede).split()),
             "shared": names[w["name"]] > 1,
             "place": f"{w['name']} ({site.county_phrase(w['counties'])})",
             "counties": w["counties"],
@@ -68,6 +74,10 @@ def _title_problems(slug: str, p: dict[str, Any]) -> list[str]:
     t, name = p["title"], p["name"]
     problems: list[str] = []
     base = p["place"] if p["shared"] else name
+    if p["usgs"]:
+        base = base if p["shared"] else f"{name} ({p['usgs']})"
+        if p["usgs"] not in t:
+            problems.append(f"{slug}: title lacks the USGS name: {t!r}")
     floor = f"{base} stocking schedule{SUFFIX}"
     if len(t) > site.WATER_TITLE_MAX and len(t) > len(floor):
         problems.append(f"{slug}: title over {site.WATER_TITLE_MAX}: {t!r}")
@@ -78,6 +88,7 @@ def _title_problems(slug: str, p: dict[str, Any]) -> list[str]:
     both_fit = (
         len(f"{name} stocking and planting schedule{SUFFIX}") <= site.WATER_TITLE_MAX
         and not p["shared"]
+        and not p["usgs"]
     )
     if both_fit and "planting schedule" not in t:
         problems.append(f"{slug}: title lacks 'planting schedule': {t!r}")
@@ -129,6 +140,23 @@ def test_a_shared_name_keeps_its_county_and_others_drop_it(built):
             assert (f"{county} County" in p["title"]) == p["shared"], slug
 
 
+def test_a_lake_with_a_usgs_name_carries_both_names(built):
+    paired = {s: p for s, p in built.items() if p["usgs"]}
+    # The fixture's one such lake; Ralphine Lake's title is pinned below.
+    assert paired["gregory-lake"]["usgs"] == "Lake Gregory"
+    assert paired["gregory-lake"]["title"] == (
+        "Gregory Lake (Lake Gregory) stocking schedule | Trout Truck"
+    )
+    for slug, p in paired.items():
+        assert p["h1"].startswith(f"{p['name']} ({p['usgs']}, "), slug
+        assert p["description"].startswith(f"{p['name']} ({p['usgs']}, "), slug
+        assert f"The U.S. Geological Survey names it {p['usgs']}." in p["lede"], slug
+    for slug, p in built.items():
+        if not p["usgs"]:
+            assert "Geological Survey" not in p["lede"], slug
+            assert p["h1"].startswith(p["place"]), slug
+
+
 def test_a_last_listed_water_leads_with_its_date(built):
     for slug, p in built.items():
         if "last scheduled" in p["description"]:
@@ -151,9 +179,43 @@ def _view(**kw: Any) -> dict[str, Any]:
         "next_listed_label": "",
         "last_listed_label": "week of 2026-04-05",
         "listed_week_count": 5,
+        "usgs_name": "",
     }
     base.update(kw)
+    base.setdefault("search_place", base["place"])
     return base
+
+
+@pytest.mark.parametrize(
+    ("name", "usgs", "expected"),
+    [
+        ("Ralphine Lake", "Lake Ralphine", "Lake Ralphine"),
+        ("Ming Lake", "Lake Ming", "Lake Ming"),
+        # Any other USGS match is not a second name for the page.
+        ("Skinner Lake", "Skinner Reservoir", ""),
+        ("Ralphine Lake", None, ""),
+        ("Kings River", "Lake Kings", ""),
+    ],
+)
+def test_usgs_lake_name_only_for_the_word_swapped_form(name, usgs, expected):
+    assert site.usgs_lake_name(name, usgs) == expected
+
+
+def test_title_with_a_usgs_name_carries_both_names():
+    view = _view(
+        usgs_name="Lake Ralphine",
+        search_place="Ralphine Lake (Lake Ralphine, Sonoma County)",
+    )
+    assert (
+        site._water_title(view)
+        == "Ralphine Lake (Lake Ralphine) stocking schedule | Trout Truck"
+    )
+    assert site._water_description(
+        view, source_week_label="week of 2026-10-18"
+    ).startswith(
+        "Ralphine Lake (Lake Ralphine, Sonoma County) trout stocking schedule: "
+        "last scheduled the week of 2026-04-05."
+    )
 
 
 def test_title_for_a_name_that_fits_carries_both_words_and_the_species():

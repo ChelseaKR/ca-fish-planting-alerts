@@ -60,3 +60,24 @@ def location_for(
     """The v2 ``location`` value for one California water, or None."""
     loc = locations.get(stock_id)
     return None if loc is None else dict(loc)
+
+
+LAKE_WORD_SWAPPED = "lake word swapped"
+
+
+def load_usgs_lake_names(path: Path) -> dict[int, str]:
+    """CDFW stock id -> the USGS name the geocoder matched, for the placed
+    waters it matched only by moving the word "Lake" (CDFW's "Ralphine Lake"
+    is USGS's "Lake Ralphine"). The site shows that name beside CDFW's, since
+    it is the form people search with. Read from the same committed file as
+    the coordinates; nothing here changes it."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    if doc.get("schema") != LOCATIONS_SCHEMA:
+        raise ValueError(f"{path}: schema is not {LOCATIONS_SCHEMA}")
+    return {
+        int(w["cdfw_stock_id"]): str(w["matched_name"])
+        for w in doc["waters"]
+        if w["status"] in PLACED
+        and w.get("method") == LAKE_WORD_SWAPPED
+        and w.get("matched_name")
+    }

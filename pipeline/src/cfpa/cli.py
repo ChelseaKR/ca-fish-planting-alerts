@@ -126,6 +126,19 @@ def _load_locations(path: Path | None) -> dict[int, dict[str, Any]] | None:
         ) from exc
 
 
+def _load_usgs_lake_names(path: Path | None) -> dict[int, str] | None:
+    """USGS "Lake X" names for the site (locations.load_usgs_lake_names), or
+    None. Read from the file _load_locations has already checked."""
+    if path is None:
+        return None
+    try:
+        return locations_mod.load_usgs_lake_names(path)
+    except (OSError, ValueError, KeyError) as exc:
+        raise snapshot_v2_mod.SnapshotV2Error(
+            f"water locations at {path} could not be read: {exc}"
+        ) from exc
+
+
 def run(
     *,
     fixture_path: str | None,
@@ -328,6 +341,7 @@ def run(
             google_site_verification=google_site_verification,
             cname=cname,
             snapshot_v2=snap_v2,
+            usgs_lake_names=_load_usgs_lake_names(locations_path),
         )
         if legacy_site_out is not None:
             legacy_mod.build_legacy_site(

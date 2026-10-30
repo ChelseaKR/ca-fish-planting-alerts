@@ -442,11 +442,15 @@ def _join_names(names: list[str]) -> str:
 def _index_description(live: list[str], soon: list[str]) -> str:
     """The /states/ meta description: what is live, what is coming, and that
     every other state links to its agency. Under 160 characters for the
-    states as they are; a longer list still says the same thing."""
-    text = f"{_join_names(live)} trout stocking schedules"
-    if soon:
-        text += f"; {_join_names(soon)} coming soon"
-    return text + ". Every other state links to its agency's official page."
+    states as they are; a longer list still says the same thing. It leads
+    with "trout stocking schedule", the query this page was shown for most
+    in Search Console (2026-07-31 to 2026-10-28)."""
+    tail = f"; {_join_names(soon)} coming soon" if soon else ""
+    tail += ". Every other state links to its agency's official page."
+    led = f"Trout stocking schedule by state: {_join_names(live)}{tail}"
+    if len(led) <= 160:
+        return led
+    return f"{_join_names(live)} trout stocking schedules{tail}"
 
 
 def _render_index(
@@ -468,7 +472,7 @@ def _render_index(
         }
         for s in states
     ]
-    title = f"Trout stocking schedules in all 50 states | {ctx.site_name}"
+    title = f"Trout stocking schedule for all 50 states | {ctx.site_name}"
     live = {s["code"]: row["href"] for s, row in zip(states, rows, strict=True)}
     entries = state_coverage.coverage(live)
     live_names = [e["name"] for e in entries if e["status"] == "live"]

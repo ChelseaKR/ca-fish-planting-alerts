@@ -40,8 +40,8 @@ template:
 | Name | 30 | `Trout Truck` | 11 |
 | Subtitle | 30 | `Stocking schedules & history` | 28 |
 | Keywords | 100 | `california,tennessee,michigan,massachusetts,new york,cdfw,twra,dnr,dec,planting,stocked,lake,river` | 98 |
-| Promotional text | 170 | `Trout stocking in California, Tennessee, Massachusetts, Michigan and New York. Browse free; alerts are $9.99 once per state. No subscription, no account, no tracking.` | 166 |
-| Description | 4000 | See [Description](#description). | 2,900 |
+| Promotional text | 170 | `Trout stocking in California, Tennessee, Massachusetts, Michigan and New York. Browse free; a one-time purchase per state unlocks alerts and the widget. No subscription.` | 169 |
+| Description | 4000 | See [Description](#description). | 2,943 |
 | What's New | 4000 | See [What's New](#whats-new). | 801 |
 | Support URL | — | `https://trouttruck.com/support/` | — |
 | Marketing URL | — | `https://trouttruck.com/` | — |
@@ -53,6 +53,12 @@ The subtitle names no state, so it never needs editing when a state is added
 or paused; the state names are in the keywords, where Apple combines them
 with the name and subtitle words ("tennessee trout stocking" still matches).
 No keyword repeats a word from the name or subtitle.
+
+No customer-facing field states a price. The App Store shows each in-app
+purchase's price on the product page and on the purchase sheet, a written
+price goes stale the day the price changes, and Guideline 2.3.7 warns
+against pricing information in metadata. `StateProductListingTests` checks
+the promotional text, description and What's New for a price.
 
 ## Description
 
@@ -83,7 +89,7 @@ ON IPHONE, IPAD AND APPLE WATCH
 • Home Screen and Lock Screen widgets, a Shortcuts action, VoiceOver, Dynamic Type and dark mode.
 
 ONE PAYMENT PER STATE, NO SUBSCRIPTION
-Each state is $9.99, once. If you bought Full Access, it still covers California exactly as before. Restore purchases brings back each state you bought on a new device.
+Each state is a one-time purchase, and the App Store shows its price. If you bought Full Access, it still covers California exactly as before. Restore purchases brings back each state you bought on a new device.
 
 PRIVATE BY DESIGN
 No account, no ads, no analytics, no tracking. The app downloads one public schedule file; your favorites never leave your device. Privacy label: Data Not Collected.

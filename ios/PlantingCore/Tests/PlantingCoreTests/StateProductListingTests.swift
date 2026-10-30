@@ -129,6 +129,23 @@ final class StateProductListingTests: XCTestCase {
         }
     }
 
+    /// The store shows each purchase's price itself; a price written into
+    /// the metadata goes stale when the price changes and invites a 2.3.7
+    /// question, so no customer-facing field states one.
+    func testTheCustomerFacingCopyStatesNoPrice() throws {
+        let text = try listing()
+        let promo = unquote(try XCTUnwrap(rows(text, prefix: "| Promotional text | ").first)[2])
+        let copy = [promo,
+                    try block(text, after: "## Description\n"),
+                    try block(text, after: "## What's New\n")]
+        let price = "[$€£]\\s?\\d|\\bUSD\\b|\\b\\d+\\.\\d{2}\\b"
+        for part in copy {
+            XCTAssertNil(part.range(of: price, options: [.regularExpression, .caseInsensitive]),
+                         "a price in: \(part.prefix(80))")
+        }
+        XCTAssertTrue(promo.localizedCaseInsensitiveContains("one-time purchase"), promo)
+    }
+
     /// No claim the listing rules forbid (`docs/APP-STORE-LISTING.md`: no
     /// "only" or "first", no "every state"), anywhere a customer reads.
     func testTheCustomerFacingCopyMakesNoForbiddenClaim() throws {

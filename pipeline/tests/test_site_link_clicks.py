@@ -115,9 +115,13 @@ def site_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 @pytest.fixture(scope="module")
 def water_page(site_dir: Path) -> str:
-    pages = sorted((site_dir / "water").glob("*/index.html"))
-    assert pages
-    return pages[0].read_text(encoding="utf-8")
+    # The first water page with a gear block; a thin one has none
+    # (DECISIONS 0041).
+    pages = [
+        p.read_text(encoding="utf-8")
+        for p in sorted((site_dir / "water").glob("*/index.html"))
+    ]
+    return next(html for html in pages if 'id="gear-disclosure"' in html)
 
 
 @pytest.fixture(scope="module")

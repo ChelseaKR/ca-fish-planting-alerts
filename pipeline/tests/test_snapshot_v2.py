@@ -17,7 +17,7 @@ from pathlib import Path
 import jsonschema
 import pytest
 
-from cfpa import cli, legacy, site, snapshot_v2
+from cfpa import cli, legacy, site, snapshot_v2, thin
 from cfpa.states import SOURCES
 from cfpa.states import run as srun
 
@@ -429,8 +429,13 @@ def test_state_titles_put_stocking_first_and_structured_data_parses(built: Path)
 def test_the_sitemap_lists_every_state_page(built: Path):
     sitemap = _page(built, "sitemap.xml")
     assert f"<loc>{BASE}/states/</loc>" in sitemap
-    for w in _v2(built)["waters"]:
-        assert f"<loc>{BASE}{w['site_path']}</loc>" in sitemap
+    waters = _v2(built)["waters"]
+    kept = [w for w in waters if not thin.is_thin(w["plants"], w["site_path"])]
+    assert kept and len(kept) < len(waters)
+    for w in waters:
+        # Every water page but a thin one (DECISIONS 0041).
+        listed = f"<loc>{BASE}{w['site_path']}</loc>" in sitemap
+        assert listed is (w in kept), w["site_path"]
 
 
 def test_the_legacy_site_keeps_v2_byte_for_byte(tmp_path: Path):

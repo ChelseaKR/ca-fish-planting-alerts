@@ -37,6 +37,7 @@ import jinja2
 from . import ads as ads_mod
 from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
 from .snapshot import week_of
+from .thin import is_thin
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
@@ -1765,6 +1766,20 @@ def _water_map(point: list[Any] | None) -> dict[str, Any] | None:
     }
 
 
+def _render_water_pages(
+    ctx: _PageContext, waters: list[dict[str, Any]], *, recorded_since: str
+) -> dict[str, str]:
+    """Write every water's page. Returns the sitemap entries (url -> lastmod):
+    every water gets its page, but a thin one (cfpa.thin, DECISIONS 0041)
+    stays out of the sitemap."""
+    entries: dict[str, str] = {}
+    for w in waters:
+        lastmod = _render_water_page(ctx, w, recorded_since=recorded_since)
+        if not is_thin(w["plants"], f"/water/{w['slug']}/"):
+            entries[f"{ctx.base_url}/water/{w['slug']}/"] = lastmod
+    return entries
+
+
 def _render_water_page(
     ctx: _PageContext, w: dict[str, Any], *, recorded_since: str
 ) -> str:
@@ -1824,10 +1839,15 @@ def _render_water_page(
     ]
     title = _water_title(view)
     point = ctx.coords.get(w["slug"])
+    # Fewer than two dated rows: noindex,follow, no gear block, and out of
+    # the sitemap (build_site asks the same function; DECISIONS 0041).
+    thin = is_thin(w["plants"], f"/water/{w['slug']}/")
     html = ctx.env.get_template("water.html.jinja").render(
         title=title,
         description=_water_description(view, source_week_label=ctx.source_week_label),
         canonical_url=page_url,
+        noindex=thin,
+        noindex_follow=thin,
         root="../../",
         **ctx.common,
         structured_data=_ld_graph(
@@ -1844,7 +1864,7 @@ def _render_water_page(
         breadcrumb=_relative_trail(trail, base_url=base_url, root="../../"),
         water=view,
         water_map=_water_map(point),
-        gear_links=gear_links(),
+        gear_links=[] if thin else gear_links(),
         affiliate_rel=AFFILIATE_LINK_REL,
         scheduled_elsewhere=scheduled_elsewhere,
         other_waters_by_county=other_waters_by_county,
@@ -3204,12 +3224,9 @@ def build_site(
     )
 
     # ---- per-water pages + ics
-    water_lastmods = {
-        f"{base_url}/water/{w['slug']}/": _render_water_page(
-            ctx, w, recorded_since=recorded_since
-        )
-        for w in snapshot["waters"]
-    }
+    water_lastmods = _render_water_pages(
+        ctx, snapshot["waters"], recorded_since=recorded_since
+    )
 
     # ---- county pages: every county with at least one water page. They
     # answer "<county> fish plants": what is scheduled this week, and the

@@ -92,6 +92,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Site: thin water pages (DECISIONS 0041). A water page in any state with
+  fewer than two dated stocking rows is `noindex,follow`, left out of
+  `sitemap.xml`, and carries no Amazon gear block; it stays built and linked.
+  Pages with two or more rows keep all three. On the 2026-10-30 data that is
+  701 of 1,836 water pages. One page Search Console shows people find is kept
+  indexed. No new page families until 2026-11-27 (DECISIONS 0042).
+
 - The privacy page no longer says the iPhone app has an Apple Watch app or
   watch complications; the 1.0.0 binary has neither (the watch target is
   unreleased). `docs/APP-STORE.md` and the Android README now say that

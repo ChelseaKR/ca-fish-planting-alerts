@@ -26,6 +26,8 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import os
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -105,7 +107,18 @@ def status_label(status: str, semantics: str = "schedule") -> str:
     }[status]
 
 
-def place_phrase(w: dict[str, Any], state_name: str, region_name: str = "") -> str:
+def place_phrase(
+    w: dict[str, Any],
+    state_name: str,
+    region_name: str = "",
+    with_towns: bool = False,
+) -> str:
+    """Where a water is: its counties, else its towns, else the agency's
+    region. ``with_towns`` puts the agency's town before the county
+    ("North Elba, Essex County, New York"), for a water whose name and
+    county another water of the state shares: New York lists a river once
+    per town section, and the town is what tells those pages apart (it is
+    also in each one's URL)."""
     if w["counties"]:
         cs = w["counties"]
         county = (
@@ -113,6 +126,8 @@ def place_phrase(w: dict[str, Any], state_name: str, region_name: str = "") -> s
             if len(cs) == 1
             else f"{', '.join(cs[:-1])} and {cs[-1]} counties"
         )
+        if with_towns and w["towns"]:
+            return f"{', '.join(w['towns'])}, {county}, {state_name}"
         return f"{county}, {state_name}"
     if w["towns"]:
         return f"{', '.join(w['towns'])}, {state_name}"
@@ -122,12 +137,60 @@ def place_phrase(w: dict[str, Any], state_name: str, region_name: str = "") -> s
 
 
 def short_place_phrase(
-    w: dict[str, Any], state: dict[str, Any], region_name: str = ""
+    w: dict[str, Any],
+    state: dict[str, Any],
+    region_name: str = "",
+    with_towns: bool = False,
 ) -> str:
     """``place_phrase`` with the state's postal code in place of its name:
     "Monroe County, TN". Only for a title that would not fit otherwise; the
     h1, description and structured data keep the name."""
-    return place_phrase(w, state["code"], region_name)
+    return place_phrase(w, state["code"], region_name, with_towns)
+
+
+def shared_names(waters: list[dict[str, Any]]) -> set[tuple[str, tuple[str, ...]]]:
+    """The (name, counties) pairs more than one of a state's waters has. A
+    water in one of them names its towns in its title, h1 and description
+    (``place_phrase(with_towns=True)``), so no two pages share a title."""
+    seen: dict[tuple[str, tuple[str, ...]], int] = {}
+    for w in waters:
+        key = (w["name"], tuple(w["counties"]))
+        seen[key] = seen.get(key, 0) + 1
+    return {k for k, n in seen.items() if n > 1}
+
+
+def qualifiers(
+    keys: dict[str, tuple[str, ...]], waters: list[dict[str, Any]]
+) -> dict[str, str]:
+    """A short, stable qualifier for each water whose title would still match
+    another's after the town rule (``keys``: water id -> what its title is
+    made of). The agency's own water ID when every water in the clash has a
+    different one, else the water's stable id ("ny-essex-jay-foo-creek").
+    Empty for every other water, which is all of them on today's data."""
+    groups: dict[tuple[str, ...], list[dict[str, Any]]] = {}
+    for w in waters:
+        groups.setdefault(keys[w["id"]], []).append(w)
+    out: dict[str, str] = {}
+    for group in groups.values():
+        if len(group) < 2:
+            continue
+        ids = [w["source_id"] for w in group]
+        use_source = all(ids) and len(set(ids)) == len(ids)
+        for w in group:
+            out[w["id"]] = f"water ID {w['source_id']}" if use_source else w["id"]
+    return out
+
+
+def warn_titles(heading: str, lines: list[str]) -> None:
+    """A loud stderr warning (and a ``::warning`` under GitHub Actions) that
+    titles had to be told apart by a fallback. It never fails the build: a
+    repeated title must not stop the daily publish (owner decision
+    2026-10-29)."""
+    print(f"cfpa: WARNING {heading}:", file=sys.stderr)
+    for line in lines:
+        print(f"  {line}", file=sys.stderr)
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::warning title=Repeated page titles::{heading}: {'; '.join(lines)}")
 
 
 def fit_title(candidates: list[str], site_name: str, limit: int) -> str:
@@ -307,9 +370,46 @@ def render_states(
         waters = sorted(by_state[state["code"]], key=lambda w: (w["name"], w["slug"]))
         lastmods = {w["id"]: _water_lastmod(w, state) for w in waters}
         state_species = _species_word([p for w in waters for p in w["plants"]])
+        shared = shared_names(waters)
+        towns_on = {
+            w["id"]: (w["name"], tuple(w["counties"])) in shared for w in waters
+        }
+        keys: dict[str, tuple[str, ...]] = {
+            w["id"]: (
+                w["name"],
+                _species_word(w["plants"], state_species),
+                place_phrase(
+                    w,
+                    state["name"],
+                    "" if w["counties"] or w["towns"] else _place(w, state),
+                    towns_on[w["id"]],
+                ),
+            )
+            for w in waters
+        }
+        extra = qualifiers(keys, waters)
+        if extra:
+            warn_titles(
+                f"{len(extra)} {state['code']} water page(s) would still share a "
+                "title after naming the town; each now carries a qualifier",
+                [
+                    f"{w['site_path']} -> {extra[w['id']]}"
+                    for w in waters
+                    if w["id"] in extra
+                ],
+            )
         for w in waters:
             entries.append(
-                _render_water(ctx, state, w, waters, lastmods[w["id"]], state_species)
+                _render_water(
+                    ctx,
+                    state,
+                    w,
+                    waters,
+                    lastmods[w["id"]],
+                    state_species,
+                    with_towns=towns_on[w["id"]],
+                    qualifier=extra.get(w["id"], ""),
+                )
             )
         hub_lastmods[state["code"]] = max(lastmods.values())
         entries.append(
@@ -491,6 +591,8 @@ def _render_water(
     waters: list[dict[str, Any]],
     lastmod: str,
     state_species: str,
+    with_towns: bool = False,
+    qualifier: str = "",
 ) -> tuple[str, str | None]:
     seg = state["code"].lower()
     page_url = f"{ctx.base_url}{w['site_path']}"
@@ -501,7 +603,10 @@ def _render_water(
         w,
         state["name"],
         "" if w["counties"] or w["towns"] else _place(w, state),
+        with_towns,
     )
+    if qualifier:
+        place = f"{place}, {qualifier}"
     plants = [
         {
             "when": when_label(p["period"]),
@@ -529,8 +634,10 @@ def _render_water(
     noun = f"stocking {wd['kind']}" if schedule else "stocking history"
     head = f"{w['name']} {species} {noun}"
     short = short_place_phrase(
-        w, state, "" if w["counties"] or w["towns"] else _place(w, state)
+        w, state, "" if w["counties"] or w["towns"] else _place(w, state), with_towns
     )
+    if qualifier:
+        short = f"{short}, {qualifier}"
     title = fit_title(
         [f"{head} ({place})", f"{head} ({short})"], ctx.site_name, ctx.title_max
     )

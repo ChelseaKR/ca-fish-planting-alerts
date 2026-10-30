@@ -13,6 +13,17 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: winter on the record (DECISIONS 0040). Each county page lists the
+  waters CDFW's schedule listed there from November through February of the
+  most recent whole winter, with the weeks each was listed, and the home
+  page gives the statewide count and the counties with the most listed
+  waters. Shown only when the record covers that winter from November 1, and
+  worded as a record, not a forecast. The home page and `/county/` carry the
+  disclosed gear block (placements `home`, `counties`); from November
+  through February the home page's block adds one cold-weather search. County
+  h1s say "stocking and planting schedule", and `/county/` says CDFW was the
+  Department of Fish and Game (DFG) before 2013.
+
 - Android: New York, as on iOS. The app reads New York's `plan` semantics
   and `approximate` periods (NYS DEC's own words, such as "April - third
   week, 2026", never shown as a date), sells it as `state_ny`, and for a

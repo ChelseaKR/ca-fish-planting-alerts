@@ -5,7 +5,9 @@
 <p class="lede">
   The {{ county_count }} California counties with a water on the California
   Department of Fish and Wildlife's planting schedule in the time this site
-  has recorded, grouped by CDFW region. Each county page shows what is
+  has recorded, grouped by CDFW region. CDFW was called the Department of
+  Fish and Game (DFG) before 2013, and its schedule is still at a dfg.ca.gov
+  address. Each county page shows what is
   scheduled this week and the latest scheduled week at every one of its
   waters.
 </p>
@@ -31,6 +33,11 @@
   </ul>
 </section>
 {% endfor %}
+{% set gear_heading = "Gear for a California trout water" %}
+{% set gear_intro = "Planning a trip to a water on CDFW's schedule?" %}
+{% set gear_placement = "counties" %}
+{% include "_gear_block.html.jinja" %}
+
 {% if week_archive %}
 <p>Looking for an earlier week? <a href="{{ root }}week/">Past weeks of CDFW's schedule</a>, most recent to oldest.</p>
 {% endif %}

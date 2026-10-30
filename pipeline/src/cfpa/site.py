@@ -417,13 +417,39 @@ GEAR_GUIDE_DESCRIPTION = (
 )
 
 
-def gear_guide_links() -> dict[str, list[dict[str, str]]]:
-    """The guide's links per section, built from ``GEAR_GUIDE_LINKS``."""
+# The guide's holiday section (DECISIONS 0043): gift ideas for someone who
+# fishes for trout, shown only while a build's date is inside the window, so
+# the daily publish adds it and takes it away with no edit. /gear/ alone: no
+# other page carries it. Same rules as the sections above: category searches,
+# no brand, price, rating or image. Month and day, both ends included.
+HOLIDAY_GIFT_FIRST_DAY = (11, 15)
+HOLIDAY_GIFT_LAST_DAY = (12, 26)
+HOLIDAY_GIFT_LINKS: tuple[tuple[str, str], ...] = (
+    ("Tackle boxes", "fishing tackle box"),
+    ("Fishing chest packs", "fishing chest pack"),
+    ("Telescoping travel rods", "telescopic fishing rod"),
+    ("Rod holders for fishing from the bank", "bank fishing rod holder"),
+    ("Fingerless fishing gloves", "fingerless fishing gloves"),
+)
+
+
+def holiday_gifts_shown(day: dt.date) -> bool:
+    """Whether a build dated ``day`` shows the guide's holiday section."""
+    return HOLIDAY_GIFT_FIRST_DAY <= (day.month, day.day) <= HOLIDAY_GIFT_LAST_DAY
+
+
+def gear_guide_links(day: dt.date | None = None) -> dict[str, list[dict[str, str]]]:
+    """The guide's links per section, built from ``GEAR_GUIDE_LINKS``, plus a
+    ``holiday`` section from ``HOLIDAY_GIFT_LINKS`` when a build dated ``day``
+    falls in the holiday window. No ``day``, no holiday section."""
+    sections = dict(GEAR_GUIDE_LINKS)
+    if day is not None and holiday_gifts_shown(day):
+        sections["holiday"] = HOLIDAY_GIFT_LINKS
     return {
         key: [
             {"label": label, "url": amazon_search_url(terms)} for label, terms in pairs
         ]
-        for key, pairs in GEAR_GUIDE_LINKS.items()
+        for key, pairs in sections.items()
     }
 
 
@@ -2192,8 +2218,9 @@ def _render_county_page(
     return page_url
 
 
-def _render_gear_page(ctx: _PageContext) -> str:
-    """Write /gear/, the "What to bring" guide. Returns its URL."""
+def _render_gear_page(ctx: _PageContext, build_date: dt.date) -> str:
+    """Write /gear/, the "What to bring" guide, with its holiday section when
+    ``build_date`` is in the window (DECISIONS 0043). Returns its URL."""
     page_url = f"{ctx.base_url}/gear/"
     trail = [ctx.home_crumb, ("What to bring", page_url)]
     html = ctx.env.get_template("gear.html.jinja").render(
@@ -2213,7 +2240,7 @@ def _render_gear_page(ctx: _PageContext) -> str:
             _ld_breadcrumb(page_url, trail),
         ),
         breadcrumb=_relative_trail(trail, base_url=ctx.base_url, root="../"),
-        guide=gear_guide_links(),
+        guide=gear_guide_links(build_date),
         affiliate_rel=AFFILIATE_LINK_REL,
         cdfw_license_url=CDFW_LICENSE_URL,
     )
@@ -2852,8 +2879,13 @@ def build_site(
     snapshot_v2: dict[str, Any] | None = None,
     ads: ads_mod.AdsConfig | None = None,
     usgs_lake_names: dict[int, str] | None = None,
+    build_date: dt.date | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
+
+    ``build_date`` decides the date-gated parts of a page, today the /gear/
+    holiday section (DECISIONS 0043). None means the UTC date of the
+    snapshot's ``generated_at``, which is the day of the daily publish.
 
     ``cname`` (``custom_domain(base_url)``, passed by ``cli.run``) writes a
     ``CNAME`` file naming the custom domain. None writes no file, so a build
@@ -2901,6 +2933,10 @@ def build_site(
     source_fetched_label = _fmt_dt(snapshot["source"]["fetched_at"])
     source_week_label = snapshot["source_week"]["label"]
     source_week_start = snapshot["source_week"]["start"]
+    if build_date is None:
+        build_date = dt.datetime.fromisoformat(
+            snapshot["generated_at"].replace("Z", "+00:00")
+        ).date()
     # One flag decides every App Store surface. An explicit URL (the
     # APP_STORE_URL variable) replaces the listing's address while the
     # switch is on and does nothing while it is off: nothing then links to
@@ -3297,7 +3333,7 @@ def build_site(
         county_count=len(county_names),
     )
     counties_index_lastmod = max(first_seen.values(), default=source_week_start)
-    gear_url = _render_gear_page(ctx)
+    gear_url = _render_gear_page(ctx, build_date)
 
     # ---- region pages: one per CDFW region with a county page. The
     # lastmod is the newest of its waters' own data dates, which already

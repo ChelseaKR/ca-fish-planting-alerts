@@ -15,8 +15,10 @@ from __future__ import annotations
 import datetime as dt
 import json
 import re
+from collections.abc import Callable
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
@@ -441,3 +443,252 @@ def test_control_the_copy_check_notices_a_banned_word() -> None:
     sample = "the best rod, stocked on 2026-09-13, only $20"
     assert FORBIDDEN.search(sample)
     assert BRITISH.search("a colour chart")
+
+
+# ---- the holiday section (DECISIONS 0043) ----
+#
+# The section is gated by the build's date alone. These builds reuse the
+# fixture's snapshot and change nothing but ``build_date``, so any difference
+# between them is the gate's.
+
+HOLIDAY_HEADING = "Gifts for someone who fishes for trout"
+IN_WINDOW = dt.date(2026, 12, 1)
+OUT_OF_WINDOW = dt.date(2026, 12, 27)
+
+
+def _holiday_urls() -> set[str]:
+    return {site.amazon_search_url(terms) for _, terms in site.HOLIDAY_GIFT_LINKS}
+
+
+def _guide_urls() -> set[str]:
+    return {
+        site.amazon_search_url(terms)
+        for pairs in site.GEAR_GUIDE_LINKS.values()
+        for _, terms in pairs
+    }
+
+
+def _amazon_hrefs(page: _Page) -> list[str]:
+    return [a["href"] for a in page.anchors if _is_amazon(a.get("href", ""))]
+
+
+def _holiday_shown_problems(out: Path) -> list[str]:
+    """Every way an in-window /gear/ fails to show the section by the rules."""
+    page = _parse(out / "gear" / "index.html")
+    hrefs = _amazon_hrefs(page)
+    found = _gear_problems(out)
+    prose = page.prose()
+    if HOLIDAY_HEADING not in prose:
+        found.append("no holiday heading")
+    for url in sorted(_holiday_urls()):
+        if hrefs.count(url) != 1:
+            found.append(f"holiday link not on the page once: {url}")
+    if FORBIDDEN.search(prose):
+        found.append(f"copy rule broken: {FORBIDDEN.search(prose)}")
+    if BRITISH.search(prose):
+        found.append(f"British spelling: {BRITISH.search(prose)}")
+    return found
+
+
+def _holiday_absent_problems(out: Path) -> list[str]:
+    """Every trace of the section on an out-of-window /gear/."""
+    page = _parse(out / "gear" / "index.html")
+    hrefs = _amazon_hrefs(page)
+    found: list[str] = []
+    if HOLIDAY_HEADING in page.prose():
+        found.append("holiday heading shown out of window")
+    if _holiday_urls() & set(hrefs):
+        found.append("holiday link shown out of window")
+    if sorted(hrefs) != sorted(_guide_urls()):
+        found.append("the guide's links are not exactly the year-round ones")
+    return found
+
+
+@pytest.fixture(scope="module")
+def snapshot(built: Path) -> dict[str, Any]:
+    return json.loads((built / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+
+
+def _build_on(root: Path, snap: dict[str, Any], day: dt.date | None) -> Path:
+    out = root / "site"
+    site.build_site(snap, out, base_url=BASE_URL, build_date=day)
+    return out
+
+
+@pytest.fixture(scope="module")
+def in_window(
+    tmp_path_factory: pytest.TempPathFactory, snapshot: dict[str, Any]
+) -> Path:
+    return _build_on(tmp_path_factory.mktemp("holiday-in"), snapshot, IN_WINDOW)
+
+
+@pytest.fixture(scope="module")
+def out_of_window(
+    tmp_path_factory: pytest.TempPathFactory, snapshot: dict[str, Any]
+) -> Path:
+    return _build_on(tmp_path_factory.mktemp("holiday-out"), snapshot, OUT_OF_WINDOW)
+
+
+@pytest.mark.parametrize(
+    ("day", "shown"),
+    [
+        (dt.date(2026, 11, 14), False),
+        (dt.date(2026, 11, 15), True),
+        (dt.date(2026, 12, 1), True),
+        (dt.date(2026, 12, 26), True),
+        (dt.date(2026, 12, 27), False),
+        (dt.date(2027, 1, 1), False),
+        (dt.date(2027, 6, 1), False),
+        (dt.date(2027, 11, 15), True),
+    ],
+)
+def test_the_window_is_11_15_to_12_26_every_year(day: dt.date, shown: bool) -> None:
+    assert site.holiday_gifts_shown(day) is shown
+    assert ("holiday" in site.gear_guide_links(day)) is shown
+
+
+def test_no_date_means_no_holiday_section() -> None:
+    assert "holiday" not in site.gear_guide_links()
+
+
+def test_the_gift_list_is_short_generic_and_new() -> None:
+    assert 4 <= len(site.HOLIDAY_GIFT_LINKS) <= 6
+    for label, terms in site.HOLIDAY_GIFT_LINKS:
+        assert not FORBIDDEN.search(label + " " + terms), (label, terms)
+        assert not BRITISH.search(label + " " + terms), (label, terms)
+    # No search repeats one of the year-round sections', so each link is on
+    # the page once.
+    assert not _holiday_urls() & _guide_urls()
+    assert len(_holiday_urls()) == len(site.HOLIDAY_GIFT_LINKS)
+    for url in _holiday_urls():
+        assert parse_qs(urlsplit(url).query)["tag"] == [site.AMAZON_ASSOCIATE_TAG]
+
+
+def test_in_window_the_section_shows_by_the_rules(in_window: Path) -> None:
+    assert _holiday_shown_problems(in_window) == []
+    assert _outside_problems(in_window) == []
+
+
+def test_in_window_the_section_sits_between_the_disclosures(in_window: Path) -> None:
+    page = _parse(in_window / "gear" / "index.html")
+    seq = page.events
+    disc = [
+        i
+        for i, (k, v) in enumerate(seq)
+        if k == "text" and DISCLOSURE in re.sub(r"\s+", " ", v)
+    ]
+    gifts = [i for i, (k, v) in enumerate(seq) if k == "a" and v in _holiday_urls()]
+    assert len(disc) == 2
+    assert gifts
+    assert disc[0] < min(gifts) and max(gifts) < disc[1]
+
+
+def test_out_of_window_the_section_is_absent(out_of_window: Path) -> None:
+    assert _holiday_absent_problems(out_of_window) == []
+    assert _gear_problems(out_of_window) == []
+
+
+def test_the_fixture_build_is_out_of_window(built: Path) -> None:
+    # cli.run passes run_today (2026-09-13) through as the build date.
+    assert _holiday_absent_problems(built) == []
+
+
+def test_only_the_guide_differs_between_the_two_builds(
+    in_window: Path, out_of_window: Path
+) -> None:
+    """No new link spot anywhere else: every other file is byte-identical."""
+    inside = {
+        p.relative_to(in_window).as_posix() for p in in_window.rglob("*") if p.is_file()
+    }
+    outside = {
+        p.relative_to(out_of_window).as_posix()
+        for p in out_of_window.rglob("*")
+        if p.is_file()
+    }
+    assert inside == outside
+    differ = sorted(
+        rel
+        for rel in inside
+        if (in_window / rel).read_bytes() != (out_of_window / rel).read_bytes()
+    )
+    assert differ == ["gear/index.html"]
+
+
+@pytest.mark.parametrize(
+    ("generated_at", "shown"),
+    [("2026-12-01T13:17:00Z", True), ("2026-12-27T13:17:00Z", False)],
+)
+def test_without_a_build_date_the_snapshot_time_decides(
+    tmp_path: Path, snapshot: dict[str, Any], generated_at: str, shown: bool
+) -> None:
+    snap = {**snapshot, "generated_at": generated_at}
+    out = _build_on(tmp_path, snap, None)
+    if shown:
+        assert _holiday_shown_problems(out) == []
+    else:
+        assert _holiday_absent_problems(out) == []
+
+
+# ---- holiday negative controls ----
+
+
+def test_control_the_absence_check_notices_the_section(in_window: Path) -> None:
+    problems = _holiday_absent_problems(in_window)
+    assert any("heading shown" in p for p in problems), problems
+    assert any("holiday link shown" in p for p in problems), problems
+
+
+def test_control_the_presence_check_notices_no_section(out_of_window: Path) -> None:
+    problems = _holiday_shown_problems(out_of_window)
+    assert any("no holiday heading" in p for p in problems), problems
+    assert any("holiday link not on the page" in p for p in problems), problems
+
+
+def _first_gift_href_html() -> str:
+    terms = site.HOLIDAY_GIFT_LINKS[0][1]
+    return site.amazon_search_url(terms).replace("&", "&amp;")
+
+
+@pytest.mark.parametrize(
+    ("make", "expect"),
+    [
+        # An untagged gift link.
+        (
+            lambda h: h.replace(
+                _first_gift_href_html(),
+                _first_gift_href_html().replace("&amp;tag=trouttruck-20", ""),
+            ),
+            "wrong or missing tag",
+        ),
+        # Both disclosures gone.
+        (lambda h: h.replace(DISCLOSURE, ""), "no Amazon disclosure"),
+        # A price in the section's copy.
+        (
+            lambda h: h.replace("practical ideas", "practical ideas from $19.99"),
+            "copy rule broken",
+        ),
+        # A gift link without the sponsored rel.
+        (
+            lambda h: h.replace(
+                f'href="{_first_gift_href_html()}" rel="{site.AFFILIATE_LINK_REL}"',
+                f'href="{_first_gift_href_html()}" rel="noopener"',
+            ),
+            "rel ",
+        ),
+    ],
+)
+def test_control_each_holiday_rule_is_noticed(
+    tmp_path: Path,
+    snapshot: dict[str, Any],
+    make: Callable[[str], str],
+    expect: str,
+) -> None:
+    out = _build_on(tmp_path, snapshot, IN_WINDOW)
+    assert _holiday_shown_problems(out) == []
+    page = out / "gear" / "index.html"
+    before = page.read_text(encoding="utf-8")
+    after = make(before)
+    assert after != before, "the sabotage did not apply"
+    page.write_text(after, encoding="utf-8")
+    problems = _holiday_shown_problems(out)
+    assert any(expect in p for p in problems), problems

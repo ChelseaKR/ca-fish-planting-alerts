@@ -342,6 +342,9 @@ def run(
             cname=cname,
             snapshot_v2=snap_v2,
             usgs_lake_names=_load_usgs_lake_names(locations_path),
+            # The /gear/ holiday section's date (DECISIONS 0043). None in
+            # production: build_site then uses this run's generated_at.
+            build_date=run_today,
         )
         if legacy_site_out is not None:
             legacy_mod.build_legacy_site(

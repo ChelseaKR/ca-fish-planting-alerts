@@ -1225,3 +1225,24 @@ re-ranked the site on 2026-10-23, two days after about 35 site changes
 including three new page families. A stable site lets Google re-score it,
 and lets any recovery be traced to a cause. Fixes to existing pages are
 fine.
+
+## 0043 — A holiday gift section on /gear/, 11-15 to 12-26 (2026-10-30)
+
+The Amazon plan of 2026-10-30 ranked one seasonal change inside the existing
+guide above any new link surface: late November through December is when an
+Amazon purchase is most likely, and any purchase within 24 hours of a click
+counts.
+
+- **What.** A "Gifts for someone who fishes for trout" section near the top
+  of `/gear/`, after the first disclosure and before the license section,
+  with five category searches (`HOLIDAY_GIFT_LINKS`). Same rules as the rest
+  of the guide (0030): tagged search links, the sponsored rel values and
+  click labels, the disclosure before and after, no brand, price, rating or
+  image.
+- **When.** The build's date decides: shown from 11-15 through 12-26 each
+  year, both days included (`holiday_gifts_shown`). The date is the UTC day
+  of the snapshot's `generated_at`, so the daily publish adds the section
+  and removes it with no edit. A build given `--run-today` uses that date.
+- **Where not.** No other page changes. Water, county, home and state pages
+  keep the blocks 0039, 0040 and 0041 give them, and the section is not a
+  new page, so it fits 0042.

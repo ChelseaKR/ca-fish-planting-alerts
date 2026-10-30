@@ -30,6 +30,17 @@
   item. They point to search results, not to any one product, and this page
   names no brand and compares no prices.
 </p>
+{# DECISIONS 0043: only while the build's date is 11-15 to 12-26. #}
+{% if guide.holiday %}
+<h2 id="gifts">Gifts for someone who fishes for trout</h2>
+<p>
+  Shopping for someone who spends winter and spring mornings at a planting
+  water? These are practical ideas that suit a day on the bank, whatever
+  gear they already own. As with the lists below, each link searches for a
+  kind of item, not a product.
+</p>
+{{ links("holiday") }}
+{% endif %}
 
 <h2 id="license">License and rules</h2>
 <ul>

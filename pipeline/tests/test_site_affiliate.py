@@ -1,6 +1,7 @@
-"""Amazon Associates gear links (DECISIONS 0029, 0030, 0039).
+"""Amazon Associates gear links (DECISIONS 0029, 0030, 0039, 0040).
 
-The links are on California water and county pages, the /gear/ guide, and
+The links are on California water and county pages, the home page, the
+/county/ index, the /gear/ guide, and
 another state's water pages when that state's terms permit commercial reuse,
 and nowhere else: not in the other pages, not in structured data, feeds or
 the snapshot, and not in the iOS or Android sources. Wherever one appears it
@@ -15,6 +16,7 @@ sabotage really changed the file.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import re
 from html.parser import HTMLParser
 from pathlib import Path
@@ -133,6 +135,11 @@ def _is_county_page(out: Path, path: Path) -> bool:
     return len(rel) == 3 and rel[0] == "county" and rel[2] == "index.html"
 
 
+def _is_home_or_county_index(out: Path, path: Path) -> bool:
+    """The home page or the /county/ index (DECISIONS 0040)."""
+    return path.relative_to(out).parts in (("index.html",), ("county", "index.html"))
+
+
 def _state_agency(out: Path, path: Path) -> str | None:
     """The agency short name for another state's water page, else None."""
     rel = path.relative_to(out).parts
@@ -167,6 +174,7 @@ def _page_problems(out: Path, path: Path) -> list[str]:
         _is_water_page(out, path)
         or _is_gear_page(out, path)
         or _is_county_page(out, path)
+        or _is_home_or_county_index(out, path)
         or agency is not None
     )
     if links and not allowed:
@@ -389,10 +397,10 @@ def test_control_a_wrong_tag_is_noticed(tmp_path: Path) -> None:
     assert any("wrong or missing tag" in p for p in _problems(out))
 
 
-def test_control_an_affiliate_link_on_the_home_page_is_noticed(tmp_path: Path) -> None:
+def test_control_an_affiliate_link_on_the_about_page_is_noticed(tmp_path: Path) -> None:
     out = _build(tmp_path)
     link = f'<a href="https://www.amazon.com/s?k=x&amp;tag={TAG}" rel="{site.AFFILIATE_LINK_REL}">x</a>'
-    _sabotage(out / "index.html", "</main>", link + "</main>")
+    _sabotage(out / "about" / "index.html", "</main>", link + "</main>")
     assert any("outside a water page" in p for p in _problems(out))
 
 
@@ -499,8 +507,67 @@ def test_every_county_page_has_the_gear_block(built: Path) -> None:
         block = _gear_section(path)
         assert 'data-ga-placement="county"' in block
         assert not FORBIDDEN_COPY.search(re.sub(r"<[^>]+>", " ", block))
-    index = _parse(built / "county" / "index.html")
-    assert not [h for h, _ in index.anchors if _is_amazon(h)]
+
+
+def _gear_labels(path: Path) -> list[str]:
+    block = _gear_section(path)
+    return re.findall(r'data-ga-type="amazon_search">([^<]+)</a>', block)
+
+
+def test_the_home_page_and_county_index_carry_the_block(built: Path) -> None:
+    """DECISIONS 0040. The fixture's week starts in September, so the home
+    page has the fixed four and no cold-weather search."""
+    fixed = [label for label, _ in site.GEAR_CATEGORIES]
+    for rel, placement in (("index.html", "home"), ("county/index.html", "counties")):
+        path = built / rel
+        page = _parse(path)
+        assert len([h for h, _ in page.anchors if _is_amazon(h)]) == len(fixed), rel
+        assert DISCLOSURE in page.prose() and ENDORSEMENT in page.prose()
+        block = _gear_section(path)
+        assert f'data-ga-placement="{placement}"' in block
+        assert not FORBIDDEN_COPY.search(re.sub(r"<[^>]+>", " ", block))
+        assert _gear_labels(path) == fixed
+
+
+def test_cold_month_gear_is_added_in_winter_weeks_only() -> None:
+    fixed = [g["label"] for g in site.gear_links()]
+    cold = [g["label"] for g in site.gear_links(cold_months=True)]
+    assert cold == fixed + [label for label, _ in site.COLD_MONTH_GEAR]
+    for label, terms in site.COLD_MONTH_GEAR:
+        assert not FORBIDDEN_COPY.search(label + " " + terms)
+    for week, winter in (
+        ("2026-11-01", True),
+        ("2026-12-27", True),
+        ("2027-01-03", True),
+        ("2027-02-28", True),
+        ("2027-03-07", False),
+        ("2026-10-25", False),
+        ("2026-09-13", False),
+    ):
+        assert site.is_winter_week(week) is winter, week
+    assert site.is_winter_week("") is False
+
+
+def test_a_winter_week_adds_the_cold_month_search_to_the_home_page_only(
+    tmp_path: Path,
+) -> None:
+    """A build whose current CDFW week starts in December: the home page gets
+    the extra search, and water and county pages keep the fixed four."""
+    v1 = _build(tmp_path / "src")
+    snap = json.loads((v1 / "snapshot" / "v1.json").read_text("utf-8"))
+    snap["source_week"] = {
+        **snap["source_week"],
+        "start": "2026-12-06",
+        "end": "2026-12-12",
+        "label": "week of 2026-12-06",
+    }
+    out = tmp_path / "winter"
+    site.build_site(snap, out, base_url=BASE_URL)
+    cold = [label for label, _ in site.COLD_MONTH_GEAR]
+    assert _gear_labels(out / "index.html")[-len(cold) :] == cold
+    for path in (out / "county" / "index.html", _water_file(out)):
+        assert not set(cold) & set(_gear_labels(path)), path
+    assert _problems(out) == []
 
 
 def _src(state: str) -> dict[str, Any]:

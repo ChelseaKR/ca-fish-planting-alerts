@@ -223,15 +223,16 @@ def _gear_problems(out: Path) -> list[str]:
 
 
 def _outside_problems(out: Path) -> list[str]:
-    """Amazon anywhere that is not a California water or county page or the
-    guide (DECISIONS 0029, 0030, 0039). This build has no other state."""
+    """Amazon anywhere that is not a California water or county page, the
+    home page, the /county/ index or the guide (DECISIONS 0029, 0030, 0039,
+    0040). This build has no other state."""
     found: list[str] = []
     for path in sorted(out.rglob("*")):
         if not path.is_file():
             continue
         rel = path.relative_to(out).parts
         allowed = path.suffix == ".html" and (
-            rel == ("gear", "index.html")
+            rel in (("gear", "index.html"), ("index.html",), ("county", "index.html"))
             or (
                 len(rel) == 3
                 and rel[0] in ("water", "county")
@@ -411,12 +412,12 @@ def test_control_a_disclosure_only_at_the_end_is_noticed(tmp_path: Path) -> None
     assert any("before the first link" in p for p in problems), problems
 
 
-def test_control_an_amazon_link_on_the_home_page_is_noticed(tmp_path: Path) -> None:
+def test_control_an_amazon_link_on_the_about_page_is_noticed(tmp_path: Path) -> None:
     out = _build(tmp_path)
     assert _outside_problems(out) == []
     link = f'<a href="https://www.amazon.com/s?k=x&amp;tag={site.AMAZON_ASSOCIATE_TAG}">x</a>'
-    _sabotage(out / "index.html", "</main>", link + "</main>")
-    assert any("index.html: Amazon link" in p for p in _outside_problems(out))
+    _sabotage(out / "about" / "index.html", "</main>", link + "</main>")
+    assert any("about/index.html: Amazon link" in p for p in _outside_problems(out))
 
 
 def test_control_amazon_in_the_sitemap_is_noticed(tmp_path: Path) -> None:

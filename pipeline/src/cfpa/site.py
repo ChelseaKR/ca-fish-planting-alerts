@@ -342,12 +342,27 @@ def amazon_search_url(terms: str) -> str:
     return f"{AMAZON_SEARCH_URL}?{urlencode({'k': terms, 'tag': AMAZON_ASSOCIATE_TAG})}"
 
 
-def gear_links() -> list[dict[str, str]]:
-    """The gear block's links, built from ``GEAR_CATEGORIES``."""
-    return [
-        {"label": label, "url": amazon_search_url(terms)}
-        for label, terms in GEAR_CATEGORIES
-    ]
+# The home page's block adds cold-weather gear when the current CDFW week
+# starts in November through February (DECISIONS 0040). Only the home page:
+# its lastmod moves at every weekly rollover, so a list that changes with the
+# month never changes a page whose lastmod says it did not. Water and county
+# pages keep the fixed four.
+WINTER_MONTHS = frozenset({11, 12, 1, 2})
+COLD_MONTH_GEAR: tuple[tuple[str, str], ...] = (
+    ("Insulated fishing gloves", "insulated fishing gloves"),
+)
+
+
+def is_winter_week(week_start: str) -> bool:
+    """Whether a CDFW week starting on ``week_start`` starts in winter."""
+    return bool(week_start) and dt.date.fromisoformat(week_start).month in WINTER_MONTHS
+
+
+def gear_links(*, cold_months: bool = False) -> list[dict[str, str]]:
+    """The gear block's links, built from ``GEAR_CATEGORIES``, plus
+    ``COLD_MONTH_GEAR`` when ``cold_months``."""
+    pairs = GEAR_CATEGORIES + (COLD_MONTH_GEAR if cold_months else ())
+    return [{"label": label, "url": amazon_search_url(terms)} for label, terms in pairs]
 
 
 # The "What to bring" guide at /gear/ (DECISIONS 0030). Section key, then
@@ -889,6 +904,110 @@ def _county_months(
     if view is not None:
         view["water_count"] = waters
     return view
+
+
+# The winter sections (DECISIONS 0040). "Winter" is November through
+# February, calendar months, not a CDFW term. The record holds a whole past
+# winter, so a county page and the home page can say which waters CDFW's
+# schedule listed in it, from the record alone and never as a forecast.
+HOME_WINTER_COUNTIES = 10
+"""The home page's winter block names this many counties at most, the ones
+with the most waters listed last winter."""
+
+
+def latest_complete_winter(
+    source_week_start: str, recorded_since: str
+) -> dict[str, str] | None:
+    """The most recent November-to-February that ended before the current
+    week, when the record covers it from its start; otherwise None.
+
+    A winter counts only when the record begins on or before its November 1,
+    so a county with no water listed in it is a fact about the record and
+    never a gap in the record read as absence. ``end`` is exclusive (March 1).
+    ``shown_from`` is the first CDFW week (Sunday) on or after ``end``: the
+    rollover at which this winter became the latest complete one, which a
+    page's lastmod counts."""
+    if not source_week_start or not recorded_since:
+        return None
+    current = dt.date.fromisoformat(source_week_start)
+    end_year = current.year if current.month >= 3 else current.year - 1
+    start = dt.date(end_year - 1, 11, 1)
+    end = dt.date(end_year, 3, 1)
+    if recorded_since > start.isoformat():
+        return None
+    shown_from = dt.date.fromisoformat(week_of(end)["start"])
+    if shown_from < end:
+        shown_from += dt.timedelta(days=7)
+    return {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "label": f"November {end_year - 1} through February {end_year}",
+        "shown_from": shown_from.isoformat(),
+    }
+
+
+def _winter_weeks(w: dict[str, Any], season: dict[str, str]) -> set[str]:
+    """The listed weeks of ``w`` that start inside ``season``."""
+    return {
+        p["week"]["start"]
+        for p in w["plants"]
+        if p["status"] == "listed"
+        and season["start"] <= p["week"]["start"] < season["end"]
+    }
+
+
+def _county_winter(
+    members: list[dict[str, Any]], season: dict[str, str] | None
+) -> dict[str, Any] | None:
+    """A county's waters listed in ``season``, most listed weeks first, then
+    by name; None when no winter is covered. An empty ``rows`` means the
+    record covers that winter and no county water was listed in it."""
+    if season is None:
+        return None
+    rows: list[dict[str, Any]] = []
+    all_weeks: set[str] = set()
+    for w in members:
+        listed = _winter_weeks(w, season)
+        if listed:
+            all_weeks |= listed
+            rows.append({"slug": w["slug"], "name": w["name"], "weeks": len(listed)})
+    rows.sort(key=lambda r: (r["name"], r["slug"]))
+    rows.sort(key=lambda r: r["weeks"], reverse=True)
+    return {"label": season["label"], "rows": rows, "week_count": len(all_weeks)}
+
+
+def _home_winter(
+    waters: list[dict[str, Any]],
+    season: dict[str, str] | None,
+    county_link: dict[str, dict[str, str]],
+) -> dict[str, Any] | None:
+    """Last winter statewide: how many waters and counties CDFW's schedule
+    listed, and the counties with the most listed waters (at most
+    ``HOME_WINTER_COUNTIES``, ties by name). None when no winter is covered
+    or nothing was listed in it, so the home page never shows a zero."""
+    if season is None:
+        return None
+    by_county: dict[str, set[str]] = {}
+    listed_ids: set[str] = set()
+    for w in waters:
+        if not _winter_weeks(w, season):
+            continue
+        listed_ids.add(w["id"])
+        for c in w["counties"]:
+            if c in county_link:
+                by_county.setdefault(c, set()).add(w["id"])
+    if not listed_ids:
+        return None
+    ranked = sorted(by_county.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+    counties: list[dict[str, Any]] = [
+        {**county_link[c], "count": len(ids)} for c, ids in ranked
+    ]
+    return {
+        "label": season["label"],
+        "water_count": len(listed_ids),
+        "county_count": len(counties),
+        "counties": counties[:HOME_WINTER_COUNTIES],
+    }
 
 
 def _weeks_phrase(n: float) -> str:
@@ -1951,6 +2070,9 @@ def _render_county_page(
         region_link=region_link,
         water_count=len(members),
         county_months=_county_months(members, recorded_since=ctx.recorded_since),
+        county_winter=_county_winter(
+            members, latest_complete_winter(ctx.source_week_start, ctx.recorded_since)
+        ),
         this_week_rows=this_week_rows,
         later_rows=later_rows,
         recent_weeks=_county_recent_weeks(
@@ -2009,10 +2131,12 @@ def _render_counties_index(
     title = f"California {species} planting schedule by county | {SITE_NAME}"
     html = ctx.env.get_template("counties.html.jinja").render(
         title=title,
+        # "DFG": CDFW's name before 2013, which people still search with;
+        # the home page's description says the same.
         description=(
-            f"CDFW's California {species} planting schedule by county: every "
-            "county with a water on the schedule, by CDFW region, with each "
-            "water's stocking history and this week's fish plants."
+            f"CDFW's (formerly DFG) {species} planting schedule by county: "
+            "every California county with a water on it, by region, with this "
+            "week's plants and stocking history."
         ),
         canonical_url=page_url,
         root="../",
@@ -2031,6 +2155,8 @@ def _render_counties_index(
         regions=regions,
         species=species,
         county_count=county_count,
+        gear_links=gear_links(),
+        affiliate_rel=AFFILIATE_LINK_REL,
     )
     _write_page(ctx.out_dir, "county", html, ctx.written)
     return page_url
@@ -2794,6 +2920,14 @@ def build_site(
     region_links = _region_links(snapshot, county_names, region_by_county)
     region_link_by_code = {r["code"]: r for r in region_links}
 
+    # The first week on record, and the last whole winter it covers (the
+    # winter blocks on the home and county pages, DECISIONS 0040).
+    recorded_since = min(
+        (p["week"]["start"] for w in snapshot["waters"] for p in w["plants"]),
+        default="",
+    )
+    winter_season = latest_complete_winter(source_week_start, recorded_since)
+
     week_is_empty = not snapshot["this_week"]
     upcoming_rows, recent_rows = (
         _home_nearest_weeks(snapshot, county_link) if week_is_empty else ([], [])
@@ -2840,6 +2974,9 @@ def build_site(
         closest_enabled=bool(coords),
         closest_script_tag=CLOSEST_SCRIPT_TAG,
         coords_path=f"assets/{COORDS_FILE}",
+        winter=_home_winter(snapshot["waters"], winter_season, county_link),
+        gear_links=gear_links(cold_months=is_winter_week(source_week_start)),
+        affiliate_rel=AFFILIATE_LINK_REL,
     )
     _write_page(out_dir, "", index_html, written)
 
@@ -2958,10 +3095,6 @@ def build_site(
     not_found_path.write_text(not_found_html, encoding="utf-8")
     written.append(not_found_path)
 
-    recorded_since = min(
-        (p["week"]["start"] for w in snapshot["waters"] for p in w["plants"]),
-        default="",
-    )
     ctx = _PageContext(
         env=env,
         out_dir=out_dir,
@@ -3026,10 +3159,13 @@ def build_site(
             region_link=region_link_by_code.get(code),
             region_counties=region_counties,
         )
+        # The winter section changes at the rollover that makes a new
+        # winter the latest complete one (latest_complete_winter).
         county_lastmods[page_url] = max(
             [
                 *(data_lastmods[w["id"]] for w in members),
                 *(county_first_seen[o["name"]] for o in region_counties),
+                *([winter_season["shown_from"]] if winter_season else []),
             ]
         )
         counties_by_region.setdefault(region_by_county.get(c, ""), []).append(

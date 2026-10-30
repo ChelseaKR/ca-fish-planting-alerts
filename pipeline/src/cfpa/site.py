@@ -1635,28 +1635,44 @@ def _relative_trail(
 _TITLE_RE = re.compile(r"<title>(.*?)</title>", re.S)
 
 
-def check_unique_titles(out_dir: Path, written: list[Path]) -> None:
-    """Refuse a build in which two pages share a <title>. A search engine
-    reads a repeated title as one page said twice; New York's river sections
-    did exactly that until each named its town (site_states.shared_names).
-    Raises ValueError naming every repeated title and its pages."""
-    pages: dict[str, list[str]] = {}
+def ensure_unique_titles(out_dir: Path, written: list[Path]) -> list[str]:
+    """The last guard against two pages sharing a <title>, which a search
+    engine reads as one page said twice. Never fails the build (owner
+    decision 2026-10-29): each page in a clash gets its own path appended to
+    its <title> ("... | Trout Truck (ny/water/foo/)"), short, stable and
+    unique, and a warning names every page. Water pages are told apart
+    earlier (site_states.shared_names, site_states.qualifiers), so on
+    today's data this changes nothing. Returns the pages it changed."""
+    pages: dict[str, list[Path]] = {}
     for path in written:
         if path.suffix != ".html":
             continue
         m = _TITLE_RE.search(path.read_text(encoding="utf-8"))
         if m:
             title = " ".join(m.group(1).split())
-            pages.setdefault(title, []).append(str(path.relative_to(out_dir)))
-    repeated = {t: ps for t, ps in pages.items() if len(ps) > 1}
-    if repeated:
-        lines = [
-            f"  {t!r}: {', '.join(sorted(ps))}" for t, ps in sorted(repeated.items())
-        ]
-        raise ValueError(
-            f"{len(repeated)} page title(s) used by more than one page:\n"
-            + "\n".join(lines)
+            pages.setdefault(title, []).append(path)
+    changed: list[str] = []
+    lines: list[str] = []
+    for title, paths in sorted(pages.items()):
+        if len(paths) < 2:
+            continue
+        for path in sorted(paths):
+            rel = path.relative_to(out_dir).parent.as_posix()
+            label = f"{rel}/" if rel != "." else path.name
+            html = path.read_text(encoding="utf-8")
+            m = _TITLE_RE.search(html)
+            if m is None:  # pragma: no cover - every page in `pages` has one
+                continue
+            new = f"<title>{m.group(1).strip()} ({label})</title>"
+            path.write_text(html[: m.start()] + new + html[m.end() :], encoding="utf-8")
+            changed.append(label)
+            lines.append(f"{label}: {title!r}")
+    if lines:
+        site_states.warn_titles(
+            f"{len(changed)} page(s) shared a <title>; each now ends with its path",
+            lines,
         )
+    return changed
 
 
 def _write_page(out_dir: Path, rel_dir: str, html: str, written: list[Path]) -> None:
@@ -3388,5 +3404,5 @@ def build_site(
         # find_key reads TEMPLATES_DIR, which holds exactly one such file.
         written.append(indexnow.copy_key_file(TEMPLATES_DIR, out_dir))
 
-    check_unique_titles(out_dir, written)
+    ensure_unique_titles(out_dir, written)
     return written

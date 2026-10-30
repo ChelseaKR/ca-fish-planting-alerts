@@ -1147,3 +1147,44 @@ links come out in one edit.
   kinds alone, checks the agency sentence per page, and has negative controls
   for a state with unknown terms (no links), CDFW named on a state page, and
   a link on a state hub.
+
+## 0040 — Winter on the record, and gear links on the home page and /county/ (2026-10-29)
+
+Extends 0039. Same Amazon Associates account (`trouttruck-20`), same search
+links, same deadline: 3 qualifying sales by about 2027-04-17.
+
+- **Why.** Search Console, 2026-07-30 to 2026-10-27, `sc-domain:trouttruck.com`:
+  1,264 impressions and 41 clicks, almost all of them from 2026-10-15 to
+  2026-10-22 (135 to 197 a day), then 3 to 9 a day from 2026-10-23. The
+  queries are county and water schedule searches ("fresno trout plant",
+  position 5 to 10; "lake ralphine stocking schedule", 7.3) and the old
+  agency name ("dfg fish planting schedule", "dfg trout plants", positions
+  10 to 55). GA4, 28 days to 2026-10-28: the home page is the most common
+  landing page (71 sessions, 11 of them engaged), and it carried no
+  gear link. GA4 recorded no `gear_click` in that window.
+- **Winter on the record.** The record holds a whole past winter (listed
+  weeks from 2025-09 on). Each county page gains "Winter plants in X County":
+  the county's waters CDFW's schedule listed from November through February
+  of the most recent complete winter, with the number of listed weeks each,
+  and the home page gains the statewide count and the counties with the most
+  listed waters. "Winter" is the calendar months, not a CDFW term. The block
+  appears only when the record begins on or before that November 1, so a
+  county with no listed water is a fact about the record, never a gap read
+  as absence; it says it is a record of what was scheduled, not a forecast.
+  A county page's lastmod counts the rollover at which a new winter becomes
+  the latest complete one (`latest_complete_winter()["shown_from"]`).
+- **Gear links.** The home page and `/county/` carry the same block as the
+  county pages (`_gear_block.html.jinja`, placements `home` and `counties`).
+  From November through February, by the start of CDFW's current week, the
+  home page's block adds one cold-weather search ("Insulated fishing
+  gloves"); the home page's lastmod already moves at every rollover, so no
+  page changes while its lastmod says it did not. Water and county pages keep
+  the fixed four. Region, species, week, guide, `/states/` and state hub
+  pages still carry none.
+- **Copy.** Unchanged in kind (0029, 0039): categories, never products; no
+  price, rating, image, brand or "best"; Amazon's disclosure sentence; the
+  CDFW non-endorsement sentence; `rel="sponsored nofollow noopener"`. The
+  county index description and lede say CDFW was called the Department of
+  Fish and Game (DFG) before 2013, as the home page description already did.
+  County page h1s say "stocking and planting schedule", the wording of the
+  water page titles. Ads stay off.

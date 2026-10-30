@@ -38,11 +38,14 @@ class MultiStateTest {
         assertTrue(v1.waters.all { it.state == "CA" && it.semantics == StateSemantics.SCHEDULE })
     }
 
-    @Test fun theBundledSnapshotIsV2WithTennessee() {
+    @Test fun theBundledSnapshotIsV2WithEveryState() {
         val bundled = SnapshotDecoder.decode(TS.bundledSnapshot.readBytes())
         assertEquals(2, bundled.schemaVersion)
         assertEquals("CA", bundled.states.first().code)
-        assertNotNull("the app ships Tennessee", bundled.state("TN"))
+        for (code in listOf("TN", "MA", "MI", "NY")) {
+            assertNotNull("the app ships $code", bundled.state(code))
+            assertTrue("the app ships $code's waters", bundled.waters.any { it.state == code })
+        }
     }
 
     @Test fun tennesseeKeepsTheAgencysPrecision() {

@@ -24,7 +24,7 @@ from urllib.parse import urlsplit
 
 import pytest
 
-from cfpa import cli, site, state_coverage
+from cfpa import cli, site, site_states, state_coverage
 from cfpa.states import SOURCES
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -316,7 +316,7 @@ def test_states_page_title_description_and_sitemap(built: Path) -> None:
     pages = _pages(built)
     text = pages["states/index.html"]
     title = _search(r"<title>(.*?)</title>", text).group(1)
-    assert title == "Trout stocking schedules in all 50 states | Trout Truck"
+    assert title == "Trout stocking schedule for all 50 states | Trout Truck"
     others = [
         n
         for n, t in pages.items()
@@ -476,3 +476,15 @@ def test_negative_control_a_label_out_of_step_with_its_header_is_caught(
     sabotaged = text.replace('data-label="Agency"', 'data-label="Waters"', 1)
     assert sabotaged != text  # the sabotage applied
     assert _stack_table_problems(sabotaged)
+
+
+def test_states_description_leads_with_the_search_phrase_when_it_fits() -> None:
+    live = ["California", "Massachusetts", "Michigan", "New York", "Tennessee"]
+    got = site_states._index_description(live, [])
+    assert got.startswith("Trout stocking schedule by state: California, ")
+    assert len(got) <= 160
+    # Too long with the phrase: the old wording, still within the limit.
+    soon = ["Massachusetts", "Michigan", "New York"]
+    longer = site_states._index_description(["California", "Tennessee"], soon)
+    assert longer.startswith("California and Tennessee trout stocking schedules; ")
+    assert len(longer) <= 160

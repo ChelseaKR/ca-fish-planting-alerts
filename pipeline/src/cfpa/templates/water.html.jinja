@@ -1,11 +1,11 @@
 {% extends "base.html.jinja" %}
 {% set share_card_kind = "water" %}
 {% block content %}
-<h1>{{ water.place }} {{ water.species }} stocking schedule and history</h1>
+<h1>{{ water.search_place }} {{ water.species }} stocking schedule and history</h1>
 {% include "_water_status.html.jinja" %}
 <p class="lede">
   {{ water.name }} is in {{ water.county_phrase }}, in the California
-  Department of Fish and Wildlife's {{ water.region_name }}. It has been on
+  Department of Fish and Wildlife's {{ water.region_name }}.{% if water.usgs_name %} The U.S. Geological Survey names it {{ water.usgs_name }}.{% endif %} It has been on
   CDFW's {{ water.species }} planting schedule in
   {{ water.listed_week_count }} {{ "week" if water.listed_week_count == 1 else "weeks" }}
   {% if recorded_since_label %}since the {{ recorded_since_label }}, as far back as this site's record goes{% else %}in the time this site has recorded{% endif %}.

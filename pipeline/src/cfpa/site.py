@@ -584,8 +584,25 @@ def _plural(n: int, one: str, many: str) -> str:
     return f"{n} {one if n == 1 else many}"
 
 
+def usgs_lake_name(name: str, usgs_name: str | None) -> str:
+    """USGS's name for a water when it is CDFW's name with "Lake" moved to
+    the front ("Ralphine Lake" -> "Lake Ralphine"), else "". Searchers type
+    that form: in Search Console from 2026-07-31 to 2026-10-28, 19 of
+    Ralphine Lake's 20 query impressions were for "lake ralphine", and
+    "lake cuyamaca" and "lake skinner" searches found those pages too. Any
+    other USGS match (Skinner Lake's is "Skinner Reservoir") is not shown."""
+    if not usgs_name or not name.endswith(" Lake"):
+        return ""
+    stem = name[: -len(" Lake")]
+    return usgs_name if usgs_name.lower() == f"lake {stem}".lower() else ""
+
+
 def _water_view(
-    w: dict[str, Any], *, source_week_start: str, shared_name: bool = False
+    w: dict[str, Any],
+    *,
+    source_week_start: str,
+    shared_name: bool = False,
+    usgs_name: str | None = None,
 ) -> dict[str, Any]:
     plants_sorted = sorted(w["plants"], key=lambda p: p["week"]["start"], reverse=True)
     other_names = [n for n in w["aliases"] if n != w["name"]]
@@ -602,6 +619,7 @@ def _water_view(
     this_week = source_week_start in listed_weeks
     species = species_phrase({p["species"] for p in w["plants"]})
     place = f"{w['name']} ({county_phrase(w['counties'])})"
+    also = usgs_lake_name(w["name"], usgs_name)
     return {
         "slug": w["slug"],
         "name": w["name"],
@@ -613,6 +631,12 @@ def _water_view(
         # True for the few CDFW names that more than one water carries; just
         # those titles keep the county (_water_title).
         "shared_name": shared_name,
+        # USGS's "Lake X" for CDFW's "X Lake", or "". When set, the title,
+        # h1 and description carry both names (search_place).
+        "usgs_name": also,
+        "search_place": (
+            f"{w['name']} ({also}, {county_phrase(w['counties'])})" if also else place
+        ),
         "county_phrase": county_phrase(w["counties"]),
         "species": species,
         "counties": counties,
@@ -746,9 +770,25 @@ def _water_title(view: dict[str, Any]) -> str:
     waters that rank today rank under it). The county is left out unless
     another water shares the name; the h1, description and breadcrumb carry
     it. A long name drops the species word, then "planting", and never the
-    water's name."""
-    base = view["place"] if view["shared_name"] else view["name"]
+    water's name.
+
+    A water with a USGS "Lake X" name (``usgs_lake_name``) carries both
+    names and "stocking schedule", the words its searchers used; the pair
+    can run a character or two past the limit, and the brand is what a
+    result cuts."""
     species = view["species"]
+    if view["usgs_name"]:
+        both = (
+            view["search_place"]
+            if view["shared_name"]
+            else (f"{view['name']} ({view['usgs_name']})")
+        )
+        paired = (
+            f"{both} {species} stocking schedule | {SITE_NAME}",
+            f"{both} stocking schedule | {SITE_NAME}",
+        )
+        return next((t for t in paired if len(t) <= WATER_TITLE_MAX), paired[-1])
+    base = view["place"] if view["shared_name"] else view["name"]
     candidates = (
         f"{base} {species} stocking and planting schedule | {SITE_NAME}",
         f"{base} stocking and planting schedule | {SITE_NAME}",
@@ -1053,7 +1093,7 @@ def _water_description(view: dict[str, Any], *, source_week_label: str) -> str:
     else:
         status = "no week currently listed."
     weeks = _plural(view["listed_week_count"], "week", "weeks")
-    head = f"{view['place']} {view['species']} stocking schedule: {status}"
+    head = f"{view['search_place']} {view['species']} stocking schedule: {status}"
     # Longest tail that keeps the whole description within the limit.
     tails = (
         f" CDFW planting history, {weeks} on record, and a calendar feed.",
@@ -2791,6 +2831,7 @@ def build_site(
     cname: str | None = None,
     snapshot_v2: dict[str, Any] | None = None,
     ads: ads_mod.AdsConfig | None = None,
+    usgs_lake_names: dict[int, str] | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
 
@@ -2817,6 +2858,11 @@ def build_site(
     settings, which are off. Off, the build is exactly what it was without
     it; on, the pages in ``ads.AD_PAGES`` carry one ad unit, the footer
     links to the ad choices and the root has an ads.txt.
+
+    ``usgs_lake_names`` (``locations.load_usgs_lake_names``, passed by
+    ``cli.run``) maps a CDFW stock id to the geocoder's USGS match. A water
+    whose USGS name is its CDFW name with "Lake" moved to the front shows
+    both on its page (``usgs_lake_name``). None changes nothing.
     """
     # Checked before anything is written: a bad ID must not half-build.
     ga4_measurement_id = ga4_measurement_id_or_none(ga4_measurement_id)
@@ -2925,6 +2971,7 @@ def build_site(
             w,
             source_week_start=source_week_start,
             shared_name=name_counts[w["name"]] > 1,
+            usgs_name=(usgs_lake_names or {}).get(w["cdfw_stock_id"]),
         )
         for w in snapshot["waters"]
     }

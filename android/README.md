@@ -31,15 +31,15 @@ byte for byte.
 
 ## The bundled snapshot
 
-The app reads `snapshot/v1.json`, California only, which stays
-byte-compatible beside v2 (docs/DECISIONS.md 0025). It ships a committed v1
-snapshot, `app/src/main/assets/snapshot.json`, so a fresh install opens on
-a real week with no network. The iOS app bundles v2, so the two files are
-separate.
+The app reads `snapshot/v2.json`, every state (docs/DECISIONS.md 0025).
+Only when v2 isn't there (HTTP 404 or 410) does it read `snapshot/v1.json`,
+California alone; the decoder reads both. It ships a committed v2 snapshot,
+`app/src/main/assets/snapshot.json`, so a fresh install opens on real
+weeks with no network.
 
 Refresh it before a release build with `scripts/sync-bundled-snapshot.sh`.
-The script downloads the live v1 snapshot, checks it against
-`schema/snapshot.v1.json`, refuses one older than the bundled copy, and
+The script downloads the live v2 snapshot, checks it against
+`schema/snapshot.v2.json`, refuses one older than the bundled copy, and
 replaces the file. It needs `curl` and `uv`, like the iOS script.
 `SnapshotDecoderTest` decodes the committed file, so a file the app can't
 read fails the build.
@@ -51,12 +51,48 @@ that load.
 
 ## The alert planner is held to the Swift one
 
-The fixtures in `ios/PlantingCore/Tests/PlantingCoreTests/Fixtures/` are
-synthetic scenarios and two real-data excerpts, with the alerts recorded
-from the Swift planner. `AlertPlannerParityTests.swift` and
-`AlertPlannerParityTest.kt` both run every scenario. A change to either
-planner that changes an alert, an id, the words or a baseline fails one of
-them.
+The fixtures in `ios/PlantingCore/Tests/PlantingCoreTests/Fixtures/` carry
+expectations recorded from the Swift planner:
+
+- `alert-planner-parity.json`: California, synthetic scenarios and two
+  real-data excerpts. `AlertPlannerParityTests.swift` and
+  `AlertPlannerParityTest.kt` run it.
+- `alert-planner-parity-states.json`: every state of `v2-all-states.json`,
+  with weeks, days, months and reports, which alerts each state's purchase
+  lets the app post, and the widget's rows. `MultiStateParityTests.swift`
+  and `MultiStateParityTest.kt` run it.
+
+A change to either planner that changes an alert, an id, the words, a
+baseline or a widget row fails one of them. To re-record after a deliberate
+change, run `PARITY_RECORD=1 swift test` in `ios/PlantingCore`, review the
+diff, and run the Android tests against it.
+
+## States and purchases
+
+Browse has a state picker and a States screen once the snapshot has more
+than one state. Each state is its own Google Play one-time product
+(`StateProducts` in `core`):
+
+| State | Google Play  | App Store                                 |
+|-------|--------------|-------------------------------------------|
+| CA    | `fullaccess` | `com.chelseakr.cafishplanting.fullaccess` |
+| TN    | `state_tn`   | `com.chelseakr.cafishplanting.state.tn`   |
+| MA    | `state_ma`   | `com.chelseakr.cafishplanting.state.ma`   |
+| MI    | `state_mi`   | `com.chelseakr.cafishplanting.state.mi`   |
+| NY    | `state_ny`   | `com.chelseakr.cafishplanting.state.ny`   |
+
+A Play product ID already belongs to this one app, so the Play IDs drop the
+package-name prefix. A state's product unlocks that state's favorites'
+notifications and lists them in the widget. All five are sold: they are the
+five states in the published `snapshot/v2.json` (checked 2026-10-24). A
+state missing from the snapshot is left out of the app, product and all.
+
+New York is a plan state (DECISIONS 0034): NYS DEC publishes a spring plan
+once a year in its own words ("April - third week, 2026"). The app shows
+those words verbatim, never as a date, and its purchase adds a reminder on
+the first day of each favorite's planned period of a month or less
+(`ReminderPlanner` in `core`, scheduled by `ReminderWorker` at 9 a.m. local
+time), as the iOS app does.
 
 ## Debug switches
 
@@ -77,24 +113,28 @@ com.chelseakr.cafishplanting`:
 The app can't reach testers until these are done in Play Console.
 
 1. Create the app: name Trout Truck, package `com.chelseakr.cafishplanting`,
-   free with an in-app product.
+   free with in-app products.
 2. App signing: enroll in Play App Signing, so Google holds the app key.
    Create an upload key outside the repo, then sign release builds with
    it. No key or keystore password goes in this repository.
    `docs/ANDROID-RELEASE.md` has the exact commands, and the manual
    `android-release` workflow builds the signed bundle.
-3. In-app product: create a one-time product with the ID `fullaccess`
-   (`ProductCatalog.CALIFORNIA_FULL_ACCESS` in `core`), at the iOS price.
-   It unlocks alerts and the home screen widget. If Play requires a
-   different ID, change that one constant.
+3. In-app products: create five one-time products, each USD 9.99:
+   `fullaccess` (California), `state_tn` (Tennessee), `state_ma`
+   (Massachusetts), `state_mi` (Michigan) and `state_ny` (New York). Each
+   unlocks its own state's notifications and home screen widget; New York's
+   are reminders. Names and descriptions are in `docs/ANDROID-RELEASE.md`,
+   step 6. The IDs are in `StateProducts` in `core`; if Play needs a
+   different one, change it there.
 4. Data safety: no data collected or shared. The app has no account,
-   analytics or crash reporting. Its one request is a plain GET of the
-   public snapshot. Favorites, mutes and the alert baseline stay on the
-   device and are excluded from cloud backup
+   analytics or crash reporting. Its only requests are plain GETs of the
+   public snapshot (v2, or v1 when v2 isn't there). Favorites, mutes and
+   the alert baseline stay on the device and are excluded from cloud backup
    (`app/src/main/res/xml/backup_rules.xml` and
    `data_extraction_rules.xml`).
 5. Store listing, content rating and target audience, using the iOS
    listing's copy with "home screen" in place of "Home Screen and Lock
-   Screen".
+   Screen". The iOS listing still says California; DECISIONS 0025 says it
+   changes when a state goes on sale.
 6. Upload a signed release bundle to the internal testing track and add
    testers.

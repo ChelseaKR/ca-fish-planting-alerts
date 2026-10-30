@@ -205,3 +205,33 @@ PNGs, not 580. A card says "scheduled" and never "stocked", the same rule as the
 pages. `tests/test_share_cards.py` pins the size, the wording and which kind
 each page names. Per-page cards (a water's own name on its card) were measured
 and not chosen: see the pull request.
+
+## Addendum 2026-10-23: county pages as landing pages
+
+County pages already rank for "trout planting schedule <county>" style
+queries (roadmap, Stage 1), so they get attention before any new page type.
+
+- **Description from the data.** The meta description was one sentence for
+  every county with the name swapped in. It now says what the schedule says
+  for that county: the waters scheduled this week by name, or "none scheduled
+  this week" with the soonest later week and its waters, or "nothing
+  scheduled this week or later" with the last week a county water was listed.
+  Names that do not fit 160 characters are counted ("and 4 more"). The
+  current week's date is printed only when a county water is listed for it,
+  which keeps the lastmod rule above true.
+- **Recently on the schedule.** The county's latest four earlier weeks with a
+  listed water, one row per plant, each week linked to its `/week/` page
+  (DECISIONS 0038). Removed entries are never shown. A county with no earlier
+  week says so in a sentence, never as a zero.
+- **More counties in the region.** Links to the other counties of the same
+  CDFW region, by name only. The county's lastmod adds the day each of those
+  counties first appeared, and nothing else about them.
+- **App line.** The same rule as the water page: before launch it says the
+  app is on its way and links `/about/#app`; once `APP_STORE_LIVE` is on it
+  links the listing with `data-app-store-placement="county"`.
+- **Water history rows** link each past listed week to its `/week/` page.
+  The current week, later weeks and removed weeks have no such page entry,
+  so they stay plain text.
+
+No new page, structured data type or affiliate link: the county pages carry
+no gear links, so none were added.

@@ -98,6 +98,26 @@
 <p>No plants are listed for the {{ source_week_label }} on CDFW's schedule. This is CDFW's own page saying so &mdash; not a failed or stale fetch, which this site refuses to publish (see <a href="{{ root }}about/">about &amp; attribution</a>).</p>
 {% endif %}
 
+{# Last winter statewide (site._home_winter, DECISIONS 0040): only when the
+   record covers a whole winter and CDFW listed a water in it. #}
+{% if winter %}
+<section class="home-winter" aria-labelledby="winter-heading">
+  <h2 id="winter-heading">Winter trout plants: last winter on the record</h2>
+  <p>
+    From {{ winter.label }}, CDFW's schedule listed {{ winter.water_count }}
+    California {{ "water" if winter.water_count == 1 else "waters" }} for planting, in
+    {{ winter.county_count }} {{ "county" if winter.county_count == 1 else "counties" }}.
+    The counties with the most waters on it then:
+  </p>
+  <ul class="water-index">
+    {% for c in winter.counties %}
+    <li><a href="{{ root }}county/{{ c.slug }}/#winter">{{ c.name }} County</a> <span class="muted">({{ c.count }} {{ "water" if c.count == 1 else "waters" }})</span></li>
+    {% endfor %}
+  </ul>
+  <p class="muted">A record of what was scheduled last winter, not a forecast for this one. Each county page lists its own winter waters.</p>
+</section>
+{% endif %}
+
 {% if region_links %}
 <h2>Browse by CDFW region</h2>
 <ul class="water-index">
@@ -118,6 +138,13 @@
 
 <h2>Guides</h2>
 <p>New to the schedule? <a href="{{ root }}guide/">Plain guides</a> explain <a href="{{ root }}guide/how-to-read-the-schedule/">how to read it</a>, <a href="{{ root }}guide/scheduled-vs-confirmed/">what scheduled means</a> and <a href="{{ root }}guide/what-is-a-trout-plant/">what a trout plant is</a>.</p>
+
+{% if gear_links %}
+{% set gear_heading = "Gear for a day at a trout water" %}
+{% set gear_intro = "Heading to a water on CDFW's schedule?" %}
+{% set gear_placement = "home" %}
+{% include "_gear_block.html.jinja" %}
+{% endif %}
 
 {% if week_archive %}
 <h2>Earlier weeks</h2>

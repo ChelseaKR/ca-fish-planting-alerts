@@ -138,7 +138,7 @@ final class MultiStateTests: XCTestCase {
         XCTAssertEqual(StateAccess.productID(forState: "CA"), "com.chelseakr.cafishplanting.fullaccess")
         XCTAssertEqual(StateAccess.entitledStates(fromProductIDs: ["com.chelseakr.cafishplanting.fullaccess"]), ["CA"])
         XCTAssertEqual(StateAccess.entitledStates(fromProductIDs: ["com.chelseakr.cafishplanting.state.tn", "unknown"]), ["TN"])
-        XCTAssertEqual(StateAccess.allProductIDs.count, 4)
+        XCTAssertEqual(StateAccess.allProductIDs.count, 5)
     }
 
     /// Every state's product is in the local StoreKit configuration, with a

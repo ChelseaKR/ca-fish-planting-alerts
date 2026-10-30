@@ -1,7 +1,7 @@
 {% extends "base.html.jinja" %}
 {% set share_card_kind = "county" %}
 {% block content %}
-<h1>{{ county }} County {{ species }} planting schedule</h1>
+<h1>{{ county }} County {{ species }} stocking and planting schedule</h1>
 <p class="lede">
   {{ water_count }} {{ "water" if water_count == 1 else "waters" }} in {{ county }}
   County {{ "has" if water_count == 1 else "have" }} been on the California
@@ -20,6 +20,40 @@
   for a feed reader. Each entry is scheduled, not confirmed.
 </p>
 {% endif %}
+<p>
+  {% if app_store_url %}
+  <a href="{{ app_store_url }}" data-app-store-placement="county" data-app-store-kind="link">Get the iOS app</a>
+  to favorite {{ county }} County waters and get a notification when CDFW schedules one for a new week.
+  {% else %}
+  An iOS app that sends a notification when a favorite {{ county }} County water is scheduled for a new week is on its way (<a href="{{ root }}about/#app">how it will work</a>).
+  {% endif %}
+</p>
+
+{# The county's first answer (site._county_card). Each water is its own link;
+   with nothing scheduled the card says so in words, never "0 waters". #}
+{% from "_status_badge.html.jinja" import status_badge %}
+<section class="tt-card" aria-labelledby="county-card-heading">
+  <div class="tt-card__head">
+    <h2 id="county-card-heading">{{ county }} County at a glance</h2>
+    {{ status_badge(county_card.state) }}
+  </div>
+  <div class="tt-card__body">
+    {% if county_card.state == "none" %}
+    <p>No {{ county }} County water is on CDFW's schedule this week or next. That means no plant is scheduled, not that there are no fish.</p>
+    {% else %}
+    <p>{% if county_card.state == "next" %}Nothing this week. {% endif %}{{ county_card.count }} {{ "water is" if county_card.count == 1 else "waters are" }} on CDFW's schedule {{ "this week" if county_card.state == "now" else "next week" }}{% if county_card.also_next %}, and more are scheduled next week{% endif %}:</p>
+    <ul>
+      {% for w in county_card.waters %}
+      <li><a href="{{ root }}water/{{ w.slug }}/">{{ w.name }}</a></li>
+      {% endfor %}
+    </ul>
+    {% if county_card.more %}
+    <p>And {{ county_card.more }} more, listed below.</p>
+    {% endif %}
+    <p class="muted">{{ "The " ~ source_week_label if county_card.state == "now" else "The week of " ~ county_card.next_week }}. Scheduled, not confirmed.</p>
+    {% endif %}
+  </div>
+</section>
 
 <h2>Scheduled this week</h2>
 {% if this_week_rows %}
@@ -66,8 +100,75 @@
   </tbody>
 </table>
 {% else %}
-<p>No later week is scheduled for a {{ county }} County water. That means nothing beyond the {{ source_week_label }} is on CDFW's schedule here right now, not that there are no fish.</p>
+<p>No later week is scheduled for {{ county|a_an }} County water. That means nothing beyond the {{ source_week_label }} is on CDFW's schedule here right now, not that there are no fish.</p>
 {% endif %}
+
+{# The county's most recent past weeks with a listed water (site.py
+   _county_recent_weeks). Each week links its /week/ page, which exists for
+   every past week with a listing. A plain <h2> like the sections above. #}
+<h2>Recently on the schedule</h2>
+{% if recent_weeks.rows %}
+<p>{% if recent_weeks.week_count == 1 %}The most recent earlier week on CDFW's schedule for {{ county }} County waters.{% else %}The {{ recent_weeks.week_count }} most recent earlier weeks on CDFW's schedule for {{ county }} County waters, newest at the top.{% endif %} Each week links to every water CDFW listed for it statewide.</p>
+<table>
+  <caption class="visually-hidden">{{ county }} County waters on CDFW's schedule in the most recent earlier weeks</caption>
+  <thead>
+    <tr>
+      <th scope="col">Week</th>
+      <th scope="col">Water</th>
+      <th scope="col">Species</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in recent_weeks.rows %}
+    <tr>
+      <td><a href="{{ root }}week/{{ row.week }}/">week of {{ row.week }}</a></td>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{{ row.species }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No {{ county }} County water was on CDFW's schedule in any earlier week recorded here. The record does not say what happened before it began.</p>
+{% endif %}
+
+{# Last winter on the record (site._county_winter, DECISIONS 0040): shown
+   only when the record covers a whole November through February. A record
+   of what was scheduled, never a forecast; a water with no listed week in it
+   is left out, so no row says zero. #}
+{% if county_winter %}
+<section class="county-winter" aria-labelledby="winter">
+<h2 id="winter">Winter {{ species }} plants in {{ county }} County</h2>
+{% if county_winter.rows %}
+{% set n = county_winter.rows|length %}
+<p>From {{ county_winter.label }}, CDFW's schedule listed {{ n }} {{ county }} County {{ "water" if n == 1 else "waters" }} for planting, in {{ county_winter.week_count }} {{ "week" if county_winter.week_count == 1 else "different weeks" }}. That is what was scheduled last winter, not a forecast for this one: this winter's weeks appear above as CDFW schedules them.</p>
+<table>
+  <caption class="visually-hidden">{{ county }} County waters on CDFW's schedule from {{ county_winter.label }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">Weeks listed last winter</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in county_winter.rows %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{{ row.weeks }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No {{ county }} County water was on CDFW's schedule from {{ county_winter.label }}, the most recent whole winter on record here. That says what was scheduled, not that there are no fish.</p>
+{% endif %}
+</section>
+{% endif %}
+
+{% set gear_heading = "Gear for " ~ county ~ " County waters" %}
+{% set gear_intro = "Planning a trip to " ~ county|a_an ~ " County water?" %}
+{% set gear_placement = "county" %}
+{% include "_gear_block.html.jinja" %}
 
 {% include "_county_months.html.jinja" %}
 
@@ -92,6 +193,15 @@
     {% endfor %}
   </tbody>
 </table>
+
+{% if region_counties %}
+<h2>More counties in the {{ region_name }}</h2>
+<ul class="water-index">
+  {% for c in region_counties %}
+  <li><a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County planting schedule</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
 
 <p><a href="{{ root }}county/">Every county</a> &middot; <a href="{{ root }}">this week, statewide</a></p>
 {% endblock %}

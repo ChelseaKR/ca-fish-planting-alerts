@@ -96,7 +96,7 @@ def _coverage_problems(text: str) -> list[str]:
     problems = []
     for needed in (
         "covers this website and the trout truck apps for iphone and android.",
-        "apps for iphone (with apple watch and widgets) and for android collect no data",
+        "apps for iphone (with widgets) and for android collect no data",
         "includes two libraries from google",
         "google play billing",
         "google play in-app review",
@@ -217,3 +217,51 @@ def test_corrected_copy_keeps_the_site_rules(with_id: str, without_id: str):
         assert "stocked" not in text
         # American English
         assert not re.search(r"\b(favourite|colour|behaviour|licence|centre)", text)
+
+
+# ---- the 1.0.0 binary has no Apple Watch app, so the page must not name one
+
+
+def _watch_mentions(text: str) -> list[str]:
+    return re.findall(r"apple watch|watch app|complication", text)
+
+
+@pytest.mark.parametrize("fixture_name", ["with_id", "without_id"])
+def test_privacy_page_does_not_claim_an_apple_watch_app(
+    fixture_name: str, request: pytest.FixtureRequest
+):
+    text = request.getfixturevalue(fixture_name)
+    assert _watch_mentions(text) == []
+    # The widgets claim stays: the iPhone app does ship widgets.
+    if fixture_name == "with_id":
+        assert "apps for iphone (with widgets)" in text
+
+
+def test_watch_check_fails_when_the_claim_is_put_back(with_id: str):
+    sabotaged = with_id.replace(
+        "apps for iphone (with widgets)",
+        "apps for iphone (with apple watch and widgets)",
+    )
+    assert sabotaged != with_id, "sabotage did not apply"
+    assert _watch_mentions(sabotaged) != []
+
+
+def test_docs_say_which_states_are_sold_today():
+    # The iOS doc still says CA and TN (its New York products are not in
+    # App Store Connect yet). Android sells all five states in the published
+    # snapshot since New York gained a Play product (2026-10-24).
+    docs = {
+        "docs/APP-STORE.md": "lists only CA and TN",
+        "android/README.md": "All five are sold: they are the\nfive states in the published `snapshot/v2.json` (checked 2026-10-24)",
+    }
+    for rel, needed in docs.items():
+        text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+        assert needed in text, rel
+        assert "since their live fetches worked" not in text, rel
+        # The negative control: the old claim would be caught, and the
+        # sabotage is asserted to have changed the text.
+        sabotaged = text.replace(
+            needed, "Michigan, Massachusetts and New York since 2026-10-13"
+        )
+        assert sabotaged != text
+        assert needed not in sabotaged

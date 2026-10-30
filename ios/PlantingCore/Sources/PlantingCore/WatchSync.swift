@@ -76,6 +76,11 @@ extension WidgetDigest {
             if favorite.isListedThisWeek, !isStale(at: now) { return ReportWording.stockedThisWeekTag }
             return favorite.lastListedWeek.map(ReportWording.lastStocked) ?? ReportWording.noStockingOnRecord
         }
+        if favorite.isPlan {
+            // A plan state's water (DECISIONS 0034): the agency's words, never a date.
+            if let next = favorite.nextWeek { return "Planned: \(next.label)" }
+            return "No planned period ahead"
+        }
         switch status(of: favorite, at: now) {
         case .scheduledThisWeek: return "This week"
         case .scheduledForEndedWeek: return "Scheduled that week"
@@ -92,15 +97,19 @@ extension WidgetDigest {
         if favorite.isReport {
             return favorite.lastListedWeek.map(ReportWording.lastStocked) ?? ReportWording.noStockingOnRecord
         }
-        guard let last = favorite.lastListedWeek else { return "No earlier week on record" }
+        guard let last = favorite.lastListedWeek else { return favorite.isPlan ? "No planned period on record" : "No earlier week on record" }
         guard last <= week else { return nil }
-        return "Last scheduled: \(last.label)"
+        return favorite.isPlan ? "Last planned for \(last.label)" : "Last scheduled: \(last.label)"
     }
 
     /// The next listed week after the digest's week, in words. `nil` for a
     /// report state's water: a stocking report has no future weeks.
     public func nextScheduledLine(of favorite: Favorite) -> String? {
         if favorite.isReport { return nil }
+        if favorite.isPlan {
+            guard let next = favorite.nextWeek else { return "No planned period ahead" }
+            return "Planned for \(next.label)"
+        }
         guard let next = favorite.nextWeek else { return "No later week listed yet" }
         return "Next scheduled: \(next.label)"
     }

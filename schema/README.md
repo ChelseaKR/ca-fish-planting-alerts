@@ -102,12 +102,16 @@ builds that read it. v2 is built by the same run.
   `current_week` is v1's `source_week`.
 - **A state appears only once it has a record.** Never assume a fixed list.
 - **`semantics`:** `schedule` (California, Tennessee: planned stockings,
-  subject to change; say "scheduled"; `removed` can appear) or `report`
+  subject to change; say "scheduled"; `removed` can appear), `report`
   (Massachusetts, Michigan: stockings done; say "stocked"; every plant is
-  `reported`).
+  `reported`), or `plan` (New York: a once-a-year plan in the agency's own
+  words; say "planned for"; every plant is `listed`, never `removed`).
 - **`period.precision`:** `day` (`YYYY-MM-DD`), `week` (`week of
   YYYY-MM-DD`, a Sunday; for Tennessee the stocking falls within five days
-  after it), or `month` (`December 2026`: Tennessee's "TBD 12/2026").
+  after it), `month` (`December 2026`: Tennessee's "TBD 12/2026"), or
+  `approximate` (New York: DEC's words and the year, verbatim, such as
+  `April - third week, 2026` or `Spring, 2026`; start and end only bound
+  it, for ordering and reminders).
   Render the label as given and never finer than its precision.
 - **`months_note`:** Tennessee's one-letter month list, verbatim. Not dates.
   A water may have no plants and only this note.

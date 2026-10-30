@@ -26,4 +26,32 @@ object FreeTier {
         "An alert on this device when a favorite is newly on CDFW's weekly schedule",
         "The Favorite waters widget for your home screen",
     )
+
+    // Per state (DECISIONS 0025), as `FreeTier.swift`.
+
+    /** Alerts for a water need its state's purchase. California's is the original full access. */
+    fun notificationsAllowed(state: String, entitledStates: Set<String>): Boolean = state in entitledStates
+
+    /** The widget unlocks with any state's purchase, and then lists only favorites in states this device owns. */
+    fun widgetsAllowed(entitledStates: Set<String>): Boolean = !WIDGETS_REQUIRE_FULL_ACCESS || entitledStates.isNotEmpty()
+
+    /** What a state's purchase unlocks, in the purchase screen's words. A report says "stocked", a schedule "scheduled", a plan "planned". */
+    fun stateFeatures(stateName: String, agencyShortName: String, semantics: StateSemantics): List<String> {
+        val alert = when (semantics) {
+            StateSemantics.SCHEDULE -> "An alert on this device when a $stateName favorite is newly on $agencyShortName's schedule"
+            StateSemantics.REPORT -> ReportWording.alertFeature(stateName, agencyShortName)
+            StateSemantics.PLAN ->
+                "A reminder on this device when a $stateName favorite's planned stocking period begins, in $agencyShortName's own words"
+        }
+        return listOf(alert, "$stateName favorites in the Favorite waters widget")
+    }
+
+    /**
+     * The alerts to post: each needs its own water's state's purchase, so a
+     * California buyer gets no Tennessee alert, and the reverse. A water the
+     * snapshot no longer has counts as California's, where every alert before
+     * states came from (`AppEnvironment.alertsToSchedule` in the iOS app).
+     */
+    fun alertsToPost(planned: List<PlannedNotification>, snapshot: Snapshot, entitledStates: Set<String>): List<PlannedNotification> =
+        planned.filter { notificationsAllowed(snapshot.water(it.waterID)?.state ?: "CA", entitledStates) }
 }

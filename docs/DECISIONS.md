@@ -449,14 +449,15 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
   freshness, search, the widget digest, the stores and the words the app
   shows), and `app`. Package name `com.chelseakr.cafishplanting`, the iOS
   bundle identifier's stem (0010).
-- **California, from v1.** It reads
-  `https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v1.json`
-  and nothing else, with the iOS app's request: one GET, `If-None-Match`, a
-  fixed `User-Agent`, no cookies. v1 stays byte-compatible beside v2 (0025),
-  so this app is California only until it gains states too. It ships its
-  own committed v1 snapshot (`android/app/src/main/assets/snapshot.json`,
-  refreshed by `android/scripts/sync-bundled-snapshot.sh`, which checks it
-  against `schema/snapshot.v1.json`), since the iOS app now bundles v2.
+- **Every state, from v2 (0025).** It reads
+  `https://chelseakr.github.io/ca-fish-planting-alerts/snapshot/v2.json`
+  with the iOS app's request: one GET, `If-None-Match`, a fixed
+  `User-Agent`, no cookies. Only when v2 isn't there (HTTP 404 or 410) does
+  it make one more GET, of `snapshot/v1.json`, California alone; the decoder
+  reads both. It ships its own committed v2 snapshot
+  (`android/app/src/main/assets/snapshot.json`, refreshed by
+  `android/scripts/sync-bundled-snapshot.sh`, which checks it against
+  `schema/snapshot.v2.json`), so each app controls when its file changes.
 - **Same rules.** A week, never a day, and "scheduled", never "stocked". No
   account, no analytics, no crash reporting, no server push. Alerts are
   local notifications that WorkManager's daily periodic refresh (and the
@@ -464,30 +465,42 @@ full parity with the iOS app. It lives in `android/` beside `ios/`.
   mutes and the alert baseline are files on the device. Cloud backup is
   off; a device-to-device transfer carries them.
 - **The alert planner is held to the Swift one.** Shared fixtures in
-  `ios/PlantingCore/Tests/PlantingCoreTests/Fixtures/` (synthetic cases and
-  two real-data excerpts) carry expectations recorded from the Swift
-  planner. `AlertPlannerParityTests.swift` and `AlertPlannerParityTest.kt`
-  both run every scenario and must produce the same alerts, ids, words and
-  baselines.
-- **Same free/paid boundary (0009, 0015).** Browsing, history and
-  favorites are free and unlimited. One Google Play one-time in-app
-  product, placeholder ID `fullaccess`, unlocks alerts and the home screen
-  widget. Play Billing only; the app never links to another way to pay.
-  The catalog and the entitlement are per product, so per-state products
-  are new entries, not new code.
+  `ios/PlantingCore/Tests/PlantingCoreTests/Fixtures/` carry expectations
+  recorded from the Swift planner. `alert-planner-parity.json` (synthetic
+  cases and two real-data excerpts) is California's;
+  `alert-planner-parity-states.json` runs every state of the v2 fixture,
+  with each state's purchase deciding which alerts may be posted and which
+  favorites the widget lists. `AlertPlannerParityTests.swift`,
+  `MultiStateParityTests.swift` and their Kotlin twins run every scenario
+  and must produce the same alerts, ids, words, baselines and widget rows.
+- **Same free/paid boundary, per state (0009, 0015, 0025).** Browsing,
+  history and favorites are free and unlimited in every state. Each state
+  is one Google Play one-time product that unlocks alerts for that state's
+  favorites and lists them in the home screen widget; the widget unlocks
+  with any state and counts, never shows, favorites in states not bought.
+  California's is `fullaccess`, unchanged. Tennessee's is `state_tn`,
+  Massachusetts' `state_ma`, Michigan's `state_mi` and New York's
+  `state_ny` (added 2026-10-24, with New York's `plan` semantics,
+  `approximate` precision and reminders, as 0034), each USD 9.99. A Play
+  product ID already belongs to this one app, so these drop the
+  package-name prefix the App Store IDs carry; `StateProducts` in `core`
+  records the mapping, and a test checks it against `StateAccess.swift`.
+  Play Billing only; the app never links to another way to pay.
 - **Platform words.** Android has a home screen widget (Glance) and no Lock
   Screen widget, so the copy says "home screen" where iOS says "Home Screen
   and Lock Screen", and "Swipe down" where iOS says "Pull down". Everything
-  else in the introduction is the iOS app's California copy from before
-  more states (0025), word for word, and a test pins it.
+  else in the introduction is the iOS copy, with more states (0025), word
+  for word, which a test checks against `Onboarding.swift`.
 - **Review prompt.** Google Play's in-app review card, with the iOS rating
   lane's rules (0035), and an About row that opens the app's Play Store
   page.
 - **Not ported.** Shortcuts and Siri (`ScheduleIntents`) and the Apple
   Watch (0027) have no direct Android twin in this change.
 
-Owner steps (Play Console app, in-app product, signing, Data safety,
-listing, internal testing) are in `android/README.md`.
+Owner steps (Play Console app, in-app products, signing, Data safety,
+listing, internal testing) are in `android/README.md`. The v2, per-state
+and introduction bullets above were updated on 2026-10-12 when the Android
+app gained the states of 0025.
 
 ## 0024 — Water locations from federal public-domain data, never guessed (2026-10-12; proposed)
 
@@ -765,7 +778,8 @@ the links come out in one edit (delete `GEAR_CATEGORIES` and the block in
   page, and a "Gear links" section on the privacy page. **The website, never the app.**
   The iOS app has no web view and never shows these links; the report-state
   pages, the home, county, support and about pages carry none. The about
-  page's privacy note mentions them in a sentence.
+  page's privacy note mentions them in a sentence. (0039, 2026-10-23, adds
+  California county pages and other states' water pages.)
 - **Why search links.** Each link is `https://www.amazon.com/s?k=<terms>&tag=trouttruck-20`,
   a search for a generic category (trout rod and reel combo, trout lure and
   tackle assortment, fishing waders, landing net for trout). A search has no
@@ -935,6 +949,125 @@ TestFlight (Apple never shows it there), so only the trigger logic is
 tested. `HostAllowlistTests` allows `apps.apple.com` in one file, as a
 link the system opens rather than a request the app makes.
 
+## 0034 — States wave 2: Michigan, Massachusetts and New York, and a v2 reader that ignores what it does not know (2026-10-13; rebased 2026-10-21)
+
+(Numbered 0028 on the `feat/states-wave2` branch of 2026-10-13; that number
+went to the launch switch on main. 0031 is the guides, 0032 Oregon, 0033
+is reserved for the email digest ADR and 0035 is the ratings prompt, so this
+is 0034. The owner confirmed
+on 2026-10-21 that iOS 1.1.0 ships all four states, Tennessee plus these
+three, each as its own in-app purchase, while 1.0.0 is in Apple's review.)
+
+**Owner answers, 2026-10-13** (multiple choice, recorded as given):
+
+1. **Michigan:** the owner accepts the dataset's indemnity and release
+   clauses. Read the DNR's own CSV,
+   `https://michigandnr.com/publications/PDFS/Fishing/FishStocking/FishStockingData.csv`
+   (robots.txt 404, which DECISIONS 0025 counts as "no rules"), with one
+   conditional download a day instead of ArcGIS paging. Water ids come
+   from county + water + site name; trout only; report semantics, with the
+   DNR's lag said beside the data.
+2. **Massachusetts:** the owner accepts the ArcGIS Hub download route.
+   `hub.arcgis.com` serves a readable robots.txt (200, `Crawl-delay: 60`,
+   `/api/` allowed). `services1.arcgis.com`, the layer's own host (robots
+   403), is never touched. The run asks Hub for the CSV, waits the
+   Crawl-delay on a 202, and reads the `resultUrl` only on Hub's host: two
+   or three requests a day, 61 s apart.
+3. **New York:** NYS DEC's spring plan from OPEN-NY, as planned-period
+   reminders plus the plans' history, in DEC's own words ("April - third
+   week", "Spring"), never turned into dates, with "planned for" wording.
+4. Each state is its own $9.99 non-consumable:
+   `com.chelseakr.cafishplanting.state.mi`, `.state.ma`, `.state.ny`.
+   A state is enabled only once its fetch works on live data.
+
+**What was built.**
+
+- **Michigan** (`cfpa/states/mi.py`). One GET with `If-None-Match` and
+  `If-Modified-Since`; a 304 records "checked, unchanged" and nothing else.
+  The server answers `Accept: text/csv` with 406 (measured), so the request
+  accepts `application/octet-stream`. Kept: species whose name contains
+  "trout" (brown, rainbow, brook, lake), stockings into public water only
+  (State, Federal, Tribal, Tribal/DNR and IN DNR/DNR coop, Public and
+  Mitigation plants; private ponds under permit, research, school,
+  rearing-pond and out-of-state rows are left out), and 2021 onward. The
+  site name, when it differs from the water, is part of the water's name.
+- **Massachusetts** (`cfpa/states/ma.py`). The real field is
+  `Stocked_Date` (`2026/09/25 22:00:00+00`), not the guessed `Date`.
+  Species codes are mapped with MassWildlife's own legend, the layer's
+  coded-value domain `cvd_FishSpecies` read from Hub's metadata: BT Brown
+  Trout (verified there), EBT Eastern Brook Trout, RT Rainbow Trout, S
+  Broodstock Salmon, TT Tiger Trout. A code outside the legend refuses the
+  feed rather than being guessed. "Lake Wyola - Shutesbury" is shown as
+  "Lake Wyola" with its town beside it. An empty file (the season is over)
+  is not an error: a report never infers a removal.
+- **New York** (`cfpa/states/ny.py`). A new semantics, `plan`: it looks
+  forward like a schedule, says "planned for", and never infers a removal
+  (one publication a year). A new precision, `approximate`: the label is
+  DEC's words and the year, verbatim ("April - third week, 2026"); start
+  and end only bound it, for ordering and reminders. The 25 forms in the
+  2026 file are read; any other form refuses the feed.
+- **Reminders** (iOS; Android from 2026-10-24, `ReminderPlanner` in
+  `android/core`). For a New York favorite in a bought state and not
+  muted, the app schedules a local reminder at 9 a.m. on the first day of
+  each planned period no longer than 31 days ("April - third week",
+  "May", "Mid April"), saying the period in DEC's words and that it is a
+  plan, not a date. "Spring" and two-month ranges are too loose and get
+  none. The notification priming copy says so.
+- **Crawl-delay** is honored: requests to a host that declares one wait it
+  plus a second.
+- The ArcGIS paging module is removed; no source uses it.
+
+**Live check, 2026-10-13.** Each fetch ran through the production code on
+live data before its state was enabled: Michigan 3,406 public trout
+stockings at 604 waters from 2021 on (and a second request answered 304);
+Massachusetts 150 stockings at 123 waters through Hub; New York 889
+planned stockings at 582 waters. Their histories are seeded from those
+fetches. `ENABLED_STATES` is now TN, MI, MA, NY.
+
+**Live check again, 2026-10-21** (the rebase; one fetch per source through
+the same adapters, the pipeline's own User-Agent, eight requests in all,
+into a scratch directory, nothing committed from it): `hub.arcgis.com`
+robots.txt 200 `text/plain`, the download status answered 200 Completed on
+the first call and the CSV 200 `text/csv`, 150 records at 123 waters, file
+dated 2026-10-13; `michigandnr.com` robots.txt 404, the CSV 200
+`application/octet-stream` with an ETag and `Last-Modified: Mon, 19 Oct
+2026 15:40:36 GMT`, 3,406 public trout stockings at 604 waters from 2021
+on; `data.ny.gov` robots.txt 200 `text/plain`, the plan 200 JSON, 889
+planned stockings at 582 waters, rows dated 2026-03-19. The same counts as
+on 2026-10-13, so the seeded histories stand.
+
+**Compatibility.** v1 is unchanged. v2 gains the `plan` semantics and the
+`approximate` precision. The v2 reader on main before this change refused a
+file with any `semantics` or `precision` it did not know, and the app then
+kept its last good snapshot forever: had 1.1.0 shipped that reader, adding
+New York to the live `v2.json` later would have stopped every install from
+refreshing. So two things change together:
+
+- **The reader ignores a vocabulary it does not know, and refuses only a
+  broken contract** (`ios/PlantingCore/Sources/PlantingCore/SnapshotV2Decoding.swift`).
+  A state whose `semantics` this build has no words for, or whose code this
+  build has no product for (`StateAccess.isKnown`), is left out with its
+  waters and its `this_week` entries; a plant whose `status` or
+  `period.precision` is new is left out, and a water left with nothing to
+  show goes too, as does a state left with no water. A malformed file (a
+  week labeled as a day, a `reported` plant in a schedule or plan state,
+  California not first, a water in a state the file does not list) still
+  throws, and the caller keeps the last good snapshot. `StatesWave2Tests`
+  pins each case with a sabotage that is checked to have landed.
+- **The reader ships in the same app release as these states** (1.1.0),
+  with New York's `plan` records in it.
+
+**Products.** `.state.mi`, `.state.ma` and `.state.ny` follow Tennessee's
+pattern in `Configuration.storekit` and App Store Connect: Non-Consumable,
+USD 9.99, description "Alerts, widget, Watch: <State> waters". The
+California product is unchanged.
+
+**The daily run.** `ENABLED_STATES` is TN, MI, MA, NY, and `publish.yml`'s
+commit step lists `pipeline/data/states/mi.json`, `ma.json` and `ny.json`
+beside `tn.json` (the one-line edit 0032 describes for Oregon), so each run
+commits the three histories and Massachusetts' rows accumulate past the end
+of its season instead of aging off.
+
 ## 0038 — A page for each past week on record, at /week/YYYY-MM-DD/ (2026-10-22)
 
 (0036 and 0037 are reserved by other branches; 0035 is the last on main.)
@@ -973,3 +1106,85 @@ nothing else.
   date queries, not a measured one. If the week pages earn no impressions by
   the next review, delete `weeks.py`, the two templates and the links to /week/.
 - **No ranking claim.** Only the thin weeks above are noindex.
+
+## 0039 — Gear links on the pages people land on (2026-10-23)
+
+Extends 0029 and 0030. Same Amazon Associates account (`trouttruck-20`), same
+search links, same deadline: 3 qualifying sales by about 2027-04-17, or the
+links come out in one edit.
+
+- **Why.** GA4, 28 days to 2026-10-23: 48 engaged sessions. By landing page,
+  14 began on a Tennessee water page, 11 on a California water page, 8 on a
+  California county page and 8 on the home page. 0029 put the gear block on
+  California water pages alone, so more than half of the engaged landings
+  that reached a water or county page never saw a gear link. GA4 recorded
+  no `gear_click` in that window, and the click label has only been live
+  since 2026-10-21, so this is a bet on reach, not a measured conversion.
+- **Where it is added.** Each California county page, after "Recently on the
+  schedule", and each other state's water page, after its stocking table.
+  California water pages and `/gear/` are unchanged byte for byte (checked
+  against a build of main). The home page, hubs, `/states/`,
+  `/county/`, region, species, week and guide pages still carry none.
+- **Which states.** `site_states.gear_allowed()` allows the block only when
+  every license source of the state's data says `commercial_reuse:
+  "permitted"` and the water's species word is trout, the only gear the block
+  offers. Tennessee, the only other state on the live site today, passes, and
+  so would Massachusetts, Michigan and New York if they are switched on. Oregon's
+  terms are `unknown`, so it would get none if it is switched on. TN.gov's
+  linking policy asks for no implied endorsement, so the sentence names the
+  page's own agency ("The links are Trout Truck's, not TWRA's, and TWRA does
+  not endorse them or Amazon."), and a test fails if a state page names CDFW.
+- **One block.** `templates/_gear_block.html.jinja` holds the markup for every
+  page kind; each page sets the heading, the opening question and the click
+  placement (`water`, `county`, `state_water`). The other states' blocks leave
+  out the link to `/gear/`, because that guide is about California waters.
+- **Copy.** Unchanged in kind: categories, never products; no price, rating,
+  image, brand or "best"; Amazon's disclosure sentence exactly; the plain
+  "costs you nothing extra" sentence; `rel="sponsored nofollow noopener"`.
+  The privacy page's "Gear links" section and the about page say where the
+  links now are.
+- **Guards.** `tests/test_site_affiliate.py` allows tagged links on these page
+  kinds alone, checks the agency sentence per page, and has negative controls
+  for a state with unknown terms (no links), CDFW named on a state page, and
+  a link on a state hub.
+
+## 0040 — Winter on the record, and gear links on the home page and /county/ (2026-10-29)
+
+Extends 0039. Same Amazon Associates account (`trouttruck-20`), same search
+links, same deadline: 3 qualifying sales by about 2027-04-17.
+
+- **Why.** Search Console, 2026-07-30 to 2026-10-27, `sc-domain:trouttruck.com`:
+  1,264 impressions and 41 clicks, almost all of them from 2026-10-15 to
+  2026-10-22 (135 to 197 a day), then 3 to 9 a day from 2026-10-23. The
+  queries are county and water schedule searches ("fresno trout plant",
+  position 5 to 10; "lake ralphine stocking schedule", 7.3) and the old
+  agency name ("dfg fish planting schedule", "dfg trout plants", positions
+  10 to 55). GA4, 28 days to 2026-10-28: the home page is the most common
+  landing page (71 sessions, 11 of them engaged), and it carried no
+  gear link. GA4 recorded no `gear_click` in that window.
+- **Winter on the record.** The record holds a whole past winter (listed
+  weeks from 2025-09 on). Each county page gains "Winter plants in X County":
+  the county's waters CDFW's schedule listed from November through February
+  of the most recent complete winter, with the number of listed weeks each,
+  and the home page gains the statewide count and the counties with the most
+  listed waters. "Winter" is the calendar months, not a CDFW term. The block
+  appears only when the record begins on or before that November 1, so a
+  county with no listed water is a fact about the record, never a gap read
+  as absence; it says it is a record of what was scheduled, not a forecast.
+  A county page's lastmod counts the rollover at which a new winter becomes
+  the latest complete one (`latest_complete_winter()["shown_from"]`).
+- **Gear links.** The home page and `/county/` carry the same block as the
+  county pages (`_gear_block.html.jinja`, placements `home` and `counties`).
+  From November through February, by the start of CDFW's current week, the
+  home page's block adds one cold-weather search ("Insulated fishing
+  gloves"); the home page's lastmod already moves at every rollover, so no
+  page changes while its lastmod says it did not. Water and county pages keep
+  the fixed four. Region, species, week, guide, `/states/` and state hub
+  pages still carry none.
+- **Copy.** Unchanged in kind (0029, 0039): categories, never products; no
+  price, rating, image, brand or "best"; Amazon's disclosure sentence; the
+  CDFW non-endorsement sentence; `rel="sponsored nofollow noopener"`. The
+  county index description and lede say CDFW was called the Department of
+  Fish and Game (DFG) before 2013, as the home page description already did.
+  County page h1s say "stocking and planting schedule", the wording of the
+  water page titles. Ads stay off.

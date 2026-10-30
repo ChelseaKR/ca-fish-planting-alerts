@@ -52,7 +52,7 @@ def _run(root: Path, *, states: tuple[str, ...] | None, **extra) -> dict:
 @pytest.fixture(scope="module")
 def built(tmp_path_factory: pytest.TempPathFactory) -> Path:
     root = tmp_path_factory.mktemp("v2")
-    _run(root, states=("TN", "MA", "MI"))
+    _run(root, states=("TN", "MA", "MI", "NY"))
     return root
 
 
@@ -73,7 +73,7 @@ def _tree(site: Path) -> dict[str, str]:
 
 def test_v1_is_byte_for_byte_the_same_with_or_without_the_states(tmp_path: Path):
     _run(tmp_path / "plain", states=None)
-    _run(tmp_path / "states", states=("TN", "MA", "MI"))
+    _run(tmp_path / "states", states=("TN", "MA", "MI", "NY"))
     plain = json.loads((tmp_path / "plain/site/snapshot/v1.json").read_text())
     with_states = json.loads((tmp_path / "states/site/snapshot/v1.json").read_text())
     # generated_at is the wall clock of each run; everything else is equal.
@@ -116,7 +116,10 @@ def test_a_california_only_v2_leaves_every_california_page_unchanged(tmp_path: P
     assert a.keys() - b.keys() == set()
     sitemap = (tmp_path / "with" / "sitemap.xml").read_text("utf-8")
     assert f"<loc>{BASE}/data/</loc>" in sitemap
-    for name in ("sitemap.xml", "about/index.html"):
+    # llms.txt lists the open data files only when there is a v2 to list.
+    assert "/data/" in (tmp_path / "with" / "llms.txt").read_text("utf-8")
+    assert "/data/" not in (tmp_path / "without" / "llms.txt").read_text("utf-8")
+    for name in ("sitemap.xml", "about/index.html", "llms.txt"):
         a.pop(name), b.pop(name)
     assert a == b
     assert "states/index.html" not in a
@@ -162,7 +165,9 @@ def test_v2_validates_and_carries_california_with_v1s_ids(built: Path):
 
 def test_v2_states_say_what_their_records_mean(built: Path):
     states = {s["code"]: s for s in _v2(built)["states"]}
-    assert list(states) == ["CA", "MA", "MI", "TN"]
+    assert list(states) == ["CA", "MA", "MI", "NY", "TN"]
+    assert states["NY"]["semantics"] == "plan"
+    assert states["NY"]["removal_inference"] is False
     assert states["TN"]["semantics"] == "schedule"
     assert states["TN"]["removal_inference"] is True
     assert states["MA"]["semantics"] == states["MI"]["semantics"] == "report"
@@ -181,7 +186,60 @@ def test_michigan_publishes_only_from_its_publish_date(built: Path):
     mi = [w for w in _v2(built)["waters"] if w["state"] == "MI"]
     starts = [p["period"]["start"] for w in mi for p in w["plants"]]
     assert starts and min(starts) >= "2021-01-01"
-    assert "mi-3456" not in {w["id"] for w in mi}  # only a 2020 record
+    # The fixture holds real pre-2021 trout rows; none of them is published.
+    assert all(p["species"].lower().endswith("trout") for w in mi for p in w["plants"])
+
+
+def test_new_york_shows_decs_words_and_never_a_date(built: Path):
+    v2 = _v2(built)
+    ny = [w for w in v2["waters"] if w["state"] == "NY"]
+    labels = {p["period"]["label"] for w in ny for p in w["plants"]}
+    assert "April - third week, 2026" in labels
+    assert all(
+        p["period"]["precision"] == "approximate" for w in ny for p in w["plants"]
+    )
+    assert not {w["id"] for w in ny} & {e["water_id"] for e in v2["this_week"]}
+    page = _page(built, ny[0]["site_path"].strip("/") + "/index.html")
+    assert "stocking plan" in page
+    assert "<td>Planned</td>" in page
+    assert "<td>Scheduled</td>" not in page
+
+
+def test_new_york_pages_say_plan_in_decs_own_words_and_never_scheduled(built: Path):
+    """The plan wording (DECISIONS 0034), read with a real HTML parser."""
+    hub = _Page(_page(built, "ny/index.html"))
+    text = " ".join(hub.visible_text.split())
+    assert hub.title == "New York trout stocking plan, from NYS DEC | Trout Truck"
+    assert (
+        "has planned trout stocking in New York, at the precision NYS DEC gives: "
+        'its own words, such as "April - third week". These are planned periods '
+        "in NYS DEC's own words, not dates and not confirmed stockings." in text
+    )
+    assert "Nothing else is on the plan in the next 60 days." in text
+    assert "scheduled" not in text.lower()
+    assert "stocked on" not in text.lower()
+    v2 = _v2(built)
+    ny = [w for w in v2["waters"] if w["state"] == "NY"]
+    water = _Page(_page(built, ny[0]["site_path"].strip("/") + "/index.html"))
+    wtext = " ".join(water.visible_text.split())
+    assert "'s stocking plan. " in wtext
+    assert "Most recently planned: " in wtext
+    assert "Stocking plan and history" in wtext
+    assert "in NYS DEC's own words." in wtext
+    assert "scheduled" not in wtext.lower()
+    index = _Page(_page(built, "states/index.html"))
+    itext = " ".join(index.visible_text.split())
+    assert "New York publishes a spring plan once a year in its own words." in itext
+    assert "Spring plan" in itext
+    data = _Page(_page(built, "data/index.html"))
+    dtext = " ".join(data.visible_text.split())
+    assert (
+        'NYS DEC gives when in its own words, such as "April - third week", and '
+        "this site keeps them verbatim in period_label with the year." in dtext
+    )
+    # The control: a schedule state's hub still says "scheduled".
+    tn = " ".join(_Page(_page(built, "tn/index.html")).visible_text.split())
+    assert "These are scheduled dates, not confirmed stockings." in tn
 
 
 def test_month_precision_is_never_this_week(built: Path):
@@ -314,7 +372,7 @@ def _page(built: Path, rel: str) -> str:
 def test_each_state_has_a_hub_water_pages_and_the_states_index(built: Path):
     site = built / "site"
     assert (site / "states" / "index.html").is_file()
-    for code in ("tn", "ma", "mi"):
+    for code in ("tn", "ma", "mi", "ny"):
         assert (site / code / "index.html").is_file()
         assert any((site / code / "water").iterdir())
     for w in _v2(built)["waters"]:
@@ -346,7 +404,7 @@ def test_report_states_say_stocked_and_michigan_says_how_late_it_is(built: Path)
     mi = _page(built, "mi/index.html")
     assert "stocking report" in mi
     assert "weeks after the stocking" in mi
-    ma_page = _page(built, "ma/water/swift-river-belchertown/index.html")
+    ma_page = _page(built, "ma/water/swift-river-palmer/index.html")
     assert "<td>Stocked</td>" in ma_page
     tn = _page(built, "tn/water/tellico-river-monroe-county/index.html")
     assert "<td>Stocked</td>" not in tn
@@ -424,7 +482,7 @@ def test_no_sentence_on_a_state_page_runs_into_the_next(built: Path):
     assert not joined.search(_Page("<script>a.Bc</script><p>ok.</p>").visible_text)
     pages = [
         p
-        for code in ("tn", "ma", "mi", "states")
+        for code in ("tn", "ma", "mi", "ny", "states")
         for p in (built / "site" / code).rglob("index.html")
     ]
     assert len(pages) > 100

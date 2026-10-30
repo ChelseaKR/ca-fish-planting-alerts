@@ -1,52 +1,79 @@
 package com.chelseakr.cafishplanting.core
 
 /**
- * A state the app can show. Today the app reads one snapshot, California's
- * (schema v1, which carries no state field, so every v1 snapshot is
- * California). A parallel lane is adding Tennessee, Massachusetts and
- * Michigan as separate one-time purchases with a v2 snapshot per state;
- * this type, [ProductCatalog] and [Entitlements] are where that lands, so
- * adding a state is new entries here plus a state picker, not a rewrite.
+ * One Google Play one-time product per state (DECISIONS 0025), as
+ * `StateAccess.swift`. Browsing, history and favorites are free in every
+ * state; a state's product unlocks alerts for that state's favorites and
+ * lists them in the widget.
+ *
+ * The Play product IDs map to the App Store ones like this:
+ *
+ * | State | App Store                                 | Google Play  |
+ * |-------|-------------------------------------------|--------------|
+ * | CA    | `com.chelseakr.cafishplanting.fullaccess` | `fullaccess` |
+ * | TN    | `com.chelseakr.cafishplanting.state.tn`   | `state_tn`   |
+ * | MA    | `com.chelseakr.cafishplanting.state.ma`   | `state_ma`   |
+ * | MI    | `com.chelseakr.cafishplanting.state.mi`   | `state_mi`   |
+ * | NY    | `com.chelseakr.cafishplanting.state.ny`   | `state_ny`   |
+ *
+ * A Play product ID already belongs to this one app, so it drops the
+ * package-name prefix the App Store IDs carry. California's stays
+ * `fullaccess`, the product the Android app shipped with, unchanged in ID,
+ * price and meaning. Every state's is USD 9.99, one time. A state is sold
+ * only once it is in the snapshot, and a build with no product for a state
+ * leaves it out ([isKnown]).
  */
-data class StateInfo(
-    /** USPS code: "CA". */
-    val code: String,
-    val name: String,
-    /** The one snapshot URL the app fetches for this state. */
-    val snapshotURL: String,
-    /** The Google Play one-time product that unlocks alerts and the widget for this state. */
-    val productID: String,
-)
+object StateProducts {
+    /** California's product, the one the app has always sold. Never renamed, never repointed. */
+    const val CALIFORNIA = "fullaccess"
+    const val TENNESSEE = "state_tn"
 
-object ProductCatalog {
+    val productIDsByState: Map<String, String> = linkedMapOf(
+        "CA" to CALIFORNIA,
+        "TN" to TENNESSEE,
+        "MA" to "state_ma",
+        "MI" to "state_mi",
+        "NY" to "state_ny",
+    )
+
+    /** The App Store product for the same state, for checking the two catalogs agree. */
+    val appStoreProductIDsByState: Map<String, String> = mapOf(
+        "CA" to "com.chelseakr.cafishplanting.fullaccess",
+        "TN" to "com.chelseakr.cafishplanting.state.tn",
+        "MA" to "com.chelseakr.cafishplanting.state.ma",
+        "MI" to "com.chelseakr.cafishplanting.state.mi",
+        "NY" to "com.chelseakr.cafishplanting.state.ny",
+    )
+
+    val allProductIDs: Set<String> get() = productIDsByState.values.toSet()
+
+    fun productID(state: String): String? = productIDsByState[state]
+
     /**
-     * California full access. A placeholder ID until the owner creates the
-     * product in Play Console; Play product IDs can't contain the iOS ID's
-     * reverse-DNS form by convention, so `fullaccess` mirrors its last part.
+     * Whether this build sells a product for the state. A state it doesn't
+     * know is left out of a decoded snapshot (`SnapshotV2Decoding`, DECISIONS
+     * 0034) rather than shown with a purchase button that could not work.
      */
-    const val CALIFORNIA_FULL_ACCESS = "fullaccess"
+    fun isKnown(state: String): Boolean = state in productIDsByState
 
-    val california = StateInfo("CA", "California", SnapshotEndpoint.URL, CALIFORNIA_FULL_ACCESS)
+    fun state(productID: String): String? = productIDsByState.entries.firstOrNull { it.value == productID }?.key
 
-    /** Every state this build can show, in the order a picker would list them. */
-    val states: List<StateInfo> = listOf(california)
-
-    /** Every one-time product this build sells. */
-    val productIDs: List<String> get() = states.map { it.productID }.distinct()
-
-    fun state(code: String): StateInfo? = states.firstOrNull { it.code == code }
-
-    fun stateForProduct(productID: String): StateInfo? = states.firstOrNull { it.productID == productID }
+    /** The states a set of owned products unlocks. Unknown IDs unlock nothing. */
+    fun entitledStates(productIDs: Set<String>): Set<String> = productIDs.mapNotNull(::state).toSet()
 }
 
 /**
  * The one-time products this device owns, as Google Play last reported
- * them. Per state, not one flag, so a second state's purchase unlocks that
- * state only.
+ * them. Per state, not one flag, so a state's purchase unlocks that state only.
  */
 data class Entitlements(val ownedProducts: Set<String> = emptySet()) {
-    fun owns(state: StateInfo): Boolean = state.productID in ownedProducts
+    val entitledStates: Set<String> get() = StateProducts.entitledStates(ownedProducts)
 
-    /** California, the only state today; what "full access" means in the UI. */
-    val californiaFullAccess: Boolean get() = owns(ProductCatalog.california)
+    fun owns(state: String): Boolean = state in entitledStates
+
+    /** Any state unlocked: what the widget and the general alert copy need. */
+    val hasAnyAccess: Boolean get() = entitledStates.isNotEmpty()
+
+    /** California's full access, the original product. */
+    val californiaFullAccess: Boolean get() = owns("CA")
 }

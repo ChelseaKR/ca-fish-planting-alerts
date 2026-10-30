@@ -1,5 +1,7 @@
 package com.chelseakr.cafishplanting.ui
 
+import com.chelseakr.cafishplanting.core.StateSemantics
+import com.chelseakr.cafishplanting.core.StateInfo
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -107,6 +109,42 @@ fun FreshnessRow(freshness: SnapshotFreshness, now: Instant = Instant.now()) {
             val label = if (freshness.checkFailed) "Last successful check" else "Last checked"
             val relative = DateUtils.getRelativeTimeSpanString(checked.toEpochMilli(), now.toEpochMilli(), DateUtils.MINUTE_IN_MILLIS)
             Text("$label $relative", style = MaterialTheme.typography.bodySmall, color = secondaryText)
+        }
+    }
+}
+
+/**
+ * Another state's freshness, as `StateFreshnessRow` in the iOS app: what the
+ * agency publishes, its newest date, Michigan's lag note, and when its data
+ * was last read, saying so when the newest check failed.
+ */
+@Composable
+fun StateFreshnessRow(state: StateInfo, now: Instant = Instant.now()) {
+    val read = DateUtils.getRelativeTimeSpanString(state.lastSuccessAt.toEpochMilli(), now.toEpochMilli(), DateUtils.MINUTE_IN_MILLIS)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .semantics(mergeDescendants = true) {},
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        val kind = when (state.semantics) {
+            StateSemantics.SCHEDULE -> "stocking schedule"
+            StateSemantics.REPORT -> "stocking report"
+            StateSemantics.PLAN -> "spring stocking plan"
+        }
+        Text("${state.agencyShortName} $kind", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+        state.newestRecord?.let { Text("Newest date in it: ${it.label}", style = MaterialTheme.typography.bodySmall) }
+        state.recencyNote?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (!state.lastAttemptOK) {
+                Icon(Icons.Filled.Warning, contentDescription = null, tint = Color(0xFFFF9500), modifier = Modifier.size(16.dp))
+            }
+            Text(
+                if (state.lastAttemptOK) "Read $read" else "The newest check failed. Showing the data read $read.",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (state.lastAttemptOK) secondaryText else MaterialTheme.colorScheme.onSurface,
+            )
         }
     }
 }

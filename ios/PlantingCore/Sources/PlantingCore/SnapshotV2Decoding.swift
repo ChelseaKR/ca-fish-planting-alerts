@@ -1,8 +1,21 @@
 import Foundation
 
-/// Strict decoder for `schema/snapshot.v2.json`: California plus every other
-/// state with data. A contract violation throws and the caller keeps the
-/// last good snapshot, exactly like v1. Unknown keys are ignored.
+/// Decoder for `schema/snapshot.v2.json`: California plus every other state
+/// with data. Unknown keys are ignored.
+///
+/// Two kinds of trouble are told apart (DECISIONS 0034):
+///
+/// * **A contract violation** (a missing field, a week labeled as a day, a
+///   `reported` plant in a schedule state, California not first) throws,
+///   and the caller keeps the last good snapshot, exactly like v1.
+/// * **A vocabulary this build does not know** is left out, never thrown
+///   on: a state whose `semantics` this build has no words for, a state
+///   this build has no product for (`StateAccess`), a plant whose `status`
+///   or `period.precision` is new. The pipeline may add a state or a value
+///   before an app update ships; an install must keep refreshing through
+///   that, not freeze on its last snapshot forever. What is left out is
+///   counted in `Ignored`, and `this_week` entries for those waters are
+///   dropped with them.
 ///
 /// California's waters keep v1's ids (`cdfw-<id>`), so favorites, alert
 /// baselines and the widget carry over. The `Snapshot`'s top-level
@@ -10,42 +23,85 @@ import Foundation
 /// `counties` are California's, so every screen that read them from v1
 /// reads the same thing from v2.
 enum SnapshotV2Decoding {
+    /// What a decode left out, for tests and diagnostics.
+    struct Ignored: Equatable {
+        var states: [String] = []
+        var waters: [Water.ID] = []
+        var plants = 0
+    }
+
     static func decode(_ data: Data) throws -> Snapshot {
+        try decodeReporting(data).snapshot
+    }
+
+    static func decodeReporting(_ data: Data) throws -> (snapshot: Snapshot, ignored: Ignored) {
         let dto: SnapshotV2DTO
         do {
             dto = try JSONDecoder().decode(SnapshotV2DTO.self, from: data)
         } catch let error as DecodingError {
             throw SnapshotDecodingError.malformed(SnapshotDecoder.describe(error))
         }
-        let states = try dto.states.map(state)
-        guard let ca = states.first(where: { $0.code == "CA" }), states.first?.code == "CA" else {
+        var ignored = Ignored()
+        var states: [StateInfo] = []
+        for d in dto.states {
+            guard let st = try state(d) else {
+                ignored.states.append(d.code)
+                continue
+            }
+            states.append(st)
+        }
+        guard let ca = states.first(where: { $0.code == "CA" }), dto.states.first?.code == "CA" else {
             throw SnapshotDecodingError.malformed("a v2 snapshot must list California first")
         }
-        guard Set(states.map(\.code)).count == states.count else {
+        guard Set(dto.states.map(\.code)).count == dto.states.count else {
             throw SnapshotDecodingError.malformed("a state is listed twice")
         }
         let byCode = Dictionary(uniqueKeysWithValues: states.map { ($0.code, $0) })
+        let ignoredStates = Set(ignored.states)
 
         var seen = Set<Water.ID>()
+        var dropped = Set<Water.ID>()
         var waters: [Water] = []
         waters.reserveCapacity(dto.waters.count)
         for w in dto.waters {
-            guard let st = byCode[w.state] else {
-                throw SnapshotDecodingError.malformed("water \(w.id) names a state the snapshot doesn't list: \(w.state)")
+            let id = w.id.trimmingCharacters(in: .whitespaces)
+            guard seen.insert(id).inserted else {
+                throw SnapshotDecodingError.malformed("duplicate water id \(id)")
             }
-            let water = try water(w, state: st)
-            guard seen.insert(water.id).inserted else {
-                throw SnapshotDecodingError.malformed("duplicate water id \(water.id)")
+            if ignoredStates.contains(w.state) {
+                dropped.insert(id)
+                ignored.waters.append(id)
+                continue
+            }
+            guard let st = byCode[w.state] else {
+                throw SnapshotDecodingError.malformed("water \(id) names a state the snapshot doesn't list: \(w.state)")
+            }
+            let decoded = try water(w, state: st)
+            ignored.plants += decoded.ignoredPlants
+            guard let water = decoded.water else {
+                dropped.insert(id)
+                ignored.waters.append(id)
+                continue
             }
             waters.append(water)
         }
-        let thisWeek = try dto.thisWeek.map { entry -> ThisWeekEntry in
+        // The pipeline never publishes a state without a water (DECISIONS
+        // 0025), so a state left with none after its plants were ignored
+        // goes too, rather than listing a count of waters this build can't show.
+        let withWaters = Set(waters.map(\.state))
+        for st in states where st.code != "CA" && !withWaters.contains(st.code) {
+            ignored.states.append(st.code)
+        }
+        states.removeAll { $0.code != "CA" && !withWaters.contains($0.code) }
+        var thisWeek: [ThisWeekEntry] = []
+        for entry in dto.thisWeek {
             let id = entry.waterID.trimmingCharacters(in: .whitespaces)
             let sp = entry.species.trimmingCharacters(in: .whitespaces)
+            if dropped.contains(id) { continue }
             guard seen.contains(id), !sp.isEmpty else {
                 throw SnapshotDecodingError.malformed("this_week entry \(id) names no water or no species")
             }
-            return ThisWeekEntry(waterID: id, species: sp)
+            thisWeek.append(ThisWeekEntry(waterID: id, species: sp))
         }
         var species: [String] = []
         for w in waters { for p in w.plants where !species.contains(p.species) { species.append(p.species) } }
@@ -54,30 +110,29 @@ enum SnapshotV2Decoding {
                                 statedToday: ca.currentWeek.start,
                                 statedPeriodStart: ca.currentWeek.start, statedPeriodEnd: ca.currentWeek.end,
                                 contentSHA256: try dto.states[0].source.contentSHA256Checked())
-        return Snapshot(schemaVersion: 2,
-                        generatedAt: try SnapshotDecoder.datetime(dto.generatedAt, field: "generated_at"),
-                        source: source, sourceWeek: ca.currentWeek, attribution: ca.attribution,
-                        license: ca.license, regions: ca.regions, counties: ca.counties,
-                        species: species.sorted(), waters: waters, thisWeek: thisWeek,
-                        coverage: nil, states: states)
+        let snapshot = Snapshot(schemaVersion: 2,
+                                generatedAt: try SnapshotDecoder.datetime(dto.generatedAt, field: "generated_at"),
+                                source: source, sourceWeek: ca.currentWeek, attribution: ca.attribution,
+                                license: ca.license, regions: ca.regions, counties: ca.counties,
+                                species: species.sorted(), waters: waters, thisWeek: thisWeek,
+                                coverage: nil, states: states)
+        return (snapshot, ignored)
     }
 
     static let caRegionCodes = SnapshotDecoder.regionCodes
 
-    static func state(_ d: StateDTO) throws -> StateInfo {
+    /// One state, or nil when this build has no words or no product for it.
+    static func state(_ d: StateDTO) throws -> StateInfo? {
         let code = d.code
         guard code.count == 2, code == code.uppercased() else {
             throw SnapshotDecodingError.malformed("state code is not two capitals: \(code)")
         }
-        guard let semantics = StateSemantics(rawValue: d.semantics) else {
-            throw SnapshotDecodingError.malformed("state \(code) has unknown semantics \(d.semantics)")
+        guard let semantics = StateSemantics(rawValue: d.semantics), StateAccess.isKnown(state: code) else {
+            return nil
         }
-        let precisions = try d.datePrecisions.map { raw -> DatePrecision in
-            guard let p = DatePrecision(rawValue: raw) else {
-                throw SnapshotDecodingError.malformed("state \(code) has unknown precision \(raw)")
-            }
-            return p
-        }
+        // A precision this build does not know is left out of the list; the
+        // plants that use it are left out below, water by water.
+        let precisions = d.datePrecisions.compactMap(DatePrecision.init(rawValue:))
         let regions = try d.regions.map { r -> Region in
             if code == "CA", !caRegionCodes.contains(r.code) {
                 throw SnapshotDecodingError.malformed("region has an unrecognized code: \(r.code)")
@@ -100,7 +155,7 @@ enum SnapshotV2Decoding {
             semantics: semantics, datePrecisions: precisions, removalInference: d.removalInference,
             currentWeek: try SnapshotDecoder.week(d.currentWeek, field: "\(code).current_week"),
             asOf: try SnapshotDecoder.date(d.asOf, field: "\(code).as_of"),
-            newestRecord: try d.newestRecord.map { try period($0, field: "\(code).newest_record") },
+            newestRecord: try d.newestRecord.flatMap { try period($0, field: "\(code).newest_record") },
             recencyNote: d.recencyNote,
             sourceName: d.source.name, sourceURL: try SnapshotDecoder.url(d.source.url, field: "\(code).source.url"),
             fetchedAt: try SnapshotDecoder.datetime(d.source.fetchedAt, field: "\(code).source.fetched_at"),
@@ -114,10 +169,10 @@ enum SnapshotV2Decoding {
             watersCount: d.watersCount)
     }
 
-    static func period(_ d: PeriodV2DTO, field: String) throws -> Week {
-        guard let precision = DatePrecision(rawValue: d.precision) else {
-            throw SnapshotDecodingError.malformed("\(field) has unknown precision \(d.precision)")
-        }
+    /// A period at a precision this build knows, or nil for one it does not.
+    /// A known precision whose label or bounds break the contract throws.
+    static func period(_ d: PeriodV2DTO, field: String) throws -> Week? {
+        guard let precision = DatePrecision(rawValue: d.precision) else { return nil }
         let start = try SnapshotDecoder.date(d.start, field: "\(field).start")
         let end = try SnapshotDecoder.date(d.end, field: "\(field).end")
         guard start <= end else { throw SnapshotDecodingError.malformed("\(field) has end before start") }
@@ -134,11 +189,18 @@ enum SnapshotV2Decoding {
             guard start.day == 1, start.month == end.month, !d.label.contains("-") else {
                 throw SnapshotDecodingError.malformed("\(field) is a month but reads \(d.label)")
             }
+        case .approximate:
+            // The agency's words and the year, verbatim: "April - third week, 2026".
+            guard d.label.hasSuffix(", \(start.year)"), d.label.count > 6 else {
+                throw SnapshotDecodingError.malformed("\(field) is approximate but reads \(d.label)")
+            }
         }
         return Week(start: start, end: end, label: d.label, precision: precision)
     }
 
-    static func water(_ w: WaterV2DTO, state: StateInfo) throws -> Water {
+    /// One water, or nil when every plant used a vocabulary this build does
+    /// not know and there is no months note to show instead.
+    static func water(_ w: WaterV2DTO, state: StateInfo) throws -> (water: Water?, ignoredPlants: Int) {
         let id = w.id.trimmingCharacters(in: .whitespaces)
         var stockID = 0
         if state.code == "CA" {
@@ -155,33 +217,49 @@ enum SnapshotV2Decoding {
         if state.code == "CA", !caRegionCodes.contains(region) {
             throw SnapshotDecodingError.malformed("water \(id) has an unrecognized region: \(region)")
         }
-        let plants = try w.plants.map { p -> Plant in
-            guard let status = PlantStatus(rawValue: p.status) else {
-                throw SnapshotDecodingError.malformed("waters[\(id)].plants has an unrecognized status: \(p.status)")
+        var ignoredPlants = 0
+        var plants: [Plant] = []
+        for p in w.plants {
+            guard let status = PlantStatus(rawValue: p.status),
+                  let week = try period(p.period, field: "waters[\(id)].plants[].period") else {
+                ignoredPlants += 1
+                continue
             }
-            let fits = state.semantics == .report ? status == .reported : status != .reported
+            let fits: Bool
+            switch state.semantics {
+            case .report: fits = status == .reported
+            case .schedule: fits = status != .reported
+            case .plan: fits = status == .listed
+            }
             guard fits else {
                 throw SnapshotDecodingError.malformed("waters[\(id)] has a \(p.status) plant in a \(state.semantics.rawValue) state")
             }
             let sp = p.species.trimmingCharacters(in: .whitespaces)
             guard !sp.isEmpty else { throw SnapshotDecodingError.malformed("waters[\(id)] has a plant with an empty species") }
-            return Plant(week: try period(p.period, field: "waters[\(id)].plants[].period"), species: sp, status: status,
-                         firstObservedAt: try SnapshotDecoder.datetime(p.firstObservedAt, field: "waters[\(id)].plants[].first_observed_at"),
-                         lastObservedAt: try SnapshotDecoder.datetime(p.lastObservedAt, field: "waters[\(id)].plants[].last_observed_at"),
-                         count: p.count)
+            plants.append(Plant(week: week, species: sp, status: status,
+                                firstObservedAt: try SnapshotDecoder.datetime(p.firstObservedAt, field: "waters[\(id)].plants[].first_observed_at"),
+                                lastObservedAt: try SnapshotDecoder.datetime(p.lastObservedAt, field: "waters[\(id)].plants[].last_observed_at"),
+                                count: p.count))
         }
         let monthsNote = w.monthsNote?.trimmingCharacters(in: .whitespaces)
-        guard !plants.isEmpty || !(monthsNote ?? "").isEmpty else {
-            throw SnapshotDecodingError.malformed("water \(id) has no plants and no months note")
+        let hasNote = !(monthsNote ?? "").isEmpty
+        if plants.isEmpty, !hasNote {
+            // Nothing this build can show. An empty list in the file is a
+            // contract violation; a list emptied by unknown vocabulary is not.
+            guard ignoredPlants > 0 else {
+                throw SnapshotDecodingError.malformed("water \(id) has no plants and no months note")
+            }
+            return (nil, ignoredPlants)
         }
-        return Water(id: id, cdfwStockID: stockID, name: name, nameReviewed: w.nameStatus == "reviewed",
-                     slug: w.slug, aliases: SnapshotDecoder.clean(w.aliases), counties: SnapshotDecoder.clean(w.counties),
-                     region: region, cdfwMapURL: try SnapshotDecoder.url(w.sourceURL, field: "waters[\(id)].source_url"),
-                     location: w.location.map { GeoLocation(lat: $0.lat, lon: $0.lon, source: $0.source) },
-                     lastListedWeek: try w.lastPeriod.map { try period($0, field: "waters[\(id)].last_period") },
-                     plants: plants, state: state.code, semantics: state.semantics,
-                     agencyShortName: state.agencyShortName, towns: SnapshotDecoder.clean(w.towns),
-                     sitePath: w.sitePath, monthsNote: (monthsNote?.isEmpty ?? true) ? nil : monthsNote)
+        let water = Water(id: id, cdfwStockID: stockID, name: name, nameReviewed: w.nameStatus == "reviewed",
+                          slug: w.slug, aliases: SnapshotDecoder.clean(w.aliases), counties: SnapshotDecoder.clean(w.counties),
+                          region: region, cdfwMapURL: try SnapshotDecoder.url(w.sourceURL, field: "waters[\(id)].source_url"),
+                          location: w.location.map { GeoLocation(lat: $0.lat, lon: $0.lon, source: $0.source) },
+                          lastListedWeek: try w.lastPeriod.flatMap { try period($0, field: "waters[\(id)].last_period") },
+                          plants: plants, state: state.code, semantics: state.semantics,
+                          agencyShortName: state.agencyShortName, towns: SnapshotDecoder.clean(w.towns),
+                          sitePath: w.sitePath, monthsNote: hasNote ? monthsNote : nil)
+        return (water, ignoredPlants)
     }
 }
 

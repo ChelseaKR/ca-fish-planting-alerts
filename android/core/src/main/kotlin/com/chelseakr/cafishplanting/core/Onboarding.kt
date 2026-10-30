@@ -11,12 +11,11 @@ data class OnboardingState(val completedVersion: Int = 0) {
 }
 
 /**
- * The words of the introduction: the iOS app's California copy (its
- * `OnboardingCopy` before more states, docs/DECISIONS.md 0025), page for
- * page. This app reads v1, California only, so it keeps that copy. Two
- * phrases name Android's own surfaces where the iOS words name Apple's:
- * "home screen" for "Home Screen and Lock Screen", and "Swipe down" for
- * "Pull down". `CopyAndRulesTest` pins every word.
+ * The words of the introduction: the iOS app's `OnboardingCopy`, page for
+ * page, with more states (docs/DECISIONS.md 0025). Two phrases name
+ * Android's own surfaces where the iOS words name Apple's: "home screen"
+ * for "Home Screen and Lock Screen", and "Swipe down" for "Pull down".
+ * `CopyAndRulesTest` holds every other word to `Onboarding.swift`.
  */
 object OnboardingCopy {
     const val VERSION = 1
@@ -28,17 +27,19 @@ object OnboardingCopy {
             id = "welcome",
             icon = "truck",
             title = "Welcome to Trout Truck",
-            body = "California's fish planting schedule from the Department of Fish and Wildlife, a week at a time.",
+            body = "California's fish planting schedule from the Department of Fish and Wildlife, a week at a time, " +
+                "and other states' trout schedules and reports from their own agencies.",
             points = listOf(
                 "Every water on CDFW's weekly schedule",
-                "Each water's week-by-week history, which CDFW's own page doesn't keep",
+                "Each water's history, which the agencies' own pages don't keep",
             ),
         ),
         Page(
             id = "browse",
             icon = "map",
             title = "Find your waters",
-            body = "Browse by region and county, or search by a water's name, a name CDFW used before, or its county.",
+            body = "Pick a state, then browse by region and county, or search by a water's name, " +
+                "a name the agency used before, or its county.",
             points = listOf(
                 "Waters on the current week's schedule are tagged This week",
                 "Swipe down on a list to check for a newer schedule",
@@ -48,10 +49,11 @@ object OnboardingCopy {
             id = "favorites",
             icon = "star",
             title = "Star the waters you fish",
-            body = "Favorites, browsing and history are free and unlimited.",
+            body = "Favorites, browsing and history are free and unlimited, in every state.",
             points = listOf(
-                "Full access, a one-time purchase, adds an alert when a favorite is newly on the schedule",
-                "It also adds a Favorite waters widget for your home screen",
+                "Full access is a one-time purchase for each state. It adds an alert when a favorite there is " +
+                    "newly on the agency's schedule or in its stocking report",
+                "It also adds that state's favorites to a Favorite waters widget for your home screen",
                 "Mute one water's alerts from the alert itself, and keep it as a favorite",
             ),
         ),

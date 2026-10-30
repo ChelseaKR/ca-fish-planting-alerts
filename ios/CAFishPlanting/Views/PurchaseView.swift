@@ -82,10 +82,18 @@ struct PurchaseView: View {
                         }
                         .font(.subheadline)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("One payment, forever, for this state. No subscription, no account. Each state is its own purchase.")
+                        Text(PaywallCopy.terms(stateName: stateName))
                             .font(.footnote)
                             .foregroundStyle(.secondaryText)
                             .multilineTextAlignment(textAlignment)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        // How current this state's data is, before the buy
+                        // button: a failed check is said here too, not only
+                        // on Browse (PaywallCopy).
+                        if let info {
+                            freshness(info)
+                        }
 
                         purchaseButton
                         restoreButton
@@ -126,6 +134,30 @@ struct PurchaseView: View {
         // Opaque, so text contrast doesn't depend on what the half-height
         // glass sheet happens to cover.
         .presentationBackground(Color(uiColor: .systemBackground))
+    }
+
+    @ViewBuilder
+    private func freshness(_ info: StateInfo) -> some View {
+        VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .center, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                if !info.lastAttemptOK {
+                    // Orange on the symbol only, as on Browse.
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .accessibilityHidden(true)
+                }
+                Text(PaywallCopy.freshness(info))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let note = info.recencyNote {
+                Text(note).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .font(.footnote)
+        .foregroundStyle(info.lastAttemptOK ? Color.secondaryText : Color.primary)
+        .multilineTextAlignment(textAlignment)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("purchase-freshness")
     }
 
     @ViewBuilder

@@ -54,3 +54,17 @@ https://developer.apple.com/app-store/marketing/guidelines/, which allow it
 only in connection with an app that is available on the App Store. The
 website shows it only when the APP_STORE_LIVE switch is on (pipeline/src/
 cfpa/site.py). The Elastic License 2.0 does not apply to it.
+
+
+Fonts: Bitter and Atkinson Hyperlegible Next
+--------------------------------------------
+
+pipeline/src/cfpa/templates/fonts/bitter-latin.woff2 and
+pipeline/src/cfpa/templates/fonts/atkinson-hyperlegible-next-latin.woff2 are
+the Latin subsets Google Fonts serves for Bitter (Copyright 2011 The Bitter
+Project Authors) and Atkinson Hyperlegible Next (Copyright 2020-2024 The
+Atkinson Hyperlegible Next Project Authors), unmodified, as fetched on
+2026-10-23. They are licensed under the SIL Open Font License, Version 1.1;
+the license texts are next to them (OFL-Bitter.txt,
+OFL-AtkinsonHyperlegibleNext.txt) and ship with the website in
+assets/fonts/. The Elastic License 2.0 does not apply to them.

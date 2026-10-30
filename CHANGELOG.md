@@ -11,8 +11,92 @@ This repository was republished with a new history on 2026-09-18
 
 ## [Unreleased]
 
+### Added
+
+- Site: winter on the record (DECISIONS 0040). Each county page lists the
+  waters CDFW's schedule listed there from November through February of the
+  most recent whole winter, with the weeks each was listed, and the home
+  page gives the statewide count and the counties with the most listed
+  waters. Shown only when the record covers that winter from November 1, and
+  worded as a record, not a forecast. The home page and `/county/` carry the
+  disclosed gear block (placements `home`, `counties`); from November
+  through February the home page's block adds one cold-weather search. County
+  h1s say "stocking and planting schedule", and `/county/` says CDFW was the
+  Department of Fish and Game (DFG) before 2013.
+
+- Android: New York, as on iOS. The app reads New York's `plan` semantics
+  and `approximate` periods (NYS DEC's own words, such as "April - third
+  week, 2026", never shown as a date), sells it as `state_ny`, and for a
+  bought, unmuted New York favorite shows a reminder at 9 a.m. on the first
+  day of each planned period of 31 days or less (`ReminderPlanner`,
+  `ReminderWorker`). The purchase sheet uses the iOS sheet's words
+  (`PaywallCopy`): no "forever", one payment per state, how Restore
+  purchases works, and when that state's data was last read, said plainly
+  before the buy button when the newest check failed. The widget digest is
+  version 3. `docs/ANDROID-RELEASE.md` and `android/README.md` list all
+  five Play products to create.
+
+- App: each state's purchase sheet says when that state's data was last
+  read, and says plainly before the buy button when the newest check of the
+  agency's page failed (`PaywallCopy`). Its footnote no longer says
+  "forever"; it says one payment per state, no subscription, and that
+  Restore purchases brings it back on a new device. New York's product
+  description now says "Reminders", which is what its purchase adds.
+  `docs/app-store/LISTING-MULTISTATE.md` is the listing for the multistate
+  version, checked against App Store Connect's limits and the StoreKit file
+  by `StateProductListingTests`, and `docs/app-store/OWNER-STEPS.md` lists
+  the four products to create. More StoreKit Test cases cover New York, a
+  refund, a failed purchase and Ask to Buy for a state.
+
+- The Amazon gear block now appears on each California county page and on
+  each other state's water page whose data terms permit commercial reuse
+  (Tennessee on the live site; Massachusetts, Michigan and New York also
+  pass), with the same four search links, Amazon's disclosure, and a
+  non-endorsement sentence naming that page's own agency. One template,
+  `_gear_block.html.jinja`, serves every page kind; California water pages
+  are unchanged. Clicks carry placement `county` or `state_water`
+  (`docs/DECISIONS.md` 0039; `pipeline/tests/test_site_affiliate.py`).
+
+- County pages answer "<county> trout planting schedule" from the data. The
+  meta description names this week's waters, or the soonest later week and its
+  waters, or the last week a county water was listed (each county's own, so no
+  two are alike). A "Recently on the schedule" table lists the county's latest
+  four earlier weeks with a listed water, each linked to its `/week/` page,
+  and says so in words when there is none. A list links the other counties of
+  the same CDFW region, and the iOS app line now appears on county pages too
+  (placement `county`). Water pages link each past listed week in their
+  history table to its `/week/` page. A county's sitemap `lastmod` also counts
+  the day another county in its region first appeared, since it now links to
+  it (`docs/adr/0013`, addendum 2026-10-23;
+  `pipeline/tests/test_site_county_search.py`).
+
+- `make verify` runs Greenlight, a third-party App Store and Google Play
+  preflight scanner, on the iOS app, the widget extension and the Android
+  project (`scripts/check_greenlight.py`, `make greenlight`). It fails on any
+  critical or high finding. The scanner is built from a pinned commit
+  (v0.2.0) into `build/tools/bin` and its module hash is checked after the
+  build; CI installs Go for it, and a skipped scan fails in CI. Locally, with
+  no Go, the gate prints `SKIPPED: greenlight not installed` and the last line
+  of `make verify` says the run is not a full pass. Negative controls seed a
+  missing privacy manifest and a restricted SMS permission in copies of the
+  targets (`pipeline/tests/test_check_greenlight.py`). The widget extension's
+  Info.plist now declares `ITSAppUsesNonExemptEncryption` false, as the app's
+  already does.
+
+- After each production deploy, the pages that are new or changed since the
+  previous deploy are announced to IndexNow (https://www.indexnow.org/documentation)
+  so search engines can crawl them sooner. The list comes from comparing the new `sitemap.xml` with the live one. Only https URLs on this site's own
+  host, only built pages without a robots noindex, at most 10,000 a request. A
+  failed or refused announcement logs a notice and never fails the deploy. No
+  secret is involved; the key file served at the site root is public by design.
+
 ### Changed
 
+- The privacy page no longer says the iPhone app has an Apple Watch app or
+  watch complications; the 1.0.0 binary has neither (the watch target is
+  unreleased). `docs/APP-STORE.md` and the Android README now say that
+  only California and Tennessee are sold today, because the published
+  `snapshot/v2.json` lists only those two. `tests/test_site_privacy_accuracy.py`.
 - Three claims from the 2026-10-21 structured-data audit now match what the
   site does. /about/ says in visible text the license stated for the snapshot,
   from the same constant that already feeds the Dataset and the /data/ page
@@ -26,6 +110,16 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- States wave 2 (DECISIONS 0034), each its own one-time purchase in the
+  app: Michigan (the DNR's stocking data, trout stocked into public water
+  since 2021, with the DNR's reporting lag said beside it), Massachusetts
+  (MassWildlife's report of stockings done, read through ArcGIS Hub), and
+  New York (DEC's spring stocking plan in DEC's own words, such as "April -
+  third week", never turned into dates). New York favorites get a reminder
+  when a planned period begins. The app's v2 reader now leaves out a state,
+  a semantics, a status or a precision it does not know instead of refusing
+  the file, so an install keeps refreshing when the pipeline adds one first;
+  a malformed file still keeps the last good snapshot.
 - A page for each past week on record at `/week/YYYY-MM-DD/` (the waters CDFW's schedule listed that week, by county, each linked to its water page) and an index at `/week/`, with canonical URLs, structured data and sitemap entries whose `lastmod` comes from the data. The current week stays the home page; removed entries and empty weeks are left out, and a week with fewer than 8 listed waters is noindex,follow and out of the sitemap (DECISIONS 0038). `tests/test_site_weeks.py`.
 - An open-data page at `/data/` and CSV and JSON files under `/data/v1/` (current schedule and weekly history for California, and for Tennessee in its own files), with a data dictionary, written by the site build from `snapshot/v2.json`. Linked from the footer and the about page. The page states the source and terms (CDFW Conditions of Use) and adds no license of its own; choosing one is the owner's call (`DATASET_LICENSE_URL`).
 

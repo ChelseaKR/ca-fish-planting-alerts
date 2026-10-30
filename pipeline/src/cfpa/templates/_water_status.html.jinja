@@ -1,7 +1,9 @@
 {# Status block at the top of a water page. Needs: water, water_status.
    Every date is a recorded week from CDFW's schedule; nothing is estimated. #}
+{% from "_status_badge.html.jinja" import status_badge %}
 <section class="water-status" aria-labelledby="water-status-heading">
   <h2 id="water-status-heading">Where {{ water.name }} stands on CDFW's schedule</h2>
+  <p>{{ status_badge(water_status.badge) }}</p>
   <dl>
     <dt>Last on the schedule</dt>
     <dd>{{ water_status.last_sentence }}</dd>

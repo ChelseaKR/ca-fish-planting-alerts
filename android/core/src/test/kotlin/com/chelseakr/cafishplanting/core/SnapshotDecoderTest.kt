@@ -24,13 +24,16 @@ class SnapshotDecoderTest {
 
     @Test fun decodesTheBundledRealSnapshot() {
         val s = SnapshotDecoder.decode(TS.bundledSnapshot.readBytes())
-        assertTrue(s.waters.size > 300)
-        assertTrue(s.waters.all { it.plants.isNotEmpty() })
+        assertTrue(s.waters.count { it.state == "CA" } > 300)
+        // A California water always has a week; another state's may have only month letters, never nothing.
+        assertTrue(s.waters.filter { it.state == "CA" }.all { it.plants.isNotEmpty() })
+        assertTrue(s.waters.all { it.plants.isNotEmpty() || it.monthsNote != null })
     }
 
     @Test fun refusesContractViolations() {
         val cases = mapOf(
-            "schema version" to TS.minimalValid.replace("\"schema_version\": 1", "\"schema_version\": 2"),
+            "schema version" to TS.minimalValid.replace("\"schema_version\": 1", "\"schema_version\": 3"),
+            "a v1 body labeled v2" to TS.minimalValid.replace("\"schema_version\": 1", "\"schema_version\": 2"),
             "http url" to TS.minimalValid.replace("\"url\": \"https://nrm.dfg.ca.gov/FishPlants/\"", "\"url\": \"http://nrm.dfg.ca.gov/FishPlants/\""),
             "bad date" to TS.minimalValid.replace("\"stated_today\": \"2026-09-13\"", "\"stated_today\": \"2026-02-30\""),
             "a day not a week" to TS.minimalValid.replace("\"start\": \"2026-09-20\", \"end\": \"2026-09-26\"", "\"start\": \"2026-09-26\", \"end\": \"2026-09-20\""),

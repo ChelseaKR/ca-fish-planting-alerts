@@ -320,6 +320,54 @@ adds iPad and Apple silicon Macs. Before submitting that version:
    localization in App Store Connect with the version that ships the watch,
    not before.
 
+## For the multistate version (DECISIONS 0025, 0034)
+
+Checked read-only on 2026-10-24: App Store Connect has one in-app purchase,
+`com.chelseakr.cafishplanting.fullaccess` (Waiting for Review with 1.0.0).
+None of the four state products exists yet. The app on `main` already sells
+them from `Configuration.storekit` in local testing, and hides a state that
+has no data in the published `snapshot/v2.json`, so creating a product early
+does no harm in the app, but each one goes through review with the version.
+
+1. **Wait for 1.0.0 to leave review.** Don't create the new version record
+   before then.
+2. **Check the live snapshot lists the state.** `snapshot/v2.json` must list
+   TN, MA, MI and NY (on 2026-10-24 it listed CA and TN only, because the
+   daily run has refused since 2026-10-23 on a CDFW page change). A state
+   missing from it is not shown in the app, so don't submit its product.
+3. **Create each product** (App Store Connect > Trout Truck > In-App
+   Purchases > +, Non-Consumable). Values are exact, from
+   [`LISTING-MULTISTATE.md`](LISTING-MULTISTATE.md#in-app-purchases):
+
+   | Reference Name | Product ID | Display Name | Description |
+   |---|---|---|---|
+   | `Tennessee access` | `com.chelseakr.cafishplanting.state.tn` | `Tennessee` | `Alerts, widget, Watch: Tennessee waters` |
+   | `Massachusetts access` | `com.chelseakr.cafishplanting.state.ma` | `Massachusetts` | `Alerts, widget, Watch: Massachusetts waters` |
+   | `Michigan access` | `com.chelseakr.cafishplanting.state.mi` | `Michigan` | `Alerts, widget, Watch: Michigan waters` |
+   | `New York access` | `com.chelseakr.cafishplanting.state.ny` | `New York` | `Reminders, widget, Watch: New York waters` |
+
+   For each: Family Sharing **off** (as California's is), price **USD 9.99**,
+   availability **United States** only, localization English (U.S.).
+4. **Review screenshot for each product.** The state's purchase sheet:
+   Browse > the map icon ("States and full access") > the state > "Unlock
+   alerts and widget". Take it on a device or a simulator run from Xcode
+   (the scheme's StoreKit file shows the $9.99 price there); the sheet now
+   shows when that state's data was last read.
+5. **Review notes for each product:** the matching cell in
+   `docs/APP-STORE.md`, "Per-state in-app purchases", row "Review notes".
+6. **California's description:** with this version, change it from
+   `Alerts and a widget for your favorite waters` to
+   `Alerts, widget, Watch: your favorite waters`. Leave its id, price and
+   display name alone.
+7. **Attach every new product to the version** the way that worked on
+   2026-10-15: take the product out of every other draft, then use the
+   product's own "Add for Review" menu and pick the version's draft.
+8. **Listing and review notes:** paste from
+   [`LISTING-MULTISTATE.md`](LISTING-MULTISTATE.md).
+9. **TestFlight before submitting:** buy one state with a Sandbox account,
+   delete and reinstall, Restore purchases, and check that only that state
+   unlocked.
+
 ## What is already done
 
 Checked 2026-10-01 against the code on this branch; `make appstore` re-checks

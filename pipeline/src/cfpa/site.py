@@ -34,7 +34,8 @@ from urllib.parse import urlencode, urlsplit
 
 import jinja2
 
-from . import feeds, guides, opendata, share_cards, site_states, weeks
+from . import ads as ads_mod
+from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
 from .snapshot import week_of
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -207,6 +208,64 @@ APP_STORE_CANONICAL_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
 # minimum, with a quarter of its height (10px) of clear space around it.
 APP_STORE_BADGE_FILE = "app-store-badge.svg"
 
+# The design system's two typefaces (style.css @font-face): Google Fonts'
+# own Latin woff2 files, unmodified, under the SIL Open Font License 1.1 (see
+# NOTICE). Served from assets/fonts/ rather than fonts.googleapis.com, so the
+# site still makes no third-party request when analytics are off. Every page
+# preloads them (base.html.jinja), and font-display: swap keeps text visible
+# while they load.
+FONTS_DIR = "fonts"
+FONT_FILES: tuple[str, ...] = (
+    "atkinson-hyperlegible-next-latin.woff2",
+    "bitter-latin.woff2",
+)
+FONT_LICENSE_FILES: tuple[str, ...] = (
+    "OFL-AtkinsonHyperlegibleNext.txt",
+    "OFL-Bitter.txt",
+)
+
+# The status badge's words (the design system's StatusBadge). The word is the
+# status: a water or county with nothing scheduled says "None scheduled",
+# never a 0, a dash or an empty badge. _status_badge.html.jinja reads these.
+STATUS_BADGE_WORDS: dict[str, str] = {
+    "now": "This week",
+    "next": "Next week",
+    "none": "None scheduled",
+}
+# How many waters a county card names before "and N more".
+COUNTY_CARD_MAX_WATERS = 5
+
+
+# Words spelled with a vowel that start with a consonant sound ("a Eureka
+# water", "a Union Lake"), and with a consonant that start with a vowel sound
+# ("an hour"). Lowercase prefixes; the first match decides.
+_CONSONANT_SOUND_PREFIXES = ("eu", "uni", "use", "usu", "uti", "one", "once")
+_VOWEL_SOUND_PREFIXES = ("hour", "honest", "honor", "heir")
+
+
+def indefinite_article(word: str) -> str:
+    """ "a" or "an" for ``word``, by its first sound: "an Inyo County water",
+    "a Modoc County water". A small rule, not a dictionary: a vowel letter
+    takes "an" unless the word starts with one of the consonant-sound
+    prefixes above, and a silent "h" in the list takes "an"."""
+    w = word.strip().lower()
+    if w.startswith(_VOWEL_SOUND_PREFIXES):
+        return "an"
+    if w.startswith(_CONSONANT_SOUND_PREFIXES):
+        return "a"
+    return "an" if w[:1] in ("a", "e", "i", "o", "u") else "a"
+
+
+def schedule_status(*, this_week: bool, next_week: bool) -> str:
+    """The badge state for a water or county: on CDFW's schedule this week
+    wins over next week, and anything else is "none"."""
+    if this_week:
+        return "now"
+    if next_week:
+        return "next"
+    return "none"
+
+
 # The image link previews show (Open Graph and Twitter cards): one 1200x630
 # card per kind of page, drawn at build time by share_cards.py. The kind a
 # page uses is named in its template (``share_card_kind``); a page that names
@@ -283,12 +342,27 @@ def amazon_search_url(terms: str) -> str:
     return f"{AMAZON_SEARCH_URL}?{urlencode({'k': terms, 'tag': AMAZON_ASSOCIATE_TAG})}"
 
 
-def gear_links() -> list[dict[str, str]]:
-    """The gear block's links, built from ``GEAR_CATEGORIES``."""
-    return [
-        {"label": label, "url": amazon_search_url(terms)}
-        for label, terms in GEAR_CATEGORIES
-    ]
+# The home page's block adds cold-weather gear when the current CDFW week
+# starts in November through February (DECISIONS 0040). Only the home page:
+# its lastmod moves at every weekly rollover, so a list that changes with the
+# month never changes a page whose lastmod says it did not. Water and county
+# pages keep the fixed four.
+WINTER_MONTHS = frozenset({11, 12, 1, 2})
+COLD_MONTH_GEAR: tuple[tuple[str, str], ...] = (
+    ("Insulated fishing gloves", "insulated fishing gloves"),
+)
+
+
+def is_winter_week(week_start: str) -> bool:
+    """Whether a CDFW week starting on ``week_start`` starts in winter."""
+    return bool(week_start) and dt.date.fromisoformat(week_start).month in WINTER_MONTHS
+
+
+def gear_links(*, cold_months: bool = False) -> list[dict[str, str]]:
+    """The gear block's links, built from ``GEAR_CATEGORIES``, plus
+    ``COLD_MONTH_GEAR`` when ``cold_months``."""
+    pairs = GEAR_CATEGORIES + (COLD_MONTH_GEAR if cold_months else ())
+    return [{"label": label, "url": amazon_search_url(terms)} for label, terms in pairs]
 
 
 # The "What to bring" guide at /gear/ (DECISIONS 0030). Section key, then
@@ -396,12 +470,17 @@ def region_slug(snapshot_name: str) -> str:
 
 
 def _env() -> jinja2.Environment:
-    return jinja2.Environment(
+    env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(TEMPLATES_DIR)),
         autoescape=jinja2.select_autoescape(["html.jinja"]),
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    # A global, not page context, so the imported badge macro can read it.
+    env.globals["status_words"] = STATUS_BADGE_WORDS
+    # "{{ county|a_an }} County water": "an Inyo", "a Modoc".
+    env.filters["a_an"] = lambda word: f"{indefinite_article(word)} {word}"
+    return env
 
 
 def _fmt_dt(iso_z: str) -> str:
@@ -557,8 +636,15 @@ def _water_view(
         "plants": [
             {
                 "label": p["week"]["label"],
+                "start": p["week"]["start"],
                 "species": p["species"],
                 "status": p["status"],
+                # A listed week before the current one has a /week/ page
+                # (weeks.week_entries) that names this water, so the row links
+                # it. A removed week is not on that page, and the current or a
+                # later week has no page, so neither links.
+                "week_page": p["status"] == "listed"
+                and p["week"]["start"] < source_week_start,
             }
             for p in plants_sorted
         ],
@@ -635,6 +721,9 @@ def _water_status(
         "in_this_week": source_week_start in listed,
         "next_week": next_week,
         "in_next_week": next_week in listed,
+        "badge": schedule_status(
+            this_week=source_week_start in listed, next_week=next_week in listed
+        ),
         "later_week": later[0] if later else "",
         "weeks_on_schedule": count,
         "recorded_since": recorded_since,
@@ -815,6 +904,110 @@ def _county_months(
     if view is not None:
         view["water_count"] = waters
     return view
+
+
+# The winter sections (DECISIONS 0040). "Winter" is November through
+# February, calendar months, not a CDFW term. The record holds a whole past
+# winter, so a county page and the home page can say which waters CDFW's
+# schedule listed in it, from the record alone and never as a forecast.
+HOME_WINTER_COUNTIES = 10
+"""The home page's winter block names this many counties at most, the ones
+with the most waters listed last winter."""
+
+
+def latest_complete_winter(
+    source_week_start: str, recorded_since: str
+) -> dict[str, str] | None:
+    """The most recent November-to-February that ended before the current
+    week, when the record covers it from its start; otherwise None.
+
+    A winter counts only when the record begins on or before its November 1,
+    so a county with no water listed in it is a fact about the record and
+    never a gap in the record read as absence. ``end`` is exclusive (March 1).
+    ``shown_from`` is the first CDFW week (Sunday) on or after ``end``: the
+    rollover at which this winter became the latest complete one, which a
+    page's lastmod counts."""
+    if not source_week_start or not recorded_since:
+        return None
+    current = dt.date.fromisoformat(source_week_start)
+    end_year = current.year if current.month >= 3 else current.year - 1
+    start = dt.date(end_year - 1, 11, 1)
+    end = dt.date(end_year, 3, 1)
+    if recorded_since > start.isoformat():
+        return None
+    shown_from = dt.date.fromisoformat(week_of(end)["start"])
+    if shown_from < end:
+        shown_from += dt.timedelta(days=7)
+    return {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "label": f"November {end_year - 1} through February {end_year}",
+        "shown_from": shown_from.isoformat(),
+    }
+
+
+def _winter_weeks(w: dict[str, Any], season: dict[str, str]) -> set[str]:
+    """The listed weeks of ``w`` that start inside ``season``."""
+    return {
+        p["week"]["start"]
+        for p in w["plants"]
+        if p["status"] == "listed"
+        and season["start"] <= p["week"]["start"] < season["end"]
+    }
+
+
+def _county_winter(
+    members: list[dict[str, Any]], season: dict[str, str] | None
+) -> dict[str, Any] | None:
+    """A county's waters listed in ``season``, most listed weeks first, then
+    by name; None when no winter is covered. An empty ``rows`` means the
+    record covers that winter and no county water was listed in it."""
+    if season is None:
+        return None
+    rows: list[dict[str, Any]] = []
+    all_weeks: set[str] = set()
+    for w in members:
+        listed = _winter_weeks(w, season)
+        if listed:
+            all_weeks |= listed
+            rows.append({"slug": w["slug"], "name": w["name"], "weeks": len(listed)})
+    rows.sort(key=lambda r: (r["name"], r["slug"]))
+    rows.sort(key=lambda r: r["weeks"], reverse=True)
+    return {"label": season["label"], "rows": rows, "week_count": len(all_weeks)}
+
+
+def _home_winter(
+    waters: list[dict[str, Any]],
+    season: dict[str, str] | None,
+    county_link: dict[str, dict[str, str]],
+) -> dict[str, Any] | None:
+    """Last winter statewide: how many waters and counties CDFW's schedule
+    listed, and the counties with the most listed waters (at most
+    ``HOME_WINTER_COUNTIES``, ties by name). None when no winter is covered
+    or nothing was listed in it, so the home page never shows a zero."""
+    if season is None:
+        return None
+    by_county: dict[str, set[str]] = {}
+    listed_ids: set[str] = set()
+    for w in waters:
+        if not _winter_weeks(w, season):
+            continue
+        listed_ids.add(w["id"])
+        for c in w["counties"]:
+            if c in county_link:
+                by_county.setdefault(c, set()).add(w["id"])
+    if not listed_ids:
+        return None
+    ranked = sorted(by_county.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+    counties: list[dict[str, Any]] = [
+        {**county_link[c], "count": len(ids)} for c, ids in ranked
+    ]
+    return {
+        "label": season["label"],
+        "water_count": len(listed_ids),
+        "county_count": len(counties),
+        "counties": counties[:HOME_WINTER_COUNTIES],
+    }
 
 
 def _weeks_phrase(n: float) -> str:
@@ -1439,6 +1632,49 @@ def _relative_trail(
     return out
 
 
+_TITLE_RE = re.compile(r"<title>(.*?)</title>", re.S)
+
+
+def ensure_unique_titles(out_dir: Path, written: list[Path]) -> list[str]:
+    """The last guard against two pages sharing a <title>, which a search
+    engine reads as one page said twice. Never fails the build (owner
+    decision 2026-10-29): each page in a clash gets its own path appended to
+    its <title> ("... | Trout Truck (ny/water/foo/)"), short, stable and
+    unique, and a warning names every page. Water pages are told apart
+    earlier (site_states.shared_names, site_states.qualifiers), so on
+    today's data this changes nothing. Returns the pages it changed."""
+    pages: dict[str, list[Path]] = {}
+    for path in written:
+        if path.suffix != ".html":
+            continue
+        m = _TITLE_RE.search(path.read_text(encoding="utf-8"))
+        if m:
+            title = " ".join(m.group(1).split())
+            pages.setdefault(title, []).append(path)
+    changed: list[str] = []
+    lines: list[str] = []
+    for title, paths in sorted(pages.items()):
+        if len(paths) < 2:
+            continue
+        for path in sorted(paths):
+            rel = path.relative_to(out_dir).parent.as_posix()
+            label = f"{rel}/" if rel != "." else path.name
+            html = path.read_text(encoding="utf-8")
+            m = _TITLE_RE.search(html)
+            if m is None:  # pragma: no cover - every page in `pages` has one
+                continue
+            new = f"<title>{m.group(1).strip()} ({label})</title>"
+            path.write_text(html[: m.start()] + new + html[m.end() :], encoding="utf-8")
+            changed.append(label)
+            lines.append(f"{label}: {title!r}")
+    if lines:
+        site_states.warn_titles(
+            f"{len(changed)} page(s) shared a <title>; each now ends with its path",
+            lines,
+        )
+    return changed
+
+
 def _write_page(out_dir: Path, rel_dir: str, html: str, written: list[Path]) -> None:
     page_dir = out_dir / rel_dir if rel_dir else out_dir
     page_dir.mkdir(parents=True, exist_ok=True)
@@ -1608,6 +1844,156 @@ def _render_water_page(
     )
 
 
+COUNTY_RECENT_WEEKS = 4
+"""A county page lists this many of its most recent past weeks with a listed
+water, newest first, when the record has that many."""
+
+COUNTY_DESCRIPTION_MAX = WATER_DESCRIPTION_MAX
+
+
+def _county_recent_weeks(
+    members: list[dict[str, Any]], *, source_week_start: str
+) -> dict[str, Any]:
+    """The county's most recent past weeks with a listed plant, at most
+    ``COUNTY_RECENT_WEEKS`` of them, as one row per listed plant (week, water,
+    species), newest week first and then by name: the same shape as the
+    later-weeks table.
+
+    "Past" means before the snapshot's current week, the same rule as the
+    /week/ pages (weeks.week_entries), so every week here has a page to link.
+    A removed entry is never shown. A county with no such week gets no rows,
+    and the page says so in words, not as a zero."""
+    listed = [
+        (p["week"]["start"], w, p["species"])
+        for w in members
+        for p in w["plants"]
+        if p["status"] == "listed" and p["week"]["start"] < source_week_start
+    ]
+    weeks = sorted({start for start, _, _ in listed}, reverse=True)
+    kept = set(weeks[:COUNTY_RECENT_WEEKS])
+    rows = [
+        {"week": start, "slug": w["slug"], "name": w["name"], "species": species}
+        for start, w, species in listed
+        if start in kept
+    ]
+    rows.sort(key=lambda r: (r["name"], r["slug"], r["species"]))
+    rows.sort(key=lambda r: r["week"], reverse=True)
+    return {"rows": rows, "week_count": len(kept)}
+
+
+def _join_names(names: list[str]) -> str:
+    if len(names) <= 2:
+        return " and ".join(names)
+    return ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def _fit_names(prefix: str, names: list[str], suffix: str, limit: int) -> str | None:
+    """``prefix`` + as many of ``names`` as fit + ``suffix`` within ``limit``,
+    the rest counted as "and N more"; None when not even one name fits."""
+    for keep in range(len(names), 0, -1):
+        rest = len(names) - keep
+        shown = names[:keep]
+        listed = (
+            _join_names(shown) if rest == 0 else f"{', '.join(shown)} and {rest} more"
+        )
+        text = f"{prefix}{listed}{suffix}"
+        if len(text) <= limit:
+            return text
+    return None
+
+
+def _county_description(
+    county: str,
+    *,
+    species: str,
+    water_count: int,
+    this_week_names: list[str],
+    source_week_label: str,
+    next_week: str,
+    next_names: list[str],
+    last_week: str,
+) -> str:
+    """The meta description: the county, the stocking wording people search
+    with, then what the schedule says now, from the snapshot alone.
+
+    This week's waters, by name, when there are any; otherwise the soonest
+    later week and its waters; otherwise the last week a county water was
+    listed. A county with none of those says no week is listed. The current
+    week's date appears only when a water is listed for it, so the
+    description changes at a rollover only for a county whose lastmod already
+    counts that rollover (``_rollover_sensitive``)."""
+    head = f"{county} County {species} stocking schedule: "
+    history = (
+        " CDFW planting history for the water."
+        if water_count == 1
+        else f" CDFW planting history for its {water_count} waters."
+    )
+    # Longest tail first; a water's name outranks the tail, so the tail
+    # shortens before the names give way to a count.
+    tails = (history, " CDFW planting history.", "")
+    if this_week_names:
+        prefix = f"{head}scheduled this week, the {source_week_label}, at "
+        names = this_week_names
+    elif next_week:
+        prefix = f"{head}none scheduled this week; next the week of {next_week}, at "
+        names = next_names
+    else:
+        prefix, names = "", []
+    if names:
+        for tail in tails:
+            fitted = _fit_names(prefix, names, f".{tail}", COUNTY_DESCRIPTION_MAX)
+            if fitted is not None:
+                return fitted
+        return _with_tail(f"{prefix}{_plural(len(names), 'water', 'waters')}.", tails)
+    if last_week:
+        return _with_tail(
+            f"{head}nothing scheduled this week or later; last scheduled "
+            f"the week of {last_week}.",
+            tails,
+        )
+    return _with_tail(f"{head}no week currently listed.", tails)
+
+
+def _with_tail(body: str, tails: tuple[str, ...]) -> str:
+    """``body`` with the longest of ``tails`` that keeps it within
+    ``COUNTY_DESCRIPTION_MAX``; ``body`` alone when none does."""
+    for tail in tails:
+        if len(body) + len(tail) <= COUNTY_DESCRIPTION_MAX:
+            return body + tail
+    return body
+
+
+def _county_card(
+    this_week_rows: list[dict[str, Any]],
+    later_rows: list[dict[str, Any]],
+    *,
+    next_week_start: str,
+) -> dict[str, Any]:
+    """The county page's first answer (the design system's CountyCard): its
+    badge state and the waters behind it, one entry per water, alphabetical,
+    the first COUNTY_CARD_MAX_WATERS by name and a count of the rest. With
+    nothing this week or next the list is empty and the page says so in
+    words; the card never shows a count of zero."""
+    this_week = {r["slug"]: r["name"] for r in this_week_rows}
+    next_week = {
+        r["slug"]: r["name"] for r in later_rows if r["week"] == next_week_start
+    }
+    state = schedule_status(this_week=bool(this_week), next_week=bool(next_week))
+    chosen = this_week if state == "now" else next_week
+    waters = sorted(
+        ({"slug": s, "name": n} for s, n in chosen.items()),
+        key=lambda w: (w["name"], w["slug"]),
+    )
+    return {
+        "state": state,
+        "count": len(waters),
+        "waters": waters[:COUNTY_CARD_MAX_WATERS],
+        "more": max(0, len(waters) - COUNTY_CARD_MAX_WATERS),
+        "next_week": next_week_start,
+        "also_next": state == "now" and bool(next_week),
+    }
+
+
 def _render_county_page(
     ctx: _PageContext,
     county: str,
@@ -1615,8 +2001,13 @@ def _render_county_page(
     this_week: list[dict[str, Any]],
     region_name: str,
     region_link: dict[str, str] | None = None,
+    region_counties: list[dict[str, str]] | None = None,
 ) -> str:
-    """Write one county's page. Returns its URL."""
+    """Write one county's page. Returns its URL.
+
+    ``region_counties`` are the other counties of the same CDFW region that
+    have a page, for the "more counties" links; the caller counts the day
+    each first appeared in this page's lastmod."""
     members = ctx.waters_by_county[county]
     page_url = f"{ctx.base_url}/county/{county_slug(county)}/"
     species = species_phrase({p["species"] for w in members for p in w["plants"]})
@@ -1674,13 +2065,30 @@ def _render_county_page(
         f"{county} County {species} planting schedule: fish plants this week"
         f" | {SITE_NAME}"
     )
+    next_week = later_rows[0]["week"] if later_rows else ""
+    next_names = sorted(
+        {r["name"] for r in later_rows if r["week"] == next_week},
+    )
+    last_week = max((r["latest_start"] for r in rows), default="")
     html = ctx.env.get_template("county.html.jinja").render(
+        county_card=_county_card(
+            this_week_rows,
+            later_rows,
+            next_week_start=(
+                dt.date.fromisoformat(ctx.source_week_start) + dt.timedelta(days=7)
+            ).isoformat(),
+        ),
         title=title,
-        description=(
-            f"Which {county} County waters are on CDFW's {species} planting "
-            f"schedule this week, and the latest scheduled week at each of its "
-            f"{_plural(len(members), 'water', 'waters')}, with every water's "
-            "stocking history."
+        description=_county_description(
+            county,
+            species=species,
+            water_count=len(members),
+            # One name per water, even when it has two species this week.
+            this_week_names=sorted({r["name"] for r in this_week_rows}),
+            source_week_label=ctx.source_week_label,
+            next_week=next_week,
+            next_names=next_names,
+            last_week=last_week,
         ),
         canonical_url=page_url,
         root="../../",
@@ -1705,11 +2113,20 @@ def _render_county_page(
         region_link=region_link,
         water_count=len(members),
         county_months=_county_months(members, recorded_since=ctx.recorded_since),
+        county_winter=_county_winter(
+            members, latest_complete_winter(ctx.source_week_start, ctx.recorded_since)
+        ),
         this_week_rows=this_week_rows,
         later_rows=later_rows,
+        recent_weeks=_county_recent_weeks(
+            members, source_week_start=ctx.source_week_start
+        ),
+        region_counties=region_counties or [],
         rows=rows,
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
+        gear_links=gear_links(),
+        affiliate_rel=AFFILIATE_LINK_REL,
     )
     _write_page(ctx.out_dir, f"county/{county_slug(county)}", html, ctx.written)
     return page_url
@@ -1757,10 +2174,12 @@ def _render_counties_index(
     title = f"California {species} planting schedule by county | {SITE_NAME}"
     html = ctx.env.get_template("counties.html.jinja").render(
         title=title,
+        # "DFG": CDFW's name before 2013, which people still search with;
+        # the home page's description says the same.
         description=(
-            f"CDFW's California {species} planting schedule by county: every "
-            "county with a water on the schedule, by CDFW region, with each "
-            "water's stocking history and this week's fish plants."
+            f"CDFW's (formerly DFG) {species} planting schedule by county: "
+            "every California county with a water on it, by region, with this "
+            "week's plants and stocking history."
         ),
         canonical_url=page_url,
         root="../",
@@ -1779,6 +2198,8 @@ def _render_counties_index(
         regions=regions,
         species=species,
         county_count=county_count,
+        gear_links=gear_links(),
+        affiliate_rel=AFFILIATE_LINK_REL,
     )
     _write_page(ctx.out_dir, "county", html, ctx.written)
     return page_url
@@ -2287,6 +2708,14 @@ def _write_assets(
     style_path.parent.mkdir(parents=True, exist_ok=True)
     style_path.write_text(minify_css(style_src), encoding="utf-8")
     written.append(style_path)
+    # The two web fonts style.css names, with their licenses, copied as they
+    # are: first-party files, so no page requests another server for them.
+    fonts_dir = out_dir / "assets" / FONTS_DIR
+    fonts_dir.mkdir(parents=True, exist_ok=True)
+    for name in (*FONT_FILES, *FONT_LICENSE_FILES):
+        font_path = fonts_dir / name
+        font_path.write_bytes((TEMPLATES_DIR / FONTS_DIR / name).read_bytes())
+        written.append(font_path)
     if coords:
         js_path = out_dir / "assets" / CLOSEST_JS_FILE
         js_path.write_text(
@@ -2328,6 +2757,26 @@ def _share_card_kinds(
     return kinds
 
 
+def _privacy_description(*, ads_enabled: bool, analytics: bool) -> str:
+    """The privacy page's meta description, for the build's state."""
+    if ads_enabled:
+        return (
+            f"What the {SITE_NAME} trout planting site and iOS app collect: the "
+            "website uses Google Analytics and shows non-personalized Google "
+            "ads; the app collects nothing. No account."
+        )
+    if analytics:
+        return (
+            f"What the {SITE_NAME} trout planting site and iOS app collect: the "
+            "website uses Google Analytics; the app collects nothing. No account, "
+            "no ads."
+        )
+    return (
+        f"What the {SITE_NAME} trout planting site and iOS app collect: "
+        "nothing. No account, no analytics, no tracking."
+    )
+
+
 def build_site(
     snapshot: dict[str, Any],
     out_dir: Path,
@@ -2341,6 +2790,7 @@ def build_site(
     dataset_license_url: str | None = DATASET_LICENSE_URL,
     cname: str | None = None,
     snapshot_v2: dict[str, Any] | None = None,
+    ads: ads_mod.AdsConfig | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
 
@@ -2362,13 +2812,20 @@ def build_site(
     tag to every page and the App Store badge to the home and support pages,
     and links the app to ``APP_STORE_CANONICAL_URL`` unless ``app_store_url``
     names another URL. Off, the build is exactly what it was without it.
+
+    ``ads`` (cfpa/ads.py, docs/adr/0040) defaults to the committed ads
+    settings, which are off. Off, the build is exactly what it was without
+    it; on, the pages in ``ads.AD_PAGES`` carry one ad unit, the footer
+    links to the ad choices and the root has an ads.txt.
     """
     # Checked before anything is written: a bad ID must not half-build.
     ga4_measurement_id = ga4_measurement_id_or_none(ga4_measurement_id)
+    ads = ads_mod.for_build(ads, analytics=ga4_measurement_id is not None)
     google_site_verification = google_site_verification_or_none(
         google_site_verification
     )
     env = _env()
+    ads_common = ads_mod.install(env, ads)
     written: list[Path] = []
     base_url = base_url.rstrip("/")
 
@@ -2405,6 +2862,8 @@ def build_site(
             for kind in share_card_kinds
         },
         "share_card_default_kind": SHARE_CARD_DEFAULT_KIND,
+        # base.html.jinja preloads each, relative to the page's root.
+        "font_files": [f"assets/{FONTS_DIR}/{name}" for name in FONT_FILES],
         "support_email": support_email,
         "site_name": SITE_NAME,
         "amazon_disclosure": AMAZON_ASSOCIATE_DISCLOSURE,
@@ -2414,6 +2873,7 @@ def build_site(
         # describe a state the build is not in.
         "ga4_measurement_id": ga4_measurement_id,
         "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
+        **ads_common,
     }
     # The header's "Other states" link, only when v2 has another state, so a
     # California-only build keeps its header byte for byte.
@@ -2438,6 +2898,7 @@ def build_site(
     # ---- assets/
     coords = water_coords(snapshot_v2)
     _write_assets(out_dir, written, app_store_live=app_store_live, coords=coords)
+    ads_mod.write_files(out_dir, written, ads, minify=minify_css)
     share_cards.write_cards(
         out_dir,
         share_card_kinds,
@@ -2502,6 +2963,14 @@ def build_site(
     region_links = _region_links(snapshot, county_names, region_by_county)
     region_link_by_code = {r["code"]: r for r in region_links}
 
+    # The first week on record, and the last whole winter it covers (the
+    # winter blocks on the home and county pages, DECISIONS 0040).
+    recorded_since = min(
+        (p["week"]["start"] for w in snapshot["waters"] for p in w["plants"]),
+        default="",
+    )
+    winter_season = latest_complete_winter(source_week_start, recorded_since)
+
     week_is_empty = not snapshot["this_week"]
     upcoming_rows, recent_rows = (
         _home_nearest_weeks(snapshot, county_link) if week_is_empty else ([], [])
@@ -2548,6 +3017,9 @@ def build_site(
         closest_enabled=bool(coords),
         closest_script_tag=CLOSEST_SCRIPT_TAG,
         coords_path=f"assets/{COORDS_FILE}",
+        winter=_home_winter(snapshot["waters"], winter_season, county_link),
+        gear_links=gear_links(cold_months=is_winter_week(source_week_start)),
+        affiliate_rel=AFFILIATE_LINK_REL,
     )
     _write_page(out_dir, "", index_html, written)
 
@@ -2604,17 +3076,9 @@ def build_site(
     )
 
     # ---- privacy + support: the URLs App Store Connect asks for
-    if ga4_measurement_id:
-        privacy_description = (
-            f"What the {SITE_NAME} trout planting site and iOS app collect: the "
-            "website uses Google Analytics; the app collects nothing. No account, "
-            "no ads."
-        )
-    else:
-        privacy_description = (
-            f"What the {SITE_NAME} trout planting site and iOS app collect: "
-            "nothing. No account, no analytics, no tracking."
-        )
+    privacy_description = _privacy_description(
+        ads_enabled=ads.enabled, analytics=ga4_measurement_id is not None
+    )
     for slug, template, title, description in (
         (
             "privacy",
@@ -2674,10 +3138,6 @@ def build_site(
     not_found_path.write_text(not_found_html, encoding="utf-8")
     written.append(not_found_path)
 
-    recorded_since = min(
-        (p["week"]["start"] for w in snapshot["waters"] for p in w["plants"]),
-        default="",
-    )
     ctx = _PageContext(
         env=env,
         out_dir=out_dir,
@@ -2716,16 +3176,41 @@ def build_site(
             this_week_by_county.setdefault(c, []).append(e)
     county_lastmods: dict[str, str] = {}
     counties_by_region: dict[str, list[dict[str, Any]]] = {}
+    # A county page links the other counties of its CDFW region by name only,
+    # so its lastmod also counts the day each of them first got a page (its
+    # first water's first appearance), and nothing else about them.
+    county_first_seen = {
+        c: min(first_seen[w["id"]] for w in waters_by_county[c]) for c in county_names
+    }
     for c in county_names:
         members = waters_by_county[c]
+        code = region_by_county.get(c, "")
+        region_counties = (
+            [
+                county_link[o]
+                for o in county_names
+                if o != c and region_by_county.get(o, "") == code
+            ]
+            if code
+            else []
+        )
         page_url = _render_county_page(
             ctx,
             c,
             this_week=this_week_by_county.get(c, []),
-            region_name=region_name_by_code.get(region_by_county.get(c, ""), ""),
-            region_link=region_link_by_code.get(region_by_county.get(c, "")),
+            region_name=region_name_by_code.get(code, ""),
+            region_link=region_link_by_code.get(code),
+            region_counties=region_counties,
         )
-        county_lastmods[page_url] = max(data_lastmods[w["id"]] for w in members)
+        # The winter section changes at the rollover that makes a new
+        # winter the latest complete one (latest_complete_winter).
+        county_lastmods[page_url] = max(
+            [
+                *(data_lastmods[w["id"]] for w in members),
+                *(county_first_seen[o["name"]] for o in region_counties),
+                *([winter_season["shown_from"]] if winter_season else []),
+            ]
+        )
         counties_by_region.setdefault(region_by_county.get(c, ""), []).append(
             {**county_link[c], "count": len(members)}
         )
@@ -2817,6 +3302,9 @@ def build_site(
             ld_page=_ld_page,
             relative_trail=_relative_trail,
             title_max=WATER_TITLE_MAX,
+            gear_links=tuple(gear_links()),
+            affiliate_rel=AFFILIATE_LINK_REL,
+            gear_endorsement=gear_endorsement,
         ),
         snapshot_v2,
     )
@@ -2872,6 +3360,37 @@ def build_site(
     robots_path.write_text(robots_txt, encoding="utf-8")
     written.append(robots_path)
 
+    # ---- llms.txt (llmstxt.org): a plain-text description of the site, its
+    # sources, feeds and update cadence. Lists only what this build wrote.
+    open_states = (
+        _open_data_states(
+            snapshot_v2,
+            opendata.build_files(snapshot_v2, base_url=base_url),
+            base_url=base_url,
+        )
+        if snapshot_v2 is not None
+        else []
+    )
+    llms_path = out_dir / "llms.txt"
+    llms_path.write_text(
+        llms.render(
+            site_name=SITE_NAME,
+            base_url=base_url,
+            attribution_text=attribution_text,
+            states=open_states,
+            region_feeds=[
+                (
+                    r["display_name"],
+                    f"{base_url}/{feeds.feed_path('region', r['slug'])}",
+                )
+                for r in region_links
+            ],
+            week_label=source_week_label,
+        ),
+        encoding="utf-8",
+    )
+    written.append(llms_path)
+
     # ---- CNAME, only for a custom domain. A Pages site published from a
     # branch takes its custom domain from this file, so it has to be in
     # every build that is pushed there (DECISIONS 0019).
@@ -2879,5 +3398,11 @@ def build_site(
         cname_path = out_dir / "CNAME"
         cname_path.write_text(f"{cname}\n", encoding="utf-8")
         written.append(cname_path)
+        # The IndexNow ownership file (pipeline/src/cfpa/indexnow.py), served
+        # from the domain's root. Public by design; only the custom-domain
+        # build carries it because the key proves ownership of that host.
+        # find_key reads TEMPLATES_DIR, which holds exactly one such file.
+        written.append(indexnow.copy_key_file(TEMPLATES_DIR, out_dir))
 
+    ensure_unique_titles(out_dir, written)
     return written

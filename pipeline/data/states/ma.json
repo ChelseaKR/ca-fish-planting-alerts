@@ -1,0 +1,3566 @@
+{
+  "schema": "cfpa-state-history-v1",
+  "state": "MA",
+  "checks": {
+    "last_attempt_at": "2026-10-29T13:25:27Z",
+    "last_success_at": "2026-10-29T13:25:27Z",
+    "last_attempt_ok": true,
+    "last_error": null,
+    "content_sha256": "a5ad956d33764c499fff743fd4ac2b638bd236d1869bbd106a62f1f3c516a574",
+    "last_modified": "Tue, 13 Oct 2026 02:35:42 GMT"
+  },
+  "waters": [
+    {
+      "id": "ma-08250-329",
+      "slug": "westfield-river-westfield",
+      "name": "Westfield River",
+      "counties": [],
+      "towns": [
+        "Westfield"
+      ],
+      "region": null,
+      "source_id": "08250-329",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-08250-60",
+      "slug": "westfield-river-chesterfield",
+      "name": "Westfield River",
+      "counties": [],
+      "towns": [
+        "Chesterfield"
+      ],
+      "region": null,
+      "source_id": "08250-60",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-08250-69",
+      "slug": "westfield-river-cummington",
+      "name": "Westfield River",
+      "counties": [],
+      "towns": [
+        "Cummington"
+      ],
+      "region": null,
+      "source_id": "08250-69",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-11016-209",
+      "slug": "windsor-lake-north-adams",
+      "name": "Windsor Lake",
+      "counties": [],
+      "towns": [
+        "North Adams"
+      ],
+      "region": null,
+      "source_id": "11016-209",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-12900-268",
+      "slug": "deerfield-river-shelburne",
+      "name": "Deerfield River",
+      "counties": [],
+      "towns": [
+        "Shelburne"
+      ],
+      "region": null,
+      "source_id": "12900-268",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-12900-47",
+      "slug": "deerfield-river-buckland",
+      "name": "Deerfield River",
+      "counties": [],
+      "towns": [
+        "Buckland"
+      ],
+      "region": null,
+      "source_id": "12900-47",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-12900-53",
+      "slug": "deerfield-river-charlemont",
+      "name": "Deerfield River",
+      "counties": [],
+      "towns": [
+        "Charlemont"
+      ],
+      "region": null,
+      "source_id": "12900-53",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-12900-68",
+      "slug": "deerfield-river-conway",
+      "name": "Deerfield River",
+      "counties": [],
+      "towns": [
+        "Conway"
+      ],
+      "region": null,
+      "source_id": "12900-68",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-12900-74",
+      "slug": "deerfield-river-deerfield",
+      "name": "Deerfield River",
+      "counties": [],
+      "towns": [
+        "Deerfield"
+      ],
+      "region": null,
+      "source_id": "12900-74",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-12900-98",
+      "slug": "deerfield-river-florida",
+      "name": "Deerfield River",
+      "counties": [],
+      "towns": [
+        "Florida"
+      ],
+      "region": null,
+      "source_id": "12900-98",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-21014-193",
+      "slug": "lake-buel-monterey",
+      "name": "Lake Buel",
+      "counties": [],
+      "towns": [
+        "Monterey"
+      ],
+      "region": null,
+      "source_id": "21014-193",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-21043-302",
+      "slug": "goose-pond-tyringham",
+      "name": "Goose Pond",
+      "counties": [],
+      "towns": [
+        "Tyringham"
+      ],
+      "region": null,
+      "source_id": "21043-302",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-21057-150",
+      "slug": "laurel-lake-lenox",
+      "name": "Laurel Lake",
+      "counties": [],
+      "towns": [
+        "Lenox"
+      ],
+      "region": null,
+      "source_id": "21057-150",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-21078-236",
+      "slug": "onota-lake-pittsfield",
+      "name": "Onota Lake",
+      "counties": [],
+      "towns": [
+        "Pittsfield"
+      ],
+      "region": null,
+      "source_id": "21078-236",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-21083-236",
+      "slug": "pontoosuc-lake-pittsfield",
+      "name": "Pontoosuc Lake",
+      "counties": [],
+      "towns": [
+        "Pittsfield"
+      ],
+      "region": null,
+      "source_id": "21083-236",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-21088-249",
+      "slug": "richmond-pond-richmond",
+      "name": "Richmond Pond",
+      "counties": [],
+      "towns": [
+        "Richmond"
+      ],
+      "region": null,
+      "source_id": "21088-249",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-21105-283",
+      "slug": "stockbridge-bowl-stockbridge",
+      "name": "Stockbridge Bowl",
+      "counties": [],
+      "towns": [
+        "Stockbridge"
+      ],
+      "region": null,
+      "source_id": "21105-283",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-22150-192",
+      "slug": "millers-river-montague",
+      "name": "Millers River",
+      "counties": [],
+      "towns": [
+        "Montague"
+      ],
+      "region": null,
+      "source_id": "22150-192",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-22150-223",
+      "slug": "millers-river-orange",
+      "name": "Millers River",
+      "counties": [],
+      "towns": [
+        "Orange"
+      ],
+      "region": null,
+      "source_id": "22150-223",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-22150-319",
+      "slug": "millers-river-wendell",
+      "name": "Millers River",
+      "counties": [],
+      "towns": [
+        "Wendell"
+      ],
+      "region": null,
+      "source_id": "22150-319",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-22150-91",
+      "slug": "millers-river-erving",
+      "name": "Millers River",
+      "counties": [],
+      "towns": [
+        "Erving"
+      ],
+      "region": null,
+      "source_id": "22150-91",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-25450-191",
+      "slug": "quaboag-river-monson",
+      "name": "Quaboag River",
+      "counties": [],
+      "towns": [
+        "Monson"
+      ],
+      "region": null,
+      "source_id": "25450-191",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-25450-227",
+      "slug": "quaboag-river-palmer",
+      "name": "Quaboag River",
+      "counties": [],
+      "towns": [
+        "Palmer"
+      ],
+      "region": null,
+      "source_id": "25450-227",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-25450-311",
+      "slug": "quaboag-river-warren",
+      "name": "Quaboag River",
+      "counties": [],
+      "towns": [
+        "Warren"
+      ],
+      "region": null,
+      "source_id": "25450-311",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-25450-43",
+      "slug": "quaboag-river-brimfield",
+      "name": "Quaboag River",
+      "counties": [],
+      "towns": [
+        "Brimfield"
+      ],
+      "region": null,
+      "source_id": "25450-43",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-26500-227",
+      "slug": "ware-river-palmer",
+      "name": "Ware River",
+      "counties": [],
+      "towns": [
+        "Palmer"
+      ],
+      "region": null,
+      "source_id": "26500-227",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-26500-309",
+      "slug": "ware-river-ware",
+      "name": "Ware River",
+      "counties": [],
+      "towns": [
+        "Ware"
+      ],
+      "region": null,
+      "source_id": "26500-309",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-26525-227",
+      "slug": "swift-river-palmer",
+      "name": "Swift River",
+      "counties": [],
+      "towns": [
+        "Palmer"
+      ],
+      "region": null,
+      "source_id": "26525-227",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-26525-24",
+      "slug": "swift-river-belchertown",
+      "name": "Swift River",
+      "counties": [],
+      "towns": [
+        "Belchertown"
+      ],
+      "region": null,
+      "source_id": "26525-24",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-26525-309",
+      "slug": "swift-river-ware",
+      "name": "Swift River",
+      "counties": [],
+      "towns": [
+        "Ware"
+      ],
+      "region": null,
+      "source_id": "26525-309",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-31027-225",
+      "slug": "otis-reservoir-otis",
+      "name": "Otis Reservoir",
+      "counties": [],
+      "towns": [
+        "Otis"
+      ],
+      "region": null,
+      "source_id": "31027-225",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-31027-297",
+      "slug": "otis-reservoir-tolland",
+      "name": "Otis Reservoir",
+      "counties": [],
+      "towns": [
+        "Tolland"
+      ],
+      "region": null,
+      "source_id": "31027-297",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-32021-279",
+      "slug": "congomond-lakes-middle-pond-southwick",
+      "name": "Congomond Lakes Middle Pond",
+      "counties": [],
+      "towns": [
+        "Southwick"
+      ],
+      "region": null,
+      "source_id": "32021-279",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-32046-59",
+      "slug": "littleville-lake-chester",
+      "name": "Littleville Lake",
+      "counties": [],
+      "towns": [
+        "Chester"
+      ],
+      "region": null,
+      "source_id": "32046-59",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-32055-329",
+      "slug": "hampton-pond-westfield",
+      "name": "Hampton Pond",
+      "counties": [],
+      "towns": [
+        "Westfield"
+      ],
+      "region": null,
+      "source_id": "32055-329",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-32076-345",
+      "slug": "windsor-pond-windsor",
+      "name": "Windsor Pond",
+      "counties": [],
+      "towns": [
+        "Windsor"
+      ],
+      "region": null,
+      "source_id": "32076-345",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-33001-13",
+      "slug": "ashfield-pond-ashfield",
+      "name": "Ashfield Pond",
+      "counties": [],
+      "towns": [
+        "Ashfield"
+      ],
+      "region": null,
+      "source_id": "33001-13",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-33014-98",
+      "slug": "north-pond-florida",
+      "name": "North Pond",
+      "counties": [],
+      "towns": [
+        "Florida"
+      ],
+      "region": null,
+      "source_id": "33014-98",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-34018-289",
+      "slug": "cranberry-pond-sunderland",
+      "name": "Cranberry Pond",
+      "counties": [],
+      "towns": [
+        "Sunderland"
+      ],
+      "region": null,
+      "source_id": "34018-289",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-34021-8",
+      "slug": "puffers-pond-factory-hollow-pond-amherst",
+      "name": "Puffers Pond (Factory Hollow Pond)",
+      "counties": [],
+      "towns": [
+        "Amherst"
+      ],
+      "region": null,
+      "source_id": "34021-8",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-34045-281",
+      "slug": "loon-pond-springfield",
+      "name": "Loon Pond",
+      "counties": [],
+      "towns": [
+        "Springfield"
+      ],
+      "region": null,
+      "source_id": "34045-281",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-34051-24",
+      "slug": "metacomet-lake-belchertown",
+      "name": "Metacomet Lake",
+      "counties": [],
+      "towns": [
+        "Belchertown"
+      ],
+      "region": null,
+      "source_id": "34051-24",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-34057-87",
+      "slug": "nashawannuck-pond-easthampton",
+      "name": "Nashawannuck Pond",
+      "counties": [],
+      "towns": [
+        "Easthampton"
+      ],
+      "region": null,
+      "source_id": "34057-87",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-34093-108",
+      "slug": "upper-highland-lake-goshen",
+      "name": "Upper Highland Lake",
+      "counties": [],
+      "towns": [
+        "Goshen"
+      ],
+      "region": null,
+      "source_id": "34093-108",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-34099-281",
+      "slug": "watershops-pond-springfield",
+      "name": "Watershops Pond",
+      "counties": [],
+      "towns": [
+        "Springfield"
+      ],
+      "region": null,
+      "source_id": "34099-281",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-34103-272",
+      "slug": "lake-wyola-shutesbury",
+      "name": "Lake Wyola",
+      "counties": [],
+      "towns": [
+        "Shutesbury"
+      ],
+      "region": null,
+      "source_id": "34103-272",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-35017-343",
+      "slug": "lake-dennison-winchendon",
+      "name": "Lake Dennison",
+      "counties": [],
+      "towns": [
+        "Winchendon"
+      ],
+      "region": null,
+      "source_id": "35017-343",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-35035-91",
+      "slug": "laurel-lake-erving",
+      "name": "Laurel Lake",
+      "counties": [],
+      "towns": [
+        "Erving"
+      ],
+      "region": null,
+      "source_id": "35035-91",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-35048-312",
+      "slug": "moores-pond-warwick",
+      "name": "Moores Pond",
+      "counties": [],
+      "towns": [
+        "Warwick"
+      ],
+      "region": null,
+      "source_id": "35048-312",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-35067-312",
+      "slug": "richards-reservoir-warwick",
+      "name": "Richards Reservoir",
+      "counties": [],
+      "towns": [
+        "Warwick"
+      ],
+      "region": null,
+      "source_id": "35067-312",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-35074-312",
+      "slug": "sheomet-lake-warwick",
+      "name": "Sheomet Lake",
+      "counties": [],
+      "towns": [
+        "Warwick"
+      ],
+      "region": null,
+      "source_id": "35074-312",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36005-140",
+      "slug": "asnacomet-pond-hubbardston",
+      "name": "Asnacomet Pond",
+      "counties": [],
+      "towns": [
+        "Hubbardston"
+      ],
+      "region": null,
+      "source_id": "36005-140",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36033-61",
+      "slug": "chicopee-reservoir-chicopee",
+      "name": "Chicopee Reservoir",
+      "counties": [],
+      "towns": [
+        "Chicopee"
+      ],
+      "region": null,
+      "source_id": "36033-61",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36039-234",
+      "slug": "connor-pond-petersham",
+      "name": "Connor Pond",
+      "counties": [],
+      "towns": [
+        "Petersham"
+      ],
+      "region": null,
+      "source_id": "36039-234",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36049-43",
+      "slug": "dean-pond-brimfield",
+      "name": "Dean Pond",
+      "counties": [],
+      "towns": [
+        "Brimfield"
+      ],
+      "region": null,
+      "source_id": "36049-43",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36063-227",
+      "slug": "forest-lake-palmer",
+      "name": "Forest Lake",
+      "counties": [],
+      "towns": [
+        "Palmer"
+      ],
+      "region": null,
+      "source_id": "36063-227",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36069-161",
+      "slug": "chapin-haviland-pond-ludlow",
+      "name": "Chapin (Haviland) Pond",
+      "counties": [],
+      "towns": [
+        "Ludlow"
+      ],
+      "region": null,
+      "source_id": "36069-161",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36082-257",
+      "slug": "long-pond-rutland",
+      "name": "Long Pond",
+      "counties": [],
+      "towns": [
+        "Rutland"
+      ],
+      "region": null,
+      "source_id": "36082-257",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36084-281",
+      "slug": "lake-lorraine-springfield",
+      "name": "Lake Lorraine",
+      "counties": [],
+      "towns": [
+        "Springfield"
+      ],
+      "region": null,
+      "source_id": "36084-281",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36092-223",
+      "slug": "lake-mattawa-orange",
+      "name": "Lake Mattawa",
+      "counties": [],
+      "towns": [
+        "Orange"
+      ],
+      "region": null,
+      "source_id": "36092-223",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36107-339",
+      "slug": "ninemile-pond-wilbraham",
+      "name": "Ninemile Pond",
+      "counties": [],
+      "towns": [
+        "Wilbraham"
+      ],
+      "region": null,
+      "source_id": "36107-339",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36121-309",
+      "slug": "peppers-mill-pond-ware",
+      "name": "Peppers Mill Pond",
+      "counties": [],
+      "towns": [
+        "Ware"
+      ],
+      "region": null,
+      "source_id": "36121-309",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36131-45",
+      "slug": "quacumquasit-pond-brookfield",
+      "name": "Quacumquasit Pond",
+      "counties": [],
+      "towns": [
+        "Brookfield"
+      ],
+      "region": null,
+      "source_id": "36131-45",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36142-339",
+      "slug": "spectacle-pond-wilbraham",
+      "name": "Spectacle Pond",
+      "counties": [],
+      "towns": [
+        "Wilbraham"
+      ],
+      "region": null,
+      "source_id": "36142-339",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-36173-257",
+      "slug": "whitehall-pond-rutland",
+      "name": "Whitehall Pond",
+      "counties": [],
+      "towns": [
+        "Rutland"
+      ],
+      "region": null,
+      "source_id": "36173-257",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-41001-287",
+      "slug": "alum-pond-sturbridge",
+      "name": "Alum Pond",
+      "counties": [],
+      "towns": [
+        "Sturbridge"
+      ],
+      "region": null,
+      "source_id": "41001-287",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-41019-135",
+      "slug": "hamilton-reservoir-holland",
+      "name": "Hamilton Reservoir",
+      "counties": [],
+      "towns": [
+        "Holland"
+      ],
+      "region": null,
+      "source_id": "41019-135",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-41022-135",
+      "slug": "holland-pond-holland",
+      "name": "Holland Pond",
+      "counties": [],
+      "towns": [
+        "Holland"
+      ],
+      "region": null,
+      "source_id": "41022-135",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-41029-43",
+      "slug": "little-alum-pond-brimfield",
+      "name": "Little Alum Pond",
+      "counties": [],
+      "towns": [
+        "Brimfield"
+      ],
+      "region": null,
+      "source_id": "41029-43",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-41046-43",
+      "slug": "sherman-pond-brimfield",
+      "name": "Sherman Pond",
+      "counties": [],
+      "towns": [
+        "Brimfield"
+      ],
+      "region": null,
+      "source_id": "41046-43",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-42064-316",
+      "slug": "lake-webster-webster",
+      "name": "Lake Webster",
+      "counties": [],
+      "towns": [
+        "Webster"
+      ],
+      "region": null,
+      "source_id": "42064-316",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-43575-232",
+      "slug": "nissitissit-river-pepperell",
+      "name": "Nissitissit River",
+      "counties": [],
+      "towns": [
+        "Pepperell"
+      ],
+      "region": null,
+      "source_id": "43575-232",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-43950-115",
+      "slug": "squannacook-river-groton",
+      "name": "Squannacook River",
+      "counties": [],
+      "towns": [
+        "Groton"
+      ],
+      "region": null,
+      "source_id": "43950-115",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-43950-270",
+      "slug": "squannacook-river-shirley",
+      "name": "Squannacook River",
+      "counties": [],
+      "towns": [
+        "Shirley"
+      ],
+      "region": null,
+      "source_id": "43950-270",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-43950-299",
+      "slug": "squannacook-river-townsend",
+      "name": "Squannacook River",
+      "counties": [],
+      "towns": [
+        "Townsend"
+      ],
+      "region": null,
+      "source_id": "43950-299",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-51009-348",
+      "slug": "bell-pond-worcester",
+      "name": "Bell Pond",
+      "counties": [],
+      "towns": [
+        "Worcester"
+      ],
+      "region": null,
+      "source_id": "51009-348",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-51123-303",
+      "slug": "pratt-pond-upton",
+      "name": "Pratt Pond",
+      "counties": [],
+      "towns": [
+        "Upton"
+      ],
+      "region": null,
+      "source_id": "51123-303",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-51125-348",
+      "slug": "lake-quinsigamond-worcester",
+      "name": "Lake Quinsigamond",
+      "counties": [],
+      "towns": [
+        "Worcester"
+      ],
+      "region": null,
+      "source_id": "51125-348",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-51152-290",
+      "slug": "singletary-pond-sutton",
+      "name": "Singletary Pond",
+      "counties": [],
+      "towns": [
+        "Sutton"
+      ],
+      "region": null,
+      "source_id": "51152-290",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-51172-77",
+      "slug": "wallum-lake-douglas",
+      "name": "Wallum Lake",
+      "counties": [],
+      "towns": [
+        "Douglas"
+      ],
+      "region": null,
+      "source_id": "51172-77",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-52014-211",
+      "slug": "falls-pond-north-attleborough",
+      "name": "Falls Pond",
+      "counties": [],
+      "towns": [
+        "North Attleborough"
+      ],
+      "region": null,
+      "source_id": "52014-211",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-52042-211",
+      "slug": "whiting-pond-north-attleborough",
+      "name": "Whiting Pond",
+      "counties": [],
+      "towns": [
+        "North Attleborough"
+      ],
+      "region": null,
+      "source_id": "52042-211",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-60800-261",
+      "slug": "scorton-creek-sandwich",
+      "name": "Scorton Creek",
+      "counties": [],
+      "towns": [
+        "Sandwich"
+      ],
+      "region": null,
+      "source_id": "60800-261",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-71019-347",
+      "slug": "horn-pond-woburn",
+      "name": "Horn Pond",
+      "counties": [],
+      "towns": [
+        "Woburn"
+      ],
+      "region": null,
+      "source_id": "71019-347",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-72052-35",
+      "slug": "jamaica-pond-boston",
+      "name": "Jamaica Pond",
+      "counties": [],
+      "towns": [
+        "Boston"
+      ],
+      "region": null,
+      "source_id": "72052-35",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-74015-189",
+      "slug": "houghtons-pond-milton",
+      "name": "Houghtons Pond",
+      "counties": [],
+      "towns": [
+        "Milton"
+      ],
+      "region": null,
+      "source_id": "74015-189",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-81046-147",
+      "slug": "fort-pond-lancaster",
+      "name": "Fort Pond",
+      "counties": [],
+      "towns": [
+        "Lancaster"
+      ],
+      "region": null,
+      "source_id": "81046-147",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-81063-115",
+      "slug": "knops-pond-groton",
+      "name": "Knops Pond",
+      "counties": [],
+      "towns": [
+        "Groton"
+      ],
+      "region": null,
+      "source_id": "81063-115",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-81154-162",
+      "slug": "lake-whalom-lunenburg",
+      "name": "Lake Whalom",
+      "counties": [],
+      "towns": [
+        "Lunenburg"
+      ],
+      "region": null,
+      "source_id": "81154-162",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-82003-14",
+      "slug": "ashland-reservoir-ashland",
+      "name": "Ashland Reservoir",
+      "counties": [],
+      "towns": [
+        "Ashland"
+      ],
+      "region": null,
+      "source_id": "82003-14",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-82020-100",
+      "slug": "lake-cochituate-framingham",
+      "name": "Lake Cochituate",
+      "counties": [],
+      "towns": [
+        "Framingham"
+      ],
+      "region": null,
+      "source_id": "82020-100",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-82020-198",
+      "slug": "lake-cochituate-natick",
+      "name": "Lake Cochituate",
+      "counties": [],
+      "towns": [
+        "Natick"
+      ],
+      "region": null,
+      "source_id": "82020-198",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-82061-139",
+      "slug": "hopkinton-reservoir-hopkinton",
+      "name": "Hopkinton Reservoir",
+      "counties": [],
+      "towns": [
+        "Hopkinton"
+      ],
+      "region": null,
+      "source_id": "82061-139",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-82109-67",
+      "slug": "walden-pond-concord",
+      "name": "Walden Pond",
+      "counties": [],
+      "towns": [
+        "Concord"
+      ],
+      "region": null,
+      "source_id": "82109-67",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-82118-67",
+      "slug": "white-pond-concord",
+      "name": "White Pond",
+      "counties": [],
+      "towns": [
+        "Concord"
+      ],
+      "region": null,
+      "source_id": "82118-67",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-84014-181",
+      "slug": "forest-lake-methuen",
+      "name": "Forest Lake",
+      "counties": [],
+      "towns": [
+        "Methuen"
+      ],
+      "region": null,
+      "source_id": "84014-181",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-84036-115",
+      "slug": "baddacook-pond-groton",
+      "name": "Baddacook Pond",
+      "counties": [],
+      "towns": [
+        "Groton"
+      ],
+      "region": null,
+      "source_id": "84036-115",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-92049-320",
+      "slug": "pleasant-pond-wenham",
+      "name": "Pleasant Pond",
+      "counties": [],
+      "towns": [
+        "Wenham"
+      ],
+      "region": null,
+      "source_id": "92049-320",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-92063-38",
+      "slug": "stiles-pond-boxford",
+      "name": "Stiles Pond",
+      "counties": [],
+      "towns": [
+        "Boxford"
+      ],
+      "region": null,
+      "source_id": "92063-38",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-93071-163",
+      "slug": "sluice-pond-lynn",
+      "name": "Sluice Pond",
+      "counties": [],
+      "towns": [
+        "Lynn"
+      ],
+      "region": null,
+      "source_id": "93071-163",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-94182-239",
+      "slug": "little-pond-plymouth",
+      "name": "Little Pond",
+      "counties": [],
+      "towns": [
+        "Plymouth"
+      ],
+      "region": null,
+      "source_id": "94182-239",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-95011-239",
+      "slug": "big-sandy-pond-plymouth",
+      "name": "Big Sandy Pond",
+      "counties": [],
+      "towns": [
+        "Plymouth"
+      ],
+      "region": null,
+      "source_id": "95011-239",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-95054-239",
+      "slug": "fearing-pond-plymouth",
+      "name": "Fearing Pond",
+      "counties": [],
+      "towns": [
+        "Plymouth"
+      ],
+      "region": null,
+      "source_id": "95054-239",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-95096-239",
+      "slug": "long-pond-plymouth",
+      "name": "Long Pond",
+      "counties": [],
+      "towns": [
+        "Plymouth"
+      ],
+      "region": null,
+      "source_id": "95096-239",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-95100-250",
+      "slug": "marys-pond-rochester",
+      "name": "Marys Pond",
+      "counties": [],
+      "towns": [
+        "Rochester"
+      ],
+      "region": null,
+      "source_id": "95100-250",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96004-96",
+      "slug": "ashumet-pond-falmouth",
+      "name": "Ashumet Pond",
+      "counties": [],
+      "towns": [
+        "Falmouth"
+      ],
+      "region": null,
+      "source_id": "96004-96",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96008-224",
+      "slug": "baker-pond-orleans",
+      "name": "Baker Pond",
+      "counties": [],
+      "towns": [
+        "Orleans"
+      ],
+      "region": null,
+      "source_id": "96008-224",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96039-41",
+      "slug": "cliff-pond-brewster",
+      "name": "Cliff Pond",
+      "counties": [],
+      "towns": [
+        "Brewster"
+      ],
+      "region": null,
+      "source_id": "96039-41",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96050-224",
+      "slug": "crystal-lake-orleans",
+      "name": "Crystal Lake",
+      "counties": [],
+      "towns": [
+        "Orleans"
+      ],
+      "region": null,
+      "source_id": "96050-224",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96091-41",
+      "slug": "flax-pond-brewster",
+      "name": "Flax Pond",
+      "counties": [],
+      "towns": [
+        "Brewster"
+      ],
+      "region": null,
+      "source_id": "96091-41",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96106-55",
+      "slug": "goose-pond-chatham",
+      "name": "Goose Pond",
+      "counties": [],
+      "towns": [
+        "Chatham"
+      ],
+      "region": null,
+      "source_id": "96106-55",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96121-96",
+      "slug": "grews-pond-falmouth",
+      "name": "Grews Pond",
+      "counties": [],
+      "towns": [
+        "Falmouth"
+      ],
+      "region": null,
+      "source_id": "96121-96",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96126-20",
+      "slug": "hamblin-pond-barnstable",
+      "name": "Hamblin Pond",
+      "counties": [],
+      "towns": [
+        "Barnstable"
+      ],
+      "region": null,
+      "source_id": "96126-20",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96132-86",
+      "slug": "herring-pond-eastham",
+      "name": "Herring Pond",
+      "counties": [],
+      "towns": [
+        "Eastham"
+      ],
+      "region": null,
+      "source_id": "96132-86",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96157-172",
+      "slug": "johns-pond-mashpee",
+      "name": "Johns Pond",
+      "counties": [],
+      "towns": [
+        "Mashpee"
+      ],
+      "region": null,
+      "source_id": "96157-172",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96170-41",
+      "slug": "little-cliff-pond-brewster",
+      "name": "Little Cliff Pond",
+      "counties": [],
+      "towns": [
+        "Brewster"
+      ],
+      "region": null,
+      "source_id": "96170-41",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96185-20",
+      "slug": "lovells-pond-barnstable",
+      "name": "Lovells Pond",
+      "counties": [],
+      "towns": [
+        "Barnstable"
+      ],
+      "region": null,
+      "source_id": "96185-20",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96194-172",
+      "slug": "mashpee-pond-mashpee",
+      "name": "Mashpee Pond",
+      "counties": [],
+      "towns": [
+        "Mashpee"
+      ],
+      "region": null,
+      "source_id": "96194-172",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96244-261",
+      "slug": "peters-pond-sandwich",
+      "name": "Peters Pond",
+      "counties": [],
+      "towns": [
+        "Sandwich"
+      ],
+      "region": null,
+      "source_id": "96244-261",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96279-75",
+      "slug": "scargo-lake-dennis",
+      "name": "Scargo Lake",
+      "counties": [],
+      "towns": [
+        "Dennis"
+      ],
+      "region": null,
+      "source_id": "96279-75",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96289-41",
+      "slug": "sheep-pond-brewster",
+      "name": "Sheep Pond",
+      "counties": [],
+      "towns": [
+        "Brewster"
+      ],
+      "region": null,
+      "source_id": "96289-41",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96293-20",
+      "slug": "shubael-pond-barnstable",
+      "name": "Shubael Pond",
+      "counties": [],
+      "towns": [
+        "Barnstable"
+      ],
+      "region": null,
+      "source_id": "96293-20",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    },
+    {
+      "id": "ma-96307-261",
+      "slug": "spectacle-pond-sandwich",
+      "name": "Spectacle Pond",
+      "counties": [],
+      "towns": [
+        "Sandwich"
+      ],
+      "region": null,
+      "source_id": "96307-261",
+      "source_url": "https://www.mass.gov/info-details/trout-stocking-report",
+      "months_note": null
+    }
+  ],
+  "aliases": {},
+  "records": [
+    {
+      "water_id": "ma-08250-329",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-08250-60",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-08250-69",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-11016-209",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-06",
+        "end": "2026-10-06"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-268",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-24",
+        "end": "2026-09-24"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-47",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-47",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-53",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-53",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-68",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-24",
+        "end": "2026-09-24"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-74",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-24",
+        "end": "2026-09-24"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-98",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-12900-98",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21014-193",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21014-193",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21043-302",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21043-302",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21057-150",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21057-150",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21078-236",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21078-236",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-06",
+        "end": "2026-10-06"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21083-236",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21088-249",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21105-283",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-21105-283",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-22150-192",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-22150-223",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-22150-319",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-22150-91",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-25450-191",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-25450-227",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-25450-311",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-25450-43",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-26500-227",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-26500-309",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-26525-227",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-26525-24",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-26525-24",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-26525-309",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-31027-225",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-31027-225",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-06",
+        "end": "2026-10-06"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-31027-297",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-31027-297",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-06",
+        "end": "2026-10-06"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-32021-279",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-32046-59",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-32046-59",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-09",
+        "end": "2026-10-09"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-32055-329",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-32076-345",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-33001-13",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-33014-98",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-34018-289",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-25",
+        "end": "2026-09-25"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-34021-8",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-25",
+        "end": "2026-09-25"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-34045-281",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-06",
+        "end": "2026-10-06"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-34051-24",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-34057-87",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-34093-108",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-34099-281",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-34103-272",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-25",
+        "end": "2026-09-25"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-35017-343",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-35035-91",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-35048-312",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-35067-312",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-35074-312",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36005-140",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36005-140",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36033-61",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36039-234",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36049-43",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36063-227",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36063-227",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36069-161",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36082-257",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36084-281",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-06",
+        "end": "2026-10-06"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36092-223",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-25",
+        "end": "2026-09-25"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36107-339",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36121-309",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36131-45",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36131-45",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36142-339",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-36173-257",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-41001-287",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-41019-135",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-41022-135",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-41029-43",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-41046-43",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-42064-316",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-42064-316",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-43575-232",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-43950-115",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-43950-270",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-43950-299",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-51009-348",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-51123-303",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-51125-348",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-51152-290",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-51172-77",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-52014-211",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-52042-211",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-60800-261",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-71019-347",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-71019-347",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-72052-35",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-72052-35",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-74015-189",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-81046-147",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-81063-115",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-09",
+        "end": "2026-10-09"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-81154-162",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-06",
+        "end": "2026-10-06"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82003-14",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82020-100",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82020-100",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82020-198",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82020-198",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82061-139",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-07",
+        "end": "2026-10-07"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82109-67",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82109-67",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82118-67",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-82118-67",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-84014-181",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-84014-181",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-84036-115",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-09",
+        "end": "2026-10-09"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-92049-320",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-92049-320",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-92063-38",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-28",
+        "end": "2026-09-28"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-93071-163",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Brown Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-93071-163",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-05",
+        "end": "2026-10-05"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-94182-239",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-01",
+        "end": "2026-10-01"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-95011-239",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-95054-239",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-95096-239",
+      "period": {
+        "precision": "day",
+        "start": "2026-10-02",
+        "end": "2026-10-02"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-95100-250",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96004-96",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96008-224",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96039-41",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96039-41",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96050-224",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96091-41",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96106-55",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96121-96",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96126-20",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96132-86",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96157-172",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96170-41",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96185-20",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96194-172",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96244-261",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96244-261",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96279-75",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96289-41",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-30",
+        "end": "2026-09-30"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96293-20",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    },
+    {
+      "water_id": "ma-96307-261",
+      "period": {
+        "precision": "day",
+        "start": "2026-09-29",
+        "end": "2026-09-29"
+      },
+      "species": "Rainbow Trout",
+      "status": "reported",
+      "count": null,
+      "first_observed_at": "2026-10-13T03:22:42Z",
+      "last_observed_at": "2026-10-29T13:25:27Z"
+    }
+  ]
+}

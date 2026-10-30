@@ -1,33 +1,46 @@
 {% extends "base.html.jinja" %}
 {% set share_card_kind = "state" %}
 {% block content %}
-<h1>Trout stocking schedules by state</h1>
+<h1>Trout stocking schedules in every state</h1>
 <p class="lede">
-  {{ site_name }} carries each state's own stocking data, from the state
-  wildlife agency that publishes it. Some agencies publish a schedule of
-  planned stockings; others report stockings after they happen. Each page
-  says which, and shows every date at the precision the agency gives it: a
-  day, a week, or a month.
+  {{ site_name }} carries {{ live_names }} from each state's own wildlife
+  agency. For every other state and the District of Columbia, the list below
+  says so and links to that agency's own page: {{ site_name }} does not copy
+  or summarize those states' data.
 </p>
-<table>
+
+<h2>States on {{ site_name }}</h2>
+<p>
+  Some agencies publish a schedule of planned stockings; others report
+  stockings after they happen; New York publishes a spring plan once a year
+  in its own words. Each page says which, and shows every date at the
+  precision the agency gives it: a day, a week, a month, or the agency's own
+  words, such as "April - third week".
+</p>
+{# On a phone the five columns stack into one block per state, each value
+   labeled, so a state name never breaks mid-word (style.css .stack-table).
+   The explicit roles keep it a table for screen readers when the CSS
+   changes its display; the visible labels are hidden from them, because
+   each cell already has its column header. #}
+<table class="stack-table" role="table">
   <caption class="visually-hidden">States {{ site_name }} carries, with each agency and when its data was last checked</caption>
-  <thead>
-    <tr>
-      <th scope="col">State</th>
-      <th scope="col">Agency</th>
-      <th scope="col">What it publishes</th>
-      <th scope="col">Waters</th>
-      <th scope="col">Last checked</th>
+  <thead role="rowgroup">
+    <tr role="row">
+      <th scope="col" role="columnheader">State</th>
+      <th scope="col" role="columnheader">Agency</th>
+      <th scope="col" role="columnheader">What it publishes</th>
+      <th scope="col" role="columnheader">Waters</th>
+      <th scope="col" role="columnheader">Last checked</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody role="rowgroup">
     {% for r in rows %}
-    <tr>
-      <td><a href="{{ r.href }}">{{ r.name }}</a></td>
-      <td>{{ r.agency }}</td>
-      <td>{{ r.kind }}</td>
-      <td>{{ r.waters }}</td>
-      <td>{{ r.checked }}</td>
+    <tr role="row">
+      <td role="cell" data-label="State"><a href="{{ r.href }}">{{ r.name }}</a></td>
+      <td role="cell" data-label="Agency">{{ r.agency }}</td>
+      <td role="cell" data-label="What it publishes">{{ r.kind }}</td>
+      <td role="cell" data-label="Waters">{{ r.waters }}</td>
+      <td role="cell" data-label="Last checked">{{ r.checked }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -37,4 +50,34 @@
   In the iOS app, alerts and the widget are a one-time purchase for each
   state. <a href="{{ root }}about/">About &amp; attribution</a>.
 </p>
+
+{# The design system's StateCoverageList (cfpa.state_coverage): all 50
+   states and DC, alphabetical, each status in words. A state that is not
+   covered gets one link to its agency's own page and nothing else. #}
+<h2 id="every-state">Every state</h2>
+<p>
+  &ldquo;Live on {{ site_name }}&rdquo; links to that state's pages here.
+  &ldquo;Coming soon&rdquo; is a state {{ site_name }} is adding. Every other
+  state links to its wildlife agency's own stocking page, the official
+  schedule, which {{ site_name }} does not copy. Agency links were checked
+  {{ coverage_checked }}; agencies move pages, so if one is out of date, the
+  agency's home page has it.
+</p>
+<ul class="tt-states" aria-label="Trout stocking coverage by state">
+  {% for s in coverage %}
+  <li class="tt-state{% if s.status == 'live' %} tt-state--live{% endif %}">
+    <h3>{{ s.name }}</h3>
+    {% if s.status == "live" %}
+    <p><span class="tt-badge tt-badge--now">Live on {{ site_name }}</span> <a href="{{ s.href }}">Open {{ s.name }}'s schedule</a></p>
+    {% elif s.status == "soon" %}
+    <p><span class="tt-badge tt-badge--next">Coming soon</span></p>
+    {% elif s.homepage_only %}
+    <p><span class="tt-badge tt-badge--none">Not covered</span> <a href="{{ s.url }}" rel="noopener">see {{ s.short }}'s website<span class="visually-hidden">: {{ s.agency }}</span></a></p>
+    <p class="muted">No stocking page could be confirmed, so this links to the agency's own site.</p>
+    {% else %}
+    <p><span class="tt-badge tt-badge--none">Not covered</span> <a href="{{ s.url }}" rel="noopener">see the official schedule<span class="visually-hidden">: {{ s.agency }} stocking page for {{ s.name }}</span></a></p>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
 {% endblock %}

@@ -53,7 +53,15 @@
   {% if st.code != "CA" %}
   <p>{{ st.attribution.text }} Terms: <a href="{{ st.terms_url }}">{{ st.agency.short_name }} terms of use</a>. {{ st.license_summary }}</p>
   <p>{{ st.disclaimer }}</p>
-  {% if "day" in st.precisions or "month" in st.precisions %}
+  {% if "approximate" in st.precisions %}
+  <p>
+    {{ st.agency.short_name }} gives when in its own words, such as "April -
+    third week", and this site keeps them verbatim in <code>period_label</code>
+    with the year. <code>period_precision</code> is <code>approximate</code>,
+    and the start and end columns are the period's bounds, not dates. They
+    are plans, not dates and not confirmed stockings.
+  </p>
+  {% elif "day" in st.precisions or "month" in st.precisions %}
   <p>
     {{ st.agency.short_name }} gives some dates as a day or a month rather than
     a week. The <code>period_precision</code> column says which, and the start

@@ -719,10 +719,24 @@ def test_sitemap_lastmod_follows_the_data_not_the_build(built, fresh):
             assert lastmod[url] == "2026-09-13", w["slug"]
             unchanged_seen = True
     assert unchanged_seen
+    # A county page also links the other counties of its CDFW region, so a
+    # county that first appeared in the second run moves its region's pages.
+    region_of = {c["name"]: c["region"] for c in snap["counties"]}
+    new_counties = {
+        c
+        for c, members in counties.items()
+        if all(m["id"] in new_waters for m in members)
+    }
+    assert new_counties  # the fixture pair really adds a county
     for c, members in counties.items():
         url = f"{BASE_URL}/county/{site.county_slug(c)}/"
+        gained_region_county = any(
+            o != c and region_of.get(o) == region_of.get(c) for o in new_counties
+        )
         expected = (
-            "2026-09-18" if any(m["id"] in changed for m in members) else "2026-09-13"
+            "2026-09-18"
+            if any(m["id"] in changed for m in members) or gained_region_county
+            else "2026-09-13"
         )
         assert lastmod[url] == expected, c
     assert lastmod[f"{BASE_URL}/"] == "2026-09-18"

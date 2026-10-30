@@ -2,12 +2,12 @@
 {% set share_card_kind = "state" %}
 {% block content %}
 {% if schedule %}
-<h1>{{ state.name }} {{ species }} stocking schedule</h1>
+<h1>{{ state.name }} {{ species }} stocking {{ w_kind }}</h1>
 <p class="lede">
   Where the {{ state.agency.name }} ({{ state.agency.short_name }}) has
-  scheduled {{ species }} stocking in {{ state.name }}, at the precision
+  {{ w_verb }} {{ species }} stocking in {{ state.name }}, at the precision
   {{ state.agency.short_name }} gives: {% if state.date_precisions == ['day', 'week', 'month'] %}a day, {{ week_phrase }}, or a
-  month{% else %}{{ precision_phrase }}{% endif %}. These are scheduled dates, not confirmed stockings.
+  month{% else %}{{ precision_phrase }}{% endif %}. {% if w_kind == "plan" %}These are planned periods in {{ state.agency.short_name }}'s own words, not dates and not confirmed stockings.{% else %}These are scheduled dates, not confirmed stockings.{% endif %}
 </p>
 {% else %}
 <h1>{{ state.name }} {{ species }} stocking report</h1>
@@ -28,7 +28,7 @@
 <h2>This week: the {{ state.current_week.label }}</h2>
 {% if this_week %}
 <table>
-  <caption class="visually-hidden">{{ state.name }} waters {{ "scheduled" if schedule else "stocked" }} the {{ state.current_week.label }}</caption>
+  <caption class="visually-hidden">{{ state.name }} waters {{ w_verb if schedule else "stocked" }} the {{ state.current_week.label }}</caption>
   <thead>
     <tr><th scope="col">Water</th><th scope="col">Where</th><th scope="col">When</th><th scope="col">Species</th>{% if has_counts %}<th scope="col">Fish</th>{% endif %}</tr>
   </thead>
@@ -39,7 +39,7 @@
   </tbody>
 </table>
 {% else %}
-<p>{% if schedule %}No {{ state.name }} water has a day or week on {{ state.agency.short_name }}'s schedule for the {{ state.current_week.label }}.{% else %}{{ state.agency.short_name }}'s data has no stocking dated the {{ state.current_week.label }}.{% endif %} That is what the agency's own data says, not a failed read.</p>
+<p>{% if schedule %}No {{ state.name }} water has a day or week on {{ state.agency.short_name }}'s {{ w_kind }} for the {{ state.current_week.label }}.{% else %}{{ state.agency.short_name }}'s data has no stocking dated the {{ state.current_week.label }}.{% endif %} That is what the agency's own data says, not a failed read.</p>
 {% endif %}
 
 {% if schedule %}
@@ -49,7 +49,7 @@
 {% endif %}
 {% if other %}
 <table>
-  <caption class="visually-hidden">{{ "Scheduled stockings in the next " ~ upcoming_days ~ " days" if schedule else "Stockings reported in the last " ~ recent_days ~ " days" }}</caption>
+  <caption class="visually-hidden">{{ (w_verb|capitalize) ~ " stockings in the next " ~ upcoming_days ~ " days" if schedule else "Stockings reported in the last " ~ recent_days ~ " days" }}</caption>
   <thead>
     <tr><th scope="col">When</th><th scope="col">Water</th><th scope="col">Where</th><th scope="col">Species</th>{% if has_counts %}<th scope="col">Fish</th>{% endif %}</tr>
   </thead>
@@ -60,7 +60,7 @@
   </tbody>
 </table>
 {% else %}
-<p>{% if schedule %}Nothing else is on the schedule in the next {{ upcoming_days }} days.{% else %}No stocking is on record in the last {{ recent_days }} days.{% endif %}</p>
+<p>{% if schedule %}Nothing else is on the {{ w_kind }} in the next {{ upcoming_days }} days.{% else %}No stocking is on record in the last {{ recent_days }} days.{% endif %}</p>
 {% endif %}
 {% if has_months %}
 <p class="muted">

@@ -193,10 +193,71 @@ final class PurchaseManagerTests: XCTestCase {
     func testEveryStatesProductLoadsFromTheConfiguration() async throws {
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
         try await waitForProductToLoad(manager)
-        for code in ["CA", "TN", "MA", "MI"] {
-            XCTAssertNotNil(manager.product(forState: code), "\(code)'s product must be in Configuration.storekit")
+        for code in StateAccess.productIDsByState.keys.sorted() {
+            let product = manager.product(forState: code)
+            XCTAssertNotNil(product, "\(code)'s product must be in Configuration.storekit")
+            XCTAssertEqual(product?.type, .nonConsumable, code)
+            XCTAssertEqual(product?.displayPrice, "$9.99", code)
         }
-        XCTAssertEqual(manager.product(forState: "TN")?.displayPrice, "$9.99")
+    }
+
+    func testBuyingNewYorkUnlocksNewYorkOnly() async throws {
+        let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
+        try await waitForProductToLoad(manager)
+        await manager.purchase(state: "NY")
+        XCTAssertEqual(manager.entitledStates, ["NY"])
+        XCTAssertEqual(manager.uiState, .idle)
+    }
+
+    /// A refund (a revoked transaction) locks that state again, and only
+    /// that state.
+    func testARefundLocksThatStateAgainAndKeepsTheOthers() async throws {
+        let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
+        try await waitForProductToLoad(manager)
+        await manager.purchase(state: "TN")
+        await manager.purchase(state: "MA")
+        XCTAssertEqual(manager.entitledStates, ["TN", "MA"])
+
+        let tennessee = try XCTUnwrap(session.allTransactions().first { $0.productIdentifier == "com.chelseakr.cafishplanting.state.tn" })
+        try session.refundTransaction(identifier: tennessee.identifier)
+        await manager.refreshEntitlement()
+
+        XCTAssertEqual(manager.entitledStates, ["MA"], "a refunded state locks again; the other stays bought")
+    }
+
+    /// A failed purchase of one state changes nothing about the states
+    /// already owned.
+    func testAFailedStatePurchaseUnlocksNothingAndKeepsWhatWasBought() async throws {
+        let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
+        try await waitForProductToLoad(manager)
+        await manager.purchase(state: "MI")
+        session.failTransactionsEnabled = true
+        session.failureError = .unknown
+        await manager.purchase(state: "NY")
+        XCTAssertEqual(manager.entitledStates, ["MI"])
+        guard case .failed = manager.uiState else {
+            XCTFail("expected .failed, got \(manager.uiState)")
+            return
+        }
+    }
+
+    /// Ask to Buy: the purchase is pending, the state stays locked and no
+    /// error is shown; the approval unlocks it through `Transaction.updates`.
+    func testAskToBuyLeavesTheStateLockedUntilApproved() async throws {
+        let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
+        try await waitForProductToLoad(manager)
+        session.askToBuyEnabled = true
+        await manager.purchase(state: "MA")
+        XCTAssertEqual(manager.entitledStates, [], "a pending purchase must not unlock")
+        XCTAssertEqual(manager.uiState, .idle, "pending is not an error")
+
+        let pending = try XCTUnwrap(session.allTransactions().first { $0.productIdentifier == "com.chelseakr.cafishplanting.state.ma" })
+        try session.approveAskToBuyTransaction(identifier: pending.identifier)
+        let deadline = Date().addingTimeInterval(8)
+        while manager.entitledStates != ["MA"] && Date() < deadline {
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        XCTAssertEqual(manager.entitledStates, ["MA"], "the approval must unlock the state")
     }
 
     func testBuyingTennesseeUnlocksTennesseeOnly() async throws {

@@ -25,8 +25,9 @@ by a comment, a `|| true`, or `continue-on-error`.
 | 9 | observability: the publish run prints its coverage line; a failed or timed-out run opens an issue | `publish.yml` | OBSERVABILITY |
 | 10 | Lighthouse performance ≥ 0.90, lab Core Web Vitals and script budgets, ≤ 10% regression against `perf/baseline.json` | `site-checks.yml` | PERFORMANCE |
 | 11 | Swift package tests for the app's data layer | `ci.yml` `ios` | CODE-QUALITY |
+| 12 | Greenlight store-rejection preflight on the iOS app, widget extension and Android project: 0 critical or high findings; a skipped scan fails in CI | `make verify` → `ci.yml` `verify` | CODE-QUALITY |
 
-`make verify` runs gates 1-4 locally, in the same way CI does.
+`make verify` runs gates 1-4 and 12 locally, in the same way CI does.
 `tools/site-checks/run.sh` runs gates 6 and 10.
 
 ## REVIEW-GATE: the owner's decision, recorded in the PR

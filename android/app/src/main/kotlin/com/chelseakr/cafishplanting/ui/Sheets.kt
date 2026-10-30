@@ -62,7 +62,9 @@ import com.chelseakr.cafishplanting.PurchaseUi
 import com.chelseakr.cafishplanting.core.FreeTier
 import com.chelseakr.cafishplanting.core.NotificationAskMemory
 import com.chelseakr.cafishplanting.core.NotificationPrimingCopy
-import com.chelseakr.cafishplanting.core.ProductCatalog
+import com.chelseakr.cafishplanting.core.PaywallCopy
+import com.chelseakr.cafishplanting.core.StateProducts
+import com.chelseakr.cafishplanting.core.StateSemantics
 import com.chelseakr.cafishplanting.rememberHaptics
 import java.io.File
 
@@ -113,8 +115,16 @@ object PermissionMemory {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrimingSheet(activity: Activity, env: AppEnvironment, waterName: String?, isEntitled: Boolean, onDone: () -> Unit) {
-    val copy = NotificationPrimingCopy(waterName, isEntitled)
+fun PrimingSheet(
+    activity: Activity,
+    env: AppEnvironment,
+    waterName: String?,
+    isEntitled: Boolean,
+    onDone: () -> Unit,
+    agencyShortName: String = "CDFW",
+    semantics: StateSemantics = StateSemantics.SCHEDULE,
+) {
+    val copy = NotificationPrimingCopy(waterName, isEntitled, agencyShortName, semantics)
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         env.refreshNotificationPermission()
         onDone()
@@ -156,23 +166,34 @@ fun PrimingSheet(activity: Activity, env: AppEnvironment, waterName: String?, is
 }
 
 /**
- * The purchase sheet. Browsing and favoriting are always free; this opens
- * from About and from a tap on the locked widget, never as an upsell on the
- * favorite action. Google Play's own sheet takes the payment: the app never
- * links to any other way to pay.
+ * The purchase sheet for one state (DECISIONS 0025). Browsing and
+ * favoriting are always free; this opens from About, the States screen, a
+ * water's page and the locked widget, never as an upsell on the favorite
+ * action. California's is the original full access, in its original words;
+ * another state names itself. Google Play's own sheet takes the payment:
+ * the app never links to any other way to pay.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PurchaseSheet(activity: Activity, env: AppEnvironment, purchases: PurchaseBackend, onDismiss: () -> Unit) {
+fun PurchaseSheet(activity: Activity, env: AppEnvironment, purchases: PurchaseBackend, stateCode: String, onDismiss: () -> Unit) {
     val state by env.state.collectAsStateWithLifecycle()
     val ui by purchases.ui.collectAsStateWithLifecycle()
     val haptics = rememberHaptics()
-    val product = ProductCatalog.california.productID
-    var wasEntitled by remember { mutableStateOf(state.isEntitled) }
-    LaunchedEffect(state.isEntitled) {
+    val info = state.snapshot?.state(stateCode)
+    val isCalifornia = stateCode == "CA"
+    val stateName = info?.name ?: if (isCalifornia) "California" else stateCode
+    val unlocked = state.isEntitled(stateCode)
+    val product = StateProducts.productID(stateCode)
+    val features = if (isCalifornia || info == null) {
+        FreeTier.fullAccessFeatures
+    } else {
+        FreeTier.stateFeatures(info.name, info.agencyShortName, info.semantics)
+    }
+    var wasUnlocked by remember { mutableStateOf(unlocked) }
+    LaunchedEffect(unlocked) {
         // The unlock landing, from a purchase or a restore.
-        if (state.isEntitled && !wasEntitled) haptics.success()
-        wasEntitled = state.isEntitled
+        if (unlocked && !wasUnlocked) haptics.success()
+        wasUnlocked = unlocked
     }
     // Opening the sheet with no price is a good moment to ask Play again (it was offline, or busy, the first time).
     LaunchedEffect(Unit) { purchases.retryProducts() }
@@ -182,42 +203,91 @@ fun PurchaseSheet(activity: Activity, env: AppEnvironment, purchases: PurchaseBa
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text("Full access", style = MaterialTheme.typography.labelLarge, color = secondaryText)
+            Text(if (isCalifornia) "Full access" else stateName, style = MaterialTheme.typography.labelLarge, color = secondaryText)
             Icon(
-                if (state.isEntitled) Icons.Filled.Verified else Icons.Outlined.Stars,
+                if (unlocked) Icons.Filled.Verified else Icons.Outlined.Stars,
                 null,
-                tint = if (state.isEntitled) Color(0xFF34C759) else MaterialTheme.colorScheme.primary,
+                tint = if (unlocked) Color(0xFF34C759) else MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(48.dp),
             )
-            if (state.isEntitled) {
+            if (unlocked && !isCalifornia) {
+                Text("$stateName unlocked", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
+                Text(
+                    "Thank you. Your $stateName favorites now get alerts, and they show in the Favorite waters widget.",
+                    textAlign = TextAlign.Center,
+                )
+            } else if (unlocked) {
                 Text("Full access unlocked", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
                 Text(
                     "Thank you. Every favorite now gets an alert when it's newly on the schedule, and the Favorite waters widget is unlocked: add it from your home screen.",
                     textAlign = TextAlign.Center,
                 )
             } else {
-                Text("Unlock full access", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
-                Text("Browsing and favoriting are always free. Full access adds:", textAlign = TextAlign.Center)
+                val title = if (isCalifornia) "Unlock full access" else "Unlock $stateName"
+                Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
+                Text(
+                    if (isCalifornia) {
+                        "Browsing and favoriting are always free. Full access for California adds:"
+                    } else {
+                        "Browsing, history and favorites in $stateName are always free. $stateName full access adds:"
+                    },
+                    textAlign = TextAlign.Center,
+                )
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    FreeTier.fullAccessFeatures.zip(listOf<ImageVector>(Icons.Outlined.NotificationsActive, Icons.Outlined.Widgets)).forEach { (text, icon) ->
+                    features.zip(listOf<ImageVector>(Icons.Outlined.NotificationsActive, Icons.Outlined.Widgets)).forEach { (text, icon) ->
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
                             Text(text)
                         }
                     }
                 }
-                Text("One payment, forever. No subscription, no account.", style = MaterialTheme.typography.bodySmall, color = secondaryText, textAlign = TextAlign.Center)
-                val price = ui.prices[product]
+                Text(
+                    PaywallCopy.terms(stateName),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryText,
+                    textAlign = TextAlign.Center,
+                )
+                // How current this state's data is, before the buy button: a
+                // failed check is said here too, not only on Browse (PaywallCopy).
+                info?.let { s ->
+                    Column(
+                        Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            if (!s.lastAttemptOK) {
+                                // Orange on the symbol only, as on Browse.
+                                Icon(Icons.Outlined.Warning, contentDescription = null, tint = Color(0xFFFF9500), modifier = Modifier.size(16.dp))
+                            }
+                            Text(
+                                PaywallCopy.freshness(s),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (s.lastAttemptOK) secondaryText else MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                        s.recencyNote?.let { note ->
+                            Text(
+                                note,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (s.lastAttemptOK) secondaryText else MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
+                }
+                val price = product?.let { ui.prices[it] }
                 Button(
-                    onClick = { purchases.purchase(activity, product) },
+                    onClick = { product?.let { purchases.purchase(activity, it) } },
                     enabled = price != null && ui.busy == PurchaseUi.Busy.IDLE,
                     colors = ButtonDefaults.buttonColors(containerColor = prominentButtonFill, contentColor = Color.White),
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).semantics { contentDescription = "Unlock full access" + (price?.let { ", $it" } ?: "") },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).semantics { contentDescription = title + (price?.let { ", $it" } ?: "") },
                 ) {
                     if (ui.busy == PurchaseUi.Busy.PURCHASING) CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
                     Text(
                         when {
-                            price != null -> "Unlock full access — $price"
+                            price != null -> "$title — $price"
                             ui.productLoadError == null -> "Loading price…"
                             else -> "Not available right now"
                         },
@@ -233,7 +303,7 @@ fun PurchaseSheet(activity: Activity, env: AppEnvironment, purchases: PurchaseBa
                 }
                 if (ui.pending) {
                     Text(
-                        "Your payment is pending with Google Play. Full access unlocks as soon as it completes.",
+                        "Your payment is pending with Google Play. $stateName unlocks as soon as it completes.",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
@@ -247,7 +317,7 @@ fun PurchaseSheet(activity: Activity, env: AppEnvironment, purchases: PurchaseBa
                     }
                 }
             }
-            TextButton(onClick = onDismiss) { Text(if (state.isEntitled) "Done" else "Not now") }
+            TextButton(onClick = onDismiss) { Text(if (unlocked) "Done" else "Not now") }
         }
     }
 }

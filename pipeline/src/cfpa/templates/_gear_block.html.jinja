@@ -1,0 +1,32 @@
+{# The Amazon Associates gear block (DECISIONS 0029, 0039). One copy for every
+   page that carries it: California water and county pages, and another
+   state's water page when site_states.gear_allowed() says so. The page sets
+   gear_heading, gear_intro (the sentence before the fixed text) and
+   gear_placement (the click label). gear_endorsement names the agency whose
+   data the page shows. The link to /gear/ is left off with
+   gear_guide_link = false: that guide is about California waters. The
+   "Affiliate links" label and the disclosure come before the links (the
+   design system's GearLinks), so the block never reads as schedule data. #}
+<section class="gear" aria-labelledby="gear-heading">
+  <p class="gear-label">Affiliate links</p>
+  <h2 id="gear-heading">{{ gear_heading }}</h2>
+  <p>
+    {{ gear_intro }} These links search Amazon for common
+    trout gear. They point to search results, not to any one product.
+  </p>
+  <p class="muted" id="gear-disclosure">
+    These are affiliate links: if you buy something after following one, this
+    site earns a commission, and it costs you nothing extra.
+    {{ amazon_disclosure }}
+    {{ gear_endorsement }}
+    <a href="{{ root }}privacy/#affiliate">More in the privacy policy</a>.
+  </p>
+  <ul>
+    {% for g in gear_links %}
+    <li><a href="{{ g.url }}" rel="{{ affiliate_rel }}" data-ga-event="gear_click" data-ga-placement="{{ gear_placement }}" data-ga-type="amazon_search">{{ g.label }}</a></li>
+    {% endfor %}
+  </ul>
+  {% if gear_guide_link is not defined or gear_guide_link %}
+  <p><a href="{{ root }}gear/">More gear ideas: what to bring for a day at the water</a></p>
+  {% endif %}
+</section>

@@ -15,19 +15,28 @@ public enum StateAccess {
     public static let californiaProductID = "com.chelseakr.cafishplanting.fullaccess"
 
     /// Tennessee's id is confirmed (DECISIONS 0025, 2026-10-12, USD 9.99).
-    /// Massachusetts' and Michigan's are placeholders, unused while those
-    /// states are off. Every product must exist in App Store
-    /// Connect (docs/app-store/OWNER-STEPS.md).
+    /// Michigan's, Massachusetts' and New York's are the owner's ids of
+    /// 2026-10-13 (DECISIONS 0034), USD 9.99 each. A state is sold only once
+    /// it is in the snapshot, which needs its fetch to work on live data.
+    /// Every product must exist in App Store Connect
+    /// (docs/app-store/OWNER-STEPS.md).
     public static let productIDsByState: [String: String] = [
         "CA": californiaProductID,
         "TN": "com.chelseakr.cafishplanting.state.tn",
         "MA": "com.chelseakr.cafishplanting.state.ma",
         "MI": "com.chelseakr.cafishplanting.state.mi",
+        "NY": "com.chelseakr.cafishplanting.state.ny",
     ]
 
     public static var allProductIDs: Set<String> { Set(productIDsByState.values) }
 
     public static func productID(forState code: String) -> String? { productIDsByState[code] }
+
+    /// Whether this build can sell a state. A state the pipeline publishes
+    /// before an app update knows it is left out of the decoded snapshot
+    /// (`SnapshotV2Decoding`, DECISIONS 0034) rather than shown with a
+    /// purchase button that could not work.
+    public static func isKnown(state code: String) -> Bool { productIDsByState[code] != nil }
 
     public static func state(forProductID id: String) -> String? {
         productIDsByState.first { $0.value == id }?.key

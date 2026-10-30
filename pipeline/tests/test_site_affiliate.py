@@ -1,9 +1,13 @@
-"""Amazon Associates gear links (DECISIONS 0029).
+"""Amazon Associates gear links (DECISIONS 0029, 0030, 0039, 0040).
 
-The links are on California water pages and nowhere else: not in the other
-pages, not in structured data, feeds or the snapshot, and not in the iOS or
-Android sources. Wherever one appears it carries rel="sponsored nofollow
-noopener" and the page carries Amazon's disclosure wording. The tag comes
+The links are on California water and county pages, the home page, the
+/county/ index, the /gear/ guide, and
+another state's water pages when that state's terms permit commercial reuse,
+and nowhere else: not in the other pages, not in structured data, feeds or
+the snapshot, and not in the iOS or Android sources. Wherever one appears it
+carries rel="sponsored nofollow noopener", and the page carries Amazon's
+disclosure wording and a non-endorsement sentence naming the agency whose
+data the page shows. The tag comes
 from one constant. ``_problems`` is the checker; the negative controls
 sabotage a built site and assert the checker notices, after asserting the
 sabotage really changed the file.
@@ -12,6 +16,7 @@ sabotage really changed the file.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import re
 from html.parser import HTMLParser
 from pathlib import Path
@@ -20,7 +25,8 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from cfpa import cli, site
+from cfpa import cli, site, site_states
+from cfpa.states import SOURCES
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
@@ -119,8 +125,29 @@ def _is_water_page(out: Path, path: Path) -> bool:
 
 
 def _is_gear_page(out: Path, path: Path) -> bool:
-    """The "What to bring" guide (DECISIONS 0030): the one other page."""
+    """The "What to bring" guide (DECISIONS 0030)."""
     return path.relative_to(out).parts == ("gear", "index.html")
+
+
+def _is_county_page(out: Path, path: Path) -> bool:
+    """A California county page (DECISIONS 0039), not the /county/ index."""
+    rel = path.relative_to(out).parts
+    return len(rel) == 3 and rel[0] == "county" and rel[2] == "index.html"
+
+
+def _is_home_or_county_index(out: Path, path: Path) -> bool:
+    """The home page or the /county/ index (DECISIONS 0040)."""
+    return path.relative_to(out).parts in (("index.html",), ("county", "index.html"))
+
+
+def _state_agency(out: Path, path: Path) -> str | None:
+    """The agency short name for another state's water page, else None."""
+    rel = path.relative_to(out).parts
+    if len(rel) == 4 and rel[1] == "water" and rel[3] == "index.html":
+        source = SOURCES.get(rel[0].upper())
+        if source is not None and source.code != "CA":
+            return source.agency_short_name
+    return None
 
 
 def _link_problems(name: str, href: str, rel: str) -> list[str]:
@@ -142,15 +169,26 @@ def _page_problems(out: Path, path: Path) -> list[str]:
     found: list[str] = []
     if page.other_urls:
         found.append(f"{name}: Amazon URL outside an anchor: {page.other_urls}")
-    if links and not (_is_water_page(out, path) or _is_gear_page(out, path)):
+    agency = _state_agency(out, path)
+    allowed = (
+        _is_water_page(out, path)
+        or _is_gear_page(out, path)
+        or _is_county_page(out, path)
+        or _is_home_or_county_index(out, path)
+        or agency is not None
+    )
+    if links and not allowed:
         found.append(f"{name}: affiliate link outside a water page")
     for href, rel in links:
         found += _link_problems(name, href, rel)
     prose = page.prose()
     if links and site.AMAZON_ASSOCIATE_DISCLOSURE not in prose:
         found.append(f"{name}: no Amazon disclosure")
-    if links and ENDORSEMENT not in prose:
+    want = ENDORSEMENT if agency is None else site.gear_endorsement(agency)
+    if links and want not in prose:
         found.append(f"{name}: no agency non-endorsement sentence")
+    if links and agency is not None and "CDFW" in prose:
+        found.append(f"{name}: a non-California page names CDFW")
     if links and "costs you nothing extra" not in prose:
         found.append(f"{name}: no plain affiliate sentence")
     for kind, block in _script_blocks(path.read_text(encoding="utf-8")):
@@ -359,10 +397,10 @@ def test_control_a_wrong_tag_is_noticed(tmp_path: Path) -> None:
     assert any("wrong or missing tag" in p for p in _problems(out))
 
 
-def test_control_an_affiliate_link_on_the_home_page_is_noticed(tmp_path: Path) -> None:
+def test_control_an_affiliate_link_on_the_about_page_is_noticed(tmp_path: Path) -> None:
     out = _build(tmp_path)
     link = f'<a href="https://www.amazon.com/s?k=x&amp;tag={TAG}" rel="{site.AFFILIATE_LINK_REL}">x</a>'
-    _sabotage(out / "index.html", "</main>", link + "</main>")
+    _sabotage(out / "about" / "index.html", "</main>", link + "</main>")
     assert any("outside a water page" in p for p in _problems(out))
 
 
@@ -390,10 +428,8 @@ def test_the_about_page_does_not_claim_no_ads_without_the_affiliate_note(
     assert "affiliate links to Amazon" in about
 
 
-def test_the_other_states_pages_carry_no_affiliate_link(tmp_path: Path) -> None:
-    """Report-state water pages are not California water pages: no links."""
-    root = tmp_path / "states-build"
-    root.mkdir()
+def _states_build(root: Path) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
     cli.run(
         fixture_path=str(FRESH),
         history_path=root / "history.json",
@@ -407,9 +443,200 @@ def test_the_other_states_pages_carry_no_affiliate_link(tmp_path: Path) -> None:
         states_fetch=("TN", "MA", "MI"),
         states_fixtures=FIXTURES / "states",
     )
-    out = root / "site"
-    assert list((out / "states").rglob("index.html"))
+    return root / "site"
+
+
+@pytest.fixture(scope="module")
+def built_states(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    return _states_build(tmp_path_factory.mktemp("affiliate-states") / "b")
+
+
+def _gear_section(path: Path) -> str:
+    m = re.search(
+        r'<section class="gear".*?</section>', path.read_text(encoding="utf-8"), re.S
+    )
+    assert m, path
+    return m.group(0)
+
+
+def test_the_states_build_follows_every_rule(built_states: Path) -> None:
+    assert list((built_states / "states").rglob("index.html"))
+    assert _problems(built_states) == []
+
+
+def test_other_states_water_pages_carry_the_block_naming_their_agency(
+    built_states: Path,
+) -> None:
+    """DECISIONS 0039: TN, MA and MI permit commercial reuse and are trout
+    only, so each water page carries the block with its own agency's name."""
+    for code in ("tn", "ma", "mi"):
+        agency = SOURCES[code.upper()].agency_short_name
+        pages = sorted((built_states / code / "water").glob("*/index.html"))
+        assert pages, code
+        for path in pages:
+            page = _parse(path)
+            links = [h for h, _ in page.anchors if _is_amazon(h)]
+            assert len(links) == len(site.GEAR_CATEGORIES), path
+            assert site.gear_endorsement(agency) in page.prose(), path
+            block = _gear_section(path)
+            assert 'data-ga-placement="state_water"' in block
+            # The /gear/ guide is about California waters: not offered here.
+            assert "gear/" not in block.replace("#gear-heading", "")
+
+
+def test_state_hubs_and_the_states_index_carry_no_affiliate_link(
+    built_states: Path,
+) -> None:
+    hubs = [built_states / "states" / "index.html"] + [
+        built_states / code / "index.html" for code in ("tn", "ma", "mi")
+    ]
+    for path in hubs:
+        assert path.exists(), path
+        assert not [h for h, _ in _parse(path).anchors if _is_amazon(h)], path
+
+
+def test_every_county_page_has_the_gear_block(built: Path) -> None:
+    pages = [p for p in built.rglob("index.html") if _is_county_page(built, p)]
+    assert len(pages) > 5
+    for path in pages:
+        page = _parse(path)
+        links = [h for h, _ in page.anchors if _is_amazon(h)]
+        assert len(links) == len(site.GEAR_CATEGORIES), path
+        assert DISCLOSURE in page.prose()
+        assert ENDORSEMENT in page.prose()
+        block = _gear_section(path)
+        assert 'data-ga-placement="county"' in block
+        assert not FORBIDDEN_COPY.search(re.sub(r"<[^>]+>", " ", block))
+
+
+def _gear_labels(path: Path) -> list[str]:
+    block = _gear_section(path)
+    return re.findall(r'data-ga-type="amazon_search">([^<]+)</a>', block)
+
+
+def test_the_home_page_and_county_index_carry_the_block(built: Path) -> None:
+    """DECISIONS 0040. The fixture's week starts in September, so the home
+    page has the fixed four and no cold-weather search."""
+    fixed = [label for label, _ in site.GEAR_CATEGORIES]
+    for rel, placement in (("index.html", "home"), ("county/index.html", "counties")):
+        path = built / rel
+        page = _parse(path)
+        assert len([h for h, _ in page.anchors if _is_amazon(h)]) == len(fixed), rel
+        assert DISCLOSURE in page.prose() and ENDORSEMENT in page.prose()
+        block = _gear_section(path)
+        assert f'data-ga-placement="{placement}"' in block
+        assert not FORBIDDEN_COPY.search(re.sub(r"<[^>]+>", " ", block))
+        assert _gear_labels(path) == fixed
+
+
+def test_cold_month_gear_is_added_in_winter_weeks_only() -> None:
+    fixed = [g["label"] for g in site.gear_links()]
+    cold = [g["label"] for g in site.gear_links(cold_months=True)]
+    assert cold == fixed + [label for label, _ in site.COLD_MONTH_GEAR]
+    for label, terms in site.COLD_MONTH_GEAR:
+        assert not FORBIDDEN_COPY.search(label + " " + terms)
+    for week, winter in (
+        ("2026-11-01", True),
+        ("2026-12-27", True),
+        ("2027-01-03", True),
+        ("2027-02-28", True),
+        ("2027-03-07", False),
+        ("2026-10-25", False),
+        ("2026-09-13", False),
+    ):
+        assert site.is_winter_week(week) is winter, week
+    assert site.is_winter_week("") is False
+
+
+def test_a_winter_week_adds_the_cold_month_search_to_the_home_page_only(
+    tmp_path: Path,
+) -> None:
+    """A build whose current CDFW week starts in December: the home page gets
+    the extra search, and water and county pages keep the fixed four."""
+    v1 = _build(tmp_path / "src")
+    snap = json.loads((v1 / "snapshot" / "v1.json").read_text("utf-8"))
+    snap["source_week"] = {
+        **snap["source_week"],
+        "start": "2026-12-06",
+        "end": "2026-12-12",
+        "label": "week of 2026-12-06",
+    }
+    out = tmp_path / "winter"
+    site.build_site(snap, out, base_url=BASE_URL)
+    cold = [label for label, _ in site.COLD_MONTH_GEAR]
+    assert _gear_labels(out / "index.html")[-len(cold) :] == cold
+    for path in (out / "county" / "index.html", _water_file(out)):
+        assert not set(cold) & set(_gear_labels(path)), path
     assert _problems(out) == []
+
+
+def _src(state: str) -> dict[str, Any]:
+    return {
+        "license": {"sources": [{"commercial_reuse": state}]},
+    }
+
+
+def test_gear_is_allowed_only_for_permitted_trout_data() -> None:
+    assert site_states.gear_allowed(_src("permitted"), "trout")
+    assert site_states.gear_allowed(_src("permitted"), "Rainbow Trout")
+    assert not site_states.gear_allowed(_src("unknown"), "trout")
+    assert not site_states.gear_allowed(_src("not-permitted"), "trout")
+    assert not site_states.gear_allowed(_src("permitted"), "fish")
+    assert not site_states.gear_allowed({"license": {"sources": []}}, "trout")
+    assert not site_states.gear_allowed({}, "trout")
+    mixed = {
+        "license": {
+            "sources": [
+                {"commercial_reuse": "permitted"},
+                {"commercial_reuse": "unknown"},
+            ]
+        }
+    }
+    assert not site_states.gear_allowed(mixed, "trout")
+
+
+def test_control_a_state_whose_terms_are_unknown_gets_no_links(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The license gate decides a real build, and the sabotage applies."""
+    import dataclasses
+
+    tn = SOURCES["TN"]
+    unknown = tuple(
+        dataclasses.replace(lic, commercial_reuse="unknown")
+        for lic in tn.license_sources
+    )
+    monkeypatch.setitem(SOURCES, "TN", dataclasses.replace(tn, license_sources=unknown))
+    out = _states_build(tmp_path / "b")
+    v2 = (out / "snapshot" / "v2.json").read_text(encoding="utf-8")
+    assert '"commercial_reuse": "unknown"' in v2 or '"commercial_reuse":"unknown"' in v2
+    tn_pages = sorted((out / "tn" / "water").glob("*/index.html"))
+    assert tn_pages
+    for path in tn_pages:
+        assert not [h for h, _ in _parse(path).anchors if _is_amazon(h)], path
+    ma_pages = sorted((out / "ma" / "water").glob("*/index.html"))
+    assert ma_pages
+    assert [h for h, _ in _parse(ma_pages[0]).anchors if _is_amazon(h)]
+
+
+def test_control_cdfw_named_on_a_state_page_is_noticed(tmp_path: Path) -> None:
+    out = _states_build(tmp_path / "b")
+    assert _problems(out) == []
+    page = sorted((out / "tn" / "water").glob("*/index.html"))[0]
+    _sabotage(page, "not TWRA&#39;s, and TWRA does", "not CDFW&#39;s, and CDFW does")
+    found = _problems(out)
+    assert any("non-endorsement" in p for p in found)
+    assert any("names CDFW" in p for p in found)
+
+
+def test_control_a_link_on_a_state_hub_is_noticed(tmp_path: Path) -> None:
+    out = _states_build(tmp_path / "b")
+    link = (
+        f'<a href="https://www.amazon.com/s?k=x&amp;tag={TAG}" '
+        f'rel="{site.AFFILIATE_LINK_REL}">x</a>'
+    )
+    _sabotage(out / "tn" / "index.html", "</main>", link + "</main>")
+    assert any("outside a water page" in p for p in _problems(out))
 
 
 def test_the_endorsement_sentence_names_the_pages_agency() -> None:

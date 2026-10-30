@@ -67,11 +67,15 @@ def _sitemap(out: Path) -> set[str]:
     return set(re.findall(r"<loc>([^<]+)</loc>", xml))
 
 
+AMAZON_HOSTS = frozenset({"amazon.com", "www.amazon.com"})
+
+
 def _amazon_links(html: str) -> list[str]:
+    """Links whose parsed host is exactly Amazon's (site.AMAZON_SEARCH_URL)."""
     return [
         h
         for h in HREF.findall(html)
-        if (urlsplit(h).hostname or "").endswith("amazon.com")
+        if urlsplit(h).scheme == "https" and urlsplit(h).hostname in AMAZON_HOSTS
     ]
 
 

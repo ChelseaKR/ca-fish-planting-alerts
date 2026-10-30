@@ -196,7 +196,14 @@ def test_unit_is_on_listing_pages_and_never_on_the_excluded_ones(
 def test_unit_sits_after_the_content_and_far_from_the_amazon_disclosure(
     on_pages: dict[str, str],
 ) -> None:
-    waters = [n for n in on_pages if n.startswith("water/") and n.endswith(".html")]
+    # A thin water page carries no gear block (DECISIONS 0041).
+    waters = [
+        n
+        for n in on_pages
+        if n.startswith("water/")
+        and n.endswith(".html")
+        and 'id="gear-disclosure"' in on_pages[n]
+    ]
     assert waters
     for name in waters:
         body = on_pages[name]

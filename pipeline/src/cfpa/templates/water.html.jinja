@@ -101,10 +101,12 @@
   {% if water.other_names %}<dt>Also listed by CDFW as</dt><dd>{{ water.other_names }}</dd>{% endif %}
 </dl>
 
+{% if gear_links %}
 {% set gear_heading = "Gear for this water" %}
 {% set gear_intro = "Planning a trip to " ~ water.name ~ "?" %}
 {% set gear_placement = "water" %}
 {% include "_gear_block.html.jinja" %}
+{% endif %}
 
 
 {% for c in other_waters_by_county %}

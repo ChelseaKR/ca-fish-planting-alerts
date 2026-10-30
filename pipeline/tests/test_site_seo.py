@@ -20,7 +20,7 @@ from typing import Any
 
 import pytest
 
-from cfpa import cli, site
+from cfpa import cli, site, thin
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
@@ -688,6 +688,10 @@ def test_sitemap_lastmod_follows_the_data_not_the_build(built, fresh):
     unchanged_seen = False
     for w in snap["waters"]:
         url = f"{BASE_URL}/water/{w['slug']}/"
+        if thin.is_thin(w["plants"], f"/water/{w['slug']}/"):
+            # A thin water page is not in the sitemap (DECISIONS 0041).
+            assert url not in sitemap, w["slug"]
+            continue
         gained_sibling = any(
             s["id"] in new_waters
             for c in w["counties"]

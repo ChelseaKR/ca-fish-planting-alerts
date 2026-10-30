@@ -37,6 +37,7 @@ import jinja2
 
 from . import state_coverage
 from .states import SOURCES
+from .thin import is_thin
 
 UPCOMING_DAYS = 60
 RECENT_DAYS = 45
@@ -399,18 +400,18 @@ def render_states(
                 ],
             )
         for w in waters:
-            entries.append(
-                _render_water(
-                    ctx,
-                    state,
-                    w,
-                    waters,
-                    lastmods[w["id"]],
-                    state_species,
-                    with_towns=towns_on[w["id"]],
-                    qualifier=extra.get(w["id"], ""),
-                )
+            url, lastmod, thin = _render_water(
+                ctx,
+                state,
+                w,
+                waters,
+                lastmods[w["id"]],
+                state_species,
+                with_towns=towns_on[w["id"]],
+                qualifier=extra.get(w["id"], ""),
             )
+            if not thin:
+                entries.append((url, lastmod))
         hub_lastmods[state["code"]] = max(lastmods.values())
         entries.append(
             _render_hub(
@@ -597,7 +598,7 @@ def _render_water(
     state_species: str,
     with_towns: bool = False,
     qualifier: str = "",
-) -> tuple[str, str | None]:
+) -> tuple[str, str, bool]:
     seg = state["code"].lower()
     page_url = f"{ctx.base_url}{w['site_path']}"
     schedule = state["semantics"] in ("schedule", "plan")
@@ -661,6 +662,9 @@ def _render_water(
             else "no stocking on record."
         )
     listed_count = sum(1 for p in w["plants"] if p["status"] != "removed")
+    # Fewer than two dated rows: noindex,follow, no gear block, and out of
+    # the sitemap (DECISIONS 0041). The page and every link to it stay.
+    thin = is_thin(w["plants"], w["site_path"])
     trail = [
         *_trail_root(ctx),
         (state["name"], f"{ctx.base_url}/{seg}/"),
@@ -694,6 +698,8 @@ def _render_water(
             f"{'date' if listed_count == 1 else 'dates'} on record."
         ),
         canonical_url=page_url,
+        noindex=thin,
+        noindex_follow=thin,
         root="../../../",
         **_state_common(ctx, state, "../../../"),
         structured_data=ctx.ld_graph(
@@ -719,7 +725,9 @@ def _render_water(
         has_counts=any(p["count"] is not None for p in plants),
         has_removed=any(p["removed"] for p in plants),
         neighbors=neighbors,
-        gear_links=list(ctx.gear_links) if gear_allowed(state, species) else [],
+        gear_links=list(ctx.gear_links)
+        if gear_allowed(state, species) and not thin
+        else [],
         affiliate_rel=ctx.affiliate_rel,
         neighbors_heading=(
             f"Other {', '.join(w['counties'])} County waters on record"
@@ -733,4 +741,4 @@ def _render_water(
         attempt_label=_fmt_dt(state["checks"]["last_attempt_at"]),
     )
     ctx.write_page(ctx.out_dir, w["site_path"].strip("/"), html, ctx.written)
-    return page_url, lastmod
+    return page_url, lastmod, thin

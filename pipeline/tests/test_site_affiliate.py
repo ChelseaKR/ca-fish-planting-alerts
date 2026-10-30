@@ -25,7 +25,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from cfpa import cli, site, site_states
+from cfpa import cli, site, site_states, thin
 from cfpa.states import SOURCES
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -257,9 +257,30 @@ def test_a_clean_build_has_no_problems(built: Path) -> None:
     assert _problems(built) == []
 
 
+def _thin_paths(out: Path) -> set[Path]:
+    """The index.html of every thin water page (DECISIONS 0041), from the
+    build's own snapshot: these carry no gear block."""
+    v2 = json.loads((out / "snapshot" / "v2.json").read_text(encoding="utf-8"))
+    found = set()
+    for w in v2["waters"]:
+        path = w.get("site_path") or f"/water/{w['slug']}/"
+        if thin.is_thin(w["plants"], path):
+            found.add(out / path.strip("/") / "index.html")
+    return found
+
+
 def test_every_water_page_has_the_gear_block_and_its_disclosure(built: Path) -> None:
-    waters = [p for p in built.rglob("index.html") if _is_water_page(built, p)]
-    assert len(waters) > 30
+    """Every water page but a thin one (DECISIONS 0041), which has none."""
+    thin_pages = _thin_paths(built)
+    waters = [
+        p
+        for p in built.rglob("index.html")
+        if _is_water_page(built, p) and p not in thin_pages
+    ]
+    # One fixture fetch gives most California waters a single week.
+    assert waters and len(thin_pages) > 30
+    for path in thin_pages:
+        assert not [h for h, _ in _parse(path).anchors if _is_amazon(h)], path
     for path in waters:
         page = _parse(path)
         links = [h for h, _ in page.anchors if _is_amazon(h)]
@@ -324,8 +345,7 @@ def test_the_privacy_page_states_the_relationship_in_both_builds(
 def test_the_gear_and_privacy_copy_makes_no_superlative_or_price_claim(
     built: Path,
 ) -> None:
-    water = next(iter(sorted((built / "water").glob("*/index.html"))))
-    html = water.read_text(encoding="utf-8")
+    html = _water_file(built).read_text(encoding="utf-8")
     block = re.search(r'<section class="gear".*?</section>', html, re.S)
     assert block
     copy = re.sub(r"<[^>]+>", " ", block.group(0))
@@ -366,8 +386,14 @@ def test_no_app_source_names_amazon_or_the_tag() -> None:
 # ---- negative controls: each sabotage must apply, and must be noticed ----
 
 
+def _with_block(pages: list[Path]) -> Path:
+    """The first page that carries the gear block: a thin water page has
+    none (DECISIONS 0041), so a sabotage aimed at one would not apply."""
+    return next(p for p in pages if 'class="gear"' in p.read_text(encoding="utf-8"))
+
+
 def _water_file(out: Path) -> Path:
-    return next(iter(sorted((out / "water").glob("*/index.html"))))
+    return _with_block(sorted((out / "water").glob("*/index.html")))
 
 
 def _sabotage(path: Path, old: str, new: str) -> None:
@@ -469,9 +495,14 @@ def test_other_states_water_pages_carry_the_block_naming_their_agency(
 ) -> None:
     """DECISIONS 0039: TN, MA and MI permit commercial reuse and are trout
     only, so each water page carries the block with its own agency's name."""
+    thin_pages = _thin_paths(built_states)
     for code in ("tn", "ma", "mi"):
         agency = SOURCES[code.upper()].agency_short_name
-        pages = sorted((built_states / code / "water").glob("*/index.html"))
+        pages = [
+            p
+            for p in sorted((built_states / code / "water").glob("*/index.html"))
+            if p not in thin_pages
+        ]
         assert pages, code
         for path in pages:
             page = _parse(path)
@@ -610,11 +641,17 @@ def test_control_a_state_whose_terms_are_unknown_gets_no_links(
     out = _states_build(tmp_path / "b")
     v2 = (out / "snapshot" / "v2.json").read_text(encoding="utf-8")
     assert '"commercial_reuse": "unknown"' in v2 or '"commercial_reuse":"unknown"' in v2
+    thin_pages = _thin_paths(out)
     tn_pages = sorted((out / "tn" / "water").glob("*/index.html"))
-    assert tn_pages
+    # Pages that would carry the block but for the terms (not thin ones).
+    assert set(tn_pages) - thin_pages
     for path in tn_pages:
         assert not [h for h, _ in _parse(path).anchors if _is_amazon(h)], path
-    ma_pages = sorted((out / "ma" / "water").glob("*/index.html"))
+    ma_pages = [
+        p
+        for p in sorted((out / "ma" / "water").glob("*/index.html"))
+        if p not in thin_pages
+    ]
     assert ma_pages
     assert [h for h, _ in _parse(ma_pages[0]).anchors if _is_amazon(h)]
 
@@ -622,7 +659,7 @@ def test_control_a_state_whose_terms_are_unknown_gets_no_links(
 def test_control_cdfw_named_on_a_state_page_is_noticed(tmp_path: Path) -> None:
     out = _states_build(tmp_path / "b")
     assert _problems(out) == []
-    page = sorted((out / "tn" / "water").glob("*/index.html"))[0]
+    page = _with_block(sorted((out / "tn" / "water").glob("*/index.html")))
     _sabotage(page, "not TWRA&#39;s, and TWRA does", "not CDFW&#39;s, and CDFW does")
     found = _problems(out)
     assert any("non-endorsement" in p for p in found)

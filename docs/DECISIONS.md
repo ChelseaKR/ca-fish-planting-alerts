@@ -1188,3 +1188,40 @@ links, same deadline: 3 qualifying sales by about 2027-04-17.
   Fish and Game (DFG) before 2013, as the home page description already did.
   County page h1s say "stocking and planting schedule", the wording of the
   water page titles. Ads stay off.
+
+## 0041 — Thin water pages: noindex, out of the sitemap, no gear links (2026-10-30)
+
+Owner decision after Google re-ranked the whole site down on 2026-10-23
+(Search Console: about 160 impressions a day before, 3 to 9 after; every
+page group fell, and every sampled page is still indexed).
+
+- **Rule.** A water page, in any state, with fewer than two dated stocking
+  rows (`cfpa.thin`, `WATER_INDEX_MIN_DATED_ROWS = 2`) carries
+  `<meta name="robots" content="noindex,follow">`, is left out of
+  `sitemap.xml`, and has no Amazon gear block. The page, its calendar feed,
+  its canonical and every link to it stay, so visitors and the apps reach it
+  as before. One function decides all three, so they always agree.
+- **Dated row.** A plant that is not `removed` and whose period is a day, a
+  week, or an agency's own words for part of a month (New York's
+  `approximate`). A bare month (Tennessee's "TBD 12/2026") is not a date,
+  the same line the state hub's date span already draws.
+- **Counts** (live snapshot, 2026-10-30; indexed / noindexed): California
+  312 / 76, Tennessee 93 / 43 (with the exception below), Massachusetts
+  27 / 96, Michigan 542 / 65, New York 161 / 421. In all, 1,135 of 1,836
+  water pages stay indexed with their links and 701 are noindexed without.
+- **Exception.** `/tn/water/fountain-city-lake-knox-county/` has one dated
+  row but was the 10th page by Search Console impressions over the 90 days
+  to 2026-10-30 (18, 1 click), so it stays indexed with its links
+  (`KEEP_INDEXED_PATHS`). No other thin page had more than 7.
+- **Not changed.** Week pages keep their own rule (fewer than 8 waters,
+  0038). Region and species pages are other templates and are untouched.
+  County pages and the home page keep their gear block (0039, 0040).
+
+## 0042 — No new page families until 2026-11-27 (2026-10-30)
+
+No new page types (like the region, species and week pages of 2026-10-21
+and 2026-10-22) and no large template changes until 2026-11-27. Google
+re-ranked the site on 2026-10-23, two days after about 35 site changes
+including three new page families. A stable site lets Google re-score it,
+and lets any recovery be traced to a cause. Fixes to existing pages are
+fine.

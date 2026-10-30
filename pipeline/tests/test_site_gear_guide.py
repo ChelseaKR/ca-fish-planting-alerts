@@ -316,7 +316,12 @@ def test_footer_and_water_pages_link_to_the_guide(built: Path) -> None:
         page = _parse(path)
         hrefs = [a.get("href", "") for a in page.anchors]
         assert any(h.endswith("gear/") for h in hrefs), path
-    water = next(iter(sorted((built / "water").glob("*/index.html"))))
+    # The first water page with a gear block; a thin one has none (0041).
+    water = next(
+        p
+        for p in sorted((built / "water").glob("*/index.html"))
+        if 'class="gear"' in p.read_text(encoding="utf-8")
+    )
     texts = _parse(water).prose()
     assert "More gear ideas" in texts
 

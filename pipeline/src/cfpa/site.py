@@ -38,6 +38,7 @@ from . import ads as ads_mod
 from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
 from .snapshot import week_of
 from .thin import is_thin
+from .water_kind import WaterKind, water_kind
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
@@ -328,11 +329,28 @@ def gear_endorsement(agency_short_name: str = "CDFW") -> str:
 
 
 AFFILIATE_LINK_REL = "sponsored nofollow noopener"
-# Label, then the search terms. Generic categories alone; the data carries no
-# lake-or-stream field, so every water gets the same four.
+# Label, then the search terms. Generic categories alone. These four are for
+# every page that is not one water (county pages, the home page) and for a
+# water whose name does not say whether it is still or moving.
 GEAR_CATEGORIES: tuple[tuple[str, str], ...] = (
     ("Trout rod and reel combo", "trout rod and reel combo"),
     ("Trout lure and tackle assortment", "trout lure tackle assortment"),
+    ("Fishing waders", "fishing waders"),
+    ("Landing net for trout", "trout landing net"),
+)
+# A water page picks four that fit the water, by the agency's own name for it
+# (cfpa.water_kind, DECISIONS 0044): at a lake, pond or reservoir, bait under
+# a bobber; on a river or creek, spinners and waders. Same count as the
+# general four, still categories, never a product.
+STILL_WATER_GEAR: tuple[tuple[str, str], ...] = (
+    ("Trout rod and reel combo", "trout rod and reel combo"),
+    ("Trout dough bait", "trout dough bait"),
+    ("Fishing bobbers", "fishing bobbers"),
+    ("Landing net for trout", "trout landing net"),
+)
+MOVING_WATER_GEAR: tuple[tuple[str, str], ...] = (
+    ("Trout rod and reel combo", "trout rod and reel combo"),
+    ("Trout spinners and spoons", "trout spinners spoons assortment"),
     ("Fishing waders", "fishing waders"),
     ("Landing net for trout", "trout landing net"),
 )
@@ -359,10 +377,16 @@ def is_winter_week(week_start: str) -> bool:
     return bool(week_start) and dt.date.fromisoformat(week_start).month in WINTER_MONTHS
 
 
-def gear_links(*, cold_months: bool = False) -> list[dict[str, str]]:
-    """The gear block's links, built from ``GEAR_CATEGORIES``, plus
+def gear_links(
+    *, cold_months: bool = False, kind: WaterKind | None = None
+) -> list[dict[str, str]]:
+    """The gear block's links: ``STILL_WATER_GEAR`` or ``MOVING_WATER_GEAR``
+    for a water of that ``kind``, else ``GEAR_CATEGORIES``; plus
     ``COLD_MONTH_GEAR`` when ``cold_months``."""
-    pairs = GEAR_CATEGORIES + (COLD_MONTH_GEAR if cold_months else ())
+    base = {"still": STILL_WATER_GEAR, "moving": MOVING_WATER_GEAR}.get(
+        kind or "", GEAR_CATEGORIES
+    )
+    pairs = base + (COLD_MONTH_GEAR if cold_months else ())
     return [{"label": label, "url": amazon_search_url(terms)} for label, terms in pairs]
 
 
@@ -1890,7 +1914,7 @@ def _render_water_page(
         breadcrumb=_relative_trail(trail, base_url=base_url, root="../../"),
         water=view,
         water_map=_water_map(point),
-        gear_links=[] if thin else gear_links(),
+        gear_links=[] if thin else gear_links(kind=water_kind(w["name"])),
         affiliate_rel=AFFILIATE_LINK_REL,
         scheduled_elsewhere=scheduled_elsewhere,
         other_waters_by_county=other_waters_by_county,
@@ -3403,6 +3427,7 @@ def build_site(
             relative_trail=_relative_trail,
             title_max=WATER_TITLE_MAX,
             gear_links=tuple(gear_links()),
+            gear_links_for=lambda kind: tuple(gear_links(kind=kind)),
             affiliate_rel=AFFILIATE_LINK_REL,
             gear_endorsement=gear_endorsement,
         ),

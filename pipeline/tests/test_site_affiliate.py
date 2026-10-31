@@ -694,3 +694,62 @@ def test_control_a_wrong_agency_in_the_sentence_is_noticed(tmp_path: Path) -> No
         _water_file(out), "not CDFW&#39;s, and CDFW does", "not FWS&#39;s, and FWS does"
     )
     assert any("non-endorsement" in p for p in _problems(out))
+
+
+# ---- gear that fits the water (DECISIONS 0044)
+
+
+def test_every_gear_set_keeps_the_copy_rules_and_the_count() -> None:
+    for pairs in (site.GEAR_CATEGORIES, site.STILL_WATER_GEAR, site.MOVING_WATER_GEAR):
+        assert len(pairs) == len(site.GEAR_CATEGORIES)
+        for label, terms in pairs:
+            assert not FORBIDDEN_COPY.search(label + " " + terms)
+    assert site.STILL_WATER_GEAR != site.GEAR_CATEGORIES
+    assert site.MOVING_WATER_GEAR != site.GEAR_CATEGORIES
+    assert [g["label"] for g in site.gear_links(kind=None)] == [
+        label for label, _ in site.GEAR_CATEGORIES
+    ]
+
+
+def _water_name(path: Path) -> str:
+    m = re.search(
+        r'id="gear-heading">Gear for this water</h2>\s*<p>\s*Planning a trip to (.+?)\?',
+        path.read_text(encoding="utf-8"),
+        re.S,
+    )
+    assert m, path
+    return m.group(1).replace("&#39;", "'").replace("&amp;", "&")
+
+
+def test_california_water_pages_carry_the_set_for_their_kind(built: Path) -> None:
+    from cfpa.water_kind import water_kind
+
+    want = {
+        "still": [label for label, _ in site.STILL_WATER_GEAR],
+        "moving": [label for label, _ in site.MOVING_WATER_GEAR],
+        None: [label for label, _ in site.GEAR_CATEGORIES],
+    }
+    seen: set[str | None] = set()
+    for path in sorted((built / "water").glob("*/index.html")):
+        if 'section class="gear"' not in path.read_text(encoding="utf-8"):
+            continue
+        kind = water_kind(_water_name(path))
+        seen.add(kind)
+        assert _gear_labels(path) == want[kind], path
+    # The fixture has both kinds, so neither branch can pass by being absent.
+    assert {"still", "moving"} <= seen
+
+
+def test_the_gear_block_follows_the_schedule_table_on_water_pages(built: Path) -> None:
+    """Moved up from below "About this water" (DECISIONS 0044)."""
+    checked = 0
+    for path in sorted((built / "water").glob("*/index.html")):
+        html = path.read_text(encoding="utf-8")
+        gear = html.find('<section class="gear"')
+        if gear < 0:
+            continue
+        history = html.find("<h2>Planting history</h2>")
+        about = html.find("<h2>About this water</h2>")
+        assert 0 <= history < gear < about, path
+        checked += 1
+    assert checked > 0

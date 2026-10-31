@@ -1246,3 +1246,42 @@ counts.
 - **Where not.** No other page changes. Water, county, home and state pages
   keep the blocks 0039, 0040 and 0041 give them, and the section is not a
   new page, so it fits 0042.
+
+## 0044 — Keep four clicked thin pages indexed; gear that fits the water, moved up (2026-10-31)
+
+Follows 0041 and fits 0042: no new page, no new link surface, and no new
+links on any page. Two fixes to existing water pages.
+
+- **Four thin pages stay indexed.** 0041 kept thin pages by impressions.
+  By clicks, Search Console (`sc-domain:trouttruck.com`, 2026-08-01 to
+  2026-10-30) shows 41 clicks on the site, 4 of them on pages 0041
+  noindexed, one each at an average position of 2 to 4:
+  `/tn/water/martin-city-pond-weakley-county/`,
+  `/tn/water/milan-city-pond-gibson-county/`,
+  `/tn/water/mossy-creek-new-jefferson-county/` and
+  `/water/lake-berryessa/`. GA4 also shows an engaged organic landing on
+  the Milan and Mossy Creek pages. They join `KEEP_INDEXED_PATHS`. No other
+  thin page earned a click.
+- **Gear that fits the water.** Water pages are where people land (GA4,
+  2026-10-03 to 2026-10-31: most engaged organic and AI-assistant landings
+  are water pages), and no `gear_click` has been recorded. The click event
+  itself works: on 2026-10-31 a headless browser clicked the first gear link
+  on the live `/county/fresno/` and home pages, and the page sent a
+  `gear_click` hit (the test blocked the hit and the Amazon request, so
+  nothing reached GA4 or Amazon). So the block was reaching no one, or
+  offering nothing they wanted. A water page now picks its four searches by
+  the agency's own name for the water (`cfpa.water_kind`): a lake, pond or
+  reservoir gets dough bait and bobbers in place of the lure assortment and
+  waders; a river or creek gets spinners and spoons in place of the lure
+  assortment. A name with neither word keeps the general four. The rod and
+  the net stay in every set. County pages, the home page and `/county/`
+  keep the general four.
+- **Moved up.** On a California water page the block now follows the
+  planting history table instead of "About this water". On a phone that is
+  about two screens down instead of about four (measured on the live
+  `/water/ralphine-lake/` and `/water/shadow-cliff-lake/`, 390 px wide).
+  Label, disclosure, endorsement sentence, rel values and click labels are
+  unchanged.
+- **Risk.** The 2026-10-30 audit could not rule out that the affiliate
+  block fed the 2026-10-23 re-rank. Moving it up makes it more prominent on
+  about 310 California pages. Revert the move alone if that is a worry.

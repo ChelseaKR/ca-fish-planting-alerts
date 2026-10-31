@@ -63,7 +63,8 @@ public enum SignificantChange {
     }
 
     /// Whether the App Store age rating changed since the last launch, from
-    /// StoreKit's `AppStore.ageRatingCode`. A missing previous value (first
+    /// `AppStore.ageRatingCode` (iOS 26.2+), which the app reads itself so this
+    /// package never links the store framework. A missing previous value (first
     /// launch) or a missing current value is not a change.
     public static func ageRatingChanged(previous: Int?, current: Int?) -> Bool {
         guard let previous, let current else { return false }

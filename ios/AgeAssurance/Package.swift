@@ -1,7 +1,6 @@
 // swift-tools-version: 5.10
-// AgeAssurance: the app-store age-signal duty shared by Chelsea's native apps
-// (Trout Truck, Queer Frame, Tide Hours) and wrapped by Family Greenhouse's
-// Capacitor plugin. Background: _agent-tools/growth/age-assurance-compliance-2026-10-30.md.
+// AgeAssurance: the app-store age-signal duty shared by Chelsea's three
+// native iPhone apps and wrapped by the Capacitor app's plugin. Background: _agent-tools/growth/age-assurance-compliance-2026-10-30.md.
 //
 // Vendored, not fetched. Each app repo carries an identical copy of this
 // directory so no new repository, deploy key or registry is needed. The
@@ -9,7 +8,7 @@
 // changes, copy the whole directory into the other repos and bump
 // `AgeAssurance.version` so a drifted copy is easy to spot.
 //
-// iOS 15 floor so Family Greenhouse (deployment target 15.0) can link it.
+// iOS 15 floor so the Capacitor app (deployment target 15.0) can link it.
 // Foundation only on macOS, so `swift test` runs without a simulator. The
 // Apple-framework adapter (DeclaredAgeRange, PermissionKit) compiles only
 // where those frameworks and UIKit exist, behind availability checks, so

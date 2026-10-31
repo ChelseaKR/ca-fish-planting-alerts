@@ -1,5 +1,6 @@
-// The live adapter over Apple's Declared Age Range, PermissionKit and
-// StoreKit APIs. Compiled only where UIKit and the frameworks exist (the iOS
+// The live adapter over Apple's Declared Age Range and PermissionKit APIs.
+// It deliberately links no store or network framework, so apps whose source
+// guards forbid those can vendor it unchanged. Compiled only where UIKit and the frameworks exist (the iOS
 // 26 SDK); on macOS `swift test` this file is empty and the fakes in the
 // tests stand in. Every call sits behind `#available`, so the iOS 17-26.1
 // population simply reports `isSupported == false`, which the evaluator turns
@@ -13,9 +14,6 @@ import DeclaredAgeRange
 import UIKit
 #if canImport(PermissionKit)
 import PermissionKit
-#endif
-#if canImport(StoreKit)
-import StoreKit
 #endif
 
 public struct DeclaredAgeRangePlatform: AgeRangePlatform {
@@ -138,16 +136,6 @@ public enum SignificantUpdatePresenter {
                 )
             }
         }
-    }
-
-    /// StoreKit's current age-rating code, or nil before iOS 26.2. Compare it
-    /// with the value stored at the previous launch through
-    /// `SignificantChange.ageRatingChanged(previous:current:)`.
-    public static func currentAgeRatingCode() async -> Int? {
-        #if canImport(StoreKit)
-        if #available(iOS 26.2, *) { return await AppStore.ageRatingCode }
-        #endif
-        return nil
     }
 }
 #endif

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C4B17E30006C30C92D92A854 /* AgeAssurance in Frameworks */ = {isa = PBXBuildFile; productRef = F7733FEA4EA94ED452EEA66C /* AgeAssurance */; };
+		57DE3640FEA2BD373B4A91A4 /* AgeAssuranceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69CA8E93CEFF3AA60F72E7AF /* AgeAssuranceSettings.swift */; };
 		5A237D8A0D4C3A5AFBA34BB8 /* WatchBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B68E26CE920F94938D33254 /* WatchBridgeTests.swift */; };
 		3D9311E299B81B70AE698424 /* WatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7727D60C2FA7AD87D2672D /* WatchBridge.swift */; };
 		E65BDDA7EF6C361737EFB078 /* TroutTruckWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30407E8D52A471B69C072D63 /* TroutTruckWatchApp.swift */; };
@@ -166,6 +168,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		69CA8E93CEFF3AA60F72E7AF /* AgeAssuranceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgeAssuranceSettings.swift; sourceTree = "<group>"; };
 		3A3076F5A9AE46931E33CCE8 /* WidgetBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridge.swift; sourceTree = "<group>"; };
 		279A9238A08B48D4E8275E89 /* WidgetBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridgeTests.swift; sourceTree = "<group>"; };
 		CD39626A89522D230CA30AAB /* CAFishPlanting.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CAFishPlanting.entitlements; sourceTree = "<group>"; };
@@ -237,6 +240,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FF536AE84AB86CFCEFEFA610 /* PlantingCore in Frameworks */,
+				C4B17E30006C30C92D92A854 /* AgeAssurance in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,6 +341,7 @@
 			children = (
 				3A3076F5A9AE46931E33CCE8 /* WidgetBridge.swift */,
 				1C7727D60C2FA7AD87D2672D /* WatchBridge.swift */,
+				69CA8E93CEFF3AA60F72E7AF /* AgeAssuranceSettings.swift */,
 				6F974BD82B04FC663443931C /* CAFishPlantingApp.swift */,
 				FE01964D00A1AD2E563C3403 /* AppEnvironment.swift */,
 				E04AF963921A2AE834344E4B /* ScheduleIntents.swift */,
@@ -462,6 +467,7 @@
 			name = CAFishPlanting;
 			packageProductDependencies = (
 				3148F689D98979AD9E0825B9 /* PlantingCore */,
+				F7733FEA4EA94ED452EEA66C /* AgeAssurance */,
 			);
 			productName = CAFishPlanting;
 			productReference = 3054F6C342DF00206DE60541 /* CAFishPlanting.app */;
@@ -610,6 +616,7 @@
 			mainGroup = E50290A24C49A459B43487C5;
 			packageReferences = (
 				4CB7D035FA98983FE06C496A /* XCLocalSwiftPackageReference "PlantingCore" */,
+				E28C4D06E5E791DA6EB35EFB /* XCLocalSwiftPackageReference "AgeAssurance" */,
 			);
 			productRefGroup = 328EC33DF3954DC9B83FA285 /* Products */;
 			projectDirPath = "";
@@ -670,6 +677,7 @@
 			files = (
 				957930AAE88B2301316666C5 /* WidgetBridge.swift in Sources */,
 				3D9311E299B81B70AE698424 /* WatchBridge.swift in Sources */,
+				57DE3640FEA2BD373B4A91A4 /* AgeAssuranceSettings.swift in Sources */,
 				4FC3D4E75324FB1C87E2BC58 /* CAFishPlantingApp.swift in Sources */,
 				0B618C0DAC1AD20A1CF5A3B7 /* AppEnvironment.swift in Sources */,
 				1EA443A92DA0D57DF5B3C809 /* ScheduleIntents.swift in Sources */,
@@ -1246,6 +1254,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = PlantingCore;
 		};
+		E28C4D06E5E791DA6EB35EFB /* XCLocalSwiftPackageReference "AgeAssurance" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = AgeAssurance;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1264,6 +1276,10 @@
 		982FC0E7438BAE3F29AE9FAA /* PlantingCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlantingCore;
+		};
+		F7733FEA4EA94ED452EEA66C /* AgeAssurance */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AgeAssurance;
 		};
 /* End XCSwiftPackageProductDependency section */
 

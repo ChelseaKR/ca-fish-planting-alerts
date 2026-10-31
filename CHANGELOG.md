@@ -13,6 +13,16 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- **App-store age assurance (iPhone).** On iOS 26.2 and later the app asks
+  Apple's Declared Age Range for the person's age range when it opens, only
+  where Apple says a state law requires it (Texas now; California, Alabama,
+  Utah and Louisiana in 2027). The answer stays in memory, is never stored or
+  sent, and changes nothing in the app; a missing or declined answer is
+  never treated as an adult. The vendored `ios/AgeAssurance` package carries
+  the logic, its tests and a negative control; the privacy policy and the
+  About screen say so, and the Definition of Done gains the
+  significant-change rule.
+
 - Site: winter on the record (DECISIONS 0040). Each county page lists the
   waters CDFW's schedule listed there from November through February of the
   most recent whole winter, with the weeks each was listed, and the home

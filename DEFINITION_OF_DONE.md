@@ -57,7 +57,31 @@ submission needs, at minimum:
 - the app's accessibility walkthrough (#5) done or explicitly accepted as
   open;
 - the App Store privacy label matching `PrivacyInfo.xcprivacy`;
-- a CHANGELOG entry for what users will see.
+- a CHANGELOG entry for what users will see;
+- the significant-change check below.
+
+### Significant change (app-store age-assurance laws)
+
+Texas SB 2420, Utah 13-76, Louisiana R.S. 51:1771 and Alabama HB 161
+require the developer to notify the app stores, and let parents of minors
+approve, before a "significant change". A release is a significant change
+if its Terms or privacy policy change does any of: adds a category of
+personal data collected, stored or shared; adds in-app purchases or ads
+(Utah and Alabama: where none existed); changes the age rating or the
+content descriptors behind it. In Texas and Louisiana a material change
+to functionality or user experience also counts.
+`SignificantChange.states(for:)` in `ios/AgeAssurance` encodes this. When
+a release is one:
+
+- notify the stores before release: App Store Connect (age rating and
+  release notes) and, once the Android app is on Google Play, the Play
+  Console Age Signals page;
+- present the platform flow on the release's first launch with
+  `SignificantUpdatePresenter.present(updateDescription:requirements:from:)`
+  (PermissionKit's parent request, or Apple's adult acknowledgment, as
+  `requiredRegulatoryFeatures` says);
+- keep the age rating honest and do not change it casually: a later rating
+  change is itself a significant change.
 
 ## Merging
 

@@ -72,6 +72,7 @@ struct AboutView: View {
 
             Section {
                 Text("Data collected by this app: none. No analytics, no crash reporting, no third-party SDKs, no accounts. Favorites and alert history stay on this device. The only network request this app ever makes is a plain, cookie-free fetch of the published stocking snapshot.")
+                Text("Where a state law requires it, the app asks Apple for your age range when it opens. The answer stays in memory on this device, is never saved or sent anywhere, and changes nothing in the app.")
             } header: {
                 SectionHeader("Privacy")
             }

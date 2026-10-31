@@ -30,7 +30,7 @@
   <a href="#affiliate">Gear links</a>.
 </p>
 {# correction 1 (apps coverage): scope line #}
-<p class="muted">Last updated 2026-10-22. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
+<p class="muted">Last updated 2026-10-30. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
 
 <h2 id="site">The website</h2>
 {% if ga4_measurement_id %}
@@ -203,6 +203,17 @@
       the Android app keeps a small record of when it last asked for a
       review.</li>
   {# correction 1 (apps coverage): items end #}
+  {# age assurance (feat/age-assurance): item begins #}
+  <li id="age-range"><strong>Age range:</strong> where a state law requires
+      it (Texas, and from 2027 California, Alabama, Utah and Louisiana), the
+      iPhone app asks Apple for the age range of the person using it (under
+      13, 13 to 15, 16 to 17, or 18 and over) when it opens. The app uses the
+      answer only to meet those laws. It keeps it in memory while the app is
+      open, never saves it, never sends it to the developer or anyone else,
+      and shows and changes nothing because of it. Where no law applies, the
+      app does not ask. Apple handles age checks, parental approval and
+      purchases by minors (Ask to Buy).</li>
+  {# age assurance (feat/age-assurance): item ends #}
   <li><strong>What stays on your device:</strong> the waters you favorite, the
       latest copy of the planting schedule, and a record of which listings the
       app has already alerted you about. These live only in the app's own
@@ -247,12 +258,16 @@
 <h2 id="children">Children</h2>
 {% if ga4_measurement_id %}
 <p>
-  The app collects nothing from anyone, including children. The website's
+  The app collects nothing from anyone, including children. The age range
+  the iPhone app may receive from Apple (see <a href="#age-range">Age
+  range</a>) stays in memory on the device and is never collected. The website's
   analytics are the same for every visitor and never ask for a name, age or
   contact details.
 </p>
 {% else %}
-<p>Nothing is collected from anyone, including children.</p>
+<p>Nothing is collected from anyone, including children. The age range
+  the iPhone app may receive from Apple (see <a href="#age-range">Age
+  range</a>) stays in memory on the device and is never collected.</p>
 {% endif %}
 
 <h2 id="changes">Changes</h2>

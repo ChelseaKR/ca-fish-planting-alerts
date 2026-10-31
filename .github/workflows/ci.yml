@@ -163,6 +163,19 @@ jobs:
         working-directory: ios/PlantingCore
         run: swift test
 
+      # The vendored age-assurance package (app-store age signal). Its tests
+      # cover every age bracket and every "no signal" case; the negative
+      # control rewrites the mapping so a missing range reads as an adult and
+      # requires the tests to fail.
+      - name: swift test (AgeAssurance)
+        if: hashFiles('ios/AgeAssurance/Package.swift') != ''
+        working-directory: ios/AgeAssurance
+        run: swift test
+
+      - name: AgeAssurance negative control
+        if: hashFiles('ios/AgeAssurance/Package.swift') != ''
+        run: ios/AgeAssurance/scripts/negative-control.sh
+
   android:
     if: github.event_name != 'push'
     runs-on: ubuntu-latest

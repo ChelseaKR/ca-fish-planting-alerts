@@ -1,3 +1,4 @@
+import AgeAssurance
 import SwiftUI
 import BackgroundTasks
 
@@ -9,6 +10,9 @@ struct CAFishPlantingApp: App {
     /// rating prompt). Reset when the app goes to the background, so a
     /// glance at Control Center doesn't count as another.
     @State private var countedThisForeground = false
+    /// This launch's app-store age signal, in memory only. See
+    /// `AgeAssuranceSettings.swift`; nothing reads it but the session.
+    @StateObject private var ageAssurance = AppAgeAssurance.makeSession()
 
     init() {
         // Must run before applicationDidFinishLaunching returns, so this
@@ -32,6 +36,11 @@ struct CAFishPlantingApp: App {
                 .onOpenURL { AppRouter.shared.handle($0) }
                 .task {
                     await refreshOnOpen()
+                }
+                .task {
+                    // "When the application is downloaded and launched."
+                    guard !Self.isHostingUnitTests else { return }
+                    await ageAssurance.requestOnLaunch()
                 }
         }
         .onChange(of: scenePhase) { _, phase in

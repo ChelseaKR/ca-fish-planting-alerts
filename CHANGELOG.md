@@ -97,6 +97,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Android: launches free, with nothing for sale (DECISIONS 0044). Alerts,
+  New York's reminders and the Favorite waters widget are free in every
+  state, and no screen shows a price, a purchase or Restore purchases. The
+  build carries no Play Billing library and no BILLING permission. One
+  Gradle property, `troutTruck.androidFreeTier`, brings the per-state
+  purchases back; CI builds both.
 - Site: thin water pages (DECISIONS 0041). A water page in any state with
   fewer than two dated stocking rows is `noindex,follow`, left out of
   `sitemap.xml`, and carries no Amazon gear block; it stays built and linked.

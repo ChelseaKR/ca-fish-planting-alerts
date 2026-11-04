@@ -46,18 +46,26 @@ Android device through the Play Console mobile app.
 The account was created after November 13, 2023, so the closed-test rule in
 step 9 applies.
 
-### 2. Owner: payments profile
+### 2. Nothing to sell: no payments profile step
 
-Trout Truck sells a paid item, so Play Console needs a payments profile
-(name, address, bank account, tax information). Do this before creating the
-product in step 6. The exact screens are not documented here and were not
-checked.
+The Android build sells nothing (`docs/DECISIONS.md` 0044): alerts and the
+widget are free in every state, and the build carries no Play Billing
+library and no BILLING permission. Google shows a personal account's full
+address only when it sells: "If you monetize on Google Play, Google displays
+your full address"
+([Required information](https://support.google.com/googleplay/android-developer/answer/13628312)).
+So skip any payments-profile setup under Settings, Monetization, and create
+no in-app products. A personal account's legal name, country and developer
+email are still shown.
 
 ### 3. Owner: create the app and turn on Play App Signing
 
 In Play Console choose Create app: name `Trout Truck`, default language
-English (United States), type App, price Free (the in-app product makes it
-"free with in-app purchases"). The package name is fixed by the initial bundle
+English (United States), type App, price Free. A free app can never become
+a paid app
+([Set the price of your app](https://support.google.com/googleplay/android-developer/answer/6334373)),
+which is fine: a later paid version would add in-app products (0044), not a
+price. Answer No to in-app purchases. The package name is fixed by the initial bundle
 you upload: `com.chelseakr.cafishplanting`. Accept the declarations.
 
 Use Play App Signing (the default for new apps). Google then holds the key
@@ -125,46 +133,25 @@ bundle is signed and carries the committed `assets/snapshot.json`. The run
 prints the bundle's SHA-256; the downloaded file should match it
 (`shasum -a 256 app-release.aab`).
 
-### 6. Owner: create the in-app products
+### 6. No in-app products in this build
 
-In Play Console, Monetize, In-app products, create one one-time product per
-state. Today that is five: California, Tennessee, Massachusetts, Michigan
-and New York, the five states in the published `snapshot/v2.json` (checked
-2026-10-24; `android/README.md`, "States and purchases"). Each is USD 9.99,
-matching iOS. The app shows the price Play returns; none is hard-coded.
-
-| Product ID | State | Name | Description |
-|---|---|---|---|
-| `fullaccess` | California | Full Access | Alerts and a widget for your favorite waters |
-| `state_tn` | Tennessee | Tennessee alerts and widget | Alerts and a widget for your favorite Tennessee waters |
-| `state_ma` | Massachusetts | Massachusetts alerts and widget | Alerts and a widget for your favorite Massachusetts waters |
-| `state_mi` | Michigan | Michigan alerts and widget | Alerts and a widget for your favorite Michigan waters |
-| `state_ny` | New York | New York reminders and widget | Reminders and a widget for your favorite New York waters |
-
-- New York's says "reminders", not "alerts": New York publishes a spring
-  plan once a year in its own words, so its purchase adds a reminder when a
-  favorite's planned period begins (as the iOS product does).
-- The IDs are `StateProducts.productIDsByState` in `android/core`
-  (`Products.kt`). Google does not let a product ID change after it is
-  created, so decide now. If you want a different ID, change it there in a
-  reviewed change before the initial upload and rebuild.
-- A state missing from the published snapshot is not shown in the app, so
-  its product is never offered, even when it exists in Play Console.
-- Activate each product. It may become purchasable once a bundle that
-  declares the billing permission is on a testing track.
-
-Add yourself and your testers under Settings, License testing, so test
-purchases cost nothing.
+The free build (`troutTruck.androidFreeTier=true`, the default) has no
+products and nothing to create here. The per-state product IDs stay in
+`StateProducts` in `android/core` for a later paid build (0044): if that
+build is ever chosen, the products are one-time, one per state, created
+then, and creating them makes the account a merchant account that shows the
+payments-profile address. Don't create one now: a product ID can't be reused
+after it is created.
 
 ### 7. Owner: upload to Internal testing
 
 Testing, Internal testing, Create new release, upload `app-release.aab`.
 Add a tester list (your own Google account to start) and open the opt-in
 link on a real Android phone. Smoke test: the app opens on the bundled
-schedule, a water can be favorited, the Full Access purchase and one other
-state's (New York's, for its reminders) succeed with a license tester
-account and survive Restore purchases, an alert can be
-received, and the widget can be added.
+schedule, a water can be favorited in two states, no screen offers a
+purchase, a price or a Restore purchases button, an alert can be received
+(and a New York reminder, for a New York favorite), and the widget can be
+added and lists favorites from more than one state.
 
 Internal testing is separate from the closed test. Google's Data safety page
 says apps on internal testing tracks are exempt from the form; plan to

@@ -6,6 +6,19 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// Android's free launch (docs/DECISIONS.md 0044). On (gradle.properties), the app
+// sells nothing: alerts and the widget are free in every state, and neither the
+// Play Billing library nor its BILLING permission is in the build. Off
+// (-PtroutTruck.androidFreeTier=false), Play Billing and the purchase screens
+// come back. Each side's code is in its own folder, so the free build never
+// compiles a line of billing code.
+val androidFreeTier: Boolean =
+    providers.gradleProperty("troutTruck.androidFreeTier").orNull?.trim()?.lowercase()?.let {
+        require(it == "true" || it == "false") { "troutTruck.androidFreeTier must be true or false, not '$it'" }
+        it == "true"
+    } ?: true
+val storeFolder = if (androidFreeTier) "src/free" else "src/billing"
+
 // The snapshot the app ships with is a committed v2 snapshot (every state) in
 // src/main/assets/snapshot.json, refreshed by scripts/sync-bundled-snapshot.sh.
 
@@ -25,6 +38,14 @@ android {
         // values below. A bump is still a reviewed edit here.
         versionCode = System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = System.getenv("ANDROID_VERSION_NAME")?.takeIf { it.isNotBlank() } ?: "1.0.0"
+        buildConfigField("boolean", "FREE_TIER", androidFreeTier.toString())
+    }
+
+    sourceSets {
+        getByName("main") {
+            kotlin.srcDir("$storeFolder/kotlin")
+            res.srcDir("$storeFolder/res")
+        }
     }
 
     // Upload-key signing, applied when the release workflow (or the owner's shell)
@@ -116,7 +137,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
-    implementation(libs.billing.ktx)
+    if (!androidFreeTier) implementation(libs.billing.ktx)
     implementation(libs.play.review.ktx)
     implementation(libs.kotlinx.serialization.json)
     debugImplementation(libs.androidx.compose.ui.tooling)

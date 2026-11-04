@@ -48,6 +48,11 @@ class Router {
     /** Handles the app's own links. `false`, and nothing asked, for any other URL. */
     fun handle(url: String): Boolean {
         if (UnlockLink.matches(url)) {
+            // The free build (DECISIONS 0044) has no purchase screen: an old link opens About.
+            if (BuildConfig.FREE_TIER) {
+                _state.update { it.copy(tab = Tab.ABOUT) }
+                return true
+            }
             // The locked widget's link opens California's purchase, as in the iOS app.
             _state.update { it.copy(tab = Tab.ABOUT, showingPurchase = true, purchaseState = "CA") }
             return true

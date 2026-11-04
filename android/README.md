@@ -67,11 +67,30 @@ baseline or a widget row fails one of them. To re-record after a deliberate
 change, run `PARITY_RECORD=1 swift test` in `ios/PlantingCore`, review the
 diff, and run the Android tests against it.
 
-## States and purchases
+## Free launch and the build flag
+
+Android launches free (docs/DECISIONS.md 0044): alerts, reminders and the
+widget are free in every state, and nothing is for sale. One Gradle
+property decides it, `troutTruck.androidFreeTier` in `gradle.properties`:
+
+- `true` (the default): `BuildConfig.FREE_TIER` is true, the Play Billing
+  library isn't a dependency, and the release manifest has no
+  `com.android.vending.BILLING` permission. `src/free` supplies the store
+  (`FreeLaunchBackend`, which reports every state as owned) and the free
+  build's words (`FreeLaunch` in `core`). No screen shows a price, a
+  purchase or Restore purchases.
+- `false` (`./gradlew -PtroutTruck.androidFreeTier=false ...`): `src/billing`
+  supplies Play Billing (`PlayBillingBackend`) and the purchase screens
+  below come back, unchanged.
+
+`FreeLaunchBuildTest` runs in both builds and checks the billing library is
+present only with the flag off. CI builds both.
+
+## States and purchases (the paid build)
 
 Browse has a state picker and a States screen once the snapshot has more
-than one state. Each state is its own Google Play one-time product
-(`StateProducts` in `core`):
+than one state. In the paid build, each state is its own Google Play
+one-time product (`StateProducts` in `core`):
 
 | State | Google Play  | App Store                                 |
 |-------|--------------|-------------------------------------------|
@@ -83,7 +102,8 @@ than one state. Each state is its own Google Play one-time product
 
 A Play product ID already belongs to this one app, so the Play IDs drop the
 package-name prefix. A state's product unlocks that state's favorites'
-notifications and lists them in the widget. All five are sold: they are the
+notifications and lists them in the widget. In the free build none is sold;
+in the paid build all five would be: they are the
 five states in the published `snapshot/v2.json` (checked 2026-10-24). A
 state missing from the snapshot is left out of the app, product and all.
 
@@ -103,8 +123,9 @@ com.chelseakr.cafishplanting`:
 
 - `network-snapshot.json` is served as the snapshot URL's response instead
   of the network, so an alert can be produced on demand.
-- `fake-billing` replaces Google Play with a local store that sells every
-  product, since Play has no product until the owner creates one.
+- `fake-billing` (paid build only) replaces Google Play with a local store
+  that sells every product, since Play has no product until the owner
+  creates one. The free build ignores it.
 - `allow-review` lets the app request Play's review card. Debug builds
   never ask otherwise.
 
@@ -113,19 +134,14 @@ com.chelseakr.cafishplanting`:
 The app can't reach testers until these are done in Play Console.
 
 1. Create the app: name Trout Truck, package `com.chelseakr.cafishplanting`,
-   free with in-app products.
+   free. No payments profile and no in-app products (DECISIONS 0044).
 2. App signing: enroll in Play App Signing, so Google holds the app key.
    Create an upload key outside the repo, then sign release builds with
    it. No key or keystore password goes in this repository.
    `docs/ANDROID-RELEASE.md` has the exact commands, and the manual
    `android-release` workflow builds the signed bundle.
-3. In-app products: create five one-time products, each USD 9.99:
-   `fullaccess` (California), `state_tn` (Tennessee), `state_ma`
-   (Massachusetts), `state_mi` (Michigan) and `state_ny` (New York). Each
-   unlocks its own state's notifications and home screen widget; New York's
-   are reminders. Names and descriptions are in `docs/ANDROID-RELEASE.md`,
-   step 6. The IDs are in `StateProducts` in `core`; if Play needs a
-   different one, change it there.
+3. In-app products: none. The free build sells nothing; the per-state IDs
+   in `StateProducts` wait for a paid build, if one is ever chosen.
 4. Data safety: no data collected or shared. The app has no account,
    analytics or crash reporting. Its only requests are plain GETs of the
    public snapshot (v2, or v1 when v2 isn't there). Favorites, mutes and
@@ -134,7 +150,7 @@ The app can't reach testers until these are done in Play Console.
    `data_extraction_rules.xml`).
 5. Store listing, content rating and target audience, using the iOS
    listing's copy with "home screen" in place of "Home Screen and Lock
-   Screen". The iOS listing still says California; DECISIONS 0025 says it
-   changes when a state goes on sale.
+   Screen", and with no purchase or price: on Android alerts and the
+   widget are free (0044).
 6. Upload a signed release bundle to the internal testing track and add
    testers.

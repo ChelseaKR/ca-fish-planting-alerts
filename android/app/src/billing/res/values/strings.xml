@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The paid build's words (docs/DECISIONS.md 0044). The free build's are in src/free/res. -->
+<resources>
+    <string name="widget_description">Your favorite waters\' latest listing, for the states you have unlocked.</string>
+</resources>

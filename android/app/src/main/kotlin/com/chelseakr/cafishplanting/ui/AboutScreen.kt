@@ -41,6 +41,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.AppState
+import com.chelseakr.cafishplanting.BuildConfig
+import com.chelseakr.cafishplanting.core.FreeLaunch
 import com.chelseakr.cafishplanting.core.PlayStoreReviewLink
 import com.chelseakr.cafishplanting.core.SnapshotOrigin
 import java.time.ZoneId
@@ -58,37 +60,50 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
 
     Scaffold(topBar = { TopAppBar(title = { Text("About") }) }) { padding ->
         Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
-            SectionHeader("Full access", ReadableWidth.fillMaxWidth())
-            Card(ReadableWidth) {
-                if (state.isEntitled("CA")) {
-                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        // Green on the seal only: green text on white is below 4.5:1.
-                        Icon(Icons.Filled.Verified, null, tint = Color(0xFF34C759))
-                        Text("California unlocked", Modifier.padding(start = 12.dp))
-                    }
-                } else {
-                    Para(
-                        "Favoriting and browsing are free and unlimited. Full access adds an alert on this device when a favorite is newly on the schedule, " +
-                            "and the Favorite waters widget for your home screen.",
-                        secondary = true,
-                    )
-                    ButtonRow("Unlock full access", onUnlock)
+            if (BuildConfig.FREE_TIER) {
+                // The free build (DECISIONS 0044): nothing to sell, so no purchase row.
+                SectionHeader(FreeLaunch.ABOUT_HEADER, ReadableWidth.fillMaxWidth())
+                Card(ReadableWidth) {
+                    Para(FreeLaunch.ABOUT_BODY, secondary = true)
+                    if (manyStates) ButtonRow(FreeLaunch.ABOUT_STATES_BUTTON, onShowStates)
                 }
-                if (manyStates) {
-                    Para(
-                        "Full access is a one-time purchase for each state. California's is the original purchase, and it stays what it was.",
-                        secondary = true,
-                        small = true,
-                    )
-                    ButtonRow("States and full access", onShowStates)
+            } else {
+                SectionHeader("Full access", ReadableWidth.fillMaxWidth())
+                Card(ReadableWidth) {
+                    if (state.isEntitled("CA")) {
+                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            // Green on the seal only: green text on white is below 4.5:1.
+                            Icon(Icons.Filled.Verified, null, tint = Color(0xFF34C759))
+                            Text("California unlocked", Modifier.padding(start = 12.dp))
+                        }
+                    } else {
+                        Para(
+                            "Favoriting and browsing are free and unlimited. Full access adds an alert on this device when a favorite is newly on the schedule, " +
+                                "and the Favorite waters widget for your home screen.",
+                            secondary = true,
+                        )
+                        ButtonRow("Unlock full access", onUnlock)
+                    }
+                    if (manyStates) {
+                        Para(
+                            "Full access is a one-time purchase for each state. California's is the original purchase, and it stays what it was.",
+                            secondary = true,
+                            small = true,
+                        )
+                        ButtonRow("States and full access", onShowStates)
+                    }
                 }
             }
 
             SectionHeader("What this app does", ReadableWidth.fillMaxWidth())
             Card(ReadableWidth) {
                 Para(
-                    "Favorite any California water for free and browse its full schedule history. With full access, also get a notification on this device " +
-                        "when a favorite appears in the California Department of Fish and Wildlife's weekly stocking schedule, and a home screen widget with your favorites.",
+                    if (BuildConfig.FREE_TIER) {
+                        FreeLaunch.ABOUT_WHAT_IT_DOES
+                    } else {
+                        "Favorite any California water for free and browse its full schedule history. With full access, also get a notification on this device " +
+                            "when a favorite appears in the California Department of Fish and Wildlife's weekly stocking schedule, and a home screen widget with your favorites."
+                    },
                 )
                 Para("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
                 if (manyStates) {
@@ -103,7 +118,7 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
             SectionHeader("How alerts work", ReadableWidth.fillMaxWidth())
             Card(ReadableWidth) {
                 Para(
-                    "Alerts are local notifications this app makes on this device for full-access purchasers only. There is no server, no push service, and no account. " +
+                    (if (BuildConfig.FREE_TIER) FreeLaunch.ABOUT_HOW_ALERTS_WORK else "Alerts are local notifications this app makes on this device for full-access purchasers only. There is no server, no push service, and no account. ") +
                         "Android decides when the app may refresh in the background, and the schedule itself is weekly, so an alert arrives within the week a water is added, not the minute it is.",
                 )
                 Para("To stop one water's alerts and keep it as a favorite, choose Mute this water on its alert, or use the switch on the water's page.")
@@ -140,8 +155,12 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
             SectionHeader("Privacy", ReadableWidth.fillMaxWidth())
             Card(ReadableWidth) {
                 Para(
-                    "Data collected by this app: none. No analytics, no crash reporting, no advertising, no accounts. Favorites and alert history stay on this device. " +
-                        "The only network request this app makes is a plain, cookie-free fetch of the published stocking snapshot. Purchases go through Google Play.",
+                    if (BuildConfig.FREE_TIER) {
+                        FreeLaunch.ABOUT_PRIVACY
+                    } else {
+                        "Data collected by this app: none. No analytics, no crash reporting, no advertising, no accounts. Favorites and alert history stay on this device. " +
+                            "The only network request this app makes is a plain, cookie-free fetch of the published stocking snapshot. Purchases go through Google Play."
+                    },
                 )
             }
 

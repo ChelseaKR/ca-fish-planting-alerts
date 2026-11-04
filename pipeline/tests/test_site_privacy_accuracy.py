@@ -248,11 +248,11 @@ def test_watch_check_fails_when_the_claim_is_put_back(with_id: str):
 
 def test_docs_say_which_states_are_sold_today():
     # The iOS doc still says CA and TN (its New York products are not in
-    # App Store Connect yet). Android sells all five states in the published
-    # snapshot since New York gained a Play product (2026-10-24).
+    # App Store Connect yet). Android launches free (DECISIONS 0044); its
+    # paid build would sell all five states in the published snapshot.
     docs = {
         "docs/APP-STORE.md": "lists only CA and TN",
-        "android/README.md": "All five are sold: they are the\nfive states in the published `snapshot/v2.json` (checked 2026-10-24)",
+        "android/README.md": "in the paid build all five would be: they are the\nfive states in the published `snapshot/v2.json` (checked 2026-10-24)",
     }
     for rel, needed in docs.items():
         text = (REPO_ROOT / rel).read_text(encoding="utf-8")

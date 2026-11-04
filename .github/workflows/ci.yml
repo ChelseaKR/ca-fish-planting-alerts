@@ -225,3 +225,31 @@ jobs:
             fi
             echo "$apk carries the committed assets/snapshot.json"
           done
+
+      # The free launch (docs/DECISIONS.md 0044): the default build sells
+      # nothing, so its release manifest must not ask for Google Play's
+      # BILLING permission, which only the billing library adds.
+      - name: check the free release build has no billing permission
+        if: steps.present.outputs.present == 'true'
+        working-directory: android/app/build/intermediates/merged_manifests/release/processReleaseManifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s AndroidManifest.xml
+          if grep -q 'com.android.vending.BILLING' AndroidManifest.xml; then
+            echo "::error::the free release build asks for com.android.vending.BILLING"
+            exit 1
+          fi
+          echo "the free release build has no billing permission"
+
+      # The paid side, one flag away, still compiles and passes its tests,
+      # and its release manifest does ask for BILLING (the negative control).
+      - name: test and build with the purchases back on
+        if: steps.present.outputs.present == 'true'
+        working-directory: android
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon --stacktrace -PtroutTruck.androidFreeTier=false :app:testDebugUnitTest :app:assembleRelease
+          grep -q 'com.android.vending.BILLING' app/build/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml
+          echo "the paid release build asks for billing"

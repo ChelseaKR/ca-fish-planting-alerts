@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.selection.toggleable
 import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.AppState
+import com.chelseakr.cafishplanting.BuildConfig
 import com.chelseakr.cafishplanting.core.Plant
 import com.chelseakr.cafishplanting.core.PlantStatus
 import com.chelseakr.cafishplanting.core.ScheduleWording
@@ -148,7 +149,7 @@ fun WaterDetailScreen(
                     }
                 }
             }
-            if (isFavorite && !unlocked && !muted && stateInfo != null) {
+            if (!BuildConfig.FREE_TIER && isFavorite && !unlocked && !muted && stateInfo != null) {
                 item {
                     Spacer(Modifier.size(12.dp))
                     Card(ReadableWidth) {

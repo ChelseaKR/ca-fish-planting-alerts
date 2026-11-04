@@ -21,7 +21,9 @@ import java.io.File
  *   real snapshot. Logged on every use.
  * - `fake-billing`: a local store that "sells" every product at $9.99 and
  *   remembers it in `fake-billing-owned`, in place of Google Play, which
- *   has no product until the owner creates one in Play Console.
+ *   has no product until the owner creates one in Play Console. Paid
+ *   builds only (`troutTruck.androidFreeTier=false`): the free build sells
+ *   nothing (DECISIONS 0044).
  * - `allow-review`: lets the review card be requested (debug builds never
  *   ask otherwise, so tests and screenshots aren't interrupted).
  */
@@ -41,7 +43,8 @@ object DebugHooks {
     }
 
     fun purchaseBackend(context: Context): PurchaseBackend =
-        if (File(dir(context), "fake-billing").exists()) FakeBackend(dir(context)) else PlayBillingBackend(context)
+        // The free build sells nothing (DECISIONS 0044), so it has no fake store either.
+        if (!BuildConfig.FREE_TIER && File(dir(context), "fake-billing").exists()) FakeBackend(dir(context)) else PlayStore.backend(context)
 
     private class FakeBackend(private val dir: File) : PurchaseBackend {
         private val owned = File(dir, "fake-billing-owned")

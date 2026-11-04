@@ -13,6 +13,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: a plain-language terms of use page at /terms/, linked from every
+  page's footer next to privacy and listed in the sitemap. It names who runs
+  the site, says the stocking data can be wrong or late and is not fishing
+  regulations, repeats the Amazon Associates disclosure, and sets California
+  law. Not reviewed by an attorney.
 - Site: winter on the record (DECISIONS 0040). Each county page lists the
   waters CDFW's schedule listed there from November through February of the
   most recent whole winter, with the weeks each was listed, and the home

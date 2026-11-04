@@ -86,7 +86,7 @@ def water_coords(snapshot_v2: dict[str, Any] | None) -> dict[str, list[Any]]:
 # "stocking" phrase next to it -- the brand never replaces the search terms.
 SITE_NAME = "Trout Truck"
 # Appended after the brand on pages whose own label carries no search terms
-# (about, privacy, support, 404).
+# (about, privacy, support, terms, 404).
 SITE_TAGLINE = "CA trout planting schedule"
 
 # Where the site has lived since it launched, and what the iOS app's snapshot
@@ -3196,6 +3196,13 @@ def build_site(
             "How the trout planting schedule, stocking calendar feeds and iOS app alerts work, "
             "and why an alert may not arrive.",
         ),
+        (
+            "terms",
+            "terms.html.jinja",
+            f"Terms of use | {SITE_NAME}, {SITE_TAGLINE}",
+            f"The terms for using {SITE_NAME}: who runs it, where its stocking data comes from, "
+            "why that data can be wrong or late, and the affiliate links.",
+        ),
     ):
         page_html = env.get_template(template).render(
             title=title,
@@ -3416,7 +3423,7 @@ def build_site(
 
     # ---- sitemap.xml -- lastmod is when a page's substance last changed
     # (see _water_data_lastmod), not the daily build date. The about,
-    # privacy, support and gear pages carry no per-page data date, so no lastmod.
+    # privacy, support, terms and gear pages carry no per-page data date, so no lastmod.
     sitemap_entries: list[tuple[str, str | None]] = [
         (f"{base_url}/", home_lastmod),
         (counties_index_url, counties_index_lastmod),
@@ -3425,6 +3432,7 @@ def build_site(
         *([(f"{base_url}/data/", data_updated)] if data_updated else []),
         (f"{base_url}/privacy/", None),
         (f"{base_url}/support/", None),
+        (f"{base_url}/terms/", None),
         *guide_entries,
         *region_lastmods.items(),
         *species_entries,

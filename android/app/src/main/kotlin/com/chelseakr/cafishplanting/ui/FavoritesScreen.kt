@@ -48,6 +48,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.AppState
+import com.chelseakr.cafishplanting.BuildConfig
+import com.chelseakr.cafishplanting.core.FreeLaunch
 import com.chelseakr.cafishplanting.core.Water
 import com.chelseakr.cafishplanting.core.WaterSearch
 import com.chelseakr.cafishplanting.rememberHaptics
@@ -72,7 +74,9 @@ fun FavoritesList(env: AppEnvironment, state: AppState, selected: String?, onOpe
         // Favorites the snapshot no longer has. Said plainly, never folded into "no favorites".
         val missing = ids.filter { snapshot.water(it) == null }
         if (present.isEmpty() && missing.isEmpty()) {
-            val alerts = if (state.hasAnyAccess) {
+            val alerts = if (BuildConfig.FREE_TIER) {
+                FreeLaunch.FAVORITES_EMPTY_ALERTS
+            } else if (state.hasAnyAccess) {
                 "You'll get an alert when one in a state you unlocked is newly on the schedule."
             } else {
                 "With full access for a state, you also get an alert when one there is newly on the schedule, and a widget with your favorites."

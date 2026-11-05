@@ -49,6 +49,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.AppState
+import com.chelseakr.cafishplanting.BuildConfig
 import com.chelseakr.cafishplanting.OpenRequest
 import com.chelseakr.cafishplanting.PurchaseBackend
 import com.chelseakr.cafishplanting.Router
@@ -127,7 +128,7 @@ fun AppRoot(env: AppEnvironment, router: Router, purchases: PurchaseBackend, act
     if (route.showingStates) {
         StatesSheet(env, purchases, onBuy = { code -> router.setPurchase(true, code) }, onDismiss = { router.setStates(false) })
     }
-    if (route.showingPurchase) {
+    if (route.showingPurchase && !BuildConfig.FREE_TIER) {
         PurchaseSheet(activity, env, purchases, stateCode = route.purchaseState, onDismiss = { router.setPurchase(false) })
     }
     if (route.showingOnboarding) {

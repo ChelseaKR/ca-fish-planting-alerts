@@ -5,8 +5,10 @@ that asserts its sabotage changed the page before it asserts the check
 caught it (a sabotage that silently no-ops would otherwise read as a pass):
 
 1. The page covers the iPhone and Android apps and their widgets, and does
-   not say "no third-party SDK" about Android, which ships two Google
-   libraries (Play Billing and Play In-App Review).
+   not say "no third-party SDK" about Android, which ships one Google
+   library (Play In-App Review). The Android build is free with Play Billing
+   left out (DECISIONS 0044), so the page must not name Play Billing or say
+   Google Play handles an Android purchase.
 2. This site's Google Analytics is described as applying to this site's own
    pages only; CDFW and other sites have their own policies.
 3. The schedule request is not said to "carry no identifier": it sends a
@@ -90,6 +92,12 @@ def without_id(tmp_path_factory: pytest.TempPathFactory) -> str:
 OLD_SCOPE = "covers this website and the trout truck ios app."
 OLD_LEDE = "the trout truck ios app collects no data at all"
 OLD_SDK = "no third-party sdk. the website's google analytics"
+# The paid-Android wording from before DECISIONS 0044.
+OLD_TWO_LIBRARIES = "includes two libraries from google"
+OLD_ANDROID_PURCHASE = (
+    "handled entirely by apple on iphone and by google play on android"
+)
+OLD_BILLING = "google play billing"
 
 
 def _coverage_problems(text: str) -> list[str]:
@@ -97,13 +105,15 @@ def _coverage_problems(text: str) -> list[str]:
     for needed in (
         "covers this website and the trout truck apps for iphone and android.",
         "apps for iphone (with widgets) and for android collect no data",
-        "includes two libraries from google",
-        "google play billing",
+        "includes one library from google",
+        "the android app is free, sells nothing",
         "google play in-app review",
+        "does not include google play's billing library",
+        "the android app is free: it has no purchases",
         "android home-screen widget",
         "excluded from cloud backup",
         "device-to-device transfer",
-        "handled entirely by apple on iphone and by google play on android",
+        "on iphone, the one-time in-app purchase is handled entirely by apple",
         "apple's privacy policy",
         "google's privacy policy",
         "local notifications",
@@ -111,7 +121,14 @@ def _coverage_problems(text: str) -> list[str]:
     ):
         if needed not in text:
             problems.append(f"missing {needed!r}")
-    for stale in (OLD_SCOPE, OLD_LEDE, OLD_SDK):
+    for stale in (
+        OLD_SCOPE,
+        OLD_LEDE,
+        OLD_SDK,
+        OLD_TWO_LIBRARIES,
+        OLD_ANDROID_PURCHASE,
+        OLD_BILLING,
+    ):
         if stale in text:
             problems.append(f"stale {stale!r}")
     return problems
@@ -138,11 +155,43 @@ def test_coverage_check_fails_on_the_old_wording(with_id: str):
     sabotaged = with_id.replace(
         "covers this website and the trout truck apps for iphone and android.",
         OLD_SCOPE,
-    ).replace("includes two libraries from google", "includes no third-party sdk")
+    ).replace("includes one library from google", "includes no third-party sdk")
     assert sabotaged != with_id  # the sabotage landed
     problems = _coverage_problems(sabotaged)
     assert any("missing" in p for p in problems)
     assert any(OLD_SCOPE in p for p in problems)
+
+
+def test_android_free_check_fails_when_billing_is_put_back(with_id: str):
+    # Put back the paid-Android wording from before DECISIONS 0044.
+    sabotaged = (
+        with_id.replace("includes one library from google", OLD_TWO_LIBRARIES)
+        .replace(
+            "google play in-app review can show",
+            "google play billing shows google play's purchase sheet. "
+            "google play in-app review can show",
+        )
+        .replace(
+            "on iphone, the one-time in-app purchase is handled entirely by apple",
+            "the one-time in-app purchase is " + OLD_ANDROID_PURCHASE,
+        )
+    )
+    assert sabotaged != with_id  # the sabotage landed
+    for old in (OLD_TWO_LIBRARIES, OLD_BILLING, OLD_ANDROID_PURCHASE):
+        assert old in sabotaged, old  # each piece of the sabotage landed
+    problems = _coverage_problems(sabotaged)
+    for old in (OLD_TWO_LIBRARIES, OLD_BILLING, OLD_ANDROID_PURCHASE):
+        assert f"stale {old!r}" in problems
+
+
+@pytest.mark.parametrize("fixture_name", ["with_id", "without_id"])
+def test_privacy_page_never_names_play_billing(
+    fixture_name: str, request: pytest.FixtureRequest
+):
+    # Both variants: the free Android build carries no Play Billing.
+    text = request.getfixturevalue(fixture_name)
+    assert "google play billing" not in text
+    assert "google play on android" not in text
 
 
 # ---- correction 2: link scope
@@ -248,11 +297,11 @@ def test_watch_check_fails_when_the_claim_is_put_back(with_id: str):
 
 def test_docs_say_which_states_are_sold_today():
     # The iOS doc still says CA and TN (its New York products are not in
-    # App Store Connect yet). Android sells all five states in the published
-    # snapshot since New York gained a Play product (2026-10-24).
+    # App Store Connect yet). Android launches free (DECISIONS 0044); its
+    # paid build would sell all five states in the published snapshot.
     docs = {
         "docs/APP-STORE.md": "lists only CA and TN",
-        "android/README.md": "All five are sold: they are the\nfive states in the published `snapshot/v2.json` (checked 2026-10-24)",
+        "android/README.md": "in the paid build all five would be: they are the\nfive states in the published `snapshot/v2.json` (checked 2026-10-24)",
     }
     for rel, needed in docs.items():
         text = (REPO_ROOT / rel).read_text(encoding="utf-8")

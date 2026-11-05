@@ -47,6 +47,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.chelseakr.cafishplanting.core.OnboardingCopy
+import com.chelseakr.cafishplanting.BuildConfig
+import com.chelseakr.cafishplanting.core.FreeLaunch
 import com.chelseakr.cafishplanting.rememberHaptics
 import kotlinx.coroutines.launch
 
@@ -58,7 +60,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun OnboardingScreen(onFinish: () -> Unit) {
-    val pages = OnboardingCopy.pages
+    val pages = if (BuildConfig.FREE_TIER) FreeLaunch.onboardingPages else OnboardingCopy.pages
     val pager = rememberPagerState { pages.size }
     val scope = rememberCoroutineScope()
     val haptics = rememberHaptics()

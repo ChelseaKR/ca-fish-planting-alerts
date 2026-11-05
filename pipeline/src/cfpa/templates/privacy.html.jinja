@@ -13,8 +13,8 @@
   The {{ site_name }} apps for iPhone (with widgets) and for
   Android collect no data: no analytics, no tracking, no advertising and no
   account. Neither app includes analytics, advertising or crash-reporting code.
-  The Android app does include two libraries from Google, described under
-  <a href="#app">The apps</a>.
+  The Android app is free, sells nothing and does include one library from
+  Google, described under <a href="#app">The apps</a>.
   {# correction 1 (apps coverage): lede ends #}
 </p>
 {% else %}
@@ -30,7 +30,7 @@
   <a href="#affiliate">Gear links</a>.
 </p>
 {# correction 1 (apps coverage): scope line #}
-<p class="muted">Last updated 2026-10-22. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
+<p class="muted">Last updated 2026-11-04. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
 
 <h2 id="site">The website</h2>
 {% if ga4_measurement_id %}
@@ -187,15 +187,15 @@
   <li><strong>iPhone and widgets:</strong> the iPhone app and its widgets use
       Apple's own frameworks and no third-party SDK. The widgets show a copy of
       your favorites kept on your device and make no network request.</li>
-  <li><strong>Android and its widget:</strong> the Android app includes two
-      libraries from Google, and no other third-party code. Google Play
-      Billing shows Google Play's purchase sheet, checks which purchases you
-      own and confirms a purchase to Google Play. Google Play In-App Review
-      can show Google Play's own review card; anything you enter there goes to
-      Google Play, and the app does not receive it. These libraries talk to
-      Google Play, not to the developer, and Google's
+  <li><strong>Android and its widget:</strong> the Android app includes one
+      library from Google, and no other third-party code. Google Play In-App
+      Review can show Google Play's own review card; anything you enter there
+      goes to Google Play, and the app does not receive it. This library talks
+      to Google Play, not to the developer, and Google's
       <a href="https://policies.google.com/privacy">privacy policy</a> covers
-      what they handle. The Android home-screen widget shows a copy of your
+      what it handles. The current Android build does not include Google
+      Play's billing library, so it cannot show a purchase sheet or check
+      purchases. The Android home-screen widget shows a copy of your
       favorites kept on your device and makes no network request.</li>
   <li><strong>Android backup:</strong> the Android app's data is excluded from
       cloud backup. A device-to-device transfer to a new phone can carry it.
@@ -232,14 +232,13 @@
   <li><strong>Notifications:</strong> alerts are local notifications that your
       phone schedules on your device, by iOS or by Android. There is no push service
       and no device token.</li>
-  <li><strong>Purchases:</strong> the one-time in-app purchase is handled
-      entirely by Apple on iPhone and by Google Play on Android. The developer
-      does not receive your name, email address or payment details. Apple and
-      Google Play each keep their own record of your purchase under your
-      account with them, on terms set by them; see
+  <li><strong>Purchases:</strong> on iPhone, the one-time in-app purchase is
+      handled entirely by Apple. The developer does not receive your name,
+      email address or payment details. Apple keeps its own record of your
+      purchase under your Apple Account, on terms set by Apple; see
       <a href="https://www.apple.com/legal/privacy/">Apple's privacy
-      policy</a> and <a href="https://policies.google.com/privacy">Google's
-      privacy policy</a>.</li>
+      policy</a>. The Android app is free: it has no purchases, and nothing in
+      it is for sale.</li>
   {# correction 1 (apps coverage): notifications and purchases end #}
   <li><strong>App Store privacy label:</strong> Data Not Collected.</li>
 </ul>

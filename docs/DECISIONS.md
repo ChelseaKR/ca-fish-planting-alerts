@@ -1247,6 +1247,54 @@ counts.
   keep the blocks 0039, 0040 and 0041 give them, and the section is not a
   new page, so it fits 0042.
 
+## 0044 — Android launches free, with nothing for sale (2026-11-03)
+
+Google Play shows a personal developer account's full address once it
+sells: "If you monetize on Google Play, Google displays your full address"
+([Required information](https://support.google.com/googleplay/android-developer/answer/13628312)),
+and "merchant accounts (developer accounts with apps that monetize via paid
+apps or in-app purchases) must show their full address"
+([About you](https://support.google.com/googleplay/android-developer/answer/13634081)).
+The address is the Google payments profile's, a PO box isn't accepted, and
+the owner won't use a mailbox (2026-10-23) or publish her home address. So
+the Android app launches with nothing for sale.
+
+- **What.** On Android, alerts, New York's reminders and the Favorite waters
+  widget are free in every state. Browsing, history and favorites were
+  already free. No screen shows a price, a purchase, an unlock or Restore
+  purchases, and nothing says a paid tier is coming.
+- **How.** One Gradle property, `troutTruck.androidFreeTier` in
+  `android/gradle.properties`, `true` by default. When true, the Play
+  Billing library is not a dependency (so the release manifest has no
+  `com.android.vending.BILLING` permission), `BuildConfig.FREE_TIER` is
+  true, and `app/src/free` supplies a store that reports every state as
+  owned (`FreeLaunch.entitlements`). The per-state gate in `FreeTier` is
+  unchanged, so the same checks let every alert through. When false,
+  `app/src/billing` brings back Play Billing and the purchase screens as
+  they were (0025). CI builds and tests both sides.
+- **Why not hide the paid features instead.** Hiding alerts and the widget
+  would ship a smaller app with a gate nobody can open, and Play's
+  reviewers and testers would meet dead features. Free and complete is the
+  honest version, and the 14-day closed test needs testers who use alerts.
+- **Why remove the library, not just the products.** Google's pages tie
+  the address to monetizing (paid apps or in-app purchases), not to the
+  library. Leaving billing code out anyway removes the question, the
+  BILLING permission and a Data safety prompt, and costs nothing.
+- **iOS.** iOS keeps its per-state purchases (0025); it is not on sale
+  (Apple rejected 1.0.0 under 4.3(a)). The two platforms now differ on
+  price. The Android listing says nothing about iOS pricing.
+- **Later.** A free Play app can add in-app products later, but can never
+  become a paid app
+  ([Set the price](https://support.google.com/googleplay/android-developer/answer/6334373)),
+  so a paid version is the flag plus new products, and the address question
+  comes back then. Whether people who had alerts free keep them is decided
+  then. The free build saves every state as owned on the device; the paid
+  build replaces that with what Google Play reports once it connects.
+- **Not the website.** 0042's freeze is about the website's page families;
+  this changes only the app and its docs. The privacy page still names
+  Google Play Billing among the Android app's libraries, which overstates
+  what the free build carries; it can be corrected separately.
+
 ## 0044 — Keep four clicked thin pages indexed; gear that fits the water, moved up (2026-10-31)
 
 Follows 0041 and fits 0042: no new page, no new link surface, and no new

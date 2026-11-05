@@ -20,6 +20,11 @@ This repository was republished with a new history on 2026-09-18
   planting history table instead of "About this water". Four thin water pages
   that earned a Search click stay indexed (`KEEP_INDEXED_PATHS`).
 
+- Site: a plain-language terms of use page at /terms/, linked from every
+  page's footer next to privacy and listed in the sitemap. It names who runs
+  the site, says the stocking data can be wrong or late and is not fishing
+  regulations, repeats the Amazon Associates disclosure, and sets California
+  law. Not reviewed by an attorney.
 - Site: winter on the record (DECISIONS 0040). Each county page lists the
   waters CDFW's schedule listed there from November through February of the
   most recent whole winter, with the weeks each was listed, and the home
@@ -99,6 +104,18 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Android: launches free, with nothing for sale (DECISIONS 0044). Alerts,
+  New York's reminders and the Favorite waters widget are free in every
+  state, and no screen shows a price, a purchase or Restore purchases. The
+  build carries no Play Billing library and no BILLING permission. One
+  Gradle property, `troutTruck.androidFreeTier`, brings the per-state
+  purchases back; CI builds both.
+- Site: the privacy page describes the Android app as free, with nothing
+  for sale. It names one Google library on Android (Play In-App Review), says
+  the current build has no Play Billing, and says purchases are handled by
+  Apple on iPhone only. The terms page no longer says every app is sold: it
+  says the iPhone app is sold through the App Store. The iPhone wording is
+  otherwise unchanged. Both pages are dated 2026-11-04.
 - Site: thin water pages (DECISIONS 0041). A water page in any state with
   fewer than two dated stocking rows is `noindex,follow`, left out of
   `sitemap.xml`, and carries no Amazon gear block; it stays built and linked.

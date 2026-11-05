@@ -32,8 +32,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chelseakr.cafishplanting.AppEnvironment
+import com.chelseakr.cafishplanting.BuildConfig
 import com.chelseakr.cafishplanting.PurchaseBackend
 import com.chelseakr.cafishplanting.PurchaseUi
+import com.chelseakr.cafishplanting.core.FreeLaunch
 import com.chelseakr.cafishplanting.core.StateInfo
 import com.chelseakr.cafishplanting.core.StateProducts
 
@@ -58,8 +60,12 @@ fun StatesSheet(env: AppEnvironment, purchases: PurchaseBackend, onBuy: (String)
         ) {
             Text("States", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { heading() })
             Text(
-                "Browsing, every water's history and favorites are free in every state. " +
-                    "Alerts and the widget are a one-time purchase for each state.",
+                if (BuildConfig.FREE_TIER) {
+                    FreeLaunch.STATES_INTRO
+                } else {
+                    "Browsing, every water's history and favorites are free in every state. " +
+                        "Alerts and the widget are a one-time purchase for each state."
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = secondaryText,
             )
@@ -67,6 +73,7 @@ fun StatesSheet(env: AppEnvironment, purchases: PurchaseBackend, onBuy: (String)
                 StateCard(
                     info,
                     unlocked = state.isEntitled(info.code),
+                    sells = !BuildConfig.FREE_TIER,
                     price = StateProducts.productID(info.code)?.let { ui.prices[it] },
                     onBrowse = {
                         env.setBrowseState(info.code)
@@ -75,20 +82,23 @@ fun StatesSheet(env: AppEnvironment, purchases: PurchaseBackend, onBuy: (String)
                     onBuy = { onBuy(info.code) },
                 )
             }
-            TextButton(onClick = purchases::restore, enabled = ui.busy == PurchaseUi.Busy.IDLE) { Text("Restore purchases") }
+            if (!BuildConfig.FREE_TIER) {
+                TextButton(onClick = purchases::restore, enabled = ui.busy == PurchaseUi.Busy.IDLE) { Text("Restore purchases") }
+            }
             TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text("Done") }
         }
     }
 }
 
 @Composable
-private fun StateCard(info: StateInfo, unlocked: Boolean, price: String?, onBrowse: () -> Unit, onBuy: () -> Unit) {
+private fun StateCard(info: StateInfo, unlocked: Boolean, sells: Boolean, price: String?, onBrowse: () -> Unit, onBuy: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(info.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                    if (unlocked) {
+                    // The free build (DECISIONS 0044) has nothing to unlock, so no "Unlocked" badge.
+                    if (unlocked && sells) {
                         Icon(Icons.Filled.Verified, contentDescription = null, tint = Color(0xFF34C759), modifier = Modifier.size(18.dp))
                         Text("Unlocked", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                     }
@@ -98,12 +108,12 @@ private fun StateCard(info: StateInfo, unlocked: Boolean, price: String?, onBrow
                     style = MaterialTheme.typography.bodySmall,
                     color = secondaryText,
                 )
-                if (info.code == "CA") {
+                if (info.code == "CA" && sells) {
                     Text("California full access is the original one-time purchase.", style = MaterialTheme.typography.bodySmall, color = secondaryText)
                 }
             }
             OutlinedButton(onClick = onBrowse, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Browse ${info.name}") }
-            if (!unlocked) {
+            if (!unlocked && sells) {
                 OutlinedButton(onClick = onBuy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                     Text(if (price != null) "Unlock alerts and widget — $price" else "Unlock alerts and widget")
                 }

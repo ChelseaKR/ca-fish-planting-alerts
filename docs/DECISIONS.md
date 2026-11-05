@@ -1295,12 +1295,12 @@ the Android app launches with nothing for sale.
   Google Play Billing among the Android app's libraries, which overstates
   what the free build carries; it can be corrected separately.
 
-## 0045 — Keep four clicked thin pages indexed; gear that fits the water, moved up (2026-10-31)
+## 0045 — Keep five clicked thin pages indexed; gear that fits the water, moved up (2026-10-31)
 
 Follows 0041 and fits 0042: no new page, no new link surface, and no new
 links on any page. Two fixes to existing water pages.
 
-- **Four thin pages stay indexed.** 0041 kept thin pages by impressions.
+- **Five thin pages stay indexed.** 0041 kept thin pages by impressions.
   By clicks, Search Console (`sc-domain:trouttruck.com`, 2026-08-01 to
   2026-10-30) shows 41 clicks on the site, 4 of them on pages 0041
   noindexed, one each at an average position of 2 to 4:
@@ -1308,8 +1308,11 @@ links on any page. Two fixes to existing water pages.
   `/tn/water/milan-city-pond-gibson-county/`,
   `/tn/water/mossy-creek-new-jefferson-county/` and
   `/water/lake-berryessa/`. GA4 also shows an engaged organic landing on
-  the Milan and Mossy Creek pages. They join `KEEP_INDEXED_PATHS`. No other
-  thin page earned a click.
+  the Milan and Mossy Creek pages. A fifth, `/water/eagle-lake/` (Eagle
+  Lake, Lassen County), earned one click at position 1 on 2026-11-03, after
+  that window closed; it is 1 of the site's 3 clicks from 2026-10-23 to
+  2026-11-04. All five join `KEEP_INDEXED_PATHS`. No other thin page earned
+  a click.
 - **Gear that fits the water.** Water pages are where people land (GA4,
   2026-10-03 to 2026-10-31: most engaged organic and AI-assistant landings
   are water pages), and no `gear_click` has been recorded. The click event

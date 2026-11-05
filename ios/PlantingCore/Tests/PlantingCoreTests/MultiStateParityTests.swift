@@ -24,7 +24,11 @@ final class MultiStateParityTests: XCTestCase {
         var snapshots: [String: Snapshot] = [:]
         for (name, spec) in specs {
             let file = try XCTUnwrap(spec["file"] as? String)
-            snapshots[name] = try SnapshotDecoder().decode(Data(contentsOf: Self.fixtures.appendingPathComponent(file)))
+            var data = try Data(contentsOf: Self.fixtures.appendingPathComponent(file))
+            if let failed = spec["failed_checks"] as? [String: String] {
+                data = try Self.failingChecks(data, failed)
+            }
+            snapshots[name] = try SnapshotDecoder().decode(data)
         }
         let record = ProcessInfo.processInfo.environment["PARITY_RECORD"] == "1"
         var scenarios = try XCTUnwrap(doc["scenarios"] as? [[String: Any]])
@@ -76,6 +80,14 @@ final class MultiStateParityTests: XCTestCase {
                         "favorites_in_other_states": digest.favoritesInOtherStates,
                         "missing_favorites": digest.missingFavorites,
                     ]
+                case "state_check":
+                    let snap = try XCTUnwrap(snapshots[try XCTUnwrap(step["snapshot"] as? String)])
+                    let info = try XCTUnwrap(snap.state(code: try XCTUnwrap(step["state"] as? String)))
+                    actual = [
+                        "failed_since": StateCheckWording.failedSince(info)?.isoDate ?? "",
+                        "notice": StateCheckWording.notice(info) ?? "",
+                        "alerts_paused": StateCheckWording.alertsPaused(info) ?? "",
+                    ]
                 default:
                     XCTFail("\(name): unknown op \(step["op"] ?? "nil")")
                     continue
@@ -100,6 +112,22 @@ final class MultiStateParityTests: XCTestCase {
     }
 
     // MARK: -
+
+    /// The snapshot with each named state's latest check marked failed at
+    /// the given time; its last good read (the data) is unchanged.
+    static func failingChecks(_ data: Data, _ failed: [String: String]) throws -> Data {
+        var doc = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var states = try XCTUnwrap(doc["states"] as? [[String: Any]])
+        for i in states.indices {
+            guard let code = states[i]["code"] as? String, let at = failed[code] else { continue }
+            var checks = try XCTUnwrap(states[i]["checks"] as? [String: Any])
+            checks["last_attempt_ok"] = false
+            checks["last_attempt_at"] = at
+            states[i]["checks"] = checks
+        }
+        doc["states"] = states
+        return try JSONSerialization.data(withJSONObject: doc)
+    }
 
     private func baseline(_ json: [String: Any]) throws -> [Water.ID: Set<PlantKey>] {
         var result: [Water.ID: Set<PlantKey>] = [:]

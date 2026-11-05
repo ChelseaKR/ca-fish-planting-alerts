@@ -171,6 +171,7 @@ def run_states(
                     else ""
                 )
                 + (f", {removed} newly removed from the schedule" if removed else "")
+                + "".join(f"; {note}" for note in feed.skipped_notes)
             )
             runs.append(StateRun(source, merged, path, "updated", message))
         except NotModified:

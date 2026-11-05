@@ -20,7 +20,9 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
     /// a state without its purchase are counted, never shown.
     /// 3: a plan state's favorites (`isPlan`, New York) say "planned for" in
     /// the agency's own words (DECISIONS 0034).
-    public static let currentVersion = 3
+    /// 4: a favorite in a state whose latest check failed carries
+    /// `checkFailedSince` and no current weeks (`StateCheckWording`).
+    public static let currentVersion = 4
 
     public let version: Int
     /// The snapshot's week (`source_week`).
@@ -62,11 +64,25 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
         /// A plan state's water (New York): its rows say "planned for" in
         /// the agency's own words, never "scheduled" and never a date.
         public let isPlan: Bool
+        /// The last good read's date when the water's state's latest check
+        /// failed. Then `speciesThisWeek` is empty and `nextWeek` is nil:
+        /// the old read's weeks are never shown as current.
+        public let checkFailedSince: PlainDate?
+        /// The agency's short name, for the check-failed line ("TWRA").
+        public let agencyShortName: String
 
-        public init(id: Water.ID, name: String, countyLabel: String, speciesThisWeek: [String], nextWeek: Week?, lastListedWeek: Week?, isReport: Bool = false, isPlan: Bool = false) {
+        public init(id: Water.ID, name: String, countyLabel: String, speciesThisWeek: [String], nextWeek: Week?, lastListedWeek: Week?, isReport: Bool = false, isPlan: Bool = false, checkFailedSince: PlainDate? = nil, agencyShortName: String = "CDFW") {
             self.id = id; self.name = name; self.countyLabel = countyLabel
             self.speciesThisWeek = speciesThisWeek; self.nextWeek = nextWeek; self.lastListedWeek = lastListedWeek
             self.isReport = isReport; self.isPlan = isPlan
+            self.checkFailedSince = checkFailedSince; self.agencyShortName = agencyShortName
+        }
+
+        public var semantics: StateSemantics { isReport ? .report : isPlan ? .plan : .schedule }
+
+        /// "Couldn't check TWRA's schedule since 2026-10-15", or nil.
+        public var checkFailedLine: String? {
+            checkFailedSince.map { StateCheckWording.short(agencyShortName: agencyShortName, semantics: semantics, since: $0) }
         }
 
         public var isListedThisWeek: Bool { !speciesThisWeek.isEmpty }
@@ -103,9 +119,14 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
                 let next = water.semantics == .report
                     ? nil
                     : water.plants.first { $0.status == .listed && $0.week.start > week.end }?.week
+                // A state whose latest check failed: its weeks are from an
+                // old read, so none is carried as this week or next.
+                let failedSince = StateCheckWording.failedSince(snapshot.state(of: water))
                 favorites.append(Favorite(id: water.id, name: water.name, countyLabel: water.countyLabel,
-                                          speciesThisWeek: species, nextWeek: next, lastListedWeek: water.lastListedWeek,
-                                          isReport: water.semantics == .report, isPlan: water.semantics == .plan))
+                                          speciesThisWeek: failedSince == nil ? species : [],
+                                          nextWeek: failedSince == nil ? next : nil, lastListedWeek: water.lastListedWeek,
+                                          isReport: water.semantics == .report, isPlan: water.semantics == .plan,
+                                          checkFailedSince: failedSince, agencyShortName: water.agencyShortName))
             }
         }
         self.init(week: snapshot.sourceWeek, snapshotGeneratedAt: snapshot.generatedAt,
@@ -161,9 +182,13 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
         case scheduledLater(Week)
         /// Not listed for the digest's week, and no later week is listed.
         case notListed(Week, lastListed: Week?)
+        /// The water's state couldn't be checked since this date (the last
+        /// good read), so nothing is said about this week.
+        case checkFailed(since: PlainDate)
     }
 
     public func status(of favorite: Favorite, at now: Date) -> Status {
+        if let since = favorite.checkFailedSince { return .checkFailed(since: since) }
         if favorite.isListedThisWeek {
             return isStale(at: now)
                 ? .scheduledForEndedWeek(week, species: favorite.speciesThisWeek)
@@ -177,6 +202,7 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
 
     /// The short words for a favorite's status, for a widget row.
     public func statusLine(of favorite: Favorite, at now: Date) -> String {
+        if let line = favorite.checkFailedLine { return line }
         if favorite.isReport {
             if favorite.isListedThisWeek, !isStale(at: now) {
                 return ReportWording.stockedThisWeek(favorite.speciesThisWeek)
@@ -200,6 +226,8 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
             let listed = "Not listed for \(week.phrase)"
             guard let lastListed else { return listed }
             return "\(listed). Last scheduled for \(lastListed.phrase)"
+        case .checkFailed:
+            return favorite.checkFailedLine ?? ""
         }
     }
 
@@ -209,6 +237,7 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
         func rank(_ favorite: Favorite) -> Int {
             if favorite.isListedThisWeek { return 0 }
             if favorite.nextWeek != nil { return 1 }
+            if favorite.checkFailedSince != nil { return 3 }
             return 2
         }
         return favorites.enumerated()

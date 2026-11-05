@@ -263,7 +263,7 @@ private struct StatusMark: View {
     private var isScheduled: Bool {
         switch status {
         case .scheduledThisWeek, .scheduledForEndedWeek: return true
-        case .scheduledLater, .notListed: return false
+        case .scheduledLater, .notListed, .checkFailed: return false
         }
     }
 
@@ -272,6 +272,7 @@ private struct StatusMark: View {
         case .scheduledThisWeek, .scheduledForEndedWeek: return "checkmark.circle.fill"
         case .scheduledLater: return "calendar"
         case .notListed: return "minus.circle"
+        case .checkFailed: return "exclamationmark.triangle"
         }
     }
 }
@@ -364,6 +365,7 @@ private struct RectangularView: View {
         case .scheduledThisWeek, .scheduledForEndedWeek: return "scheduled"
         case .scheduledLater: return "later"
         case .notListed: return "not listed"
+        case .checkFailed: return "couldn't check"
         }
     }
 }

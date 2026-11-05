@@ -276,6 +276,19 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Tennessee reads TWRA's 2027 schedule. "TBD 12/2027" in the STOCKING WEEK
+  column is a month ("December 2027"), never a week. A "week of" date that
+  isn't a Sunday (four in the 2026-11-05 file) is skipped, never moved to a
+  guessed Sunday, and named in the run log; the whole file is refused only
+  when more than 10 rows (or 2% of rows) are like that.
+- Site: a state hub whose latest check failed no longer says an empty week
+  is "not a failed read", or that "nothing else is on the schedule". It says
+  what the file last read holds, and that the check failed.
+- iOS and Android: a state whose latest check failed (Tennessee since
+  2026-10-15) never shows its old weeks as current. The widget and watch rows
+  say "Couldn't check TWRA's schedule since 2026-10-15", Favorites and the water
+  page say so, the alerts footer says alerts are paused, and Siri answers
+  that the schedule couldn't be checked instead of naming an old week.
 - Water 501572 (North Fork Willow Creek, Madera) is no longer placed: GNIS
   lists two streams with that name in the county. The geocoder now keeps a
   same-name stream that has no NHD flowlines as a candidate.

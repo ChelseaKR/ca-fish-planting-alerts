@@ -17,6 +17,7 @@ that has been sabotaged (asserting first that the sabotage changed the file).
 from __future__ import annotations
 
 import copy
+import dataclasses
 import datetime as dt
 import json
 import re
@@ -374,3 +375,52 @@ def test_negative_control_tennessee_check_rejects_the_old_display(tmp_path: Path
     )
     assert old != good
     assert tn_freshness_problems(old, state, dt.date(2026, 10, 20))
+
+
+def test_a_stale_state_hub_never_calls_an_empty_week_honest(tmp_path: Path):
+    """Tennessee's latest check failed. By the week of 2026-12-27 the last good
+    file has no dates left, but TWRA's real file does, so the hub must not say
+    the empty week is "not a failed read" or that "nothing else is on the
+    schedule"; it says what the file last read holds."""
+    out, v2 = _tn_site(tmp_path, dt.datetime(2026, 12, 28, 15, 0, tzinfo=dt.UTC))
+    state = next(s for s in v2["states"] if s["code"] == "TN")
+    assert state["checks"]["last_attempt_ok"] is False
+    assert state["current_week"]["start"] == "2026-12-27"
+    text = _text((out / "tn" / "index.html").read_text("utf-8"))
+    assert "This week: the week of 2026-12-27" in text
+    assert "not a failed read" not in text
+    assert "Nothing else is on the" not in text
+    assert "in the file last read 2026-10-15 13:31 UTC" in text
+    assert "The file last read 2026-10-15 13:31 UTC has nothing else" in text
+    assert "The latest check failed" in text
+    assert not BANNED_WORDS.search(
+        text[text.find("This week:") : text.find("Every Tennessee water")]
+    )
+
+
+def test_a_healthy_state_hub_still_says_an_empty_week_is_the_agencys_data(
+    tmp_path: Path,
+):
+    """The control: the same history with its latest check marked good keeps
+    the "not a failed read" sentence, so the test above is about the flag."""
+    history = StateHistory.load(COMMITTED_TN, "TN")
+    good = dataclasses.replace(
+        history,
+        checks=dataclasses.replace(
+            history.checks,
+            last_attempt_ok=True,
+            last_attempt_at=history.checks.last_success_at,
+            last_error=None,
+        ),
+    )
+    v1 = _v1(tmp_path)
+    v2 = snapshot_v2.build_snapshot_v2(
+        v1,
+        [(SOURCES["TN"], good)],
+        generated_at=dt.datetime(2026, 12, 28, 15, 0, tzinfo=dt.UTC),
+    )
+    out = tmp_path / "tn-ok"
+    site.build_site(v1, out, base_url=BASE, snapshot_v2=v2)
+    text = _text((out / "tn" / "index.html").read_text("utf-8"))
+    assert "not a failed read" in text
+    assert "Nothing else is on the schedule" in text

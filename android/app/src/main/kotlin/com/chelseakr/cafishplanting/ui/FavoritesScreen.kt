@@ -50,6 +50,7 @@ import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.AppState
 import com.chelseakr.cafishplanting.BuildConfig
 import com.chelseakr.cafishplanting.core.FreeLaunch
+import com.chelseakr.cafishplanting.core.StateCheckWording
 import com.chelseakr.cafishplanting.core.Water
 import com.chelseakr.cafishplanting.core.WaterSearch
 import com.chelseakr.cafishplanting.rememberHaptics
@@ -108,6 +109,19 @@ fun FavoritesList(env: AppEnvironment, state: AppState, selected: String?, onOpe
                         Card(ReadableWidth) { FreshnessRow(freshness) }
                         Spacer(Modifier.height(8.dp))
                     }
+                }
+                // A state whose latest check failed: its favorites' weeks are an old read's,
+                // said here instead of passing for current.
+                val failing = snapshot.states.filter { s -> StateCheckWording.failedSince(s) != null && present.any { it.state == s.code } }
+                items(failing, key = { "check-failed-${it.code}" }) { s ->
+                    Card(ReadableWidth) {
+                        Text(
+                            StateCheckWording.notice(s).orEmpty(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
                 }
                 item {
                     Column(Modifier.padding(horizontal = 16.dp).then(ReadableWidth)) {

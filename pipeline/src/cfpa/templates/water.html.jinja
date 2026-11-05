@@ -20,8 +20,9 @@
 </p>
 {% if water.nothing_current %}
 <p>
-  <strong>Nothing is on CDFW's schedule for {{ water.name }} this week or later.</strong>
-  That means no plant is scheduled right now, not that there are no fish.
+  <strong>Nothing is on CDFW's schedule yet for {{ water.name }} this week or later.</strong>
+  That means no plant was scheduled as of {{ source_fetched_label }}, not that
+  there are no fish. CDFW often adds waters after a week begins.
 </p>
 {% for c in scheduled_elsewhere %}
 <section aria-labelledby="now-{{ c.slug }}">
@@ -46,7 +47,12 @@
 </p>
 
 <p>
-  <a href="feed.ics" data-ga-event="calendar_subscribe_click" data-ga-placement="water" data-ga-type="ics">Subscribe to {{ water.name }}'s planting calendar (.ics)</a>
+  {#- webcal:// makes a phone or desktop calendar subscribe and keep polling
+      the feed; an https .ics link only imports today's copy. -#}
+  {% set webcal_url = "webcal://" ~ canonical_url.split("://", 1)[1] ~ "feed.ics" %}
+  <a href="{{ webcal_url }}" data-ga-event="calendar_subscribe_click" data-ga-placement="water" data-ga-type="webcal">Subscribe to {{ water.name }}'s planting calendar</a>
+  (your calendar app keeps it up to date) or
+  <a href="feed.ics" data-ga-event="calendar_subscribe_click" data-ga-placement="water" data-ga-type="ics">download a one-time copy (.ics)</a>, which does not update
   {% if app_store_url %}
   &middot; <a href="{{ app_store_url }}" data-app-store-placement="water" data-app-store-kind="link">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
   {% else %}
@@ -105,7 +111,7 @@
   <dt>CDFW water map</dt><dd><a href="{{ water.cdfw_map_url }}">View {{ water.name }} on CDFW's map</a></dd>
   {% if water_map %}
   <dt>Map</dt><dd><a href="{{ water_map.url }}" rel="noopener noreferrer">View on map</a> (opens OpenStreetMap)</dd>
-  <dt>Coordinates</dt><dd>{{ water_map.lat }}, {{ water_map.lon }}{% if water_map.approximate %}, approximate: a point on the stream, which CDFW plants along its length{% else %}, a point inside the water{% endif %}. Source: U.S. Geological Survey.</dd>
+  <dt>Coordinates</dt><dd>{{ water_map.lat }}, {{ water_map.lon }}{% if water_map.cdfw_point %}, CDFW's own point for this water. Source: California Department of Fish and Wildlife, Planting Location dataset (CC BY 4.0).{% elif water_map.approximate %}, approximate: a point on the stream, which CDFW plants along its length. Source: U.S. Geological Survey.{% else %}, a point inside the water. Source: U.S. Geological Survey.{% endif %}</dd>
   {% endif %}
   {% if water.other_names %}<dt>Also listed by CDFW as</dt><dd>{{ water.other_names }}</dd>{% endif %}
 </dl>

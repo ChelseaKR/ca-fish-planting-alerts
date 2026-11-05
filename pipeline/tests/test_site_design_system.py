@@ -110,7 +110,7 @@ def test_status_words_are_words() -> None:
     assert site.STATUS_BADGE_WORDS == {
         "now": "This week",
         "next": "Next week",
-        "none": "None scheduled",
+        "none": "None scheduled yet",
     }
 
 
@@ -138,7 +138,7 @@ def test_every_badge_in_the_built_site_is_a_status_word(built: Path) -> None:
 def test_negative_control_a_zero_badge_is_caught(built: Path) -> None:
     pages = _pages(built)
     name = next(n for n, t in pages.items() if "tt-badge--none" in t)
-    sabotaged = pages[name].replace(">None scheduled</span>", ">0</span>", 1)
+    sabotaged = pages[name].replace(">None scheduled yet</span>", ">0</span>", 1)
     assert sabotaged != pages[name]  # the sabotage applied
     assert _badge_problems({name: sabotaged})
 
@@ -153,7 +153,7 @@ def test_water_page_badge_matches_its_status_block(built: Path) -> None:
         state = BADGE_RE.search(block)
         assert state is not None, name
         this_week, next_week = re.findall(
-            r"<dd>(On|Not on) CDFW&#39;s schedule\.</dd>", block
+            r"<dd>(On|Not on) CDFW&#39;s schedule[ .][^<]*</dd>", block
         )
         want = site.schedule_status(
             this_week=this_week == "On", next_week=next_week == "On"

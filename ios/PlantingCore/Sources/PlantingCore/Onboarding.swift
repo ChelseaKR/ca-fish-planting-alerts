@@ -38,11 +38,12 @@ public struct OnboardingStore: Sendable {
 }
 
 /// The words of the introduction, kept apart from the view so a test can
-/// hold them to the app's rules: a week, never a day; "scheduled", never
-/// "stocked"; no price; and alerts named as part of full access.
+/// hold them to the app's rules: never a day; never "stocked"; no price;
+/// alerts named as part of full access; and no state taken as the default
+/// (DECISIONS 0049).
 public enum OnboardingCopy {
     /// Raise when a page says something a returning person should see.
-    public static let version = 1
+    public static let version = 2
 
     public struct Page: Equatable, Identifiable, Sendable {
         public let id: String
@@ -56,9 +57,9 @@ public enum OnboardingCopy {
         Page(id: "welcome",
              systemImage: "box.truck.fill",
              title: "Welcome to Trout Truck",
-             body: "California's fish planting schedule from the Department of Fish and Wildlife, a week at a time, and other states' trout schedules and reports from their own agencies.",
+             body: "Trout stocking schedules and reports from state wildlife agencies, each shown the way the agency publishes it.",
              points: [
-                 "Every water on CDFW's weekly schedule",
+                 "Schedules, stocking reports and plans, in each agency's own words",
                  "Each water's history, which the agencies' own pages don't keep",
              ]),
         Page(id: "browse",
@@ -66,13 +67,13 @@ public enum OnboardingCopy {
              title: "Find your waters",
              body: "Pick a state, then browse by region and county, or search by a water's name, a name the agency used before, or its county.",
              points: [
-                 "Waters on the current week's schedule are tagged This week",
+                 "California waters on the current week's schedule are tagged This week",
                  "Pull down on a list to check for a newer schedule",
              ]),
         Page(id: "favorites",
              systemImage: "star.fill",
              title: "Star the waters you fish",
-             body: "Favorites, browsing and history are free and unlimited, in every state.",
+             body: "Favorites, browsing and history are free and unlimited, in each state.",
              points: [
                  "Full access is a one-time purchase for each state. It adds an alert when a favorite there is newly on the agency's schedule or in its stocking report",
                  "It also adds that state's favorites to a Favorite waters widget for your Home Screen and Lock Screen",
@@ -80,10 +81,10 @@ public enum OnboardingCopy {
              ]),
         Page(id: "honest",
              systemImage: "calendar.badge.checkmark",
-             title: "A week, never a day",
-             body: "CDFW schedules plants by the week and says plans can change, so the app shows the week and says \"scheduled\".",
+             title: "Never more precise than the agency",
+             body: "California schedules plants by the week. Other states report stockings after they happen, or publish a spring plan. The app shows exactly what each agency gives, and says \"scheduled\", \"stocked\" or \"planned\" as it does.",
              points: [
-                 "If the app can't check for a newer schedule, it says so and keeps the last one, labeled with its week",
+                 "If the app can't check a state's source, it says so and keeps the last data it has, labeled with how current it is",
                  "No account needed. Favorites stay on this device",
              ]),
     ]

@@ -63,7 +63,7 @@ fun StatesSheet(env: AppEnvironment, purchases: PurchaseBackend, onBuy: (String)
                 if (BuildConfig.FREE_TIER) {
                     FreeLaunch.STATES_INTRO
                 } else {
-                    "Browsing, every water's history and favorites are free in every state. " +
+                    "Browsing, every water's history and favorites are free in each state. " +
                         "Alerts and the widget are a one-time purchase for each state."
                 },
                 style = MaterialTheme.typography.bodySmall,

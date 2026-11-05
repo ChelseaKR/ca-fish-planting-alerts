@@ -24,12 +24,12 @@ object FreeLaunch {
     const val ABOUT_HEADER = "Alerts and the widget"
 
     const val ABOUT_BODY =
-        "Favorites, browsing, history, alerts and the Favorite waters widget are free in every state. " +
+        "Favorites, browsing, history, alerts and the Favorite waters widget are free in each state. " +
             "Nothing in this app is for sale."
 
     const val ABOUT_WHAT_IT_DOES =
         "Favorite any water and browse its full schedule history. Get a notification on this device when a favorite is newly " +
-            "on its agency's schedule or stocking report, or, in New York, when its planned period begins. A home screen widget shows your favorites."
+            "on its agency's schedule or stocking report, or its planned period begins. A home screen widget shows your favorites."
 
     const val ABOUT_HOW_ALERTS_WORK =
         "Alerts are local notifications this app makes on this device. There is no server, no push service, and no account. "
@@ -38,7 +38,7 @@ object FreeLaunch {
         "Data collected by this app: none. No analytics, no crash reporting, no advertising, no accounts. Favorites and alert history stay on this device. " +
             "The only network request this app makes is a plain, cookie-free fetch of the published stocking snapshot."
 
-    const val STATES_INTRO = "Browsing, every water's history, favorites, alerts and the widget are free in every state."
+    const val STATES_INTRO = "Browsing, every water's history, favorites, alerts and the widget are free in each state."
 
     const val ABOUT_STATES_BUTTON = "States"
 

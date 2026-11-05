@@ -31,3 +31,35 @@
   </p>
 </section>
 {% endif %}
+
+{# Last winter at this water (site._water_winter, DECISIONS 0048). Needs:
+   water, water_winter (None when the record does not cover a whole November
+   through February, which shows nothing). Every week is one CDFW's schedule
+   listed for this water; removed entries are not counted. A record of what
+   was scheduled, never a forecast; "no week" is said only for a winter the
+   record covers from its start. #}
+{% if water_winter %}
+<section class="water-winter" aria-labelledby="water-winter-heading">
+  <h2 id="water-winter-heading">Last winter at {{ water.name }}</h2>
+  {% if water_winter.weeks %}
+  <p>
+    From {{ water_winter.label }}, CDFW's schedule listed {{ water.name }} in
+    {{ water_winter.total }} {{ "week" if water_winter.total == 1 else "weeks" }}:
+    {% for m in water_winter.months %}{{ m.month }} {{ m.weeks }}{% if not loop.last %}, {% endif %}{% endfor %}.
+    That is what was scheduled last winter, not a forecast for this one.
+  </p>
+  <ul>
+    {% for label in water_winter.weeks %}
+    <li>{{ label }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>
+    From {{ water_winter.label }}, CDFW's schedule listed {{ water.name }} in
+    no week. That is what the record shows for last winter, not a forecast for
+    this one: it does not say {{ water.name }} won't be stocked this winter, and
+    any week CDFW schedules appears on this page as it is listed.
+  </p>
+  {% endif %}
+</section>
+{% endif %}

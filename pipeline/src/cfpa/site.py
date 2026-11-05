@@ -1092,6 +1092,32 @@ def _county_winter(
     return {"label": season["label"], "rows": rows, "week_count": len(all_weeks)}
 
 
+def _water_winter(
+    w: dict[str, Any], season: dict[str, str] | None
+) -> dict[str, Any] | None:
+    """One water's listed weeks in ``season`` (DECISIONS 0048), from its own
+    record: the weeks, dated, and a count per calendar month in season order
+    (a month with no listed week is left out of ``months``). None when no
+    winter is covered. An empty ``weeks`` means the record covers that winter
+    and CDFW's schedule listed this water in no week of it: a fact about last
+    winter, never a forecast for this one."""
+    if season is None:
+        return None
+    weeks = sorted(_winter_weeks(w, season))
+    by_month: dict[str, int] = {}
+    for start in weeks:
+        by_month[start[:7]] = by_month.get(start[:7], 0) + 1
+    return {
+        "label": season["label"],
+        "total": len(weeks),
+        "months": [
+            {"month": calendar.month_name[int(ym[5:])], "weeks": n}
+            for ym, n in sorted(by_month.items())
+        ],
+        "weeks": [week_of(dt.date.fromisoformat(s))["label"] for s in weeks],
+    }
+
+
 def _home_winter(
     waters: list[dict[str, Any]],
     season: dict[str, str] | None,
@@ -1918,6 +1944,9 @@ def _render_water_page(
     # Fewer than two dated rows: noindex,follow, no gear block, and out of
     # the sitemap (build_site asks the same function; DECISIONS 0041).
     thin = is_thin(w["plants"], f"/water/{w['slug']}/")
+    # Last winter at this water (DECISIONS 0048): the same covered-winter
+    # guard as the county pages (0040), so "no week" is never a gap.
+    winter_season = latest_complete_winter(ctx.source_week_start, recorded_since)
     html = ctx.env.get_template("water.html.jinja").render(
         title=title,
         description=_water_description(view, source_week_label=ctx.source_week_label),
@@ -1948,6 +1977,7 @@ def _render_water_page(
         region_name=view["region_name"],
         water_record=_water_record(w),
         water_months=_water_months(w, recorded_since=recorded_since),
+        water_winter=_water_winter(w, winter_season),
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
         recorded_since_label=f"week of {recorded_since}" if recorded_since else "",
@@ -1972,11 +2002,16 @@ def _render_water_page(
     # The region links are navigation, not this water's data: they are left
     # out of the lastmod (docs: a new water in the region can change them
     # without moving this date, a known under-report).
-    return _water_lastmod(
-        w,
-        source_week_start=ctx.source_week_start,
-        siblings=list(siblings.values()),
-        nothing_current=view["nothing_current"],
+    # The winter section changes at the rollover that makes a new winter the
+    # latest complete one, as on the county pages.
+    return max(
+        _water_lastmod(
+            w,
+            source_week_start=ctx.source_week_start,
+            siblings=list(siblings.values()),
+            nothing_current=view["nothing_current"],
+        ),
+        *([winter_season["shown_from"]] if winter_season else []),
     )
 
 

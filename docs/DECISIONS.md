@@ -1336,3 +1336,35 @@ links on any page. Two fixes to existing water pages.
 - **Risk.** The 2026-10-30 audit could not rule out that the affiliate
   block fed the 2026-10-23 re-rank. Moving it up makes it more prominent on
   about 310 California pages. Revert the move alone if that is a worry.
+
+## 0048 — Last winter at each California water, from the record (2026-11-05)
+
+Extends 0040 to water pages. Ships 2026-11-30, after 0042's freeze on large
+template changes (to 11-27) and the 11-16/17 Search Console re-pull, so the
+re-pull reads unchanged pages (owner decision A1,
+`growth/winter-content-plan-2026-11-05.md`). Numbered 0048 because 0046
+(`seo/tt-fallback-fixes`) and 0047 (`feat/tt-gift-guide`) are taken on open
+branches.
+
+- **Why.** CDFW's schedule listed 141 of 388 California waters from
+  November 2025 through February 2026, and those 141 carried 589 of the 885
+  impressions California water pages earned (Search Console, 2026-08-01 to
+  2026-11-04). Their pages say only "last scheduled the week of …", which
+  for a water like Avocado Lake (last listed in March) reads as done for
+  the year, though it was among the most-listed waters last winter.
+- **What.** Each California water page gains "Last winter at <water>",
+  after its by-month block: how many weeks CDFW's schedule listed the water
+  from November through February of the most recent complete winter, a
+  count per month, and every one of those weeks, dated. It says it is what
+  was scheduled last winter, not a forecast for this one. Only listed weeks
+  count; removed entries do not.
+- **A water with no winter week.** It gets the same section, saying the
+  schedule listed it in no week last winter, that this is not a forecast,
+  and that it does not say the water won't be stocked this winter. That
+  sentence appears only where `latest_complete_winter()` returns a season,
+  meaning the record covers that winter from its November 1 (0040's guard),
+  so "no week" is a fact about a covered record, never a gap read as zero.
+- **lastmod.** A water page's lastmod counts the rollover at which a new
+  winter becomes the latest complete one (`shown_from`), as county pages do.
+- **No title or description change.** Thin pages (0041) get the block for
+  visitors; their index state does not change.

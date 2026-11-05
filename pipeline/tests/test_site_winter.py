@@ -11,6 +11,7 @@ from __future__ import annotations
 import copy
 import datetime as dt
 import json
+import re
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
@@ -314,3 +315,132 @@ def test_no_winter_block_when_the_record_does_not_cover_it(
     covered = tmp_path / "covered"
     site.build_site(_pinned(v1, with_earlier_record=True), covered, base_url=BASE)
     assert _section(covered / "index.html", "home-winter").found
+
+
+# ---- water pages (DECISIONS 0048)
+
+
+def test_water_winter_lists_its_own_listed_weeks_dated() -> None:
+    view = site._water_winter(
+        _w("alpha", [*WINTER_A, "2025-11-23", *OUTSIDE], removed=["2026-01-25"]),
+        SEASON,
+    )
+    assert view is not None
+    assert view["label"] == "November 2025 through February 2026"
+    assert view["total"] == 5
+    assert view["months"] == [
+        {"month": "November", "weeks": 2},
+        {"month": "December", "weeks": 1},
+        {"month": "January", "weeks": 1},
+        {"month": "February", "weeks": 1},
+    ]
+    assert view["weeks"] == [
+        "week of 2025-11-02",
+        "week of 2025-11-23",
+        "week of 2025-12-07",
+        "week of 2026-01-11",
+        "week of 2026-02-22",
+    ]
+    # Control: the removed week counted as listed must change the count and
+    # the dated list, or the assertions above prove nothing.
+    sabotaged = site._water_winter(
+        _w("alpha", [*WINTER_A, "2025-11-23", "2026-01-25"]), SEASON
+    )
+    assert sabotaged is not None and sabotaged["total"] == 6
+    assert "week of 2026-01-25" in sabotaged["weeks"]
+
+
+def test_water_winter_is_empty_not_zero_and_none_without_a_season() -> None:
+    view = site._water_winter(_w("charlie", OUTSIDE), SEASON)
+    assert view is not None
+    assert (view["total"], view["months"], view["weeks"]) == (0, [], [])
+    assert site._water_winter(_w("alpha", WINTER_A), None) is None
+
+
+def _water_path(out: Path, slug: str) -> Path:
+    return out / "water" / slug / "index.html"
+
+
+def test_water_pages_say_last_winter_from_the_snapshot(
+    built: tuple[Path, dict[str, Any]],
+) -> None:
+    out, snap = built
+    season = site.latest_complete_winter(snap["source_week"]["start"], "2025-09-14")
+    assert season is not None
+    with_weeks = without = 0
+    for w in snap["waters"]:
+        expected = site._water_winter(w, season)
+        assert expected is not None
+        s = _section(_water_path(out, w["slug"]), "water-winter")
+        assert s.found, w["slug"]
+        text = _text(s)
+        assert f"Last winter at {w['name']}" in text
+        assert "From November 2025 through February 2026" in text
+        assert "not a forecast for this one" in text
+        if expected["weeks"]:
+            with_weeks += 1
+            n = expected["total"]
+            assert f"in {n} {'week' if n == 1 else 'weeks'}:" in text
+            for label in expected["weeks"]:
+                assert label in text, (w["slug"], label)
+            for m in expected["months"]:
+                assert f"{m['month']} {m['weeks']}" in text
+            assert "listed " + w["name"] + " in no week" not in text
+        else:
+            without += 1
+            assert f"listed {w['name']} in no week" in text
+            assert f"does not say {w['name']} won't be stocked this winter" in text
+        assert " 0 " not in f" {text} "
+        words = {x.strip(".,;:()'\"").lower() for x in text.split()}
+        assert not words & BANNED, (w["slug"], words & BANNED)
+    assert with_weeks >= 2  # waters 0 and 1 were pinned with winter weeks
+    assert without >= 1
+    w0 = snap["waters"][0]
+    s0 = _text(_section(_water_path(out, w0["slug"]), "water-winter"))
+    for d in WINTER_A:
+        assert f"week of {d}" in s0
+
+
+def test_water_page_lastmod_counts_the_winter_rollover(
+    built: tuple[Path, dict[str, Any]],
+) -> None:
+    out, snap = built
+    season = site.latest_complete_winter(snap["source_week"]["start"], "2025-09-14")
+    assert season is not None
+    sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")
+    found = 0
+    for loc, lastmod in re.findall(
+        r"<loc>([^<]+/water/[^<]+/)</loc>\s*<lastmod>([^<]+)</lastmod>", sitemap
+    ):
+        found += 1
+        assert lastmod[:10] >= season["shown_from"], loc
+    assert found
+
+
+def test_no_water_winter_block_when_the_record_does_not_cover_it(
+    tmp_path: Path, v1: dict[str, Any]
+) -> None:
+    """The record made to begin after November 1, 2025: no water page says
+    "no week", because an uncovered winter is a gap, not an absence."""
+    snap = _pinned(v1, with_earlier_record=False)
+    for w in snap["waters"]:
+        kept = [p for p in w["plants"] if p["week"]["start"] > "2025-11-01"]
+        w["plants"] = kept or _like(w["plants"][0], ["2025-11-09"], "listed")
+    # The sabotage applied: the record now starts after the winter's start.
+    starts = [p["week"]["start"] for w in snap["waters"] for p in w["plants"]]
+    assert starts and min(starts) > "2025-11-01"
+    out = tmp_path / "site"
+    site.build_site(snap, out, base_url=BASE)
+    pages = [_water_path(out, w["slug"]) for w in snap["waters"]]
+    assert pages and all(p.exists() for p in pages)
+    for page in pages:
+        s = _section(page, "water-winter")
+        assert not s.found, page
+        assert "in no week" not in page.read_text(encoding="utf-8"), page
+    # Control: the covered build of the same fixture does show the block.
+    covered = tmp_path / "covered"
+    snap_c = _pinned(v1, with_earlier_record=True)
+    site.build_site(snap_c, covered, base_url=BASE)
+    assert _section(
+        _water_path(covered, snap_c["waters"][0]["slug"]), "water-winter"
+    ).found

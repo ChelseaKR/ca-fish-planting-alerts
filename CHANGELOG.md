@@ -13,6 +13,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: last winter at each California water (DECISIONS 0048). A water page
+  says how many weeks CDFW's schedule listed it from November 2025 through
+  February 2026, per month and dated, as a record and not a forecast. A
+  water listed in no week says so, and that this does not mean it won't be
+  stocked. Shown only when the record covers that winter. Ships 2026-11-30.
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the

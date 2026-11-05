@@ -35,6 +35,7 @@ from .store import (
     merge,
     record_failure,
     record_unchanged,
+    withdraw_unseen,
 )
 
 
@@ -118,6 +119,13 @@ def _fetch_live(
             client.close()
 
 
+def _newly_withdrawn(before: StateHistory, after: StateHistory) -> int:
+    was = {r.key() for r in before.records if r.status == "withdrawn"}
+    return sum(
+        1 for r in after.records if r.status == "withdrawn" and r.key() not in was
+    )
+
+
 def run_states(
     *,
     states_dir: Path,
@@ -162,6 +170,7 @@ def run_states(
                 for new in merged.records
                 if new.status == "removed" and new.last_observed_at == feed.fetched_at
             )
+            withdrawn = _newly_withdrawn(history, merged)
             message = (
                 f"{len(feed.records)} records, {len(feed.waters)} waters"
                 + (
@@ -171,12 +180,29 @@ def run_states(
                     else ""
                 )
                 + (f", {removed} newly removed from the schedule" if removed else "")
+                + (
+                    f", {withdrawn} no longer in the agency's file (withdrawn)"
+                    if withdrawn
+                    else ""
+                )
             )
             runs.append(StateRun(source, merged, path, "updated", message))
         except NotModified:
             # A 304: the file on file is still the agency's current one.
             unchanged = record_unchanged(history, checked_at=now)
-            runs.append(StateRun(source, unchanged, path, "unchanged", "not modified"))
+            try:
+                unchanged = withdraw_unseen(unchanged, source)
+            except StateHistoryError as exc:
+                failed = record_failure(history, attempted_at=now, error=str(exc))
+                runs.append(StateRun(source, failed, path, "failed", str(exc)))
+                continue
+            withdrawn = _newly_withdrawn(history, unchanged)
+            message = "not modified" + (
+                f", {withdrawn} no longer in the agency's file (withdrawn)"
+                if withdrawn
+                else ""
+            )
+            runs.append(StateRun(source, unchanged, path, "unchanged", message))
         except (StateFetchError, StateFormatError, StateHistoryError) as exc:
             failed = record_failure(history, attempted_at=now, error=str(exc))
             runs.append(StateRun(source, failed, path, "failed", str(exc)))

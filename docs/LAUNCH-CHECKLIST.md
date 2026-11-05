@@ -123,7 +123,7 @@ Look once a day for the opening week, then every other day.
   Expect clicks to be higher; not everyone installs.
 - **Ratings and crashes:** App Store Connect, Ratings and Reviews, and
   Crashes.
-- **The publish workflow:** the daily run at 13:17 UTC stays green. A failed
+- **The publish workflow:** the runs at 13:17 and 01:17 UTC stay green. A failed
   run keeps the last good site, with the switch's state as it was.
 
 ## If something is wrong

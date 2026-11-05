@@ -102,7 +102,7 @@ def render(
         "",
         _meaning(kinds),
         "",
-        "Update cadence: the site is rebuilt once a day (13:17 UTC). California's "
+        "Update cadence: the site is rebuilt twice a day (13:17 and 01:17 UTC). California's "
         f"schedule is published weekly; the current week in this build is the {week_label}."
         + (
             ' Each state\'s "last successful check" date is on the open data page.'

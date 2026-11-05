@@ -116,6 +116,12 @@ This repository was republished with a new history on 2026-09-18
   the fish alone, the watch corner reads "None yet this week", and the
   locked widget and watch say "No waters are listed yet" for an empty week. The
   introduction says "No account needed." instead of claiming no tracking.
+- Pipeline: the publish workflow runs twice a day, at 13:17 and 01:17 UTC
+  (06:17 and 18:17 Pacific Daylight), instead of once. Waters CDFW adds to a
+  week during the day now reach the site that evening instead of the next
+  morning. The support FAQ, the how-to-read guide, `llms.txt` and the
+  declared crawl budget in `docs/LICENSES-AND-ATTRIBUTION.md` say "twice a
+  day". Owner decision D1, 2026-11-05.
 - Android: launches free, with nothing for sale (DECISIONS 0044). Alerts,
   New York's reminders and the Favorite waters widget are free in every
   state, and no screen shows a price, a purchase or Restore purchases. The
@@ -287,6 +293,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Michigan: a stocking the DNR revises is no longer shown twice. The DNR's
+  CSV is its whole database, so a row it no longer has is marked
+  `withdrawn` in `pipeline/data/states/mi.json` (kept, never deleted) and
+  left out of the snapshot and the site. This removes the two ghost
+  Manistee River rows (Kalkaska, 10,874 brown trout; Wexford, 14,558) and
+  their site-less water pages on the first run. A file that drops more than
+  25 rows at once is refused instead.
 - Water 501572 (North Fork Willow Creek, Madera) is no longer placed: GNIS
   lists two streams with that name in the county. The geocoder now keeps a
   same-name stream that has no NHD flowlines as a candidate.

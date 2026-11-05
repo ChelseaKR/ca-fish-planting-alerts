@@ -103,6 +103,12 @@ This repository was republished with a new history on 2026-09-18
   build carries no Play Billing library and no BILLING permission. One
   Gradle property, `troutTruck.androidFreeTier`, brings the per-state
   purchases back; CI builds both.
+- Site: the privacy page describes the Android app as free, with nothing
+  for sale. It names one Google library on Android (Play In-App Review), says
+  the current build has no Play Billing, and says purchases are handled by
+  Apple on iPhone only. The terms page no longer says every app is sold: it
+  says the iPhone app is sold through the App Store. The iPhone wording is
+  otherwise unchanged. Both pages are dated 2026-11-04.
 - Site: thin water pages (DECISIONS 0041). A water page in any state with
   fewer than two dated stocking rows is `noindex,follow`, left out of
   `sitemap.xml`, and carries no Amazon gear block; it stays built and linked.

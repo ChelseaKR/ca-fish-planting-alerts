@@ -54,3 +54,33 @@ def test_terms_page_is_in_the_sitemap(tmp_path: Path) -> None:
     out = _build_site(tmp_path)
     sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")
     assert "/terms/</loc>" in sitemap
+
+
+OLD_APPS = "apps are sold through app stores"
+IPHONE_SOLD = "iPhone app is sold through Apple's App Store"
+
+
+def _apps_problems(text: str) -> list[str]:
+    # DECISIONS 0044: the Android build sells nothing, so the page must not
+    # say every app is sold. Only the privacy page names Android
+    # (test_site_app_store.test_copy_never_mentions_android).
+    problems = []
+    if IPHONE_SOLD not in text:
+        problems.append("missing the iPhone sale line")
+    if OLD_APPS in text:
+        problems.append("says every app is sold")
+    return problems
+
+
+def test_terms_page_says_only_the_iphone_app_is_sold(tmp_path: Path) -> None:
+    out = _build_site(tmp_path)
+    text = _text((out / "terms" / "index.html").read_text(encoding="utf-8"))
+    assert _apps_problems(text) == []
+    # Negative control: put the old wording back; the sabotage must land
+    # before the check is asked to catch it.
+    sabotaged = text.replace("iPhone app is sold through Apple's App Store", OLD_APPS)
+    assert sabotaged != text
+    assert _apps_problems(sabotaged) == [
+        "missing the iPhone sale line",
+        "says every app is sold",
+    ]

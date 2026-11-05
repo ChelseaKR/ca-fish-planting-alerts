@@ -284,6 +284,12 @@ This repository was republished with a new history on 2026-09-18
   macOS runner's bash 3.2 treated that empty list as an unbound variable
   under `set -u`. The workflow checks now reject that pattern in any
   `run:` step.
+- Website: an empty current or next week no longer reads as final. CDFW
+  posts most of a week's waters after the week begins (47% were listed at
+  Sunday's run and 86% by Wednesday over seven weeks), so water, county,
+  region, species and home pages now say "Not on CDFW's schedule yet, as of"
+  the last check, and the badge says "None scheduled yet". Weeks that are
+  over keep the definite wording.
 
 ## [1.0.0] - 2026-10-02
 

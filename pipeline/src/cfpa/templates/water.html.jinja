@@ -20,8 +20,9 @@
 </p>
 {% if water.nothing_current %}
 <p>
-  <strong>Nothing is on CDFW's schedule for {{ water.name }} this week or later.</strong>
-  That means no plant is scheduled right now, not that there are no fish.
+  <strong>Nothing is on CDFW's schedule yet for {{ water.name }} this week or later.</strong>
+  That means no plant was scheduled as of {{ source_fetched_label }}, not that
+  there are no fish. CDFW often adds waters after a week begins.
 </p>
 {% for c in scheduled_elsewhere %}
 <section aria-labelledby="now-{{ c.slug }}">

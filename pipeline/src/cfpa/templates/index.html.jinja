@@ -1,11 +1,12 @@
 {% extends "base.html.jinja" %}
 {% block content %}
 {% if week_is_empty %}
-<h1>California trout planting schedule: nothing listed for the {{ source_week_label }}</h1>
+<h1>California trout planting schedule: nothing listed yet for the {{ source_week_label }}</h1>
 <p class="lede">
   The California Department of Fish and Wildlife's schedule lists no plants
-  for the current week, the {{ source_week_label }}. That means no plant is
-  scheduled this week, not that there are no fish. Below are the waters it
+  yet for the current week, the {{ source_week_label }}. That means no plant
+  is scheduled yet, not that there are no fish: CDFW often adds waters after a
+  week begins. Below are the waters it
   has scheduled for a later week and the waters it scheduled most recently,
   each with its own week. Plants are <strong>subject to change</strong> by
   CDFW &mdash; treat every entry as scheduled, not confirmed. Data refreshed

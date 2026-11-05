@@ -226,12 +226,14 @@ FONT_LICENSE_FILES: tuple[str, ...] = (
 )
 
 # The status badge's words (the design system's StatusBadge). The word is the
-# status: a water or county with nothing scheduled says "None scheduled",
-# never a 0, a dash or an empty badge. _status_badge.html.jinja reads these.
+# status: a water or county with nothing scheduled says "None scheduled
+# yet", never a 0, a dash or an empty badge. The badge is only ever about this
+# week and next, which CDFW keeps adding to, hence "yet".
+# _status_badge.html.jinja reads these.
 STATUS_BADGE_WORDS: dict[str, str] = {
     "now": "This week",
     "next": "Next week",
-    "none": "None scheduled",
+    "none": "None scheduled yet",
 }
 # How many waters a county card names before "and N more".
 COUNTY_CARD_MAX_WATERS = 5
@@ -2617,7 +2619,7 @@ def _home_description(
 ) -> str:
     if week_is_empty:
         return (
-            f"CDFW's schedule lists no California fish plants for the "
+            f"CDFW's schedule lists no California fish plants yet for the "
             f"{source_week_label}. The waters it scheduled next and most "
             f"recently, with each water's {species} stocking history."
         )

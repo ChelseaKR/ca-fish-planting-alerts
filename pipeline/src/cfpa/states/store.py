@@ -10,6 +10,11 @@ app can say when it was last checked.
 Identity is ``(water_id, period start, precision, species)``. A Tennessee
 "TBD 12/2026" month that later becomes "12/9/2026" is two records: the month
 (which then reads as removed from the schedule) and the day.
+
+A Michigan row the DNR revises can change its identity too: adding a site
+changes the water id. The old record stays in history, marked ``withdrawn``
+(see ``merge``), and the snapshot leaves it out, so one stocking is not
+shown twice.
 """
 
 from __future__ import annotations
@@ -23,6 +28,12 @@ from typing import Any
 from .base import ParsedFeed, Period, StateSource, WaterMeta
 
 RecordKey = tuple[str, str, str, str]
+
+# More newly withdrawn records than this in one whole-file fetch looks like a
+# truncated or reshaped file, not the DNR's routine revisions (2 rows on
+# 2026-10-30, out of about 3,400), and the fetch is refused: the last good
+# data stays published and the failure is logged in ``checks``.
+MAX_NEWLY_WITHDRAWN = 25
 
 
 class StateHistoryError(RuntimeError):
@@ -42,7 +53,7 @@ class StateRecord:
     water_id: str
     period: Period
     species: str
-    status: str  # "listed" | "removed" | "reported"
+    status: str  # "listed" | "removed" | "reported" | "withdrawn"
     count: int | None
     first_observed_at: dt.datetime
     last_observed_at: dt.datetime
@@ -247,6 +258,13 @@ def merge(
       has not ended (``period.end >= as_of``). A past record that drops out
       of the agency's file aged off; that is not a removal.
     - Report sources never infer a removal. Nothing is ever deleted.
+    - Whole-file report sources only (``source.whole_file``, Michigan): a
+      ``reported`` record the fetch no longer has was revised or deleted by
+      the agency. It is marked ``withdrawn``, keeps its ``last_observed_at``
+      (the last time the agency had it), and is left out of the snapshot. If
+      the agency puts the row back, the next fetch marks it ``reported``
+      again. More than ``MAX_NEWLY_WITHDRAWN`` at once raises
+      ``StateHistoryError`` instead.
     - A water keeps the slug it was first given. Its name, counties and notes
       follow the agency's newest spelling, and old names are kept as aliases.
     """
@@ -274,6 +292,7 @@ def merge(
             by_key[key] = dataclasses.replace(
                 old, status="removed", last_observed_at=fetched_at
             )
+    _withdraw_unseen_reports(by_key, seen, source)
 
     waters = dict(history.waters)
     aliases = {k: list(v) for k, v in history.aliases.items()}
@@ -307,6 +326,61 @@ def merge(
             etag=feed.etag,
         ),
         aliases=aliases,
+    )
+
+
+def _whole_file_report(source: StateSource) -> bool:
+    return source.semantics == "report" and source.whole_file
+
+
+def _withdraw_unseen_reports(
+    by_key: dict[RecordKey, StateRecord], seen: set[RecordKey], source: StateSource
+) -> None:
+    """``merge``'s whole-file rule: a report the fetch no longer has."""
+    if _whole_file_report(source):
+        gone = [
+            k for k, r in by_key.items() if k not in seen and r.status == "reported"
+        ]
+        _withdraw(by_key, gone, source)
+
+
+def _withdraw(
+    by_key: dict[RecordKey, StateRecord], gone: list[RecordKey], source: StateSource
+) -> None:
+    if len(gone) > MAX_NEWLY_WITHDRAWN:
+        raise StateHistoryError(
+            f"{source.agency_short_name}'s file no longer has {len(gone)} "
+            f"recorded stockings (more than {MAX_NEWLY_WITHDRAWN}), for "
+            f"example {sorted(gone)[:3]}; a file that drops this many is "
+            "not read as revisions"
+        )
+    for key in gone:
+        by_key[key] = dataclasses.replace(by_key[key], status="withdrawn")
+
+
+def withdraw_unseen(history: StateHistory, source: StateSource) -> StateHistory:
+    """The same withdrawal ``merge`` makes, for a run whose fetch was a 304.
+
+    In a whole-file source's history, every record the newest full fetch had
+    carries that fetch's time as ``last_observed_at``, so a ``reported``
+    record with an older one is a row that file no longer has. This applies
+    the rule to history written before it existed (Michigan's two Manistee
+    River ghosts, last seen 2026-10-26) without waiting for the DNR to change
+    its file. A no-op for any other source, and when nothing is unseen.
+    """
+    if not _whole_file_report(source):
+        return history
+    reported = [r for r in history.records if r.status == "reported"]
+    if not reported:
+        return history
+    newest = max(r.last_observed_at for r in reported)
+    gone = [r.key() for r in reported if r.last_observed_at < newest]
+    if not gone:
+        return history
+    by_key = {r.key(): r for r in history.records}
+    _withdraw(by_key, gone, source)
+    return dataclasses.replace(
+        history, records=sorted(by_key.values(), key=StateRecord.key)
     )
 
 

@@ -276,6 +276,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Michigan: a stocking the DNR revises is no longer shown twice. The DNR's
+  CSV is its whole database, so a row it no longer has is marked
+  `withdrawn` in `pipeline/data/states/mi.json` (kept, never deleted) and
+  left out of the snapshot and the site. This removes the two ghost
+  Manistee River rows (Kalkaska, 10,874 brown trout; Wexford, 14,558) and
+  their site-less water pages on the first run. A file that drops more than
+  25 rows at once is refused instead.
 - Water 501572 (North Fork Willow Creek, Madera) is no longer placed: GNIS
   lists two streams with that name in the county. The geocoder now keeps a
   same-name stream that has no NHD flowlines as a candidate.

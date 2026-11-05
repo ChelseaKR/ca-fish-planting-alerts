@@ -271,6 +271,11 @@ SOURCE = StateSource(
     # looks like a truncated file, not a quiet year.
     min_rows=1000,
     publish_since=PUBLISH_SINCE,
+    # The CSV is the DNR's whole database, so a row it drops was revised. On
+    # 2026-10-30 it added a site to two Manistee River rows ("RAINBOW JIMS",
+    # "US-131"), which changed their water ids and left the site-less copies
+    # in history as a second, ghost stocking of the same fish.
+    whole_file=True,
     fetch=fetch,
     parse=parse,
 )

@@ -21,7 +21,11 @@ object ScheduleWording {
         return if (water.semantics == StateSemantics.PLAN) "Planned for ${next.phrase}" else "Next scheduled: ${next.phrase}"
     }
 
-    /** "Last scheduled for the week of 2026-09-06", "Last stocked on 2026-10-09", or an honest line when there is none. */
+    /**
+     * "Last scheduled for the week of 2026-09-06", "Last stocked on 2026-10-09", or an honest line when there is none.
+     * A schedule water with a later week coming up leads with it:
+     * "Next scheduled: the week of 2026-09-20. Last scheduled for the week of 2026-09-06".
+     */
     fun lastScheduledLine(water: Water, sourceWeek: Week): String {
         if (water.semantics == StateSemantics.REPORT) {
             return water.lastListedWeek?.let(ReportWording::lastStocked) ?: NO_STOCKING_ON_RECORD
@@ -32,7 +36,13 @@ object ScheduleWording {
             water.lastListedWeek?.let { return "Last planned for ${it.phrase}" }
             return NO_SCHEDULED_WEEK_YET
         }
-        water.lastListedWeek?.let { return "Last scheduled for ${it.phrase}" }
+        water.lastListedWeek?.let { last ->
+            // A week coming up leads, then the last one, so an upcoming week
+            // is never hidden behind "Last scheduled for" an older week.
+            val upcoming = water.listedPlants(sourceWeek).firstOrNull { it.week.start > last.start }?.week
+                ?: return "Last scheduled for ${last.phrase}"
+            return "Next scheduled: ${upcoming.phrase}. Last scheduled for ${last.phrase}"
+        }
         nextScheduledLine(water, sourceWeek)?.let { return it }
         water.monthsNote?.let { return "Listed by month only (${water.agencyShortName}'s letters): $it" }
         return NO_SCHEDULED_WEEK_YET

@@ -104,7 +104,8 @@ private struct RectangularView: View {
 
 /// How many favorites are scheduled this week, under the fish. "ended"
 /// once the week is over; a lock when locked; the fish alone with no
-/// digest or no favorites, so a missing count never reads as zero.
+/// digest, no favorites or none listed yet, so a missing count never reads
+/// as zero.
 private struct CircularView: View {
     let entry: NextFavoriteEntry
 
@@ -137,7 +138,10 @@ private struct CircularView: View {
 
     private var caption: String? {
         guard let digest = entry.digest, !digest.locked, !digest.favorites.isEmpty else { return nil }
-        return digest.isStale(at: entry.date) ? "ended" : "\(digest.favoritesListedThisWeek)"
+        if digest.isStale(at: entry.date) { return "ended" }
+        // None listed yet is not a "0": CDFW adds waters through the week.
+        let count = digest.favoritesListedThisWeek
+        return count == 0 ? nil : "\(count)"
     }
 }
 
@@ -180,6 +184,7 @@ private struct CornerView: View {
         if digest.locked { return "Unlock on iPhone" }
         if digest.favorites.isEmpty { return digest.favoritesInOtherStates > 0 ? "Unlock on iPhone" : "No favorites" }
         if digest.isStale(at: entry.date) { return "Week ended" }
-        return "\(digest.favoritesListedThisWeek) this week"
+        let count = digest.favoritesListedThisWeek
+        return count == 0 ? "None yet this week" : "\(count) this week"
     }
 }

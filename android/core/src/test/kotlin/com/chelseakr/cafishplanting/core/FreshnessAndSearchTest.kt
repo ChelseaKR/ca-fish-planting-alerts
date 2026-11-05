@@ -37,6 +37,16 @@ class FreshnessAndSearchTest {
         assertEquals("Schedule for the week of 2026-09-13", f.headline)
     }
 
+    /** CDFW adds waters through the week: an empty week that isn't over says "yet"; an ended one is definite. */
+    @Test fun anEmptyWeekSaysYetUntilItEnds() {
+        val empty = TS.snapshot("2026-09-13", listOf(TS.water("cdfw-1", plants = listOf(TS.plant("2026-09-06")))))
+        val sunday = Instant.parse("2026-09-13T17:00:00Z")
+        val early = SnapshotFreshness(empty, SnapshotOrigin.STORED, SnapshotMeta(), false, sunday)
+        assertEquals("No waters are listed for that week yet. CDFW often adds waters after a week begins.", early.summary)
+        assertEquals(early.summary, SnapshotFreshness(empty, SnapshotOrigin.STORED, SnapshotMeta(), false, lastEvening).summary)
+        assertEquals("No waters are listed for that week.", SnapshotFreshness(empty, SnapshotOrigin.STORED, SnapshotMeta(), false, afterMidnight).summary)
+    }
+
     @Test fun throttleWaitsSixHoursOrThirtyMinutesAfterAFailure() {
         val t = RefreshThrottle.FOREGROUND
         val ok = SnapshotMeta(lastAttemptAt = lastEvening, lastOutcome = "updated")

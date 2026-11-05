@@ -56,7 +56,9 @@ class SnapshotFreshness(snapshot: Snapshot, val origin: SnapshotOrigin, meta: Sn
 
     val summary: String
         get() = when (watersListed) {
-            0 -> "No waters are listed for that week."
+            // CDFW adds waters through the week, so an empty week that isn't
+            // over says "yet", as the site does; an ended week is definite.
+            0 -> if (isStale) "No waters are listed for that week." else NO_WATERS_LISTED_YET
             1 -> "1 water is listed for that week."
             else -> "$watersListed waters are listed for that week."
         }
@@ -97,6 +99,9 @@ class SnapshotFreshness(snapshot: Snapshot, val origin: SnapshotOrigin, meta: Sn
     val listedPhrase: String get() = if (isStale) "scheduled for the ${week.label}" else "scheduled this week"
 
     companion object {
+        /** An empty week that isn't over yet: the site's words (`index.html.jinja`). */
+        const val NO_WATERS_LISTED_YET = "No waters are listed for that week yet. CDFW often adds waters after a week begins."
+
         /** The schedule's own calendar (`schema/README.md`). Staleness is judged in it, not the device's zone. */
         val SCHEDULE_ZONE: ZoneId = ZoneId.of("America/Los_Angeles")
 

@@ -164,3 +164,36 @@ final class WidgetDigestTests: XCTestCase {
         XCTAssertTrue(d.favoritesByStatus.isEmpty)
     }
 }
+
+/// Early in the week CDFW hasn't added most waters yet, so a favorite not
+/// listed yet is never a "0" (`WidgetDigestTest.kt` holds Android to it).
+final class WidgetNoZeroTests: XCTestCase {
+    private let midWeek = ISO8601DateFormatter().date(from: "2026-09-16T19:00:00Z")!
+    private let sundayLA = ISO8601DateFormatter().date(from: "2026-09-20T07:30:00Z")!
+
+    func testNoFavoriteListedYetIsNeverAZero() {
+        let snapshot = TS.snapshot(sourceWeek: "2026-09-13", waters: [
+            TS.water(id: "cdfw-3", name: "Quiet Pond", plants: [TS.plant("2026-07-05")]),
+        ])
+        let d = WidgetDigest(snapshot: snapshot, meta: SnapshotMeta(), favorites: ["cdfw-3"], locked: false)
+        XCTAssertEqual(d.favoritesListedThisWeek, 0)
+        XCTAssertEqual(d.summary(at: midWeek), WidgetDigest.noFavoritesScheduledYet)
+        XCTAssertEqual(d.summary(at: midWeek), "No favorites scheduled yet this week")
+        XCTAssertEqual(d.summary(at: sundayLA), "No favorites listed for the week of 2026-09-13")
+        for line in [d.summary(at: midWeek), d.summary(at: sundayLA)] {
+            XCTAssertFalse(line.contains("0 favorite"), line)
+        }
+    }
+
+    /// The locked widget and the watch name the published schedule: an empty
+    /// week is "yet" while it isn't over, never "0 waters".
+    func testAnEmptyScheduleIsNeverZeroWaters() {
+        let snapshot = TS.snapshot(sourceWeek: "2026-09-13", waters: [
+            TS.water(id: "cdfw-3", name: "Quiet Pond", plants: [TS.plant("2026-07-05")]),
+        ])
+        let d = WidgetDigest(snapshot: snapshot, meta: SnapshotMeta(), favorites: ["cdfw-3"], locked: true)
+        XCTAssertEqual(d.watersListed, 0)
+        XCTAssertEqual(d.scheduleContext(at: midWeek), "No waters are listed yet for the week of 2026-09-13.")
+        XCTAssertEqual(d.scheduleContext(at: sundayLA), "No waters are listed for the week of 2026-09-13.")
+    }
+}

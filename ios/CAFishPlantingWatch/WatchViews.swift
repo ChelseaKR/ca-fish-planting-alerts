@@ -50,7 +50,7 @@ struct WatchRootView: View {
         TimelineView(.everyMinute) { context in
             if let digest = model.digest {
                 if digest.locked {
-                    LockedView(digest: digest)
+                    LockedView(digest: digest, now: context.date)
                 } else if digest.favorites.isEmpty, let other = digest.otherStatesLine {
                     MessageView(symbol: "lock.fill", message: other, footnote: digest.subheadline(at: context.date))
                 } else if digest.favorites.isEmpty {
@@ -170,12 +170,13 @@ struct FavoriteDetailView: View {
 /// anyone's favorites.
 private struct LockedView: View {
     let digest: WidgetDigest
+    let now: Date
 
     var body: some View {
-        let count = digest.watersListed
+        // Never "0 waters": an empty week says "yet" while it isn't over.
         MessageView(symbol: "lock.fill",
                     message: WidgetDigest.watchLockedMessage,
-                    footnote: "\(count == 1 ? "1 water is" : "\(count) waters are") listed for the \(digest.week.label).")
+                    footnote: digest.scheduleContext(at: now))
     }
 }
 

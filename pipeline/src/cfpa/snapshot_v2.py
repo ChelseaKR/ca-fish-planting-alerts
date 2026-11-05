@@ -190,8 +190,14 @@ def _ca_waters(
 def _published(
     source: StateSource, records: Iterable[StateRecord]
 ) -> list[StateRecord]:
+    # A withdrawn record is one the agency revised or deleted
+    # (cfpa.states.store.merge); it stays in history but is never published.
     since = source.publish_since
-    return [r for r in records if since is None or r.period.start >= since]
+    return [
+        r
+        for r in records
+        if r.status != "withdrawn" and (since is None or r.period.start >= since)
+    ]
 
 
 def _plant(r: StateRecord) -> dict[str, Any]:

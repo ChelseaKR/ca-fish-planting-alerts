@@ -85,3 +85,31 @@ final class ScheduleWordingTests: XCTestCase {
         return found
     }
 }
+
+/// A water CDFW added for an upcoming week leads with that week, then names
+/// its last one (`CopyAndRulesTest.kt` holds Android to the same words).
+final class UpcomingWeekLeadsTests: XCTestCase {
+    private func kernRiver() -> Water {
+        let plants = [TS.plant("2026-10-04", species: "Rainbow trout"), TS.plant("2026-11-08")]
+        return Water(id: "cdfw-9", cdfwStockID: 1, name: "Kern River", nameReviewed: true, slug: "kern-river",
+                     aliases: [], counties: ["Kern"], region: "R4",
+                     cdfwMapURL: URL(string: "https://nrm.dfg.ca.gov/FishPlants/")!,
+                     location: nil, lastListedWeek: TS.week("2026-10-04"), plants: plants)
+    }
+
+    func testAnUpcomingWeekLeadsThenTheLastWeek() {
+        XCTAssertEqual(ScheduleWording.lastScheduledLine(for: kernRiver(), sourceWeek: TS.week("2026-11-01")),
+                       "Next scheduled: the week of 2026-11-08. Last scheduled for the week of 2026-10-04")
+    }
+
+    func testTheShareTextKeepsTheLastWeeksSpeciesWithTheLastWeek() {
+        XCTAssertEqual(ShareContent.statusLine(for: kernRiver(), sourceWeek: TS.week("2026-11-01")),
+                       "Next scheduled: the week of 2026-11-08. Last scheduled for the week of 2026-10-04: Rainbow trout.")
+    }
+
+    func testListedThisWeekWithNothingLaterKeepsTheLastWeekAsTheHeadline() {
+        let water = TS.water(id: "cdfw-10", plants: [TS.plant("2026-11-01")])
+        XCTAssertEqual(ScheduleWording.lastScheduledLine(for: water, sourceWeek: TS.week("2026-11-01")),
+                       "Last scheduled for the week of 2026-11-01")
+    }
+}

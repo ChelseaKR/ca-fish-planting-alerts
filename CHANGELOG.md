@@ -105,6 +105,23 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- iOS and Android: honest wording from the 2026-11-05 Android audit
+  (findings 2, 3 and 5). A water CDFW added for an upcoming week now leads
+  with it ("Next scheduled: the week of 2026-11-08. Last scheduled for the
+  week of 2026-10-04"), on the water page and in the share text. A week that
+  isn't over and lists no waters says "No waters are listed for that week
+  yet. CDFW often adds waters after a week begins.", the site's words; an
+  ended week keeps the definite line. The widget never shows "0 favorites":
+  it says "No favorites scheduled yet this week", the Lock Screen circle shows
+  the fish alone, the watch corner reads "None yet this week", and the
+  locked widget and watch say "No waters are listed yet" for an empty week. The
+  introduction says "No account needed." instead of claiming no tracking.
+- Pipeline: the publish workflow runs twice a day, at 13:17 and 01:17 UTC
+  (06:17 and 18:17 Pacific Daylight), instead of once. Waters CDFW adds to a
+  week during the day now reach the site that evening instead of the next
+  morning. The support FAQ, the how-to-read guide, `llms.txt` and the
+  declared crawl budget in `docs/LICENSES-AND-ATTRIBUTION.md` say "twice a
+  day". Owner decision D1, 2026-11-05.
 - Android: launches free, with nothing for sale (DECISIONS 0044). Alerts,
   New York's reminders and the Favorite waters widget are free in every
   state, and no screen shows a price, a purchase or Restore purchases. The
@@ -289,6 +306,13 @@ This repository was republished with a new history on 2026-09-18
   say "Couldn't check TWRA's schedule since 2026-10-15", Favorites and the water
   page say so, the alerts footer says alerts are paused, and Siri answers
   that the schedule couldn't be checked instead of naming an old week.
+- Michigan: a stocking the DNR revises is no longer shown twice. The DNR's
+  CSV is its whole database, so a row it no longer has is marked
+  `withdrawn` in `pipeline/data/states/mi.json` (kept, never deleted) and
+  left out of the snapshot and the site. This removes the two ghost
+  Manistee River rows (Kalkaska, 10,874 brown trout; Wexford, 14,558) and
+  their site-less water pages on the first run. A file that drops more than
+  25 rows at once is refused instead.
 - Water 501572 (North Fork Willow Creek, Madera) is no longer placed: GNIS
   lists two streams with that name in the county. The geocoder now keeps a
   same-name stream that has no NHD flowlines as a candidate.

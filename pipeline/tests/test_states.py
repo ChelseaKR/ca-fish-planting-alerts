@@ -14,6 +14,7 @@ import httpx
 import pytest
 import respx
 
+from cfpa import snapshot_v2
 from cfpa.states import ENABLED_STATES, SOURCES, ma, mi, ny, tn
 from cfpa.states import run as srun
 from cfpa.states.base import (
@@ -28,6 +29,7 @@ from cfpa.states.base import (
     no_sleep,
 )
 from cfpa.states.store import (
+    MAX_NEWLY_WITHDRAWN,
     StateHistory,
     StateHistoryError,
     merge,
@@ -582,6 +584,141 @@ def test_a_report_never_infers_a_removal():
     assert len(merged.records) == len(history.records)
 
 
+# ---- Michigan: a row the DNR revises is not shown twice (audit 2026-11-05 #9)
+
+# A real fixture row with a site. The "before" file is the same file with
+# that row's site blank, which is how the DNR first published the two
+# Manistee River rows it gave a site on 2026-10-30.
+_SITED = (
+    "Iosco,Au Sable River,REA ROAD,24N,08E,35,Rainbow trout           "
+    ",Michigan         ,none,06/01/2026,5076,7.68,State Plant"
+)
+
+
+def _mi_before_and_after() -> tuple[str, str]:
+    after = _text("mi.csv")
+    assert after.count(_SITED) == 1
+    before = after.replace(_SITED, _SITED.replace(",REA ROAD,", ",,"))
+    assert before != after
+    return before, after
+
+
+def _mi_key(site: str) -> tuple[str, str, str, str]:
+    wid = mi.water_id("Iosco", "Au Sable River", site)
+    return (wid, "2026-06-01", "day", "Rainbow trout")
+
+
+def test_mi_a_revised_row_is_withdrawn_and_published_once():
+    before, after = _mi_before_and_after()
+    later = NOW + dt.timedelta(days=6)
+    first = merge(
+        StateHistory.empty("MI"),
+        mi.parse([_body(before)]),
+        mi.SOURCE,
+        as_of=NOW.date(),
+    )
+    revised = merge(
+        first, mi.parse([_body(after, later)]), mi.SOURCE, as_of=later.date()
+    )
+    by_key = {r.key(): r for r in revised.records}
+    ghost, real = by_key[_mi_key("")], by_key[_mi_key("REA ROAD")]
+    assert ghost.status == "withdrawn"
+    assert ghost.last_observed_at == NOW  # the last time the DNR had it
+    assert ghost.first_observed_at == NOW
+    assert real.status == "reported"
+    # Nothing is deleted: the history keeps both, and still saves.
+    assert len(revised.records) == len(first.records) + 1
+    # Every other record is untouched.
+    assert {r.status for r in revised.records if r.key() != ghost.key()} == {"reported"}
+
+    published = snapshot_v2._published(mi.SOURCE, revised.records)
+    stocked = [
+        r
+        for r in published
+        if r.period.start == dt.date(2026, 6, 1)
+        and r.species == "Rainbow trout"
+        and r.count == 5076
+    ]
+    assert [r.water_id for r in stocked] == [real.water_id]
+    # The site-less water had only that stocking, so it gets no entry (and
+    # no page) at all.
+    waters = snapshot_v2._state_waters(mi.SOURCE, revised, published, later.date())
+    assert ghost.water_id not in {w["id"] for w in waters}
+    assert real.water_id in {w["id"] for w in waters}
+
+
+def test_mi_a_withdrawn_row_the_dnr_puts_back_is_reported_again():
+    before, after = _mi_before_and_after()
+    t1, t2 = NOW + dt.timedelta(days=1), NOW + dt.timedelta(days=2)
+    history = merge(
+        StateHistory.empty("MI"), mi.parse([_body(before)]), mi.SOURCE, as_of=NOW.date()
+    )
+    history = merge(history, mi.parse([_body(after, t1)]), mi.SOURCE, as_of=t1.date())
+    assert {r.key(): r for r in history.records}[_mi_key("")].status == "withdrawn"
+    history = merge(history, mi.parse([_body(before, t2)]), mi.SOURCE, as_of=t2.date())
+    back = {r.key(): r for r in history.records}[_mi_key("")]
+    assert back.status == "reported"
+    assert back.first_observed_at == NOW
+    assert back.last_observed_at == t2
+
+
+def test_mi_negative_control_a_file_that_drops_too_many_rows_is_refused():
+    feed = mi.parse([_body(_text("mi.csv"))])
+    history = merge(StateHistory.empty("MI"), feed, mi.SOURCE, as_of=NOW.date())
+    cut = dataclasses.replace(feed, records=feed.records[MAX_NEWLY_WITHDRAWN + 1 :])
+    assert len(feed.records) - len(cut.records) == MAX_NEWLY_WITHDRAWN + 1
+    with pytest.raises(StateHistoryError, match="no longer has"):
+        merge(history, cut, mi.SOURCE, as_of=NOW.date())
+    # At the limit it is read as revisions.
+    at_limit = dataclasses.replace(feed, records=feed.records[MAX_NEWLY_WITHDRAWN:])
+    merged = merge(history, at_limit, mi.SOURCE, as_of=NOW.date())
+    assert sum(r.status == "withdrawn" for r in merged.records) == MAX_NEWLY_WITHDRAWN
+
+
+def test_mi_run_refuses_a_shrunken_file_and_keeps_the_last_good_data(tmp_path: Path):
+    fixtures = tmp_path / "fixtures"
+    fixtures.mkdir()
+    states_dir = tmp_path / "states"
+    feed = mi.parse([_body(_text("mi.csv"))])
+    good = merge(StateHistory.empty("MI"), feed, mi.SOURCE, as_of=NOW.date())
+    good.save(srun.history_path(states_dir, "MI"))
+    lines = _text("mi.csv").splitlines()
+    public = [
+        n
+        for n, line in enumerate(lines)
+        if "trout" in line.lower() and line.endswith(",State Plant")
+    ]
+    drop = set(public[: MAX_NEWLY_WITHDRAWN * 4])
+    (fixtures / "mi.csv").write_text(
+        "\n".join(line for n, line in enumerate(lines) if n not in drop) + "\n",
+        encoding="utf-8",
+    )
+    runs = srun.run_states(
+        states_dir=states_dir,
+        fetch_codes=["MI"],
+        user_agent=UA,
+        now=NOW + dt.timedelta(days=1),
+        fixtures_dir=fixtures,
+    )
+    run = next(r for r in runs if r.source.code == "MI")
+    assert run.outcome == "failed"
+    assert "no longer has" in (run.history.checks.last_error or "")
+    assert run.history.records == good.records
+
+
+def test_a_report_that_ages_rows_off_never_withdraws_them():
+    assert mi.SOURCE.whole_file
+    assert not ma.SOURCE.whole_file and not tn.SOURCE.whole_file
+    assert not ny.SOURCE.whole_file
+    feed = ma.parse([_body(_text("ma.csv"))])
+    history = merge(
+        StateHistory.empty("MA"), feed, ma.SOURCE, as_of=dt.date(2026, 10, 12)
+    )
+    one_row = dataclasses.replace(feed, records=feed.records[:1])
+    merged = merge(history, one_row, ma.SOURCE, as_of=dt.date(2026, 10, 30))
+    assert {r.status for r in merged.records} == {"reported"}
+
+
 def test_history_refuses_to_drop_a_record_or_change_a_slug(tmp_path: Path):
     path = tmp_path / "tn.json"
     history = _tn_history()
@@ -655,3 +792,38 @@ def test_the_committed_tn_history_is_the_real_fetch_of_2026_10_12():
     assert history.checks.last_success_at is not None
     assert history.checks.last_success_at >= NOW
     assert len(history.waters) >= 136
+
+
+@respx.mock
+def test_mi_a_304_withdraws_ghosts_already_in_history(tmp_path: Path):
+    """History written before the rule: the ghost was last seen by an older
+    full fetch than every other record. A 304 run withdraws it, as the
+    Manistee River pair (last seen 2026-10-26) will be on the first run."""
+    respx.get("https://michigandnr.com/robots.txt").respond(404, text="<html>")
+    respx.get(mi.CSV_URL).respond(304)
+    before, after = _mi_before_and_after()
+    t1 = NOW + dt.timedelta(days=4)
+    plain = dataclasses.replace(mi.SOURCE, whole_file=False)
+    old = merge(
+        StateHistory.empty("MI"), mi.parse([_body(before)]), plain, as_of=NOW.date()
+    )
+    old = merge(old, mi.parse([_body(after, t1)]), plain, as_of=t1.date())
+    ghost = {r.key(): r for r in old.records}[_mi_key("")]
+    assert ghost.status == "reported"  # the bug, as it is on disk today
+    old.save(srun.history_path(tmp_path, "MI"))
+    with httpx.Client() as client:
+        runs = srun.run_states(
+            states_dir=tmp_path,
+            fetch_codes=["MI"],
+            user_agent=UA,
+            now=t1 + dt.timedelta(hours=12),
+            client=client,
+            sleep=no_sleep,
+        )
+    run = next(r for r in runs if r.source.code == "MI")
+    assert run.outcome == "unchanged"
+    assert "1 no longer in the agency's file" in run.message
+    by_key = {r.key(): r for r in run.history.records}
+    assert by_key[_mi_key("")].status == "withdrawn"
+    assert sum(r.status == "withdrawn" for r in run.history.records) == 1
+    run.history.save(srun.history_path(tmp_path, "MI"))  # still append-only

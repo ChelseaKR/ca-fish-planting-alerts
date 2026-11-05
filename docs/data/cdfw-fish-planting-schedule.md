@@ -35,7 +35,8 @@ were read (2026-09-13) are in `docs/LICENSES-AND-ATTRIBUTION.md`.
 ## Fetch/refresh cadence
 
 - CDFW updates the schedule **weekly** and lists plants by week, never by
-  day. The pipeline fetches **once a day** (`publish.yml`, 13:17 UTC).
+  day. The pipeline fetches **twice a day** (`publish.yml`, 13:17 and
+  01:17 UTC; once a day until 2026-11-05).
 - **Staleness SLA:** a page whose stated current week is not the run date's
   week (±1 day at the Sunday boundary) is refused. No snapshot is built and
   nothing is committed or deployed (`cfpa.fetch.assert_fresh`). A stale page

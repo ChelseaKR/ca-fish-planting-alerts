@@ -13,6 +13,7 @@ Unknown = not used. Nobody is contacted.
 | USGS National Hydrography Dataset (NHD), California, GeoPackage (published 2023-12-27) | lake and reservoir polygons and stream flowlines, each tagged with its GNIS id | Same USGS policy page, read 2026-10-12 (quoted above). The file's metadata, read 2026-10-12: access and use constraints **"None"**. `https://www.usgs.gov/information-policies-and-instructions/acknowledging-or-crediting-usgs`, read 2026-10-12: **"Most U.S. Geological Survey (USGS) information resides in the Public Domain and may be used without restriction. When using information from USGS information products, publications, or websites, we ask that proper credit be given."** Suggested form: "Source of (product or data name): U.S. Geological Survey". | Permitted (public domain) | Requested, not required; given | Downloaded once by hand, 2026-10-12, from `https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHD/State/GPKG/NHD_H_California_State_GPKG.zip`; never fetched by the daily run |
 | U.S. Census Bureau TIGER/Line Shapefiles 2024, Counties | county polygons, only to test that a point lies in the county CDFW lists | The file's metadata (`tl_2024_us_county.shp.iso.xml`), read 2026-10-12: **"The TIGER/Line Shapefile products are not copyrighted however TIGER/Line and Census TIGER are registered trademarks of the U.S. Census Bureau. These products are free to use in a product or publication, however acknowledgement must be given to the U.S. Census Bureau as the source."** | Permitted | **Yes** (acknowledgement must be given) | Downloaded once by hand, 2026-10-12, from `https://www2.census.gov/geo/tiger/TIGER2024/COUNTY/tl_2024_us_county.zip`; never fetched by the daily run |
 | CDFW fishing map (`apps.wildlife.ca.gov/fishing`) | — | Not fetched. It has coordinates, but its terms and robots.txt are unknown, so under "unknown = not used" it is not a source. | n/a — unused | n/a — unused | n/a |
+| CDFW Planting Location dataset, BIOS ds2897 (ArcGIS Hub item `34c0ab8e9f434578969900cf87158320_0`, "Planting Location - CDFW [ds2897]"; the planting layer of the Fishing Guide) | a point per CDFW stock id, used only for a water no federal feature names, entered by hand as a cited override point (`pipeline/data/water_location_overrides.json`, `cfpa.geocode` rule 5); 14 waters as of 2026-11-05 | `https://hub.arcgis.com/api/v3/datasets/34c0ab8e9f434578969900cf87158320_0`, read 2026-11-05: `license` **"CC-BY-4.0"**; `licenseInfo`: **"This work is licensed under Creative Commons Attribution 4.0 International License (https://creativecommons.org/licenses/by/4.0/)."** Source: "California Department of Fish and Wildlife". | Permitted (CC BY 4.0) | Yes: "California Department of Fish and Wildlife, Planting Location (BIOS ds2897), CC BY 4.0" on the about page and on each water page that uses a point | By hand only, never by the daily run. One CSV download from `hub.arcgis.com` (robots.txt 200, `Crawl-delay: 60`, `/api/` allowed) on 2026-11-05, SHA-256 `6662b863e6edaddd68bdf37d21a965a70a32c75ddde2d428eb62caa09fd62da6`. The layer's own host, `services2.arcgis.com`, answers 403 to robots.txt and is off-limits. |
 
 ## Attribution decision
 
@@ -40,6 +41,16 @@ with any map or location, on the site's about page and in the app:
 > Source of water locations: U.S. Geological Survey, National Hydrography
 > Dataset and Geographic Names Information System. County boundaries: U.S.
 > Census Bureau, TIGER/Line Shapefiles.
+
+Fourteen city park lakes that no federal feature names (all on CDFW's
+schedule the week of 2026-11-01) instead carry CDFW's own point from its
+Planting Location dataset (ds2897, CC BY 4.0, table above). Each is an
+override with the point, the dataset URL and the record id written next to
+it. A water page that shows one says "CDFW's own point for this water" with
+the CDFW credit, never "a point inside the water", and gives it no
+structured-data `geo`. A stream reach (for example "Kings River, Below Pine
+Flat Dam") still has no location, even where the dataset has a point,
+because no source marks where a reach starts and ends.
 
 Read again 2026-10-20 (before the map link and "closest to me" shipped):
 `https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits`

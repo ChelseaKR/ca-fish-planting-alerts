@@ -368,6 +368,73 @@ def test_overrides_resolve_and_refuse(inputs, tmp_path):
     assert "the one by the campground" in doc["_report"]
 
 
+POINT = {
+    "lat": 38.05,
+    "lon": -117.45,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "source_url": "https://hub.arcgis.com/datasets/x",
+    "source_feature_id": "ds2897 StockingWaterID 108",
+}
+
+
+def test_a_cited_point_override_places_a_water_no_feature_names(inputs, tmp_path):
+    entry = {
+        "cdfw_stock_id": 108,
+        "gnis_feature_id": None,
+        "point": POINT,
+        "resolved_by": "Chelsea",
+        "resolved_on": "2026-11-05",
+        "note": "a park pond GNIS does not name; CDFW's own point",
+    }
+    inputs["overrides"].write_text(
+        json.dumps({"schema": geocode.OVERRIDES_SCHEMA, "overrides": [entry]}),
+        encoding="utf-8",
+    )
+    doc = run_cli(inputs, tmp_path)
+    w = by_id(doc)[108]
+    assert w["status"] == "owner_resolved"
+    assert w["location"] == {
+        "lat": 38.05,
+        "lon": -117.45,
+        "source": POINT["source"],
+        "kind": "named_point",
+        "source_feature_id": "ds2897 StockingWaterID 108",
+    }
+    assert w["override"]["point"]["source_url"] == POINT["source_url"]
+    assert "CDFW's own point" in doc["_report"]
+    # The snapshot reads it like any other placed water.
+    locs = locations.load_locations(tmp_path / "locations.json")
+    assert locs[108]["source"] == POINT["source"]
+
+
+@pytest.mark.parametrize(
+    ("point", "gnis", "message"),
+    [
+        (POINT, 4, "a point and a GNIS id"),
+        ({k: v for k, v in POINT.items() if k != "source_url"}, None, "point must"),
+        ({**POINT, "lat": 47.6}, None, "not in California"),
+        ({**POINT, "source_feature_id": " "}, None, "no source_feature_id"),
+        ({**POINT, "lat": "38"}, None, "must be numbers"),
+    ],
+)
+def test_a_bad_point_override_is_refused(tmp_path, point, gnis, message):
+    o = {
+        "cdfw_stock_id": 1,
+        "gnis_feature_id": gnis,
+        "point": point,
+        "resolved_by": "a",
+        "resolved_on": "2026-11-05",
+        "note": "n",
+    }
+    p = tmp_path / "o.json"
+    p.write_text(
+        json.dumps({"schema": geocode.OVERRIDES_SCHEMA, "overrides": [o]}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=message):
+        geocode.read_overrides(p)
+
+
 @pytest.mark.parametrize(
     ("entry", "message"),
     [
@@ -697,6 +764,22 @@ def test_committed_locations_file_is_consistent():
             assert w["location"] is None
     overrides = geocode.read_overrides(DATA / "water_location_overrides.json")
     assert set(overrides) <= set(ids)
+    # Every override is applied in the committed file, as cfpa-geocode
+    # would write it: a cited point becomes that exact location.
+    by = {w["cdfw_stock_id"]: w for w in doc["waters"]}
+    for sid, o in overrides.items():
+        rec = by[sid]
+        assert rec["override"]["note"] == o.note, sid
+        if o.point is not None:
+            assert rec["status"] == "owner_resolved", sid
+            assert rec["override"]["point"] == o.point, sid
+            assert rec["location"] == {
+                "lat": o.point["lat"],
+                "lon": o.point["lon"],
+                "source": o.point["source"],
+                "kind": "named_point",
+                "source_feature_id": o.point["source_feature_id"],
+            }, sid
     # The report rendered from the committed file is what MATCH-REPORT.md shows.
     assert render_report(doc).startswith("# Water locations: match report")
 

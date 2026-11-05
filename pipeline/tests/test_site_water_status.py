@@ -23,6 +23,8 @@ FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "snapshot.v1.json"
 BASE_URL = "https://example.invalid/ca-fish-planting-alerts"
 CHECKED_ON = "2026-09-13"
+# The fixture's fetch time, as site._fmt_dt renders it.
+CHECKED_LABEL = "2026-09-13 12:00 UTC"
 WEEK = "2026-09-13"
 NEXT_WEEK = "2026-09-20"
 
@@ -177,7 +179,10 @@ def test_water_with_history_gets_its_real_last_week_and_days_ago(built) -> None:
         f"Last on the schedule The week of {last}, which began {days} {unit} ago "
         f"as of the schedule check on {CHECKED_ON}."
     ) in text
-    assert f"This week, the week of {WEEK} Not on CDFW's schedule." in text
+    assert (
+        f"This week, the week of {WEEK} Not on CDFW's schedule yet, as of {CHECKED_LABEL}."
+        in text
+    )
 
 
 def test_water_on_this_weeks_schedule_says_so(built, tmp_path: Path) -> None:
@@ -187,7 +192,10 @@ def test_water_on_this_weeks_schedule_says_so(built, tmp_path: Path) -> None:
     text = _text(_block(_page(out, mod["waters"][0]["slug"])))
     assert f"Last on the schedule This week, the week of {WEEK}." in text
     assert f"This week, the week of {WEEK} On CDFW's schedule." in text
-    assert f"Next week, the week of {NEXT_WEEK} Not on CDFW's schedule." in text
+    assert (
+        f"Next week, the week of {NEXT_WEEK} Not on CDFW's schedule yet, as of {CHECKED_LABEL}."
+        in text
+    )
     assert "On the schedule in 2 weeks" in text
 
 
@@ -197,7 +205,10 @@ def test_water_on_next_weeks_schedule_says_so(built, tmp_path: Path) -> None:
     out = _render(mod, tmp_path)
     text = _text(_block(_page(out, mod["waters"][0]["slug"])))
     assert "Last on the schedule The week of 2026-09-06, which began 7 days ago" in text
-    assert f"This week, the week of {WEEK} Not on CDFW's schedule." in text
+    assert (
+        f"This week, the week of {WEEK} Not on CDFW's schedule yet, as of {CHECKED_LABEL}."
+        in text
+    )
     assert f"Next week, the week of {NEXT_WEEK} On CDFW's schedule." in text
 
 
@@ -226,7 +237,10 @@ def test_water_with_no_history_says_exactly_what_is_known(
         "Last on the schedule Not on CDFW's schedule in the weeks we have "
         f"recorded since the week of {since}."
     ) in text
-    assert f"This week, the week of {WEEK} Not on CDFW's schedule." in text
+    assert (
+        f"This week, the week of {WEEK} Not on CDFW's schedule yet, as of {CHECKED_LABEL}."
+        in text
+    )
     assert "On the schedule in 0 weeks" in text
     assert "ago" not in text  # no date, so no "days ago" is invented
 
@@ -250,7 +264,10 @@ def test_a_week_beyond_next_week_is_shown_as_later_not_as_next(
     mod = _with_weeks(snap, ["2026-10-04"])
     out = _render(mod, tmp_path)
     text = _text(_block(_page(out, mod["waters"][0]["slug"])))
-    assert f"Next week, the week of {NEXT_WEEK} Not on CDFW's schedule." in text
+    assert (
+        f"Next week, the week of {NEXT_WEEK} Not on CDFW's schedule yet, as of {CHECKED_LABEL}."
+        in text
+    )
     assert "Later on the schedule The week of 2026-10-04." in text
 
 

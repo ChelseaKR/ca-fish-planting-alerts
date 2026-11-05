@@ -273,7 +273,7 @@ def test_county_page_this_week_list_matches_the_snapshot(built):
         assert listed == expected, county
         if not expected:
             assert (
-                f"No {county} County water is on CDFW's schedule for this week."
+                f"No {county} County water is on CDFW's schedule for this week yet,"
                 in section
             )
             assert "not that there are no fish" in section
@@ -323,7 +323,7 @@ def test_absence_is_said_plainly_and_never_as_no_fish(built):
         text = _visible_text(_html(out, f"water/{w['slug']}"))
         listed = {p["week"]["start"] for p in w["plants"] if p["status"] == "listed"}
         current = any(s >= week for s in listed)
-        plain = f"Nothing is on CDFW's schedule for {w['name']} this week or later."
+        plain = f"Nothing is on CDFW's schedule yet for {w['name']} this week or later."
         assert (plain in text) is (not current), w["slug"]
         if not current:
             assert "not that there are no fish" in text

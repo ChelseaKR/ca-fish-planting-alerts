@@ -460,6 +460,37 @@ def test_calendar_identity_does_not_change_with_the_species_wording():
     ]
 
 
+def test_a_feed_tells_subscribed_calendars_to_refresh_twice_a_day():
+    """A subscribed calendar polls on its own schedule unless the feed says;
+    the site publishes once a day, so twice a day keeps a new week within
+    about half a day. Both the RFC 7986 property and Outlook's are set, once,
+    in the calendar header, before any event."""
+    water = _ics_water("cdfw-1", "Eagle Lake", [_plant("Trout", "2026-09-13")])
+    ics = _feed(water, "https://example.invalid/water/x/")
+    assert _ics_lines(ics, "REFRESH-INTERVAL") == [
+        "REFRESH-INTERVAL;VALUE=DURATION:PT12H"
+    ]
+    assert _ics_lines(ics, "X-PUBLISHED-TTL") == ["X-PUBLISHED-TTL:PT12H"]
+    header = ics.split("BEGIN:VEVENT", 1)[0]
+    assert "REFRESH-INTERVAL" in header and "X-PUBLISHED-TTL" in header
+
+
+def test_water_page_subscribe_link_is_webcal_to_its_own_feed(tmp_path: Path):
+    """The subscribe link is the page's own feed under webcal://, so a phone
+    subscribes instead of importing a copy; the https link stays, labeled as
+    a one-time download."""
+    out = _build_site(tmp_path)
+    snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    for w in snap["waters"][:25]:
+        html = _water_html(out, w["slug"])
+        canonical = re.search(r'<link rel="canonical" href="([^"]+)"', html)
+        assert canonical is not None, w["slug"]
+        webcal = "webcal://" + canonical.group(1).split("://", 1)[1] + "feed.ics"
+        assert f'href="{webcal}"' in html, w["slug"]
+        assert 'href="feed.ics"' in html
+        assert "download a one-time copy (.ics)" in html, w["slug"]
+
+
 def test_every_built_feed_is_named_for_the_species_on_its_own_page(tmp_path: Path):
     out = _build_site(tmp_path)
     snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))

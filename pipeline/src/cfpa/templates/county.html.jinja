@@ -39,7 +39,7 @@
   </div>
   <div class="tt-card__body">
     {% if county_card.state == "none" %}
-    <p>No {{ county }} County water is on CDFW's schedule this week or next. That means no plant is scheduled, not that there are no fish.</p>
+    <p>No {{ county }} County water is on CDFW's schedule this week or next yet, as of {{ source_fetched_label }}. That means no plant is scheduled yet, not that there are no fish: CDFW often adds waters after a week begins.</p>
     {% else %}
     <p>{% if county_card.state == "next" %}Nothing this week. {% endif %}{{ county_card.count }} {{ "water is" if county_card.count == 1 else "waters are" }} on CDFW's schedule {{ "this week" if county_card.state == "now" else "next week" }}{% if county_card.also_next %}, and more are scheduled next week{% endif %}:</p>
     <ul>
@@ -75,7 +75,7 @@
   </tbody>
 </table>
 {% else %}
-<p>No {{ county }} County water is on CDFW's schedule for this week. That means no plant is scheduled here this week, not that there are no fish.</p>
+<p>No {{ county }} County water is on CDFW's schedule for this week yet, as of {{ source_fetched_label }}. That means no plant is scheduled here yet, not that there are no fish: CDFW often adds waters after a week begins.</p>
 {% endif %}
 
 <h2>Scheduled for later weeks</h2>
@@ -100,7 +100,7 @@
   </tbody>
 </table>
 {% else %}
-<p>No later week is scheduled for {{ county|a_an }} County water. That means nothing beyond the {{ source_week_label }} is on CDFW's schedule here right now, not that there are no fish.</p>
+<p>No later week is scheduled yet for {{ county|a_an }} County water, as of {{ source_fetched_label }}. That means nothing beyond the {{ source_week_label }} is on CDFW's schedule here yet, not that there are no fish: CDFW can add a week at any time.</p>
 {% endif %}
 
 {# The county's most recent past weeks with a listed water (site.py

@@ -26,7 +26,8 @@
     return 2 * EARTH_RADIUS_MILES * Math.asin(Math.min(1, Math.sqrt(a)));
   }
 
-  // rows: [{slug, ...}]. coords: {slug: [lat, lon, "w" | "s"]}.
+  // rows: [{slug, ...}]. coords: {slug: [lat, lon, "w" | "s" | "c"]}; only
+  // "s" (a stream) is approximate.
   // Returns {placed: rows with a distance, nearest first; unplaced: the rest}.
   // A water listed twice (two regions) is counted once.
   function sortByDistance(origin, rows, coords) {

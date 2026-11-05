@@ -298,6 +298,26 @@ This repository was republished with a new history on 2026-09-18
   macOS runner's bash 3.2 treated that empty list as an unbound variable
   under `set -u`. The workflow checks now reject that pattern in any
   `run:` step.
+- Website: an empty current or next week no longer reads as final. CDFW
+  posts most of a week's waters after the week begins (47% were listed at
+  Sunday's run and 86% by Wednesday over seven weeks), so water, county,
+  region, species and home pages now say "Not on CDFW's schedule yet, as of"
+  the last check, and the badge says "None scheduled yet". Weeks that are
+  over keep the definite wording.
+- Website: "Closest to me" now ranks the 14 Los Angeles, Orange and Ventura
+  park lakes on the week of 2026-11-01's schedule that no federal feature
+  names (Echo Park, Hollenbeck, Kenneth Hahn, Hansen Dam and others). Each
+  takes CDFW's own point from its Planting Location dataset (BIOS ds2897,
+  CC BY 4.0) as a cited override, credited to CDFW on its page and never
+  called a point inside the water. Kings River, Below Pine Flat Dam stays
+  unplaced as a stream reach. A test holds every water on that week to a
+  location or an explicit unknown.
+- Website: a water page's "Subscribe" link is now `webcal://`, so a phone or
+  desktop calendar subscribes and keeps polling instead of importing a
+  one-time copy. The https `.ics` link stays, labeled "download a one-time
+  copy". Feeds now carry `REFRESH-INTERVAL;VALUE=DURATION:PT12H` and
+  `X-PUBLISHED-TTL:PT12H` (the site publishes once a day). Event UIDs are
+  unchanged.
 
 ## [1.0.0] - 2026-10-02
 

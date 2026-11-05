@@ -16,7 +16,7 @@
 
 <h2 id="this-week">Scheduled this week: {{ this_label }}</h2>
 {% with regions = this_regions, label = this_label %}
-{% with none_text = "No water is on CDFW's " ~ species_word ~ " schedule for this week. That means no " ~ species_word ~ " plant is scheduled this week, not that there are no fish." %}
+{% with none_text = "No water is on CDFW's " ~ species_word ~ " schedule for this week yet, as of " ~ source_fetched_label ~ ". That means no " ~ species_word ~ " plant is scheduled yet, not that there are no fish: CDFW often adds waters after a week begins." %}
 {% include "_species_week.html.jinja" %}
 {% endwith %}
 {% endwith %}

@@ -30,6 +30,11 @@ Rules (the point is to never guess):
 4. The owner settles ambiguous or wrong matches in
    ``pipeline/data/water_location_overrides.json``; an override names the GNIS
    feature (or none), who decided, when, and why.
+5. A water no federal feature names (most city park lakes) can instead take
+   an override ``point``: a published point for that exact CDFW stock id from
+   a licensed source, with the source, its URL and its record id written next
+   to it. Its location ``kind`` is ``named_point``, and the site never calls it
+   a point inside the water. Nothing is ever inferred from a name or address.
 """
 
 from __future__ import annotations
@@ -118,6 +123,11 @@ class Override:
     resolved_by: str
     resolved_on: str
     note: str
+    # A cited published point (rule 5), or None. Never set with a GNIS id.
+    point: dict[str, Any] | None = None
+
+
+POINT_KEYS = ("lat", "lon", "source", "source_url", "source_feature_id")
 
 
 class Geometry(Protocol):
@@ -185,14 +195,36 @@ def read_overrides(path: Path) -> dict[int, Override]:
         if sid in out:
             raise ValueError(f"two overrides for cdfw-{sid}")
         gid = o["gnis_feature_id"]
+        point = _checked_point(sid, o.get("point"))
+        if point is not None and gid is not None:
+            raise ValueError(f"override for cdfw-{sid}: a point and a GNIS id")
         out[sid] = Override(
             sid,
             None if gid is None else int(gid),
             o["resolved_by"],
             o["resolved_on"],
             o["note"],
+            point,
         )
     return out
+
+
+def _checked_point(sid: int, point: Any) -> dict[str, Any] | None:
+    """An override's cited point: every key present, the numbers in
+    California, every citation field filled in."""
+    if point is None:
+        return None
+    if not isinstance(point, dict) or set(point) != set(POINT_KEYS):
+        raise ValueError(f"override for cdfw-{sid}: point must have {POINT_KEYS}")
+    lat, lon = point["lat"], point["lon"]
+    if not all(isinstance(v, (int, float)) for v in (lat, lon)):
+        raise ValueError(f"override for cdfw-{sid}: point lat/lon must be numbers")
+    if not (32.0 <= lat <= 42.5 and -125.0 <= lon <= -114.0):
+        raise ValueError(f"override for cdfw-{sid}: {lat}, {lon} is not in California")
+    for key in ("source", "source_url", "source_feature_id"):
+        if not str(point[key]).strip():
+            raise ValueError(f"override for cdfw-{sid}: point has no {key}")
+    return dict(point)
 
 
 # --- names --------------------------------------------------------------------
@@ -539,6 +571,20 @@ def _apply_override(
         "resolved_on": o.resolved_on,
         "note": o.note,
     }
+    if o.point is not None:
+        rec["override"]["point"] = dict(o.point)
+        rec.update(
+            status="owner_resolved",
+            method="owner override, cited point",
+            location={
+                "lat": o.point["lat"],
+                "lon": o.point["lon"],
+                "source": o.point["source"],
+                "kind": "named_point",
+                "source_feature_id": str(o.point["source_feature_id"]),
+            },
+        )
+        return rec
     if o.gnis_feature_id is None:
         rec["status"] = "owner_none"
         rec["reason"] = "owner: no location"

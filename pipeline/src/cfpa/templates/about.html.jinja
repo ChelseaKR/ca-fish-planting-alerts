@@ -123,8 +123,7 @@
 
 <h3 id="locations">Water locations</h3>
 <p>
-  Map locations come from public-domain federal data, never from CDFW's own
-  fishing map (its terms are unknown, so it is not used). Source of water
+  Map locations come from public-domain federal data. Source of water
   locations: U.S. Geological Survey, National Hydrography Dataset and
   Geographic Names Information System
   (<a href="https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits">U.S. Public Domain</a>).
@@ -133,8 +132,13 @@
   A water gets a location only when exactly one federal feature with its name
   lies in the county CDFW lists; a lake's point is inside the lake, and a
   stream's point is on the stream but approximate, since a stream is planted
-  along its length. Waters with no single match have no location and are
-  never placed on a map. {% if locations_placed is not none %}Right now,
+  along its length. Many city park lakes have no federal name, so for those
+  the location is CDFW's own point for that water, from its
+  <a href="https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0">Planting Location dataset</a>
+  (California Department of Fish and Wildlife,
+  <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>); the
+  water's page says so. Waters with neither have no location and are never
+  placed on a map. {% if locations_placed is not none %}Right now,
   {{ locations_placed }} of {{ locations_total }} California waters have a
   location.{% endif %} Where a water has a location, its page has a
   &ldquo;View on map&rdquo; link to OpenStreetMap, and the home page can sort

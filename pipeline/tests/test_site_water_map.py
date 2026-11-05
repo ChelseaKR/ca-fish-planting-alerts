@@ -201,7 +201,14 @@ def test_coords_file_is_the_committed_locations_and_nothing_else(built):
     for slug, (lat, lon, kind) in doc["waters"].items():
         loc = placed[slug]
         assert (lat, lon) == (loc["lat"], loc["lon"]), slug
-        assert kind == ("s" if loc["kind"] == "stream_point" else "w"), slug
+        want = (
+            "s"
+            if loc["kind"] == "stream_point"
+            else "c"
+            if loc["source"].startswith(site.CDFW_POINT_SOURCE_PREFIX)
+            else "w"
+        )
+        assert kind == want, slug
         assert 32.0 <= lat <= 42.5 and -125.0 <= lon <= -114.0, slug
         assert (out / "water" / slug / "index.html").exists(), slug
 
@@ -254,7 +261,10 @@ def test_placed_water_has_a_map_link_and_coordinates_and_unplaced_has_neither(bu
         assert (
             "approximate" in page.visible.split("Coordinates", 1)[1][:200]
         ) == approximate
-        assert "U.S. Geological Survey" in page.visible
+        if loc["source"].startswith(site.CDFW_POINT_SOURCE_PREFIX):
+            assert "Source: California Department of Fish and Wildlife" in page.visible
+        else:
+            assert "U.S. Geological Survey" in page.visible
     assert seen_placed and seen_unplaced
 
 

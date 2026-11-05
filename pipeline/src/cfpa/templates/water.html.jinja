@@ -97,7 +97,7 @@
   <dt>CDFW water map</dt><dd><a href="{{ water.cdfw_map_url }}">View {{ water.name }} on CDFW's map</a></dd>
   {% if water_map %}
   <dt>Map</dt><dd><a href="{{ water_map.url }}" rel="noopener noreferrer">View on map</a> (opens OpenStreetMap)</dd>
-  <dt>Coordinates</dt><dd>{{ water_map.lat }}, {{ water_map.lon }}{% if water_map.approximate %}, approximate: a point on the stream, which CDFW plants along its length{% else %}, a point inside the water{% endif %}. Source: U.S. Geological Survey.</dd>
+  <dt>Coordinates</dt><dd>{{ water_map.lat }}, {{ water_map.lon }}{% if water_map.cdfw_point %}, CDFW's own point for this water. Source: California Department of Fish and Wildlife, Planting Location dataset (CC BY 4.0).{% elif water_map.approximate %}, approximate: a point on the stream, which CDFW plants along its length. Source: U.S. Geological Survey.{% else %}, a point inside the water. Source: U.S. Geological Survey.{% endif %}</dd>
   {% endif %}
   {% if water.other_names %}<dt>Also listed by CDFW as</dt><dd>{{ water.other_names }}</dd>{% endif %}
 </dl>

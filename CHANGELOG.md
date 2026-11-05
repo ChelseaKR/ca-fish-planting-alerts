@@ -290,6 +290,14 @@ This repository was republished with a new history on 2026-09-18
   region, species and home pages now say "Not on CDFW's schedule yet, as of"
   the last check, and the badge says "None scheduled yet". Weeks that are
   over keep the definite wording.
+- Website: "Closest to me" now ranks the 14 Los Angeles, Orange and Ventura
+  park lakes on the week of 2026-11-01's schedule that no federal feature
+  names (Echo Park, Hollenbeck, Kenneth Hahn, Hansen Dam and others). Each
+  takes CDFW's own point from its Planting Location dataset (BIOS ds2897,
+  CC BY 4.0) as a cited override, credited to CDFW on its page and never
+  called a point inside the water. Kings River, Below Pine Flat Dam stays
+  unplaced as a stream reach. A test holds every water on that week to a
+  location or an explicit unknown.
 
 ## [1.0.0] - 2026-10-02
 

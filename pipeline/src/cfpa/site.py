@@ -49,9 +49,14 @@ COORDS_FILE = "water-coords.json"
 COORDS_SCHEMA = "trout-truck-water-coords-v1"
 COORDS_SOURCE = (
     "U.S. Geological Survey, National Hydrography Dataset and Geographic Names "
-    "Information System; every point is in pipeline/data/water_locations.json "
-    "with its feature id"
+    "Information System; for waters no federal feature names, California "
+    "Department of Fish and Wildlife, Planting Location (BIOS ds2897, CC BY "
+    "4.0); every point is in pipeline/data/water_locations.json with its "
+    "feature id"
 )
+# Where a point came from, when it is not federal: the location ``source`` a
+# cited override point carries (cfpa.geocode rule 5).
+CDFW_POINT_SOURCE_PREFIX = "California Department of Fish and Wildlife"
 # The one place a page may name this script. Tests remove exactly this string
 # before they count a page's scripts.
 CLOSEST_SCRIPT_TAG = f'<script src="assets/{CLOSEST_JS_FILE}" defer></script>'
@@ -66,17 +71,24 @@ def map_url(lat: float, lon: float, *, approximate: bool) -> str:
 
 
 def water_coords(snapshot_v2: dict[str, Any] | None) -> dict[str, list[Any]]:
-    """slug -> [lat, lon, "w" | "s"] for each California water v2 places.
-    "w" is a point inside a lake or reservoir (or GNIS's own point for it);
-    "s" is a point on a stream, which is approximate. A water with no single
-    federal match has no entry, so nothing is placed that was not matched."""
+    """slug -> [lat, lon, "w" | "s" | "c"] for each California water v2
+    places. "w" is a point inside a lake or reservoir (or GNIS's own point for
+    it); "s" is a point on a stream, which is approximate; "c" is CDFW's own
+    published point for a water no federal feature names, which the site
+    never calls a point inside the water. A water with no location has no
+    entry, so nothing is placed that was not matched."""
     if snapshot_v2 is None:
         return {}
     out: dict[str, list[Any]] = {}
     for w in snapshot_v2["waters"]:
         loc = w.get("location")
         if w.get("state") == "CA" and loc:
-            kind = "s" if loc["kind"] == "stream_point" else "w"
+            if loc["kind"] == "stream_point":
+                kind = "s"
+            elif loc["source"].startswith(CDFW_POINT_SOURCE_PREFIX):
+                kind = "c"
+            else:
+                kind = "w"
             out[w["slug"]] = [loc["lat"], loc["lon"], kind]
     return out
 
@@ -1790,6 +1802,7 @@ def _water_map(point: list[Any] | None) -> dict[str, Any] | None:
         "lat": point[0],
         "lon": point[1],
         "approximate": approximate,
+        "cdfw_point": point[2] == "c",
         "url": map_url(point[0], point[1], approximate=approximate),
     }
 

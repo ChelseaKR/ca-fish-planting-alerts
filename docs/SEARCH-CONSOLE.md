@@ -44,7 +44,7 @@ The site is a GitHub Pages **project** site:
    Open a PR and merge it. `cfpa` refuses to run if the value is anything
    other than a bare token, so pasting the whole `<meta>` tag fails the
    tests rather than shipping a tag Google cannot match.
-4. Publish: either wait for the daily `publish` run (13:17 UTC) or start it
+4. Publish: either wait for the next `publish` run (13:17 or 01:17 UTC) or start it
    now with **Actions → publish → Run workflow** (or
    `gh workflow run publish.yml -R ChelseaKR/ca-fish-planting-alerts`).
    Check that the tag is live:

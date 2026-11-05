@@ -869,7 +869,7 @@ def test_faq_checker_is_not_vacuous(built):
     html = _html(out, "support")
     visible = _plain_text(html)
     drifted = _graph(html)["FAQPage"]["mainEntity"][0]["acceptedAnswer"]["text"]
-    drifted = drifted.replace("once a day", "every hour")
+    drifted = drifted.replace("twice a day", "every hour")
     assert drifted != _graph(html)["FAQPage"]["mainEntity"][0]["acceptedAnswer"]["text"]
     assert drifted not in visible
 

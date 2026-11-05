@@ -36,13 +36,15 @@ from urllib.parse import urlsplit
 
 import httpx
 
-# Thresholds. Each is justified against the schedule in publish.yml (the
-# daily run is at 13:17 UTC; publish-health.yml checks at 17:43 UTC, so a
+# Thresholds. Each is justified against the schedule in publish.yml (runs
+# at 13:17 and 01:17 UTC; publish-health.yml checks at 17:43 UTC, so a
 # healthy snapshot is about 4.5 hours old when this runs).
 #
-# A healthy snapshot is under 5 hours old at check time. One missed daily run
-# makes it about 28.5 hours old. 24 hours therefore flags a missed run the
-# same day, with 19 hours of margin for a delayed scheduled start.
+# A healthy snapshot is under 5 hours old at check time. A missed 13:17 run
+# leaves the 01:17 one, about 16.5 hours old, which is the one-run-a-day
+# freshness the site had before the second run and is not flagged. Missing
+# both runs of a day makes it about 28.5 hours old. 24 hours therefore flags
+# a lost day the same day, with 19 hours of margin for a delayed start.
 STALE_PUBLISH_HOURS = 24
 # A state source may fail for a short outage without anyone needing to act.
 # Three days is more than a weekend blip and well under a week of lost

@@ -1,24 +1,43 @@
 name: publish
 
-# CDFW's schedule is week-of granularity, so a daily poll is already far more
-# frequent than the source changes -- see pipeline/data crawl budget in
-# docs/LICENSES-AND-ATTRIBUTION.md ("one fetch per scheduled run, once a
-# day"). 13:17 UTC = 06:17 Pacific Daylight / 05:17 Pacific Standard: a
-# mid-morning Pacific hour, chosen so the freshness check's +/-1 day
-# tolerance (pipeline/src/cfpa/fetch.py::assert_fresh) is never marginal
-# against a UTC midnight rollover in either direction, well after CDFW
-# hatchery staff would plausibly have updated the page overnight, and a
-# non-zero minute avoids GitHub Actions' busiest top-of-hour scheduling slot.
-# (The check compares CDFW's stated current WEEK with the run date's week,
-# +/- 1 day at the Sunday boundary; the page states a week, not a day.)
+# Two runs a day, about 12 hours apart (owner decision D1, 2026-11-05). CDFW
+# states its schedule by week, but hatchery staff add waters to a week all
+# through it, mostly during the day (the 10-18 week: 14 of 18 waters were
+# first seen at a morning run). One run a day left those up to a day late;
+# the evening run puts same-day additions up by that night. Crawl budget:
+# docs/LICENSES-AND-ATTRIBUTION.md ("one fetch per scheduled run, twice a
+# day").
+#
+# 13:17 UTC = 06:17 Pacific Daylight / 05:17 Pacific Standard. A mid-morning
+# Pacific hour, well after CDFW hatchery staff would plausibly have updated
+# the page overnight.
+# 01:17 UTC = 18:17 Pacific Daylight / 17:17 Pacific Standard (the previous
+# Pacific day). After the working day's additions. On Saturday evening
+# Pacific the UTC date is already Sunday, so this run is the one that leans
+# on the freshness check's +/-1 day tolerance at the week boundary
+# (pipeline/src/cfpa/fetch.py::assert_fresh compares CDFW's stated current
+# WEEK with the run date's week, +/- 1 day); that tolerance exists for this.
+# Both use minute 17, off GitHub Actions' busiest top-of-hour slot.
 on:
   schedule:
-    - cron: "17 13 * * *"
+    - cron: "17 13 * * *" # 06:17 PDT / 05:17 PST
+    - cron: "17 1 * * *" # 18:17 PDT / 17:17 PST, the evening before
   workflow_dispatch: {}
 
 permissions:
   contents: read
 
+# One run at a time, because each run commits to main and deploys Pages.
+# cancel-in-progress: false keeps a running run from being killed. GitHub
+# still holds only ONE pending run per group, and a third arrival evicts the
+# pending one with zero jobs (no failure alert fires for it). Here that
+# loses nothing: every run does the same thing (a live fetch of every
+# source, then a full rebuild), so the run that survives in the pending slot
+# is always the newest and does strictly more recent work than the one it
+# replaced. The two schedules are 12 hours apart and a run takes about
+# 3 minutes (15 at most), so scheduled runs never contend; only a burst of
+# manual dispatches can. A run that never happens at all is caught by
+# publish-health.yml, which reads the live snapshot's age.
 concurrency:
   group: publish
   cancel-in-progress: false

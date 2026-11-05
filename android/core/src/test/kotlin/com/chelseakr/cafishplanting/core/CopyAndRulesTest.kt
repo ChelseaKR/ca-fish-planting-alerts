@@ -127,6 +127,9 @@ class CopyAndRulesTest {
         assertTrue(freshness.contains("\"${SnapshotFreshness.NO_WATERS_LISTED_YET}\""))
         val digest = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/WidgetDigest.swift").readText()
         assertTrue(digest.contains("\"${WidgetDigest.NO_FAVORITES_SCHEDULED_YET}\""))
+        // The schedule line the locked widget and the watch show (`scheduleContext`).
+        assertTrue(digest.contains("\"No waters are listed yet for the \\(week.label).\""))
+        assertTrue(digest.contains("\"No waters are listed for the \\(week.label).\""))
         val wording = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/ScheduleWording.swift").readText()
         assertTrue(wording.contains("\"Next scheduled: \\(upcoming.phrase). Last scheduled for \\(last.phrase)\""))
     }

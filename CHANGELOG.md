@@ -113,7 +113,8 @@ This repository was republished with a new history on 2026-09-18
   yet. CDFW often adds waters after a week begins.", the site's words; an
   ended week keeps the definite line. The widget never shows "0 favorites":
   it says "No favorites scheduled yet this week", the Lock Screen circle shows
-  the fish alone, and the watch corner reads "None yet this week". The
+  the fish alone, the watch corner reads "None yet this week", and the
+  locked widget and watch say "No waters are listed yet" for an empty week. The
   introduction says "No account needed." instead of claiming no tracking.
 - Android: launches free, with nothing for sale (DECISIONS 0044). Alerts,
   New York's reminders and the Favorite waters widget are free in every

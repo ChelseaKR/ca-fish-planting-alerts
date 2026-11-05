@@ -219,6 +219,19 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
     /// Favorites listed for the digest's week.
     public var favoritesListedThisWeek: Int { favorites.filter(\.isListedThisWeek).count }
 
+    /// A true line about the published schedule itself, for the locked and
+    /// empty widgets and the watch. An empty week is never a "0": it says
+    /// "yet" while the week isn't over (`WidgetDigest.kt`'s `scheduleContext`).
+    public func scheduleContext(at now: Date) -> String {
+        if watersListed == 0 {
+            return isStale(at: now)
+                ? "No waters are listed for the \(week.label)."
+                : "No waters are listed yet for the \(week.label)."
+        }
+        let waters = watersListed == 1 ? "1 water is" : "\(watersListed) waters are"
+        return "\(waters) listed for the \(week.label)."
+    }
+
     /// No favorite listed in a week that isn't over: "yet", never "0 favorites".
     public static let noFavoritesScheduledYet = "No favorites scheduled yet this week"
 

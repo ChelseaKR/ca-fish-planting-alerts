@@ -129,14 +129,7 @@ private enum EmptyReason {
     func context(at now: Date) -> String? {
         switch self {
         case .noFavorites(let digest), .onlyMissingFavorites(let digest), .locked(let digest):
-            let count = digest.watersListed
-            if count == 0 {
-                return digest.isStale(at: now)
-                    ? "No waters are listed for the \(digest.week.label)."
-                    : "No waters are listed yet for the \(digest.week.label)."
-            }
-            let waters = count == 1 ? "1 water is" : "\(count) waters are"
-            return "\(waters) listed for the \(digest.week.label)."
+            return digest.scheduleContext(at: now)
         case .noDigest:
             return nil
         }

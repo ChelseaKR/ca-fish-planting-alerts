@@ -184,4 +184,16 @@ final class WidgetNoZeroTests: XCTestCase {
             XCTAssertFalse(line.contains("0 favorite"), line)
         }
     }
+
+    /// The locked widget and the watch name the published schedule: an empty
+    /// week is "yet" while it isn't over, never "0 waters".
+    func testAnEmptyScheduleIsNeverZeroWaters() {
+        let snapshot = TS.snapshot(sourceWeek: "2026-09-13", waters: [
+            TS.water(id: "cdfw-3", name: "Quiet Pond", plants: [TS.plant("2026-07-05")]),
+        ])
+        let d = WidgetDigest(snapshot: snapshot, meta: SnapshotMeta(), favorites: ["cdfw-3"], locked: true)
+        XCTAssertEqual(d.watersListed, 0)
+        XCTAssertEqual(d.scheduleContext(at: midWeek), "No waters are listed yet for the week of 2026-09-13.")
+        XCTAssertEqual(d.scheduleContext(at: sundayLA), "No waters are listed for the week of 2026-09-13.")
+    }
 }

@@ -49,3 +49,15 @@ final class OnboardingTests: XCTestCase {
         }
     }
 }
+
+/// The intro says only what is true: there is no account. It never claims
+/// "no tracking" (`CopyAndRulesTest.kt` checks the Android twin).
+final class OnboardingClaimsTests: XCTestCase {
+    func testTheIntroductionNeverClaimsNoTracking() {
+        let text = OnboardingCopy.pages.flatMap { [$0.title, $0.body] + $0.points }
+        for line in text {
+            XCTAssertFalse(line.localizedCaseInsensitiveContains("tracking"), "claims no tracking: \(line)")
+        }
+        XCTAssertTrue(text.contains { $0.hasPrefix("No account needed.") })
+    }
+}

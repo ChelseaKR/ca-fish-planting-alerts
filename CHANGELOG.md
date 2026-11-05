@@ -105,6 +105,17 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- iOS and Android: honest wording from the 2026-11-05 Android audit
+  (findings 2, 3 and 5). A water CDFW added for an upcoming week now leads
+  with it ("Next scheduled: the week of 2026-11-08. Last scheduled for the
+  week of 2026-10-04"), on the water page and in the share text. A week that
+  isn't over and lists no waters says "No waters are listed for that week
+  yet. CDFW often adds waters after a week begins.", the site's words; an
+  ended week keeps the definite line. The widget never shows "0 favorites":
+  it says "No favorites scheduled yet this week", the Lock Screen circle shows
+  the fish alone, the watch corner reads "None yet this week", and the
+  locked widget and watch say "No waters are listed yet" for an empty week. The
+  introduction says "No account needed." instead of claiming no tracking.
 - Pipeline: the publish workflow runs twice a day, at 13:17 and 01:17 UTC
   (06:17 and 18:17 Pacific Daylight), instead of once. Waters CDFW adds to a
   week during the day now reach the site that evening instead of the next

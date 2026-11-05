@@ -92,6 +92,48 @@ class CopyAndRulesTest {
         assertKeepsTheRules(share)
     }
 
+    /** A schedule water with a later week coming up leads with it, then names its last week. */
+    @Test fun anUpcomingWeekLeadsAndTheShareTextKeepsTheLastWeeksSpecies() {
+        val week = TS.week("2026-11-01")
+        val water = TS.water("cdfw-9", "Kern River", listOf(TS.plant("2026-10-04", "Rainbow trout"), TS.plant("2026-11-08"))).let {
+            Water(it.id, 1, it.name, true, it.slug, it.aliases, it.counties, it.region, it.cdfwMapURL, null, TS.week("2026-10-04"), it.plants)
+        }
+        assertEquals(
+            "Next scheduled: the week of 2026-11-08. Last scheduled for the week of 2026-10-04",
+            ScheduleWording.lastScheduledLine(water, week),
+        )
+        assertEquals(
+            "Next scheduled: the week of 2026-11-08. Last scheduled for the week of 2026-10-04: Rainbow trout.",
+            ShareContent.statusLine(water, week),
+        )
+        // Listed this week and nothing later: the last week is the headline, as before.
+        val thisWeek = TS.water("cdfw-10", plants = listOf(TS.plant("2026-11-01")))
+        assertEquals("Last scheduled for the week of 2026-11-01", ScheduleWording.lastScheduledLine(thisWeek, week))
+    }
+
+    /** The intro never claims "no tracking"; it says only what is true: there is no account. */
+    @Test fun theIntroductionNeverClaimsNoTrackingInEitherApp() {
+        val text = OnboardingCopy.pages.flatMap { listOf(it.title, it.body) + it.points } +
+            FreeLaunch.onboardingPages.flatMap { listOf(it.title, it.body) + it.points }
+        text.forEach { assertFalse("claims no tracking: $it", it.contains("tracking", ignoreCase = true)) }
+        assertTrue(text.any { it.startsWith("No account needed.") })
+        val swift = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/Onboarding.swift").readText()
+        assertFalse("the iOS intro claims no tracking", swift.contains("no tracking", ignoreCase = true))
+    }
+
+    /** The "not listed yet" words are the same in both apps, so a CDFW week that is still filling in reads alike. */
+    @Test fun theNotListedYetWordsMatchTheIosApp() {
+        val freshness = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/SnapshotFreshness.swift").readText()
+        assertTrue(freshness.contains("\"${SnapshotFreshness.NO_WATERS_LISTED_YET}\""))
+        val digest = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/WidgetDigest.swift").readText()
+        assertTrue(digest.contains("\"${WidgetDigest.NO_FAVORITES_SCHEDULED_YET}\""))
+        // The schedule line the locked widget and the watch show (`scheduleContext`).
+        assertTrue(digest.contains("\"No waters are listed yet for the \\(week.label).\""))
+        assertTrue(digest.contains("\"No waters are listed for the \\(week.label).\""))
+        val wording = File(TS.repoRoot, "ios/PlantingCore/Sources/PlantingCore/ScheduleWording.swift").readText()
+        assertTrue(wording.contains("\"Next scheduled: \\(upcoming.phrase). Last scheduled for \\(last.phrase)\""))
+    }
+
     @Test fun waterLinksRoundTripAndRejectEverythingElse() {
         assertEquals("trouttruck://water/cdfw-125", WaterLink.url("cdfw-125"))
         assertEquals("cdfw-125", WaterLink.waterID("trouttruck://water/cdfw-125"))

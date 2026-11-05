@@ -46,7 +46,21 @@ class WidgetDigestTest {
         val locked = WidgetDigest.build(snapshot, SnapshotMeta(), listOf("cdfw-1"), locked = true)
         assertTrue(locked.favorites.isEmpty())
         assertEquals("This widget is part of full access, a one-time purchase in Trout Truck.", locked.emptyMessage())
-        assertEquals("1 water is listed for the week of 2026-09-13.", locked.scheduleContext())
+        assertEquals("1 water is listed for the week of 2026-09-13.", locked.scheduleContext(during))
+    }
+
+    /** Early in the week no favorite may be listed yet: that is never a "0". */
+    @Test fun noFavoriteListedYetIsNeverAZero() {
+        val d = WidgetDigest.build(snapshot, SnapshotMeta(), listOf("cdfw-3", "cdfw-2"), locked = false)
+        assertEquals(0, d.favoritesListedThisWeek)
+        assertEquals("No favorites scheduled yet this week", d.summary(during))
+        assertEquals("No favorites listed for the week of 2026-09-13", d.summary(after))
+        for (line in listOf(d.summary(during), d.summary(after))) assertFalse(line, line.contains("0 favorite"))
+
+        val empty = TS.snapshot("2026-09-13", listOf(TS.water("cdfw-3", "Quiet Lake", listOf(TS.plant("2026-08-30")))))
+        val none = WidgetDigest.build(empty, SnapshotMeta(), emptyList(), locked = false)
+        assertEquals("No waters are listed yet for the week of 2026-09-13.", none.scheduleContext(during))
+        assertEquals("No waters are listed for the week of 2026-09-13.", none.scheduleContext(after))
     }
 
     @Test fun savesOnlyWhenChangedAndReadsOtherVersionsAsMissing() {

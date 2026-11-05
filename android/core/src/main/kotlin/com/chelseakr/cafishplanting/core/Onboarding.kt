@@ -64,7 +64,7 @@ object OnboardingCopy {
             body = "CDFW schedules plants by the week and says plans can change, so the app shows the week and says \"scheduled\".",
             points = listOf(
                 "If the app can't check for a newer schedule, it says so and keeps the last one, labeled with its week",
-                "No account and no tracking. Favorites stay on this device",
+                "No account needed. Favorites stay on this device",
             ),
         ),
     )

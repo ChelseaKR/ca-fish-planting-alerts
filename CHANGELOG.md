@@ -105,6 +105,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Pipeline: the publish workflow runs twice a day, at 13:17 and 01:17 UTC
+  (06:17 and 18:17 Pacific Daylight), instead of once. Waters CDFW adds to a
+  week during the day now reach the site that evening instead of the next
+  morning. The support FAQ, the how-to-read guide, `llms.txt` and the
+  declared crawl budget in `docs/LICENSES-AND-ATTRIBUTION.md` say "twice a
+  day". Owner decision D1, 2026-11-05.
 - Android: launches free, with nothing for sale (DECISIONS 0044). Alerts,
   New York's reminders and the Favorite waters widget are free in every
   state, and no screen shows a price, a purchase or Restore purchases. The

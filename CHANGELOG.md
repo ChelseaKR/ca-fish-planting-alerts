@@ -298,6 +298,12 @@ This repository was republished with a new history on 2026-09-18
   called a point inside the water. Kings River, Below Pine Flat Dam stays
   unplaced as a stream reach. A test holds every water on that week to a
   location or an explicit unknown.
+- Website: a water page's "Subscribe" link is now `webcal://`, so a phone or
+  desktop calendar subscribes and keeps polling instead of importing a
+  one-time copy. The https `.ics` link stays, labeled "download a one-time
+  copy". Feeds now carry `REFRESH-INTERVAL;VALUE=DURATION:PT12H` and
+  `X-PUBLISHED-TTL:PT12H` (the site publishes once a day). Event UIDs are
+  unchanged.
 
 ## [1.0.0] - 2026-10-02
 

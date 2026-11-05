@@ -558,12 +558,22 @@ def _ics_fold(line: str) -> str:
     return "\r\n ".join(out)
 
 
+# How often a subscribed calendar should poll a water's feed. The publish
+# workflow runs once a day (.github/workflows/publish.yml, 13:17 UTC), so a
+# 12-hour poll shows a new week within about half a day of the site having
+# it, at two small requests a day per subscriber. RFC 7986 REFRESH-INTERVAL
+# for current clients, X-PUBLISHED-TTL for Outlook and older Apple clients.
+ICS_REFRESH = "PT12H"
+
+
 def build_water_ics(*, water: dict[str, Any], base_url: str, species: str) -> str:
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
         "PRODID:-//ca-fish-planting-alerts//snapshot v1//EN",
         "CALSCALE:GREGORIAN",
+        f"REFRESH-INTERVAL;VALUE=DURATION:{ICS_REFRESH}",
+        f"X-PUBLISHED-TTL:{ICS_REFRESH}",
         f"X-WR-CALNAME:{_ics_escape(water['name'])} {species} planting schedule",
         f"X-WR-CALDESC:{_ics_escape('CDFW-scheduled plants at ' + water['name'] + '. Subject to change.')}",
     ]

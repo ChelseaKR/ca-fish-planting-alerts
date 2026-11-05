@@ -173,18 +173,22 @@ def _click(
 # ---- the markup
 
 
-def test_water_page_marks_four_gear_links_and_one_calendar_link(water_page):
+def test_water_page_marks_four_gear_links_and_two_calendar_links(water_page):
     gear = _anchors(water_page, "gear_click")
-    ics = _anchors(water_page, "calendar_subscribe_click")
+    cal = _anchors(water_page, "calendar_subscribe_click")
     assert len(gear) == 4
-    assert len(ics) == 1
+    assert len(cal) == 2
     for a in gear:
         assert urlsplit(str(a["href"])).hostname == "www.amazon.com"
         assert a["data-ga-placement"] == "water"
         assert a["data-ga-type"] == "amazon_search"
-    assert ics[0]["href"] == "feed.ics"
-    assert ics[0]["data-ga-placement"] == "water"
-    assert ics[0]["data-ga-type"] == "ics"
+    webcal, ics = cal
+    assert urlsplit(str(webcal["href"])).scheme == "webcal"
+    assert str(webcal["href"]).endswith("/feed.ics")
+    assert webcal["data-ga-type"] == "webcal"
+    assert ics["href"] == "feed.ics"
+    assert ics["data-ga-type"] == "ics"
+    assert {a["data-ga-placement"] for a in cal} == {"water"}
 
 
 def test_every_amazon_link_on_the_site_is_a_marked_gear_link(site_dir):
@@ -246,13 +250,27 @@ def test_a_gear_click_sends_placement_type_and_host_only(tmp_path, tag_js, water
 def test_a_calendar_click_sends_placement_type_and_host_only(
     tmp_path, tag_js, water_page
 ):
-    anchor = _anchors(water_page, "calendar_subscribe_click")[0]
+    anchor = _anchors(water_page, "calendar_subscribe_click")[1]
     ran = _click(tmp_path, tag_js, anchor, {"navigator": {}})
     assert ran["events"] == [
         [
             "event",
             "calendar_subscribe_click",
             {"placement": "water", "link_type": "ics", "link_host": "example.invalid"},
+        ]
+    ]
+
+
+def test_a_subscribe_click_sends_webcal_and_the_site_host(tmp_path, tag_js, water_page):
+    anchor = _anchors(water_page, "calendar_subscribe_click")[0]
+    host = urlsplit(str(anchor["href"])).hostname
+    assert host
+    ran = _click(tmp_path, tag_js, anchor, {"navigator": {}})
+    assert ran["events"] == [
+        [
+            "event",
+            "calendar_subscribe_click",
+            {"placement": "water", "link_type": "webcal", "link_host": host},
         ]
     ]
 
@@ -307,7 +325,7 @@ def test_negative_control_catches_a_removed_ga_disable_check(
 def test_negative_control_catches_a_removed_gpc_dnt_and_stored_opt_out_guard(
     tmp_path, tag_js, water_page
 ):
-    anchor = _anchors(water_page, "calendar_subscribe_click")[0]
+    anchor = _anchors(water_page, "calendar_subscribe_click")[1]
     for guard, name in (
         ("if (n.globalPrivacyControl === true) return;", "gpc"),
         ('if (dnt === "1" || dnt === "yes") return;', "dnt-1"),

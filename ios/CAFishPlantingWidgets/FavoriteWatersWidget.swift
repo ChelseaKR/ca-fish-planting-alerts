@@ -130,6 +130,11 @@ private enum EmptyReason {
         switch self {
         case .noFavorites(let digest), .onlyMissingFavorites(let digest), .locked(let digest):
             let count = digest.watersListed
+            if count == 0 {
+                return digest.isStale(at: now)
+                    ? "No waters are listed for the \(digest.week.label)."
+                    : "No waters are listed yet for the \(digest.week.label)."
+            }
             let waters = count == 1 ? "1 water is" : "\(count) waters are"
             return "\(waters) listed for the \(digest.week.label)."
         case .noDigest:
@@ -403,11 +408,14 @@ private struct CircularView: View {
     }
 
     /// The count of favorites scheduled this week, or "ended". Nothing when
-    /// locked, with no digest, or with no favorites: a "0" there would read
-    /// as nothing scheduled.
+    /// locked, with no digest, with no favorites, or with none listed yet: a
+    /// "0" would read as nothing scheduled, and CDFW adds waters through the
+    /// week.
     private var caption: String? {
         guard let digest = entry.digest, !digest.locked, !digest.favorites.isEmpty else { return nil }
-        return digest.isStale(at: entry.date) ? "ended" : "\(digest.favoritesListedThisWeek)"
+        if digest.isStale(at: entry.date) { return "ended" }
+        let count = digest.favoritesListedThisWeek
+        return count == 0 ? nil : "\(count)"
     }
 
     private var accessibilityText: String {

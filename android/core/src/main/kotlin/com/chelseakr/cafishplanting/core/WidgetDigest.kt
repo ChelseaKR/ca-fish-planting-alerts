@@ -143,6 +143,8 @@ data class WidgetDigest(
             }
         }
         val count = favoritesListedThisWeek
+        // Never a 0: early in the week CDFW hasn't added most waters yet.
+        if (count == 0) return if (isStale(now)) "No favorites listed for the ${week.label}" else NO_FAVORITES_SCHEDULED_YET
         val noun = if (count == 1) "favorite" else "favorites"
         return if (isStale(now)) "$count $noun listed for the ${week.label}" else "$count $noun scheduled this week"
     }
@@ -156,7 +158,10 @@ data class WidgetDigest(
     }
 
     /** A true line about the published schedule itself, shown with [emptyMessage]. */
-    fun scheduleContext(): String {
+    fun scheduleContext(now: Instant): String {
+        if (watersListed == 0) {
+            return if (isStale(now)) "No waters are listed for the ${week.label}." else "No waters are listed yet for the ${week.label}."
+        }
         val waters = if (watersListed == 1) "1 water is" else "$watersListed waters are"
         return "$waters listed for the ${week.label}."
     }
@@ -172,6 +177,9 @@ data class WidgetDigest(
 
         /** No digest yet: the widget says to open the app, never "nothing scheduled". */
         const val NO_DIGEST_MESSAGE = "Open Trout Truck to load the schedule here."
+
+        /** No favorite listed in a week that isn't over: "yet", never "0 favorites". */
+        const val NO_FAVORITES_SCHEDULED_YET = "No favorites scheduled yet this week"
 
         /**
          * Builds the digest from what the app holds, favorites in the order

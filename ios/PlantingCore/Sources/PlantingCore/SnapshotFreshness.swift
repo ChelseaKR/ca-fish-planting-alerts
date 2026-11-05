@@ -115,11 +115,16 @@ public struct SnapshotFreshness: Equatable, Sendable {
     /// a published snapshot says so; a failed check can't produce one.
     public var summary: String {
         switch watersListed {
-        case 0: return "No waters are listed for that week."
+        // CDFW adds waters through the week, so an empty week that isn't
+        // over says "yet", as the site does; an ended week is definite.
+        case 0: return isStale ? "No waters are listed for that week." : Self.noWatersListedYet
         case 1: return "1 water is listed for that week."
         default: return "\(watersListed) waters are listed for that week."
         }
     }
+
+    /// An empty week that isn't over yet: the site's words (`index.html.jinja`).
+    public static let noWatersListedYet = "No waters are listed for that week yet. CDFW often adds waters after a week begins."
 
     /// The plain statement of how current this is.
     public var detail: String {

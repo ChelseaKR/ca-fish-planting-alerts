@@ -126,7 +126,7 @@ private fun Content(digest: WidgetDigest?, now: Instant) {
             }
             if (digest != null && !small) {
                 Spacer(GlanceModifier.height(4.dp))
-                Text(digest.scheduleContext(), style = TextStyle(fontSize = 11.sp, color = secondary))
+                Text(digest.scheduleContext(now), style = TextStyle(fontSize = 11.sp, color = secondary))
             }
             return@Column
         }

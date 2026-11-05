@@ -76,6 +76,17 @@ final class SnapshotFreshnessTests: XCTestCase {
     private let midWeek = utc("2026-09-16T18:00:00Z")
     private let weekLater = utc("2026-09-24T18:00:00Z")
 
+    /// CDFW adds waters through the week, so an empty week that isn't over
+    /// says "yet", as the site does; once it ends the words are definite.
+    func testAnEmptyWeekSaysYetUntilItEnds() {
+        let empty = TS.snapshot(sourceWeek: "2026-09-13", waters: [TS.water(id: "cdfw-1", plants: [TS.plant("2026-09-06")])])
+        let sunday = utc("2026-09-13T17:00:00Z")
+        let early = SnapshotFreshness(snapshot: empty, origin: .stored, meta: SnapshotMeta(), isChecking: false, now: sunday)
+        XCTAssertEqual(early.summary, "No waters are listed for that week yet. CDFW often adds waters after a week begins.")
+        let ended = SnapshotFreshness(snapshot: empty, origin: .stored, meta: SnapshotMeta(), isChecking: false, now: weekLater)
+        XCTAssertEqual(ended.summary, "No waters are listed for that week.")
+    }
+
     func testACurrentWeekAfterASuccessfulCheck() throws {
         let f = SnapshotFreshness(snapshot: try snapshot(), origin: .stored,
                                   meta: SnapshotMeta(lastAttemptAt: midWeek, lastSuccessAt: midWeek, lastOutcome: "updated"),
@@ -257,7 +268,7 @@ final class FailedFetchNeverRendersAbsenceTests: XCTestCase {
         XCTAssertEqual(store.snapshot.thisWeek, [], "sanity check: the published week really lists nothing")
         let f = freshness(store)
         XCTAssertFalse(f.checkFailed)
-        XCTAssertEqual(f.summary, "No waters are listed for that week.")
+        XCTAssertEqual(f.summary, SnapshotFreshness.noWatersListedYet, "the week isn't over, so CDFW may still add waters")
         XCTAssertEqual(f.headline, "Schedule for the week of 2026-09-13", "even an empty week is named")
         XCTAssertEqual(absenceClaims(in: f.summary), ["no waters"], "the detector must catch the empty-week sentence, or the test above proves nothing")
     }

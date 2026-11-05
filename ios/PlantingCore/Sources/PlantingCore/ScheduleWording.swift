@@ -26,7 +26,9 @@ public enum ScheduleWording {
     }
 
     /// "Last scheduled for the week of 2026-09-06", "Last stocked on
-    /// 2026-10-09", or an honest line when there is none.
+    /// 2026-10-09", or an honest line when there is none. A schedule water
+    /// with a later week coming up leads with it: "Next scheduled: the week
+    /// of 2026-09-20. Last scheduled for the week of 2026-09-06".
     public static func lastScheduledLine(for water: Water, sourceWeek: Week) -> String {
         if water.semantics == .report {
             return water.lastListedWeek.map(ReportWording.lastStocked) ?? noStockingOnRecord
@@ -37,8 +39,13 @@ public enum ScheduleWording {
             if let week = water.lastListedWeek { return "Last planned for \(week.phrase)" }
             return noScheduledWeekYet
         }
-        if let week = water.lastListedWeek {
-            return "Last scheduled for \(week.phrase)"
+        if let last = water.lastListedWeek {
+            // A week coming up leads, then the last one, so an upcoming week
+            // is never hidden behind "Last scheduled for" an older week.
+            guard let upcoming = water.listedPlants(onOrAfter: sourceWeek).first(where: { $0.week.start > last.start })?.week else {
+                return "Last scheduled for \(last.phrase)"
+            }
+            return "Next scheduled: \(upcoming.phrase). Last scheduled for \(last.phrase)"
         }
         if let next = nextScheduledLine(for: water, sourceWeek: sourceWeek) {
             return next

@@ -219,6 +219,9 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
     /// Favorites listed for the digest's week.
     public var favoritesListedThisWeek: Int { favorites.filter(\.isListedThisWeek).count }
 
+    /// No favorite listed in a week that isn't over: "yet", never "0 favorites".
+    public static let noFavoritesScheduledYet = "No favorites scheduled yet this week"
+
     /// A one-line summary for small spaces (the Lock Screen's inline widget).
     public func summary(at now: Date) -> String {
         if locked { return "Unlock full access in Trout Truck" }
@@ -228,6 +231,10 @@ public struct WidgetDigest: Codable, Equatable, Sendable {
             return "No favorite waters yet"
         }
         let count = favoritesListedThisWeek
+        // Never a 0: early in the week CDFW hasn't added most waters yet.
+        if count == 0 {
+            return isStale(at: now) ? "No favorites listed for the \(week.label)" : Self.noFavoritesScheduledYet
+        }
         let noun = count == 1 ? "favorite" : "favorites"
         if isStale(at: now) {
             return "\(count) \(noun) listed for the \(week.label)"

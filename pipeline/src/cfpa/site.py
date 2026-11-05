@@ -583,9 +583,10 @@ def _ics_fold(line: str) -> str:
 
 
 # How often a subscribed calendar should poll a water's feed. The publish
-# workflow runs once a day (.github/workflows/publish.yml, 13:17 UTC), so a
-# 12-hour poll shows a new week within about half a day of the site having
-# it, at two small requests a day per subscriber. RFC 7986 REFRESH-INTERVAL
+# workflow runs twice a day (.github/workflows/publish.yml, 13:17 and 01:17
+# UTC), so a 12-hour poll matches it: a calendar shows a change within about
+# half a day of the site having it, at two small requests a day per
+# subscriber. RFC 7986 REFRESH-INTERVAL
 # for current clients, X-PUBLISHED-TTL for Outlook and older Apple clients.
 ICS_REFRESH = "PT12H"
 

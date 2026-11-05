@@ -696,7 +696,7 @@ def test_control_a_wrong_agency_in_the_sentence_is_noticed(tmp_path: Path) -> No
     assert any("non-endorsement" in p for p in _problems(out))
 
 
-# ---- gear that fits the water (DECISIONS 0044)
+# ---- gear that fits the water (DECISIONS 0045)
 
 
 def test_every_gear_set_keeps_the_copy_rules_and_the_count() -> None:
@@ -741,7 +741,7 @@ def test_california_water_pages_carry_the_set_for_their_kind(built: Path) -> Non
 
 
 def test_the_gear_block_follows_the_schedule_table_on_water_pages(built: Path) -> None:
-    """Moved up from below "About this water" (DECISIONS 0044)."""
+    """Moved up from below "About this water" (DECISIONS 0045)."""
     checked = 0
     for path in sorted((built / "water").glob("*/index.html")):
         html = path.read_text(encoding="utf-8")

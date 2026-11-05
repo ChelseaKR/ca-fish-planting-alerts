@@ -1,5 +1,5 @@
 """Whether a water is still or moving, read from the agency's own name for it
-(DECISIONS 0044).
+(DECISIONS 0045).
 
 The data carries no lake-or-stream field, but the names the agencies publish
 nearly always end in one: "Collins Lake", "Kings River, Below Pine Flat Dam",

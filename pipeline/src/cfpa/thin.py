@@ -38,7 +38,7 @@ WATER_INDEX_MIN_DATED_ROWS = 2
 # impressions (18, 1 click) with 1 dated row, was in the top 25 or had 10 or
 # more impressions; the next thin page had 7.
 # The other four were checked 2026-10-31 by clicks over the same window
-# (DECISIONS 0044): each earned one Search click at an average position of 2
+# (DECISIONS 0045): each earned one Search click at an average position of 2
 # to 4, 4 of the site's 41 clicks in those 90 days, and every other thin page
 # earned none. Paths, as in sitemap.xml.
 KEEP_INDEXED_PATHS: frozenset[str] = frozenset(

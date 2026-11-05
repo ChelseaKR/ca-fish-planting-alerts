@@ -339,7 +339,7 @@ GEAR_CATEGORIES: tuple[tuple[str, str], ...] = (
     ("Landing net for trout", "trout landing net"),
 )
 # A water page picks four that fit the water, by the agency's own name for it
-# (cfpa.water_kind, DECISIONS 0044): at a lake, pond or reservoir, bait under
+# (cfpa.water_kind, DECISIONS 0045): at a lake, pond or reservoir, bait under
 # a bobber; on a river or creek, spinners and waders. Same count as the
 # general four, still categories, never a product.
 STILL_WATER_GEAR: tuple[tuple[str, str], ...] = (

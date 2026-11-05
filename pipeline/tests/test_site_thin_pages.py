@@ -132,7 +132,7 @@ def test_a_page_people_find_stays_indexed_however_thin() -> None:
 
 
 def test_the_kept_pages_include_the_ones_search_clicks_landed_on() -> None:
-    """DECISIONS 0044: the four thin pages that earned a Search click."""
+    """DECISIONS 0045: the four thin pages that earned a Search click."""
     assert {
         "/tn/water/martin-city-pond-weakley-county/",
         "/tn/water/milan-city-pond-gibson-county/",

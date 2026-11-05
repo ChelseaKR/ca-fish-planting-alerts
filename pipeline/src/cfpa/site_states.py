@@ -67,7 +67,7 @@ class StatesContext:
     # same reason. With no links, no state page carries the block.
     gear_links: tuple[dict[str, str], ...] = ()
     # The links for one water, by its kind (cfpa.water_kind, DECISIONS
-    # 0044): site.gear_links(kind=...). None keeps every water on gear_links.
+    # 0045): site.gear_links(kind=...). None keeps every water on gear_links.
     gear_links_for: Callable[[WaterKind | None], tuple[dict[str, str], ...]] | None = (
         None
     )

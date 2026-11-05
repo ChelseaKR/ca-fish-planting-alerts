@@ -1295,7 +1295,7 @@ the Android app launches with nothing for sale.
   Google Play Billing among the Android app's libraries, which overstates
   what the free build carries; it can be corrected separately.
 
-## 0044 — Keep four clicked thin pages indexed; gear that fits the water, moved up (2026-10-31)
+## 0045 — Keep four clicked thin pages indexed; gear that fits the water, moved up (2026-10-31)
 
 Follows 0041 and fits 0042: no new page, no new link surface, and no new
 links on any page. Two fixes to existing water pages.

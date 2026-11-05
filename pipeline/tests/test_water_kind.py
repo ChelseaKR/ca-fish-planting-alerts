@@ -1,4 +1,4 @@
-"""cfpa.water_kind: still or moving, from the agency's name (DECISIONS 0044)."""
+"""cfpa.water_kind: still or moving, from the agency's name (DECISIONS 0045)."""
 
 from __future__ import annotations
 

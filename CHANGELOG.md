@@ -13,7 +13,7 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
-- Site: gear that fits the water (DECISIONS 0044). A water page whose name
+- Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the
   general four. On California water pages the gear block now follows the

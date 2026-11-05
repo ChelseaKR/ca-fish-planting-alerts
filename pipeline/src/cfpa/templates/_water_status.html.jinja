@@ -15,6 +15,15 @@
     <dt>Later on the schedule</dt>
     <dd>The week of {{ water_status.later_week }}.</dd>
     {% endif %}
+    {% if answer and answer.near_status %}
+    {% set near = answer.near_status %}
+    {% if near.basis == "distance" %}
+    <dt>Nearest water on CDFW's schedule this week</dt>
+    {% else %}
+    <dt>On CDFW's schedule this week in {{ near.where }}</dt>
+    {% endif %}
+    <dd>{% for s in near.waters %}<a href="{{ root }}water/{{ s.slug }}/">{{ s.name }}</a>{% if near.basis != "county" %} ({{ s.county }}){% endif %}{% if s.miles %}, about {{ s.miles }} miles away{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}{% if near.more and near.basis != "distance" %}, and {{ near.more }} more on <a href="{{ root }}">this week's schedule</a>{% endif %}.{% if near.basis == "distance" %} {% include "_near_note.html.jinja" %}{% endif %}</dd>
+    {% endif %}
     <dt>Weeks on the schedule</dt>
     <dd>On the schedule in {{ water_status.weeks_on_schedule }} {{ "week" if water_status.weeks_on_schedule == 1 else "weeks" }}, counting the weeks we have recorded since {{ water_status.since_text }}.</dd>
   </dl>

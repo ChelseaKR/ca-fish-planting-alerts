@@ -3,6 +3,14 @@
 {% block content %}
 <h1>California {{ species }} planting schedule by county</h1>
 <p class="lede">
+  {# Answer first (DECISIONS 0046): this week's count and a link to it. #}
+  {% if answer %}
+  {% if answer.waters %}
+  This week, the {{ source_week_label }}, {{ answer.waters }} {{ "water" if answer.waters == 1 else "waters" }} in {{ answer.counties }} {{ "county" if answer.counties == 1 else "counties" }} {{ "is" if answer.waters == 1 else "are" }} on CDFW's schedule; see <a href="{{ root }}">this week's list</a>.
+  {% else %}
+  This week, the {{ source_week_label }}, CDFW's schedule lists no plants; see <a href="{{ root }}">the waters it scheduled next and most recently</a>.
+  {% endif %}
+  {% endif %}
   The {{ county_count }} California counties with a water on the California
   Department of Fish and Wildlife's planting schedule in the time this site
   has recorded, grouped by CDFW region. CDFW was called the Department of

@@ -1294,3 +1294,46 @@ the Android app launches with nothing for sale.
   this changes only the app and its docs. The privacy page still names
   Google Play Billing among the Android app's libraries, which overstates
   what the free build carries; it can be corrected separately.
+
+## 0046 — Answer first on seven named pages, held for the 11-17 reading (2026-11-04)
+
+Fixes 2 to 5 of the 2026-11-04 fallback plan (Batch A, with fix 6). Built
+now and held until the Search Console reading of 2026-11-17: they ship only
+if weekly impressions are still about 50. Fits 0042: no new page, no new
+page family, and fixes to existing pages only.
+
+- **Which pages.** `cfpa.answer_first.ANSWER_FIRST_PAGES`: `/`, `/county/`,
+  `/county/fresno/`, `/water/ralphine-lake/`, `/water/collins-lake/`,
+  `/water/skinner-lake/` and `/water/shadow-cliff-lake/`. Every other page
+  builds byte for byte as before. The plan's seven controls
+  (`CONTROL_PATHS`: `/county/los-angeles/`, `/county/sacramento/`, Mojave
+  Narrows, Halsey Forebay, Lake Hemet, Portal Forebay and `/tn/`) are pinned
+  by a test, so a rise shared by treated and control pages reads as a
+  site-wide re-score.
+- **What.** Each line comes from the snapshot at build time; nothing is
+  hard-coded per page. `/county/fresno/` opens with this week's waters, the
+  week each was listed before, the most recent other water, and the water
+  CDFW names "Fresno City ..." (Woodward Park Lake); from November through
+  February its winter section moves above "Scheduled for later weeks".
+  `/water/ralphine-lake/` leads its title and h1 with the USGS name (Lake
+  Ralphine), opens with its last scheduled week and the weeks it was on the
+  schedule in the same calendar quarter last year, and lists the nearest
+  waters on this week's schedule within 200 miles in place of the region
+  list. `/` says "CDFW (DFG) fish planting schedule" in its h1 (title kept)
+  and opens with this week's count of waters and counties, linking
+  `/county/` and last week's page. `/county/` opens with the same count and
+  links home. A treated water page whose badge is "None scheduled" adds a
+  water on this week's schedule to its status block.
+- **Nearest, honestly.** "Nearest" is said only between two U.S.
+  Geological Survey points, as a straight line rounded to 5 miles, and the
+  page says how many of this week's waters have no point and were not
+  compared. A water with no point gets this week's waters in its county,
+  else its CDFW region, under that heading. With nothing to name, the line
+  is left out; no page shows an empty list or a zero.
+- **Not included.** Operator links (Collins Lake, Riverside County Parks,
+  EBRPD) wait for the owner's yes. Fix 1 (Eagle Lake kept indexed) belongs
+  with 0045. Applying the same rules to every page is Batch B, gated on the
+  2026-12-15 reading.
+- **Sitemap.** A treated page whose opening names this week counts the
+  current week in its lastmod, and a water page counts the data dates of
+  the waters it names this week.

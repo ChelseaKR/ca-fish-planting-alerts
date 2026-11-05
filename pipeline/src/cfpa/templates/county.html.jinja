@@ -3,6 +3,24 @@
 {% block content %}
 <h1>{{ county }} County {{ species }} stocking and planting schedule</h1>
 <p class="lede">
+  {# Answer first (DECISIONS 0046): only the counties in answer_first. #}
+  {% if answer and answer.show %}
+  {% set n = answer.this_week|length %}
+  {% if n %}
+  This week (<a href="{{ root }}">week of {{ answer.week }}</a>), CDFW has {{ n }} {{ county }} County {{ "water" if n == 1 else "waters" }} on its {{ species }} planting schedule: {% for w in answer.this_week %}<a href="{{ root }}water/{{ w.slug }}/">{{ w.name }}</a>{% if not loop.last %}{{ " and " if loop.revindex == 2 else ", " }}{% endif %}{% endfor %}.
+  {% for w in answer.this_week if w.before %}
+  {{ "It" if n == 1 else w.name }} was also on the schedule the <a href="{{ root }}week/{{ w.before }}/">week of {{ w.before }}</a>.
+  {% endfor %}
+  {% else %}
+  This week (<a href="{{ root }}">week of {{ answer.week }}</a>), no {{ county }} County water is on CDFW's {{ species }} planting schedule.
+  {% endif %}
+  {% if answer.latest_other %}
+  <a href="{{ root }}water/{{ answer.latest_other.slug }}/">{{ answer.latest_other.name }}</a> was last on it the <a href="{{ root }}week/{{ answer.latest_other.week }}/">week of {{ answer.latest_other.week }}</a>.
+  {% endif %}
+  {% if answer.city %}
+  In the city of {{ county }}, <a href="{{ root }}water/{{ answer.city.slug }}/">{{ answer.city.name }}</a> was last on the schedule the <a href="{{ root }}week/{{ answer.city.week }}/">week of {{ answer.city.week }}</a>.
+  {% endif %}
+  {% endif %}
   {{ water_count }} {{ "water" if water_count == 1 else "waters" }} in {{ county }}
   County {{ "has" if water_count == 1 else "have" }} been on the California
   Department of Fish and Wildlife's {{ species }} planting schedule in the time
@@ -78,6 +96,9 @@
 <p>No {{ county }} County water is on CDFW's schedule for this week. That means no plant is scheduled here this week, not that there are no fish.</p>
 {% endif %}
 
+{% if answer and answer.winter_first %}
+{% include "_county_winter.html.jinja" %}
+{% endif %}
 <h2>Scheduled for later weeks</h2>
 {% if later_rows %}
 <table>
@@ -136,33 +157,8 @@
    only when the record covers a whole November through February. A record
    of what was scheduled, never a forecast; a water with no listed week in it
    is left out, so no row says zero. #}
-{% if county_winter %}
-<section class="county-winter" aria-labelledby="winter">
-<h2 id="winter">Winter {{ species }} plants in {{ county }} County</h2>
-{% if county_winter.rows %}
-{% set n = county_winter.rows|length %}
-<p>From {{ county_winter.label }}, CDFW's schedule listed {{ n }} {{ county }} County {{ "water" if n == 1 else "waters" }} for planting, in {{ county_winter.week_count }} {{ "week" if county_winter.week_count == 1 else "different weeks" }}. That is what was scheduled last winter, not a forecast for this one: this winter's weeks appear above as CDFW schedules them.</p>
-<table>
-  <caption class="visually-hidden">{{ county }} County waters on CDFW's schedule from {{ county_winter.label }}</caption>
-  <thead>
-    <tr>
-      <th scope="col">Water</th>
-      <th scope="col">Weeks listed last winter</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in county_winter.rows %}
-    <tr>
-      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
-      <td>{{ row.weeks }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p>No {{ county }} County water was on CDFW's schedule from {{ county_winter.label }}, the most recent whole winter on record here. That says what was scheduled, not that there are no fish.</p>
-{% endif %}
-</section>
+{% if not (answer and answer.winter_first) %}
+{% include "_county_winter.html.jinja" %}
 {% endif %}
 
 {% set gear_heading = "Gear for " ~ county ~ " County waters" %}

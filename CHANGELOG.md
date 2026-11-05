@@ -13,6 +13,14 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: answer first on seven named pages (DECISIONS 0046), held for the
+  2026-11-17 Search Console reading. `/county/fresno/` opens with this
+  week's waters and names Woodward Park Lake; `/water/ralphine-lake/` leads
+  with "Lake Ralphine", last year's weeks in the same quarter and the
+  nearest waters on this week's schedule; `/` says "CDFW (DFG) fish planting
+  schedule" and gives this week's count, as `/county/` does with a link home;
+  Collins, Skinner and Shadow Cliff add a water on this week's schedule to
+  their "None scheduled" status. Every other page is unchanged.
 - Site: a plain-language terms of use page at /terms/, linked from every
   page's footer next to privacy and listed in the sitemap. It names who runs
   the site, says the stocking data can be wrong or late and is not fishing

@@ -1,7 +1,11 @@
 {% extends "base.html.jinja" %}
 {% block content %}
 {% if week_is_empty %}
+{% if answer %}
+<h1>CDFW (DFG) fish planting schedule: nothing listed for the {{ source_week_label }}</h1>
+{% else %}
 <h1>California trout planting schedule: nothing listed for the {{ source_week_label }}</h1>
+{% endif %}
 <p class="lede">
   The California Department of Fish and Wildlife's schedule lists no plants
   for the current week, the {{ source_week_label }}. That means no plant is
@@ -12,8 +16,21 @@
   {{ generated_at_label }}.
 </p>
 {% else %}
+{% if answer %}
+{# Answer first (DECISIONS 0046): the agency's names people search with,
+   and this week's count, ahead of the region tables. #}
+<h1>CDFW (DFG) fish planting schedule this week: {{ source_week_label }}</h1>
+<p class="lede">
+  CDFW has {{ answer.waters }} {{ "water" if answer.waters == 1 else "waters" }} in
+  {{ answer.counties }} {{ "county" if answer.counties == 1 else "counties" }} on its
+  fish planting schedule this week, the {{ source_week_label }}. CDFW was the
+  Department of Fish and Game (DFG) before 2013. See the schedule
+  <a href="{{ root }}county/">by county</a>{% if answer.last_week %}, or
+  <a href="{{ root }}week/{{ answer.last_week }}/">last week's waters, the week of {{ answer.last_week }}</a>{% endif %}.
+{% else %}
 <h1>This week's California trout planting schedule: {{ source_week_label }}</h1>
 <p class="lede">
+{% endif %}
   California Department of Fish and Wildlife scheduled these waters for
   planting the {{ source_week_label }}. Plants are <strong>subject to
   change</strong> by CDFW &mdash; treat every entry as scheduled, not

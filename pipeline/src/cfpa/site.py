@@ -35,7 +35,17 @@ from urllib.parse import urlencode, urlsplit
 import jinja2
 
 from . import ads as ads_mod
-from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
+from . import (
+    answer_first,
+    feeds,
+    guides,
+    indexnow,
+    llms,
+    opendata,
+    share_cards,
+    site_states,
+    weeks,
+)
 from .snapshot import week_of
 from .thin import is_thin
 
@@ -1792,6 +1802,105 @@ def _water_map(point: list[Any] | None) -> dict[str, Any] | None:
     }
 
 
+def _scheduled_this_week(ctx: _PageContext) -> list[dict[str, Any]]:
+    """Every snapshot water listed for the current week."""
+    return [
+        s
+        for members in ctx.waters_by_region.values()
+        for s in members
+        if ctx.views[s["id"]]["this_week"]
+    ]
+
+
+def _answer_first_water(
+    ctx: _PageContext,
+    w: dict[str, Any],
+    view: dict[str, Any],
+    *,
+    recorded_since: str,
+) -> dict[str, Any]:
+    """What a water page in ``answer_first.ANSWER_FIRST_PAGES`` adds
+    (DECISIONS 0046), from the snapshot alone. Every key is empty for any
+    other page, so its template renders exactly as before.
+
+    ``lastmod`` is the newest data date the additions depend on: a
+    this-week line changes at every rollover and with the named waters' own
+    data, so it counts both."""
+    feats = answer_first.features(f"/water/{w['slug']}/")
+    name_first = "name_first" in feats and bool(view["usgs_name"])
+    shown = view["usgs_name"] if name_first else view["name"]
+    scheduled = _scheduled_this_week(ctx)
+    near = (
+        answer_first.scheduled_near(
+            w, scheduled, coords=ctx.coords, region_name=view["region_name"]
+        )
+        if feats & {"nearest_list", "nearest_status"}
+        else None
+    )
+    near_list = (
+        answer_first.shortened(
+            near,
+            answer_first.NEAREST_LIST_MAX,
+            max_miles=answer_first.NEAREST_LIST_MILES,
+        )
+        if "nearest_list" in feats
+        else None
+    )
+    # The status block's line is for a water with nothing this week or next
+    # (its "None scheduled" badge). "Nearest" names one water; a county or
+    # region match names a few.
+    next_week = (
+        dt.date.fromisoformat(ctx.source_week_start) + dt.timedelta(days=7)
+    ).isoformat()
+    badge_none = not view["this_week"] and not any(
+        p["status"] == "listed" and p["week"]["start"] == next_week for p in w["plants"]
+    )
+    near_status = (
+        answer_first.shortened(
+            near,
+            1 if near and near["basis"] == "distance" else answer_first.NEAR_STATUS_MAX,
+        )
+        if "nearest_status" in feats and badge_none
+        else None
+    )
+    named = {
+        r["slug"]
+        for n in (near_list, near_status)
+        if n is not None
+        for r in n["waters"]
+    }
+    lastmod = max(
+        [
+            _water_data_lastmod(s, source_week_start=ctx.source_week_start)
+            for s in scheduled
+            if s["slug"] in named
+        ]
+        + ([ctx.source_week_start] if named else []),
+        default="",
+    )
+    return {
+        "title": (
+            f"{shown} {view['species']} stocking schedule "
+            f"({view['county_phrase']}) | {SITE_NAME}"
+            if name_first
+            else ""
+        ),
+        "name_first": name_first,
+        "shown_name": shown,
+        "lede": answer_first.water_answer(w, source_week_start=ctx.source_week_start)
+        if "answer_lede" in feats
+        else None,
+        "season": answer_first.last_season(
+            w, source_week_start=ctx.source_week_start, recorded_since=recorded_since
+        )
+        if "last_season" in feats
+        else None,
+        "near_list": near_list,
+        "near_status": near_status,
+        "lastmod": lastmod,
+    }
+
+
 def _render_water_pages(
     ctx: _PageContext, waters: list[dict[str, Any]], *, recorded_since: str
 ) -> dict[str, str]:
@@ -1864,6 +1973,10 @@ def _render_water_page(
         (w["name"], page_url),
     ]
     title = _water_title(view)
+    # The answer-first changes for the few pages in answer_first (DECISIONS
+    # 0046); every other page gets an empty answer and is unchanged.
+    answer = _answer_first_water(ctx, w, view, recorded_since=recorded_since)
+    title = answer["title"] or title
     point = ctx.coords.get(w["slug"])
     # Fewer than two dated rows: noindex,follow, no gear block, and out of
     # the sitemap (build_site asks the same function; DECISIONS 0041).
@@ -1909,6 +2022,7 @@ def _render_water_page(
             checked_on=ctx.source_checked_on,
             recorded_since=recorded_since,
         ),
+        answer=answer,
     )
     _write_page(ctx.out_dir, f"water/{w['slug']}", html, ctx.written)
 
@@ -1922,11 +2036,15 @@ def _render_water_page(
     # The region links are navigation, not this water's data: they are left
     # out of the lastmod (docs: a new water in the region can change them
     # without moving this date, a known under-report).
-    return _water_lastmod(
-        w,
-        source_week_start=ctx.source_week_start,
-        siblings=list(siblings.values()),
-        nothing_current=view["nothing_current"],
+    return max(
+        _water_lastmod(
+            w,
+            source_week_start=ctx.source_week_start,
+            siblings=list(siblings.values()),
+            nothing_current=view["nothing_current"],
+        ),
+        # An answer-first line names this week's waters (DECISIONS 0046).
+        str(answer["lastmod"]),
     )
 
 
@@ -2080,6 +2198,28 @@ def _county_card(
     }
 
 
+def _answer_first_county(
+    ctx: _PageContext, county: str, members: list[dict[str, Any]]
+) -> dict[str, Any] | None:
+    """What a county page in ``answer_first.ANSWER_FIRST_PAGES`` opens with
+    (DECISIONS 0046), or None for every other county, whose page is then
+    unchanged. ``winter_first`` moves last winter's section up from November
+    through February, the months it describes."""
+    feats = answer_first.features(f"/county/{county_slug(county)}/")
+    if not feats:
+        return None
+    facts = answer_first.county_answer(
+        county, members, source_week_start=ctx.source_week_start
+    )
+    return {
+        **facts,
+        "show": "county_answer" in feats,
+        "winter_first": "winter_first" in feats
+        and is_winter_week(ctx.source_week_start),
+        "week": ctx.source_week_start,
+    }
+
+
 def _render_county_page(
     ctx: _PageContext,
     county: str,
@@ -2213,6 +2353,7 @@ def _render_county_page(
         source_fetched_label=ctx.source_fetched_label,
         gear_links=gear_links(),
         affiliate_rel=AFFILIATE_LINK_REL,
+        answer=_answer_first_county(ctx, county, members),
     )
     _write_page(ctx.out_dir, f"county/{county_slug(county)}", html, ctx.written)
     return page_url
@@ -2254,6 +2395,7 @@ def _render_counties_index(
     regions: list[dict[str, Any]],
     species: str,
     county_count: int,
+    answer: dict[str, Any] | None = None,
 ) -> str:
     """Write /county/. Returns its URL."""
     page_url = f"{ctx.base_url}/county/"
@@ -2285,6 +2427,8 @@ def _render_counties_index(
         regions=regions,
         species=species,
         county_count=county_count,
+        answer=answer,
+        source_week_label=ctx.source_week_label,
         gear_links=gear_links(),
         affiliate_rel=AFFILIATE_LINK_REL,
     )
@@ -3075,6 +3219,12 @@ def build_site(
     winter_season = latest_complete_winter(source_week_start, recorded_since)
 
     week_is_empty = not snapshot["this_week"]
+    # This week's count, for the openings of / and /county/ (DECISIONS 0046),
+    # and the most recent earlier week with a page, for the home page's link.
+    week_answer = {
+        **answer_first.week_count(snapshot["this_week"], waters_by_id),
+        "last_week": max(weeks.week_entries(snapshot), default=""),
+    }
     upcoming_rows, recent_rows = (
         _home_nearest_weeks(snapshot, county_link) if week_is_empty else ([], [])
     )
@@ -3123,6 +3273,7 @@ def build_site(
         winter=_home_winter(snapshot["waters"], winter_season, county_link),
         gear_links=gear_links(cold_months=is_winter_week(source_week_start)),
         affiliate_rel=AFFILIATE_LINK_REL,
+        answer=answer_first.for_page("/", "home_count", week_answer),
     )
     _write_page(out_dir, "", index_html, written)
 
@@ -3316,6 +3467,10 @@ def build_site(
                 *(data_lastmods[w["id"]] for w in members),
                 *(county_first_seen[o["name"]] for o in region_counties),
                 *([winter_season["shown_from"]] if winter_season else []),
+                # An answer-first opening names this week (DECISIONS 0046).
+                *answer_first.rollover_dates(
+                    f"/county/{county_slug(c)}/", source_week_start
+                ),
             ]
         )
         counties_by_region.setdefault(region_by_county.get(c, ""), []).append(
@@ -3338,8 +3493,16 @@ def build_site(
         ],
         species=site_species,
         county_count=len(county_names),
+        answer=answer_first.for_page("/county/", "counties_count", week_answer),
     )
     counties_index_lastmod = max(first_seen.values(), default=source_week_start)
+    # An answer-first opening names this week's count (DECISIONS 0046).
+    counties_index_lastmod = max(
+        [
+            counties_index_lastmod,
+            *answer_first.rollover_dates("/county/", source_week_start),
+        ]
+    )
     gear_url = _render_gear_page(ctx, build_date)
 
     # ---- region pages: one per CDFW region with a county page. The

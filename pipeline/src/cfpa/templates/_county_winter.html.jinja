@@ -1,0 +1,28 @@
+{% if county_winter %}
+<section class="county-winter" aria-labelledby="winter">
+<h2 id="winter">Winter {{ species }} plants in {{ county }} County</h2>
+{% if county_winter.rows %}
+{% set n = county_winter.rows|length %}
+<p>From {{ county_winter.label }}, CDFW's schedule listed {{ n }} {{ county }} County {{ "water" if n == 1 else "waters" }} for planting, in {{ county_winter.week_count }} {{ "week" if county_winter.week_count == 1 else "different weeks" }}. That is what was scheduled last winter, not a forecast for this one: this winter's weeks appear above as CDFW schedules them.</p>
+<table>
+  <caption class="visually-hidden">{{ county }} County waters on CDFW's schedule from {{ county_winter.label }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Water</th>
+      <th scope="col">Weeks listed last winter</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in county_winter.rows %}
+    <tr>
+      <td><a href="{{ root }}water/{{ row.slug }}/">{{ row.name }}</a></td>
+      <td>{{ row.weeks }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No {{ county }} County water was on CDFW's schedule from {{ county_winter.label }}, the most recent whole winter on record here. That says what was scheduled, not that there are no fish.</p>
+{% endif %}
+</section>
+{% endif %}

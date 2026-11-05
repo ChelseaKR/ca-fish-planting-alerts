@@ -1,7 +1,33 @@
 {% extends "base.html.jinja" %}
 {% set share_card_kind = "water" %}
 {% block content %}
+{% if answer and answer.name_first %}
+<h1>{{ answer.shown_name }} ({{ water.name }} on CDFW's schedule) {{ water.species }} stocking schedule</h1>
+{% else %}
 <h1>{{ water.search_place }} {{ water.species }} stocking schedule and history</h1>
+{% endif %}
+{# Answer first (DECISIONS 0046): only the pages in answer_first say this
+   here. Every week is a recorded CDFW week, nothing is forecast. #}
+{% if answer and (answer.lede or answer.season) %}
+<p>
+  {% if answer.lede %}
+  {% if answer.lede.kind == "this_week" %}
+  CDFW has {{ answer.shown_name }} on its {{ water.species }} planting schedule this week, the week of {{ answer.lede.week }}.
+  {% elif answer.lede.kind == "next" %}
+  CDFW has scheduled {{ answer.shown_name }} for a {{ water.species }} plant the week of {{ answer.lede.week }}.
+  {% else %}
+  CDFW last scheduled {{ answer.shown_name }} for a {{ water.species }} plant the week of {{ answer.lede.week }}.
+  {% endif %}
+  {% endif %}
+  {% if answer.season %}
+  {% if answer.season.weeks %}
+  Last {{ answer.season.season }} ({{ answer.season.label }}) it was on the schedule the {{ "week" if answer.season.weeks|length == 1 else "weeks" }} of {% for d in answer.season.weeks %}{{ d }}{% if not loop.last %}{{ " and " if loop.revindex == 2 else ", " }}{% endif %}{% endfor %}.
+  {% else %}
+  Last {{ answer.season.season }} ({{ answer.season.label }}) it was not on CDFW's schedule in any week.
+  {% endif %}
+  {% endif %}
+</p>
+{% endif %}
 {% include "_water_status.html.jinja" %}
 <p class="lede">
   {{ water.name }} is in {{ water.county_phrase }}, in the California
@@ -124,7 +150,21 @@
   {% endif %}
 </section>
 {% endfor %}
-{% if region_related %}
+{% if answer and answer.near_list %}
+{# In place of the region list (DECISIONS 0046): waters on this week's
+   schedule, nearest first when both points are known. #}
+{% set near = answer.near_list %}
+<section aria-labelledby="near-heading">
+  <h2 id="near-heading">{% if near.basis == "distance" %}Nearest waters on CDFW's schedule this week{% else %}On CDFW's schedule this week in {{ near.where }}{% endif %}</h2>
+  <ul class="water-index">
+    {% for s in near.waters %}
+    <li><a href="{{ root }}water/{{ s.slug }}/">{{ s.name }}</a> <span class="muted">({{ s.county }}{% if s.miles %}, about {{ s.miles }} miles{% endif %})</span></li>
+    {% endfor %}
+  </ul>
+  <p>{% include "_near_note.html.jinja" %}</p>
+  <p><a href="{{ root }}">Every water on this week's schedule</a></p>
+</section>
+{% elif region_related %}
 <section aria-labelledby="region-related-heading">
   <h2 id="region-related-heading">More waters in CDFW's {{ region_name }}</h2>
   <ul class="water-index">

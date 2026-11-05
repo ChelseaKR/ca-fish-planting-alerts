@@ -1,0 +1,9 @@
+{# How "nearest" was decided (DECISIONS 0046). Needs: near, from
+   answer_first.scheduled_near. #}
+{%- if near.basis == "distance" -%}
+<span class="muted">Measured in a straight line between U.S. Geological Survey points{% if near.unranked %}; {{ near.unranked }} of this week's {{ "water has" if near.unranked == 1 else "waters have" }} no point on this site and {{ "is" if near.unranked == 1 else "are" }} not compared{% endif %}.</span>
+{%- elif near.basis == "county" -%}
+<span class="muted">This site has no map point for {{ water.name }}, so these are the waters in its county.</span>
+{%- else -%}
+<span class="muted">This site has no map point for {{ water.name }}, and nothing in its county is on this week's schedule, so these are the waters in its CDFW region.</span>
+{%- endif -%}

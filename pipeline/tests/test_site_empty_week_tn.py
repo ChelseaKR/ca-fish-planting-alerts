@@ -260,14 +260,14 @@ def test_empty_week_home_leads_with_next_and_recent_rows_from_the_data(fresh):
     assert set(page.rows["recently-scheduled"]) == earlier
     assert label not in {w for _, w in later | earlier}  # each row has its own week
     assert page.h1 == (
-        f"California trout planting schedule: nothing listed for the {label}"
+        f"California trout planting schedule: nothing listed yet for the {label}"
     )
     # They lead: the empty-week sections come before every browse list.
     assert page.section_ids[:2] == ["next-scheduled", "recently-scheduled"]
     assert "scheduled these waters" not in page.visible
     assert "not that there are no fish" in page.visible
     assert page.description == (
-        f"CDFW's schedule lists no California fish plants for the {label}. "
+        f"CDFW's schedule lists no California fish plants yet for the {label}. "
         "The waters it scheduled next and most recently, with each water's "
         "trout stocking history."
     )

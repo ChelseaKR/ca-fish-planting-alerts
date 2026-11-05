@@ -29,9 +29,9 @@
  ],
  "counts": {
   "exact": 231,
-  "owner_resolved": 0,
+  "owner_resolved": 14,
   "ambiguous": 10,
-  "none": 146,
+  "none": 132,
   "owner_none": 0
  },
  "waters": [
@@ -3047,13 +3047,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 34.2661,
+    "lon": -118.392908,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 7115"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Hansen Dam Lake. CDFW's own planting point for stock id 7115, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 34.2661,
+     "lon": -118.392908,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 7115"
+    }
+   }
   },
   {
    "cdfw_stock_id": 7116,
@@ -3248,13 +3267,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 34.073182,
+    "lon": -118.260457,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 7342"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Echo Park Lake. CDFW's own planting point for stock id 7342, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...). Cross-check: GNIS 1732772 'Echo Lake' (Reservoir, Los Angeles) is 30 m away.",
+    "point": {
+     "lat": 34.073182,
+     "lon": -118.260457,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 7342"
+    }
+   }
   },
   {
    "cdfw_stock_id": 7348,
@@ -3362,13 +3400,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 33.90373,
+    "lon": -118.00657,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 7410"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names La Mirada Lake. CDFW's own planting point for stock id 7410, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 33.90373,
+     "lon": -118.00657,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 7410"
+    }
+   }
   },
   {
    "cdfw_stock_id": 7422,
@@ -3377,13 +3434,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 33.882028,
+    "lon": -118.334293,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 7422"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Alondra Park Lake. CDFW's own planting point for stock id 7422, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 33.882028,
+     "lon": -118.334293,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 7422"
+    }
+   }
   },
   {
    "cdfw_stock_id": 7449,
@@ -3392,13 +3468,32 @@
     "Orange"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 33.835836,
+    "lon": -117.838413,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 7449"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Eisenhower Park Lake. CDFW's own planting point for stock id 7449, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 33.835836,
+     "lon": -117.838413,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 7449"
+    }
+   }
   },
   {
    "cdfw_stock_id": 7453,
@@ -3446,13 +3541,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 33.820542,
+    "lon": -118.084551,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 7466"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names El Dorado Park Lakes. CDFW's own planting point for stock id 7466, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 33.820542,
+     "lon": -118.084551,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 7466"
+    }
+   }
   },
   {
    "cdfw_stock_id": 7498,
@@ -7652,13 +7766,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 34.034691,
+    "lon": -118.158507,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 27430"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Belvedere Lake. CDFW's own planting point for stock id 27430, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 34.034691,
+     "lon": -118.158507,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 27430"
+    }
+   }
   },
   {
    "cdfw_stock_id": 27431,
@@ -7667,13 +7800,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 33.85159,
+    "lon": -118.060307,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 27431"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Cerritos Lake. CDFW's own planting point for stock id 27431, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 33.85159,
+     "lon": -118.060307,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 27431"
+    }
+   }
   },
   {
    "cdfw_stock_id": 27434,
@@ -7682,13 +7834,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 33.9359,
+    "lon": -118.101231,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 27434"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Downey Wilderness Park Lake. CDFW's own planting point for stock id 27434, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 33.9359,
+     "lon": -118.101231,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 27434"
+    }
+   }
   },
   {
    "cdfw_stock_id": 27435,
@@ -7697,13 +7868,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 34.039924,
+    "lon": -118.218236,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 27435"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Hollenbeck Park Lake. CDFW's own planting point for stock id 27435, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 34.039924,
+     "lon": -118.218236,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 27435"
+    }
+   }
   },
   {
    "cdfw_stock_id": 27436,
@@ -7712,13 +7902,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 34.009354,
+    "lon": -118.370514,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 27436"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Kenneth Hahn Lake. CDFW's own planting point for stock id 27436, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 34.009354,
+     "lon": -118.370514,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 27436"
+    }
+   }
   },
   {
    "cdfw_stock_id": 27437,
@@ -7727,13 +7936,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 34.06624,
+    "lon": -118.202518,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 27437"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Lincoln Park Lake. CDFW's own planting point for stock id 27437, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 34.06624,
+     "lon": -118.202518,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 27437"
+    }
+   }
   },
   {
    "cdfw_stock_id": 27440,
@@ -7742,13 +7970,32 @@
     "Ventura"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 34.2665,
+    "lon": -118.763836,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 27440"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Rancho Simi Park Lake. CDFW's own planting point for stock id 27440, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 34.2665,
+     "lon": -118.763836,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 27440"
+    }
+   }
   },
   {
    "cdfw_stock_id": 27441,
@@ -7757,13 +8004,32 @@
     "Los Angeles"
    ],
    "kind": "lake",
-   "status": "none",
+   "status": "owner_resolved",
    "matched_name": null,
-   "method": null,
-   "location": null,
+   "method": "owner override, cited point",
+   "location": {
+    "lat": 34.112907,
+    "lon": -117.950271,
+    "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+    "kind": "named_point",
+    "source_feature_id": "ds2897 StockingWaterID 27441"
+   },
    "candidates": [],
    "near_misses": [],
-   "reason": "no GNIS feature with this name in the listed county"
+   "reason": null,
+   "override": {
+    "gnis_feature_id": null,
+    "resolved_by": "Chelsea (2026-11-05 approval to place this week's unplaced waters from CDFW data)",
+    "resolved_on": "2026-11-05",
+    "note": "No GNIS feature names Santa Fe Reservoir. CDFW's own planting point for stock id 27441, from its Planting Location dataset (BIOS ds2897, CC BY 4.0), downloaded 2026-11-05 from ArcGIS Hub as CSV (sha256 6662b863e6ed...).",
+    "point": {
+     "lat": 34.112907,
+     "lon": -117.950271,
+     "source": "California Department of Fish and Wildlife, Planting Location (BIOS ds2897)",
+     "source_url": "https://hub.arcgis.com/datasets/34c0ab8e9f434578969900cf87158320_0",
+     "source_feature_id": "ds2897 StockingWaterID 27441"
+    }
+   }
   },
   {
    "cdfw_stock_id": 27442,

@@ -1,5 +1,7 @@
 {# Status block at the top of a water page. Needs: water, water_status.
-   Every date is a recorded week from CDFW's schedule; nothing is estimated. #}
+   Every date is a recorded week from CDFW's schedule; nothing is estimated.
+   This week and next are never over, and CDFW posts most of a week's waters
+   after it begins, so a missing entry there says "yet" and when we checked. #}
 {% from "_status_badge.html.jinja" import status_badge %}
 <section class="water-status" aria-labelledby="water-status-heading">
   <h2 id="water-status-heading">Where {{ water.name }} stands on CDFW's schedule</h2>
@@ -8,9 +10,9 @@
     <dt>Last on the schedule</dt>
     <dd>{{ water_status.last_sentence }}</dd>
     <dt>This week, the week of {{ water_status.this_week }}</dt>
-    <dd>{{ "On CDFW's schedule." if water_status.in_this_week else "Not on CDFW's schedule." }}</dd>
+    <dd>{{ "On CDFW's schedule." if water_status.in_this_week else "Not on CDFW's schedule yet, as of " ~ source_fetched_label ~ "." }}</dd>
     <dt>Next week, the week of {{ water_status.next_week }}</dt>
-    <dd>{{ "On CDFW's schedule." if water_status.in_next_week else "Not on CDFW's schedule." }}</dd>
+    <dd>{{ "On CDFW's schedule." if water_status.in_next_week else "Not on CDFW's schedule yet, as of " ~ source_fetched_label ~ "." }}</dd>
     {% if water_status.later_week %}
     <dt>Later on the schedule</dt>
     <dd>The week of {{ water_status.later_week }}.</dd>

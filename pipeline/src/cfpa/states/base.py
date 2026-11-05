@@ -280,6 +280,13 @@ class StateSource:
     week_starts_on: int = 6
     week_days: int = 7
     week_phrase: str = "the week of a Sunday"
+    # A report source whose every fetch is the agency's whole file, every
+    # record it has ever published for the years we keep (Michigan's CSV goes
+    # back to 1979). A record that such a fetch no longer has was revised or
+    # deleted by the agency, so it is marked ``withdrawn`` and left out of the
+    # snapshot (``cfpa.states.store.merge``). False for a report that ages
+    # rows off, where a missing row means nothing.
+    whole_file: bool = False
 
     @property
     def removal_inference(self) -> bool:

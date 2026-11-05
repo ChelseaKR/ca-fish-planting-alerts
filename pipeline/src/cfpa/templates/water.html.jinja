@@ -85,6 +85,15 @@
 <p>No plants observed yet for {{ water.name }}.</p>
 {% endif %}
 
+{# The gear block sits right after the schedule table (DECISIONS 0045), about
+   two phone screens down. Below "About this water" it was about four. #}
+{% if gear_links %}
+{% set gear_heading = "Gear for this water" %}
+{% set gear_intro = "Planning a trip to " ~ water.name ~ "?" %}
+{% set gear_placement = "water" %}
+{% include "_gear_block.html.jinja" %}
+{% endif %}
+
 {% include "_water_record.html.jinja" %}
 {% include "_water_months.html.jinja" %}
 
@@ -100,13 +109,6 @@
   {% endif %}
   {% if water.other_names %}<dt>Also listed by CDFW as</dt><dd>{{ water.other_names }}</dd>{% endif %}
 </dl>
-
-{% if gear_links %}
-{% set gear_heading = "Gear for this water" %}
-{% set gear_intro = "Planning a trip to " ~ water.name ~ "?" %}
-{% set gear_placement = "water" %}
-{% include "_gear_block.html.jinja" %}
-{% endif %}
 
 
 {% for c in other_waters_by_county %}

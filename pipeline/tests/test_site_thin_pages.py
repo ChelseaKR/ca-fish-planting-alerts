@@ -125,9 +125,23 @@ def test_the_threshold_is_two_dated_rows(rows: int, want: bool) -> None:
 
 
 def test_a_page_people_find_stays_indexed_however_thin() -> None:
-    (kept,) = thin.KEEP_INDEXED_PATHS
-    assert thin.is_thin([], kept) is False
+    assert len(thin.KEEP_INDEXED_PATHS) == 6
+    for kept in thin.KEEP_INDEXED_PATHS:
+        assert thin.is_thin([], kept) is False
     assert thin.is_thin([], "/tn/water/some-other-water/") is True
+
+
+def test_the_kept_pages_include_the_ones_search_clicks_landed_on() -> None:
+    """DECISIONS 0045: the five thin pages that earned a Search click."""
+    assert {
+        "/tn/water/martin-city-pond-weakley-county/",
+        "/tn/water/milan-city-pond-gibson-county/",
+        "/tn/water/mossy-creek-new-jefferson-county/",
+        "/water/eagle-lake/",
+        "/water/lake-berryessa/",
+    } <= thin.KEEP_INDEXED_PATHS
+    for kept in thin.KEEP_INDEXED_PATHS:
+        assert kept.startswith("/") and kept.endswith("/"), kept
 
 
 # ---- a real build: every water page, both sides

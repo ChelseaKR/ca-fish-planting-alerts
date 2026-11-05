@@ -38,6 +38,7 @@ import jinja2
 from . import state_coverage
 from .states import SOURCES
 from .thin import is_thin
+from .water_kind import WaterKind, water_kind
 
 UPCOMING_DAYS = 60
 RECENT_DAYS = 45
@@ -65,6 +66,11 @@ class StatesContext:
     # site.AFFILIATE_LINK_REL and site.gear_endorsement, passed in for the
     # same reason. With no links, no state page carries the block.
     gear_links: tuple[dict[str, str], ...] = ()
+    # The links for one water, by its kind (cfpa.water_kind, DECISIONS
+    # 0045): site.gear_links(kind=...). None keeps every water on gear_links.
+    gear_links_for: Callable[[WaterKind | None], tuple[dict[str, str], ...]] | None = (
+        None
+    )
     affiliate_rel: str = ""
     gear_endorsement: Callable[[str], str] | None = None
 
@@ -725,7 +731,11 @@ def _render_water(
         has_counts=any(p["count"] is not None for p in plants),
         has_removed=any(p["removed"] for p in plants),
         neighbors=neighbors,
-        gear_links=list(ctx.gear_links)
+        gear_links=list(
+            ctx.gear_links_for(water_kind(w["name"]))
+            if ctx.gear_links_for
+            else ctx.gear_links
+        )
         if gear_allowed(state, species) and not thin
         else [],
         affiliate_rel=ctx.affiliate_rel,

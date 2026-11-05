@@ -1294,3 +1294,45 @@ the Android app launches with nothing for sale.
   this changes only the app and its docs. The privacy page still names
   Google Play Billing among the Android app's libraries, which overstates
   what the free build carries; it can be corrected separately.
+
+## 0045 — Keep five clicked thin pages indexed; gear that fits the water, moved up (2026-10-31)
+
+Follows 0041 and fits 0042: no new page, no new link surface, and no new
+links on any page. Two fixes to existing water pages.
+
+- **Five thin pages stay indexed.** 0041 kept thin pages by impressions.
+  By clicks, Search Console (`sc-domain:trouttruck.com`, 2026-08-01 to
+  2026-10-30) shows 41 clicks on the site, 4 of them on pages 0041
+  noindexed, one each at an average position of 2 to 4:
+  `/tn/water/martin-city-pond-weakley-county/`,
+  `/tn/water/milan-city-pond-gibson-county/`,
+  `/tn/water/mossy-creek-new-jefferson-county/` and
+  `/water/lake-berryessa/`. GA4 also shows an engaged organic landing on
+  the Milan and Mossy Creek pages. A fifth, `/water/eagle-lake/` (Eagle
+  Lake, Lassen County), earned one click at position 1 on 2026-11-03, after
+  that window closed; it is 1 of the site's 3 clicks from 2026-10-23 to
+  2026-11-04. All five join `KEEP_INDEXED_PATHS`. No other thin page earned
+  a click.
+- **Gear that fits the water.** Water pages are where people land (GA4,
+  2026-10-03 to 2026-10-31: most engaged organic and AI-assistant landings
+  are water pages), and no `gear_click` has been recorded. The click event
+  itself works: on 2026-10-31 a headless browser clicked the first gear link
+  on the live `/county/fresno/` and home pages, and the page sent a
+  `gear_click` hit (the test blocked the hit and the Amazon request, so
+  nothing reached GA4 or Amazon). So the block was reaching no one, or
+  offering nothing they wanted. A water page now picks its four searches by
+  the agency's own name for the water (`cfpa.water_kind`): a lake, pond or
+  reservoir gets dough bait and bobbers in place of the lure assortment and
+  waders; a river or creek gets spinners and spoons in place of the lure
+  assortment. A name with neither word keeps the general four. The rod and
+  the net stay in every set. County pages, the home page and `/county/`
+  keep the general four.
+- **Moved up.** On a California water page the block now follows the
+  planting history table instead of "About this water". On a phone that is
+  about two screens down instead of about four (measured on the live
+  `/water/ralphine-lake/` and `/water/shadow-cliff-lake/`, 390 px wide).
+  Label, disclosure, endorsement sentence, rel values and click labels are
+  unchanged.
+- **Risk.** The 2026-10-30 audit could not rule out that the affiliate
+  block fed the 2026-10-23 re-rank. Moving it up makes it more prominent on
+  about 310 California pages. Revert the move alone if that is a worry.

@@ -13,6 +13,14 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: gear that fits the water (DECISIONS 0045). A water page whose name
+  says lake, pond or reservoir offers dough bait and bobbers; one that says
+  river or creek offers spinners and spoons and waders; any other keeps the
+  general four. On California water pages the gear block now follows the
+  planting history table instead of "About this water". Five thin water pages
+  that earned a Search click stay indexed (`KEEP_INDEXED_PATHS`), Eagle Lake
+  among them.
+
 - Site: a plain-language terms of use page at /terms/, linked from every
   page's footer next to privacy and listed in the sitemap. It names who runs
   the site, says the stocking data can be wrong or late and is not fishing

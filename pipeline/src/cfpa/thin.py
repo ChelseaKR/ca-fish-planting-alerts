@@ -34,12 +34,23 @@ WATER_INDEX_MIN_DATED_ROWS = 2
 # Water pages that stay indexed, with their gear block, even though they are
 # thin: pages Search Console shows people already find. Checked 2026-10-30
 # against the top pages by impressions, 2026-08-01 to 2026-10-30
-# (sc-domain:trouttruck.com). Only this one, the 10th page of the site by
+# (sc-domain:trouttruck.com). Only the first, the 10th page of the site by
 # impressions (18, 1 click) with 1 dated row, was in the top 25 or had 10 or
-# more impressions; the next thin page had 7. Paths, as in sitemap.xml.
+# more impressions; the next thin page had 7.
+# The other four were checked 2026-10-31 by clicks over the same window
+# (DECISIONS 0045): each earned one Search click at an average position of 2
+# to 4, 4 of the site's 41 clicks in those 90 days, and every other thin page
+# earned none. The fifth, Eagle Lake (Lassen County), was checked 2026-11-04:
+# it earned one Search click at position 1 on 2026-11-03, after that window
+# closed (DECISIONS 0045). Paths, as in sitemap.xml.
 KEEP_INDEXED_PATHS: frozenset[str] = frozenset(
     {
         "/tn/water/fountain-city-lake-knox-county/",
+        "/tn/water/martin-city-pond-weakley-county/",
+        "/tn/water/milan-city-pond-gibson-county/",
+        "/tn/water/mossy-creek-new-jefferson-county/",
+        "/water/eagle-lake/",
+        "/water/lake-berryessa/",
     }
 )
 

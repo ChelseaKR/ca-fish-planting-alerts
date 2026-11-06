@@ -169,6 +169,7 @@ def test_the_build_writes_a_handful_of_small_cards_not_one_per_page(
     assert [c.name for c in cards] == [
         "county.png",
         "home.png",
+        "national.png",
         "region.png",
         "species.png",
         "state.png",
@@ -184,7 +185,8 @@ def test_the_build_writes_a_handful_of_small_cards_not_one_per_page(
 @pytest.mark.parametrize(
     ("rel", "kind"),
     [
-        ("index.html", "home"),
+        # A multi-state build's home page is national (DECISIONS 0052).
+        ("index.html", "national"),
         ("about/index.html", "home"),
         ("county/index.html", "county"),
         ("states/index.html", "state"),

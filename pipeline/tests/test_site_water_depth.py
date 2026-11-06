@@ -319,7 +319,8 @@ def test_home_and_county_index_link_the_tennessee_hub(tmp_path: Path) -> None:
     assert hub in _body_links(out / "index.html", f"{BASE}/")
     assert hub in _body_links(out / "county" / "index.html", f"{BASE}/county/")
     home = (out / "index.html").read_text(encoding="utf-8")
-    assert "Tennessee trout stocking schedule</a>" in home
+    # The national home page's state card (DECISIONS 0052).
+    assert 'data-ga-state="TN">Open the Tennessee schedule</a>' in home
 
 
 def test_a_california_only_build_has_no_state_link_in_the_body(tmp_path: Path) -> None:

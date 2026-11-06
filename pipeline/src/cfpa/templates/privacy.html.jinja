@@ -103,12 +103,22 @@
 <p id="link-clicks">
   <strong>Link click events.</strong> When you click a gear link on a
   water page or on the &ldquo;What to bring&rdquo; page (or on a county
+{% if states_nav %}
+  page, the county list or the home page), the calendar feed
+  (.ics) link on a water page, or a state card on the home page, Google
+  Analytics records that the click happened, which kind of page it was on
+  (such as a water page, a county page or the home page), the kind of
+  link (an Amazon search, a calendar feed or a state card), the link&rsquo;s
+  host name (www.amazon.com, or this site&rsquo;s own address) and, for a
+  state card, the state&rsquo;s two-letter code. It does not record the
+{% else %}
   page, the county list or the home page), or the calendar feed
   (.ics) link on a water page, Google Analytics records that the click
   happened, which kind of page it was on (such as a water page, a county
   page or the home page), the kind of
   link (an Amazon search or a calendar feed), and the link&rsquo;s host name
   (www.amazon.com, or this site&rsquo;s own address). It does not record the
+{% endif %}
   full link, so the affiliate tag and the search terms are not part of these
   events. The same rules apply as above: nothing is recorded if your browser
   sends Global Privacy Control or Do Not Track, or if you opted out. These

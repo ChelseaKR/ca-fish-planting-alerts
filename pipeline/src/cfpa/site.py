@@ -35,7 +35,17 @@ from urllib.parse import urlencode, urlsplit
 import jinja2
 
 from . import ads as ads_mod
-from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
+from . import (
+    feeds,
+    guides,
+    indexnow,
+    llms,
+    opendata,
+    share_cards,
+    site_states,
+    state_coverage,
+    weeks,
+)
 from .snapshot import week_of
 from .thin import is_thin
 from .water_kind import WaterKind, water_kind
@@ -2662,6 +2672,91 @@ def _home_nearest_weeks(
     return upcoming, recent
 
 
+# The national home page (DECISIONS 0052, plan N5): only in a build whose v2
+# carries more than one state. A California-only build keeps the California
+# title, H1 and description byte for byte.
+HOME_HEADING_NATIONAL = "Trout stocking schedules by state"
+HOME_DESCRIPTION_MAX = 160
+
+
+def _home_states(snapshot_v2: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    """One card per v2 state for the home page's state picker, in v2's order,
+    or None when the build has no v2 or California alone. Every value is read
+    from v2: a state added to or dropped from v2 adds or drops its card, and
+    no card can name a state v2 does not carry.
+
+    A state whose latest check failed and whose last good read is more than
+    a week old says "Updates paused since <that read>", the same rule and
+    helper as /states/ (``state_coverage._paused_since``, DECISIONS 0051),
+    as of v2's ``generated_at``. A state with no waters on record shows no
+    count rather than a zero."""
+    if snapshot_v2 is None or len(snapshot_v2["states"]) <= 1:
+        return None
+    now = dt.datetime.fromisoformat(snapshot_v2["generated_at"].replace("Z", "+00:00"))
+    cards = []
+    for s in snapshot_v2["states"]:
+        paused = state_coverage._paused_since(s, now)
+        last_read = s["checks"]["last_success_at"][:10]
+        cards.append(
+            {
+                "code": s["code"],
+                "name": s["name"],
+                # California's section is on this page; the others have hubs.
+                "href": "#california" if s["code"] == "CA" else f"{s['code'].lower()}/",
+                "agency": s["agency"]["short_name"],
+                "publishes": site_states.publishes_label(s),
+                "waters": s["waters_count"] or None,
+                "paused_since": (
+                    _fmt_date_human(paused.isoformat()) if paused else None
+                ),
+                "checked": None if paused else _fmt_date_human(last_read),
+            }
+        )
+    return cards
+
+
+def _home_description_national(
+    names: list[str], source_week_label: str, *, week_is_empty: bool
+) -> str:
+    """The national home page's meta description: the states v2 carries, by
+    name while that fits in HOME_DESCRIPTION_MAX characters, else by count,
+    then California's week (or, in an empty week, its nearest weeks)."""
+    california = (
+        "California's next and latest scheduled waters"
+        if week_is_empty
+        else f"California's schedule for the {source_week_label}"
+    )
+    tail = f". {california} and each water's history."
+    named = f"Trout stocking by state: {_join_names(names)}{tail}"
+    if len(named) <= HOME_DESCRIPTION_MAX:
+        return named
+    return f"Trout stocking by state, from {len(names)} state agencies{tail}"
+
+
+def _home_meta(
+    home_states: list[dict[str, Any]] | None,
+    source_week_label: str,
+    species: str,
+    *,
+    week_is_empty: bool,
+) -> tuple[str, str]:
+    """The home page's title and meta description: national when the build
+    has state cards (DECISIONS 0052), else California's, unchanged."""
+    if home_states:
+        return (
+            f"{HOME_HEADING_NATIONAL} | {SITE_NAME}",
+            _home_description_national(
+                [c["name"] for c in home_states],
+                source_week_label,
+                week_is_empty=week_is_empty,
+            ),
+        )
+    return (
+        f"California {species} planting schedule this week | {SITE_NAME}",
+        _home_description(source_week_label, species, week_is_empty=week_is_empty),
+    )
+
+
 def _home_description(
     source_week_label: str, species: str, *, week_is_empty: bool
 ) -> str:
@@ -2890,7 +2985,8 @@ def _share_card_kinds(
     if species_pages_in(snapshot):
         kinds.append("species")
     if snapshot_v2 is not None and len(snapshot_v2["states"]) > 1:
-        kinds.append("state")
+        # The state pages, and the national home page (DECISIONS 0052).
+        kinds += ["state", "national"]
     return kinds
 
 
@@ -3128,11 +3224,17 @@ def build_site(
     upcoming_rows, recent_rows = (
         _home_nearest_weeks(snapshot, county_link) if week_is_empty else ([], [])
     )
+    # The national home page (DECISIONS 0052): a state picker from v2 above
+    # California's section, which keeps its sentence as an H2.
+    home_states = _home_states(snapshot_v2)
+    home_title, home_description = _home_meta(
+        home_states, source_week_label, site_species, week_is_empty=week_is_empty
+    )
     index_html = env.get_template("index.html.jinja").render(
-        title=f"California {site_species} planting schedule this week | {SITE_NAME}",
-        description=_home_description(
-            source_week_label, site_species, week_is_empty=week_is_empty
-        ),
+        title=home_title,
+        description=home_description,
+        home_states=home_states,
+        home_heading=HOME_HEADING_NATIONAL,
         canonical_url=f"{base_url}/",
         root="./",
         **common,

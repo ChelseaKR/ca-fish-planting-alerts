@@ -1336,3 +1336,36 @@ links on any page. Two fixes to existing water pages.
 - **Risk.** The 2026-10-30 audit could not rule out that the affiliate
   block fed the 2026-10-23 re-rank. Moving it up makes it more prominent on
   about 310 California pages. Revert the move alone if that is a worry.
+
+## 0052 — A national home page; California's list stays on `/` (2026-11-05)
+
+Follows 0049, 0050 (national chrome) and 0051 (/states/), and the national
+plan's stage 3 (`tt-national-plan-2026-11-05.md`, PR N5). Merge on or after
+2027-01-11, after the 2027-01-09 Search Console go.
+
+- **Only in a multi-state build.** It switches on when v2 carries more than
+  one state. A California-only build, or one with no v2, keeps the
+  California home page byte for byte.
+- **Title, H1, description.** "Trout stocking schedules by state | Trout
+  Truck" and "Trout stocking schedules by state". The description names
+  each v2 state while it fits in 160 characters, else counts them, then
+  California's week. No URL changes, and `/county/` keeps its title.
+- **State cards, from v2 only.** One card per v2 state, in v2's order: what
+  its agency publishes (the /states/ words), its number of waters (no count
+  rather than a zero), and "Last checked <date>" from its last good read. A
+  state whose latest check failed and whose last good read is more than 7
+  days old says "Updates paused since <date>", the /states/ rule
+  (`state_coverage._paused_since`, 0051). No card for a state v2 does not
+  carry. Then "Your state isn't here?" links `/states/#every-state`.
+- **California's section.** The sentence that was the H1 is the H2
+  `#california`, and everything below it is unchanged. California's card
+  links there. The gear intro and app line stop saying CDFW and "the new
+  week", since report and plan states have no new weeks.
+- **Share card and llms.txt.** The home page uses a new "national" card;
+  other pages keep theirs. llms.txt's Home and States lines describe the
+  national home.
+- **Measurement.** Each card link carries `data-ga-event="state_card_click"`
+  with the state's two-letter code, through the same GA4 tag and opt-outs.
+  The privacy page says so.
+- **Not changed.** The WebSite JSON-LD description is 0050's. Breadcrumbs
+  stay "Home > Counties > ..." (the plan's optional item, left out).

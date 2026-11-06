@@ -25,6 +25,8 @@ says so (``homepage_only``).
 from __future__ import annotations
 
 import dataclasses
+import datetime as dt
+from collections.abc import Mapping
 from typing import Any
 
 from .states import SOURCES
@@ -33,6 +35,12 @@ LINKS_CHECKED = "2026-10-23"
 
 # Being added: each has a reader in cfpa.states already.
 COMING_SOON: frozenset[str] = frozenset({"MA", "MI", "NY"})
+
+# A state whose latest check failed reads "paused" once its last good read is
+# older than this many days (plan section 4). The same rule and helper as PR
+# N4 (DECISIONS 0051), which /states/ uses; the home page's state cards
+# (DECISIONS 0052) read it here so the two pages can never disagree.
+PAUSED_AFTER_DAYS = 7
 
 STATE_NAMES: dict[str, str] = {
     "AL": "Alabama",
@@ -385,6 +393,17 @@ def agency_link(code: str) -> AgencyLink:
         return AGENCY_LINKS[code]
     src = SOURCES[code]
     return AgencyLink(src.agency_name, src.agency_short_name, src.source_url)
+
+
+def _paused_since(state: Mapping[str, Any], now: dt.datetime) -> dt.date | None:
+    """The last good read's date when a v2 state is paused, else None."""
+    checks = state["checks"]
+    if checks["last_attempt_ok"]:
+        return None
+    last = dt.datetime.fromisoformat(checks["last_success_at"].replace("Z", "+00:00"))
+    if now - last <= dt.timedelta(days=PAUSED_AFTER_DAYS):
+        return None
+    return last.date()
 
 
 def coverage(live: dict[str, str]) -> list[dict[str, Any]]:

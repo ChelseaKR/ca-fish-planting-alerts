@@ -79,6 +79,11 @@ CARD_KINDS: dict[str, CardKind] = {
         "Trout plantings by state",
         "Each state's own schedule or report, at the precision it gives",
     ),
+    # The home page of a multi-state build (DECISIONS 0052).
+    "national": CardKind(
+        "Trout schedules, state by state",
+        "Each state's own agency data, with every water's history",
+    ),
 }
 
 

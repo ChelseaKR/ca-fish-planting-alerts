@@ -95,6 +95,8 @@ def render(
     """``states`` are site._open_data_states() entries (empty when the build
     has no v2 snapshot); ``region_feeds`` are (display name, feed URL)."""
     kinds = _names_by_kind(states)
+    # A multi-state build's home page is the national one (DECISIONS 0052).
+    national = len(states) > 1
     lines = [
         f"# {site_name}",
         "",
@@ -102,8 +104,13 @@ def render(
         "",
         _meaning(kinds),
         "",
-        "Update cadence: the site is rebuilt twice a day (13:17 and 01:17 UTC). California's "
-        f"schedule is published weekly; the current week in this build is the {week_label}."
+        "Update cadence: the site is rebuilt twice a day (13:17 and 01:17 UTC). "
+        + (
+            "Each agency publishes on its own rhythm; California's "
+            if national
+            else "California's "
+        )
+        + f"schedule is published weekly; the current week in this build is the {week_label}."
         + (
             ' Each state\'s "last successful check" date is on the open data page.'
             if states
@@ -121,14 +128,19 @@ def render(
         "",
         "## Pages",
         "",
-        f"- [Home]({base_url}/): this week's California schedule",
+        (
+            f"- [Home]({base_url}/): each state on this site at a glance, and "
+            "California's schedule for the current week"
+            if national
+            else f"- [Home]({base_url}/): this week's California schedule"
+        ),
         f"- [Counties]({base_url}/county/): every California county with a page; one page per water under /water/<name>/",
         f"- [About, attribution and privacy]({base_url}/about/): sources and license terms, quoted",
         *(
             [
-                f"- [Other states]({base_url}/states/): states beyond California and what each agency publishes"
+                f"- [States]({base_url}/states/): each state's status, live or linked to its agency"
             ]
-            if len(states) > 1
+            if national
             else []
         ),
         f"- [Sitemap]({base_url}/sitemap.xml)",

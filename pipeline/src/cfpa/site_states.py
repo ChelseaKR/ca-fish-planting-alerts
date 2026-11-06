@@ -104,6 +104,16 @@ def words(state: dict[str, Any]) -> dict[str, str]:
     return {"kind": "schedule", "verb": "scheduled", "Verb": "Scheduled"}
 
 
+def publishes_label(state: dict[str, Any]) -> str:
+    """What a v2 state's agency publishes, in the words /states/ and the home
+    page's state cards (DECISIONS 0052) both show."""
+    if state["code"] == "CA":
+        return "Weekly schedule"
+    return {"schedule": "Schedule", "plan": "Spring plan"}.get(
+        state["semantics"], "Stocking report"
+    )
+
+
 def status_label(status: str, semantics: str = "schedule") -> str:
     if status == "listed" and semantics == "plan":
         return "Planned"
@@ -469,11 +479,7 @@ def _render_index(
             "name": s["name"],
             "href": "../" if s["code"] == "CA" else f"../{s['code'].lower()}/",
             "agency": s["agency"]["name"],
-            "kind": "Weekly schedule"
-            if s["code"] == "CA"
-            else {"schedule": "Schedule", "plan": "Spring plan"}.get(
-                s["semantics"], "Stocking report"
-            ),
+            "kind": publishes_label(s),
             "waters": s["waters_count"],
             "checked": _fmt_dt(s["checks"]["last_success_at"]),
         }

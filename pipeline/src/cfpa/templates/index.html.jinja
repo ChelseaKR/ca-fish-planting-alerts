@@ -1,7 +1,36 @@
 {% extends "base.html.jinja" %}
+{% if home_states %}{% set share_card_kind = "national" %}{% endif %}
 {% block content %}
+{% if home_states %}
+{# The national home page (DECISIONS 0052, plan N5): only when v2 carries
+   more than one state. Each card is a v2 state (site._home_states); none is
+   typed here. California's section follows under its own H2, with the
+   sentence that was this page's H1. #}
+<h1>{{ home_heading }}</h1>
+<p class="lede">
+  Each state's wildlife agency publishes trout stocking differently.
+  {{ site_name }} shows each one exactly as the agency does, and keeps every
+  water's history.
+</p>
+<section aria-labelledby="pick-state">
+  <h2 id="pick-state">Pick a state</h2>
+  <ul class="tt-states" aria-label="States on {{ site_name }}">
+    {% for c in home_states %}
+    <li class="tt-state tt-state--live" id="home-state-{{ c.code|lower }}">
+      <h3>{{ c.name }}</h3>
+      <p>{{ c.publishes }} from {{ c.agency }}{% if c.waters %}, {{ c.waters }} {{ "water" if c.waters == 1 else "waters" }}{% endif %}</p>
+      <p>{% if c.paused_since %}<span class="tt-badge tt-badge--next">Updates paused since {{ c.paused_since }}</span>{% else %}Last checked {{ c.checked }}{% endif %}</p>
+      <p><a href="{{ c.href }}" data-ga-event="state_card_click" data-ga-placement="home" data-ga-type="state_card" data-ga-state="{{ c.code }}">Open the {{ c.name }} {{ c.publishes|lower }}</a></p>
+    </li>
+    {% endfor %}
+  </ul>
+  <p>Your state isn't here? <a href="{{ root }}states/#every-state">See where each state stands</a>.</p>
+</section>
+{% endif %}
+{% set ca_tag = "h2" if home_states else "h1" %}
+{% set ca_id = ' id="california"'|safe if home_states else "" %}
 {% if week_is_empty %}
-<h1>California trout planting schedule: nothing listed yet for the {{ source_week_label }}</h1>
+<{{ ca_tag }}{{ ca_id }}>California trout planting schedule: nothing listed yet for the {{ source_week_label }}</{{ ca_tag }}>
 <p class="lede">
   The California Department of Fish and Wildlife's schedule lists no plants
   yet for the current week, the {{ source_week_label }}. That means no plant
@@ -13,18 +42,12 @@
   {{ generated_at_label }}.
 </p>
 {% else %}
-<h1>This week's California trout planting schedule: {{ source_week_label }}</h1>
+<{{ ca_tag }}{{ ca_id }}>This week's California trout planting schedule: {{ source_week_label }}</{{ ca_tag }}>
 <p class="lede">
   California Department of Fish and Wildlife scheduled these waters for
   planting the {{ source_week_label }}. Plants are <strong>subject to
   change</strong> by CDFW &mdash; treat every entry as scheduled, not
   confirmed. Data refreshed {{ generated_at_label }}.
-</p>
-{% endif %}
-{% if other_states %}
-<p>
-  Also on {{ site_name }}:
-  {% for s in other_states %}<a href="{{ root }}{{ s.seg }}/">{{ s.name }} trout stocking schedule</a>{% if not loop.last %}, {% endif %}{% endfor %}.
 </p>
 {% endif %}
 {% if feed_path %}
@@ -142,7 +165,7 @@
 
 {% if gear_links %}
 {% set gear_heading = "Gear for a day at a trout water" %}
-{% set gear_intro = "Heading to a water on CDFW's schedule?" %}
+{% set gear_intro = "Heading to a stocked water?" if home_states else "Heading to a water on CDFW's schedule?" %}
 {% set gear_placement = "home" %}
 {% include "_gear_block.html.jinja" %}
 {% endif %}
@@ -162,9 +185,11 @@
 
 <h2>Browse by water</h2>
 {% if app_store_url %}
-<p><a href="{{ app_store_url }}" data-app-store-placement="home" data-app-store-kind="link">Get the iOS app</a> for local notifications when a favorite water appears in the new week &mdash; no account, no server, alerts happen on your device.</p>
+{% set app_when = "is newly on its agency's schedule or report" if home_states else "appears in the new week" %}
+<p><a href="{{ app_store_url }}" data-app-store-placement="home" data-app-store-kind="link">Get the iOS app</a> for local notifications when a favorite water {{ app_when }} &mdash; no account, no server, alerts happen on your device.</p>
 {% else %}
-<p>An iOS app with local notifications when a favorite water appears in the new week is on its way &mdash; no account, no server, alerts happen on your device. <a href="{{ root }}about/#app">How the app will work</a>.</p>
+{% set app_when = "is newly on its agency's schedule or report" if home_states else "appears in the new week" %}
+<p>An iOS app with local notifications when a favorite water {{ app_when }} is on its way &mdash; no account, no server, alerts happen on your device. <a href="{{ root }}about/#app">How the app will work</a>.</p>
 {% endif %}
 <ul class="water-index">
   {% for w in all_waters %}

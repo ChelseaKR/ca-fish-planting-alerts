@@ -81,27 +81,32 @@
     allow_google_signals: false,
     allow_ad_personalization_signals: false
   });
-  // Clicks on a gear link (the outside search links on a water page) and on a
-  // calendar feed (.ics) link. Same tag, same rules: this code sits below the
-  // GPC, Do Not Track and footer opt-out returns, and it checks ga-disable at
-  // click time, so a same-page opt-out also stops it. The two event names
-  // above are the whole list. Each carries three labels the page itself sets
+  // Clicks on a gear link (the outside search links on a water page), on a
+  // calendar feed (.ics) link, and on a state card on the home page
+  // (DECISIONS 0052). Same tag, same rules: this code sits below the GPC, Do
+  // Not Track and footer opt-out returns, and it checks ga-disable at click
+  // time, so a same-page opt-out also stops it. The three event names below
+  // are the whole list. Each carries three labels the page itself sets
   // (data-ga-placement, data-ga-type) or the browser derives (the link's host
-  // name): where on the site, what kind of link, and which host. Never the
-  // full URL, so the affiliate tag and any query never leave the page, and
-  // nothing about the visitor.
-  var linkEvents = { gear_click: 1, calendar_subscribe_click: 1 };
+  // name): where on the site, what kind of link, and which host. A state card
+  // adds the state's two-letter code (data-ga-state). Never the full URL, so
+  // the affiliate tag and any query never leave the page, and nothing about
+  // the visitor.
+  var linkEvents = { gear_click: 1, calendar_subscribe_click: 1, state_card_click: 1 };
   d.addEventListener("click", function (e) {
     var t = e.target;
     var a = t && t.closest ? t.closest("a[data-ga-event]") : null;
     if (!a || w["ga-disable-" + id]) return;
     var name = a.getAttribute("data-ga-event");
     if (!linkEvents.hasOwnProperty(name)) return;
-    gtag("event", name, {
+    var params = {
       placement: a.getAttribute("data-ga-placement") || "unknown",
       link_type: a.getAttribute("data-ga-type") || "link",
       link_host: a.hostname || ""
-    });
+    };
+    var state = a.getAttribute("data-ga-state");
+    if (state) params.state = state;
+    gtag("event", name, params);
   });
 {% if app_store_live %}
   // A click on any App Store badge or install link (site.py

@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: national home page (DECISIONS 0052). In a multi-state build the home
+  page's title and H1 are "Trout stocking schedules by state", and one card
+  per v2 state shows what its agency publishes, its number of waters and its
+  last good read, or "Updates paused since <date>" by the /states/ rule.
+  California's list stays on `/` under its own H2. New share card, llms.txt
+  page lines and a `state_card_click` GA4 event (state code only).
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the

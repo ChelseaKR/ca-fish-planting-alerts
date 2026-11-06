@@ -275,6 +275,59 @@ def test_a_subscribe_click_sends_webcal_and_the_site_host(tmp_path, tag_js, wate
     ]
 
 
+@pytest.fixture(scope="module")
+def national_home(tmp_path_factory: pytest.TempPathFactory) -> str:
+    """The national home page (DECISIONS 0052): a build with more states."""
+    out = _build(
+        tmp_path_factory.mktemp("link-clicks-national"),
+        TEST_ID,
+        states_dir=tmp_path_factory.mktemp("states"),
+        states_fetch=("TN", "MA"),
+        states_fixtures=FIXTURES / "states",
+    )
+    return (out / "index.html").read_text(encoding="utf-8")
+
+
+def test_a_state_card_click_sends_placement_type_host_and_state(
+    tmp_path, tag_js, national_home
+):
+    cards = _anchors(national_home, "state_card_click")
+    assert [a["data-ga-state"] for a in cards] == ["CA", "MA", "TN"]
+    tn = next(a for a in cards if a["data-ga-state"] == "TN")
+    assert tn["href"] == "tn/"
+    ran = _click(tmp_path, tag_js, tn, {"navigator": {}})
+    assert ran["events"] == [
+        [
+            "event",
+            "state_card_click",
+            {
+                "placement": "home",
+                "link_type": "state_card",
+                "link_host": "example.invalid",
+                "state": "TN",
+            },
+        ]
+    ]
+
+
+@pytest.mark.parametrize(
+    "name", ["dnt-1", "footer-opt-out-stored", "ga-disable-after-load", "gpc"]
+)
+def test_no_state_card_event_under_an_opt_out(tmp_path, tag_js, national_home, name):
+    anchor = _anchors(national_home, "state_card_click")[0]
+    assert _click(tmp_path, tag_js, anchor, OPT_OUTS[name])["events"] == []
+
+
+def test_control_a_tag_without_the_state_card_event_sends_nothing(
+    tmp_path, tag_js, national_home
+):
+    anchor = _anchors(national_home, "state_card_click")[0]
+    sabotaged = tag_js.replace(", state_card_click: 1", "", 1)
+    assert sabotaged != tag_js  # the sabotage landed
+    assert _click(tmp_path, sabotaged, anchor, {"navigator": {}})["events"] == []
+    assert _click(tmp_path, tag_js, anchor, {"navigator": {}})["events"] != []
+
+
 def test_a_click_off_a_marked_link_sends_nothing(tmp_path, tag_js):
     assert _click(tmp_path, tag_js, None, {"navigator": {}})["events"] == []
 

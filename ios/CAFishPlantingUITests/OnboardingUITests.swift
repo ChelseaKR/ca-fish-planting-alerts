@@ -25,7 +25,7 @@ final class OnboardingUITests: XCTestCase {
         "Welcome to Trout Truck",
         "Find your waters",
         "Star the waters you fish",
-        "A week, never a day",
+        "Never more precise than the agency",
     ]
 
     override func setUpWithError() throws {

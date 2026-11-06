@@ -201,6 +201,9 @@ class ParsedFeed:
     last_modified: str | None
     skipped: int = 0
     etag: str | None = None
+    # Rows skipped for a reason worth naming (not just "no usable date"),
+    # one line each, printed in the run log.
+    skipped_notes: tuple[str, ...] = ()
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

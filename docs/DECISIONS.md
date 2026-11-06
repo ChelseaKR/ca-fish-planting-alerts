@@ -1337,6 +1337,42 @@ links on any page. Two fixes to existing water pages.
   block fed the 2026-10-23 re-rank. Moving it up makes it more prominent on
   about 310 California pages. Revert the move alone if that is a worry.
 
+## 0049 — National framing; every California URL unchanged (2026-11-05)
+
+Chelsea, 2026-11-05: "reorient trout truck as a national platform not
+focused on california." She approved the nine recommendations in the
+2026-11-05 national plan as written.
+
+- **Brand line.** "Trout stocking schedules, state by state." It stays true
+  at one state or fifty and carries the search words. Copy never says "all
+  states", "every state", "nationwide" or "50 states".
+- **Names stay.** The display name stays "Trout Truck" and the repository
+  stays `ca-fish-planting-alerts`: both apps read
+  `chelseakr.github.io/ca-fish-planting-alerts/snapshot/v2.json`, and GitHub
+  Pages does not redirect a renamed repository's site, so a rename would cut
+  every installed build's data. Bundle, product and package IDs never change
+  (0010).
+- **California's URLs and page titles stay.** About 79% of Search Console
+  impressions from 2026-08-01 to 2026-11-03 landed on California's root
+  pages, and California's head terms rank on `/county/`, not on `/`. There
+  is no `/ca/` move and no redirect. Only the frame changes: shared chrome,
+  then `/states/`, then the home page, each a separate PR at least a week
+  apart and none before 2026-11-27 (0042).
+- **Live states come from data.** Shared copy that lists states builds the
+  list from `snapshot/v2.json`, so a state that is added or paused changes
+  the words by itself. Hand-written drafts (the README and the store
+  listings) are dated, and leave out a state whose newest check failed more
+  than 7 days earlier. Tennessee is out of the store copy for now: its last
+  good read was 2026-10-15.
+- **Apps.** The apps' national wording merges to `main` now. Android ships
+  it in the next Play release; iOS waits for the Board's answer on 1.0.0,
+  whose App Store Connect copy stays frozen. A first-run state picker
+  (no location; skipping shows the States list) comes later, in its own PR.
+- **First change (this one).** The README, the next iOS version's listing
+  (`docs/app-store/LISTING-MULTISTATE.md`) and a Play listing draft
+  (`docs/PLAY-LISTING.md`) are reworded national. `docs/APP-STORE-LISTING.md`
+  gets only a "frozen during the appeal" note.
+
 ## 0051 — /states/ says where each state stands, from data (2026-11-05)
 
 Follows 0049 and the national plan's stage 2 (`tt-national-plan-2026-11-05.md`
@@ -1368,3 +1404,4 @@ section 4, PR N4). Merge on or after 2026-12-14.
   apps can link to one state (`/states/#state-or`).
 - **Not done, on purpose.** No per-state stub pages (a new page family and a
   doorway pattern) and no signup or notify channel (plan decision 7B).
+

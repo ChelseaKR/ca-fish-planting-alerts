@@ -1,5 +1,5 @@
 {
-  "about" : "Multi-state alert planner and widget parity (DECISIONS 0025). Each scenario runs against v2-all-states.json, real pipeline output for California and Tennessee and labeled synthetic fixtures for Massachusetts and Michigan. A key is [start, species, precision]. A plan step's 'entitled' lists the states this device has bought; 'shown' is what may be posted: unmuted, and only for a water whose state is bought (a water the snapshot lacks counts as California). A widget step builds the digest at 'now', locked unless some state is bought. The expect blocks are recorded from the Swift planner (MultiStateParityTests.swift, PARITY_RECORD=1) and checked by both apps.",
+  "about" : "Multi-state alert planner and widget parity (DECISIONS 0025). Each scenario runs against v2-all-states.json, real pipeline output for California and Tennessee and labeled synthetic fixtures for Massachusetts and Michigan. A key is [start, species, precision]. A plan step's 'entitled' lists the states this device has bought; 'shown' is what may be posted: unmuted, and only for a water whose state is bought (a water the snapshot lacks counts as California). A widget step builds the digest at 'now', locked unless some state is bought. The expect blocks are recorded from the Swift planner (MultiStateParityTests.swift, PARITY_RECORD=1) and checked by both apps. A snapshot spec's 'failed_checks' maps a state code to a failed check time: the harness sets that state's checks.last_attempt_ok to false (and last_attempt_at to the time) before decoding, so the last good read stays the data. A state_check step gives the words every surface says for that state (StateCheckWording).",
   "scenarios" : [
     {
       "name" : "every state from an empty baseline, then nothing new",
@@ -1842,10 +1842,78 @@
           "snapshot" : "v2"
         }
       ]
+    },
+    {
+      "name" : "a state whose latest check failed never shows its old weeks as current",
+      "steps" : [
+        {
+          "entitled" : [
+            "CA",
+            "TN",
+            "MA"
+          ],
+          "expect" : {
+            "favorites" : [
+              "cdfw-2227",
+              "ma-swift-belch",
+              "tn-monroe-tellico-river",
+              "tn-blount-pistol-creek-greenbelt-lake",
+              "tn-anderson-norris-tailwater-clinch-river"
+            ],
+            "favorites_in_other_states" : 0,
+            "locked" : false,
+            "missing_favorites" : 0,
+            "status_lines" : [
+              "Next scheduled for the week of 2026-09-20",
+              "Last stocked on 2026-10-09",
+              "Couldn't check TWRA's schedule since 2026-10-12",
+              "Couldn't check TWRA's schedule since 2026-10-12",
+              "Couldn't check TWRA's schedule since 2026-10-12"
+            ],
+            "summary" : "No favorites listed for the week of 2026-09-13"
+          },
+          "favorites" : [
+            "cdfw-2227",
+            "tn-monroe-tellico-river",
+            "tn-blount-pistol-creek-greenbelt-lake",
+            "tn-anderson-norris-tailwater-clinch-river",
+            "ma-swift-belch"
+          ],
+          "now" : "2026-10-14T19:00:00Z",
+          "op" : "widget",
+          "snapshot" : "v2_tn_failed"
+        },
+        {
+          "expect" : {
+            "alerts_paused" : "Alerts for Tennessee waters are paused until TWRA's schedule can be checked again.",
+            "failed_since" : "2026-10-12",
+            "notice" : "Couldn't check TWRA's schedule since 2026-10-12. What's shown is from that last read and may be out of date."
+          },
+          "op" : "state_check",
+          "snapshot" : "v2_tn_failed",
+          "state" : "TN"
+        },
+        {
+          "expect" : {
+            "alerts_paused" : "",
+            "failed_since" : "",
+            "notice" : ""
+          },
+          "op" : "state_check",
+          "snapshot" : "v2_tn_failed",
+          "state" : "MA"
+        }
+      ]
     }
   ],
   "snapshots" : {
     "v2" : {
+      "file" : "v2-all-states.json"
+    },
+    "v2_tn_failed" : {
+      "failed_checks" : {
+        "TN" : "2026-10-14T13:22:00Z"
+      },
       "file" : "v2-all-states.json"
     }
   }

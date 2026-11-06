@@ -58,6 +58,22 @@ struct FavoritesView: View {
                     FreshnessRow(freshness: freshness)
                 }
             }
+            // A state whose latest check failed: its favorites' weeks are an
+            // old read's, said here instead of passing for current.
+            let failing = snapshot.states.filter { state in
+                StateCheckWording.failedSince(state) != nil && present.contains { $0.state == state.code }
+            }
+            if !failing.isEmpty {
+                Section {
+                    ForEach(failing) { state in
+                        if let notice = StateCheckWording.notice(state) {
+                            Label(notice, systemImage: "exclamationmark.triangle")
+                                .font(.footnote)
+                                .accessibilityIdentifier("state-check-failed-\(state.code)")
+                        }
+                    }
+                }
+            }
             Section {
                 if shown.isEmpty && !present.isEmpty {
                     noMatches(activeSearch)
@@ -108,7 +124,7 @@ struct FavoritesView: View {
                 } header: {
                     SectionHeader("Not in this schedule")
                 } footer: {
-                    Text("This schedule no longer lists these favorites. CDFW may have renamed or dropped the water. Swipe to remove one.")
+                    Text("The saved data no longer lists these favorites. The agency may have renamed or dropped the water. Swipe to remove one.")
                         .foregroundStyle(.secondaryText)
                 }
             }

@@ -156,7 +156,7 @@ added and lists favorites from more than one state.
 Internal testing is separate from the closed test. Google's Data safety page
 says apps on internal testing tracks are exempt from the form; plan to
 finish the form before the closed test. Complete the app setup tasks in the Play Console dashboard
-now: store listing, Data safety, content rating, target audience, ads
+now: store listing (text in `docs/PLAY-LISTING.md`), Data safety, content rating, target audience, ads
 declaration, app access (no login), government apps declaration (the app is
 independent; cite CDFW as the data source).
 

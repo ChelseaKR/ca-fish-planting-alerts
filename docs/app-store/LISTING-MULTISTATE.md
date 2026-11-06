@@ -9,6 +9,33 @@ replaces it only when the multistate version is created, after 1.0.0 leaves
 review. `LISTING-MULTISTATE` tests (`StateProductListingTests`) hold the
 limits, the stated counts and the purchase table to the StoreKit file.
 
+## National framing (DECISIONS 0049)
+
+Reworded 2026-11-05 to lead with the brand line "Trout stocking schedules,
+state by state" instead of California. The copy names only the states that
+are live and healthy on the day it is written, and never says "all states",
+"every state", "nationwide" or "50 states".
+
+**Tennessee is left out of the customer-facing copy for now.** TWRA's source
+has not been read successfully since 2026-10-15 (`last_attempt_ok: false`
+in `snapshot/v2.json`), so the promotional text, keywords, description and
+What's New below name California, Massachusetts, Michigan and New York. The
+binary still carries Tennessee and sells its purchase, so the purchase table
+and the App Review notes keep it. On submission day, read
+`states[].checks` in the live `snapshot/v2.json`:
+
+- If Tennessee's `last_attempt_ok` has been true for at least 7 days, add it
+  back: put `tennessee,twra` in the keywords (drop words from the end to stay
+  within 100), add "Tennessee" to the state list in the description's first
+  paragraph and in What's New, restore the description bullet "Tennessee:
+  TWRA's trout stocking schedule, by the day, the week or the month, as TWRA
+  gives it.", write "(California, Tennessee)" in the alerts paragraph and
+  "In California, plants CDFW later drops" in the history
+  paragraph, and add "Tennessee Wildlife Resources Agency" to the data line.
+- Apply the same rule to every other state: a state whose newest check
+  failed more than 7 days earlier comes out of these fields, and re-measure
+  every count.
+
 Counts are Python `len()` of the exact string between the backticks, or of the
 text between the two rules for long fields (line breaks counted, no trailing
 newline).
@@ -26,7 +53,7 @@ template:
   as the agency publishes it (a week, a day, a month, a report after the
   fact, or a plan in the agency's own words). It does not lead with "alerts
   for every state".
-- It names the five agencies and says what each one publishes. It never
+- It names each live agency and says what each one publishes. It never
   says "all states", "every state", "only", "first", or a competitor's name.
 - The screenshots (owner step) show a different state on each frame, with
   the state's own wording visible: "scheduled", "stocked", "planned".
@@ -39,10 +66,10 @@ template:
 |---|---|---|---|
 | Name | 30 | `Trout Truck` | 11 |
 | Subtitle | 30 | `Stocking schedules & history` | 28 |
-| Keywords | 100 | `california,tennessee,michigan,massachusetts,new york,cdfw,twra,dnr,dec,planting,stocked,lake,river` | 98 |
-| Promotional text | 170 | `Trout stocking in California, Tennessee, Massachusetts, Michigan and New York. Browse free; a one-time purchase per state unlocks alerts and the widget. No subscription.` | 169 |
-| Description | 4000 | See [Description](#description). | 2,943 |
-| What's New | 4000 | See [What's New](#whats-new). | 801 |
+| Keywords | 100 | `california,michigan,massachusetts,new york,cdfw,dnr,dec,masswildlife,planting,stocked,lake,river` | 96 |
+| Promotional text | 170 | `Trout stocking schedules, state by state, and each water's history. Browse free; a one-time purchase per state adds alerts, the widget and Apple Watch. No subscription.` | 168 |
+| Description | 4000 | See [Description](#description). | 2,864 |
+| What's New | 4000 | See [What's New](#whats-new). | 785 |
 | Support URL | — | `https://trouttruck.com/support/` | — |
 | Marketing URL | — | `https://trouttruck.com/` | — |
 | Privacy Policy URL | — | `https://trouttruck.com/privacy/` | — |
@@ -67,21 +94,20 @@ day you submit. Paste everything between the two rules.
 
 ---
 
-Trout Truck keeps the trout stocking schedule for California, Tennessee, Massachusetts, Michigan and New York in one place, and keeps each water's history after the agency's own page moves on. Browsing, search, history and favorites are free in every one of these states. A one-time purchase for a state adds alerts for your favorites there, plus the Home Screen widget and Apple Watch.
+Trout stocking schedules, state by state. Trout Truck shows what each state's wildlife agency publishes about trout stocking, exactly as the agency publishes it, and keeps each water's history after the agency's own page moves on. Today that means California, Massachusetts, Michigan and New York. Browsing, search, history and favorites are free in each of these states. A one-time purchase for a state adds alerts for your favorites there, plus the Home Screen widget and Apple Watch.
 
 EACH STATE, IN ITS AGENCY'S OWN TERMS
 Agencies publish different things, and Trout Truck shows each one as it is, never more precise:
 • California: CDFW's weekly planting schedule, by the week.
-• Tennessee: TWRA's trout stocking schedule, by the day, the week or the month, as TWRA gives it.
 • Massachusetts: stockings MassWildlife reports as done.
 • Michigan: stockings the Michigan DNR reports, often weeks after the fact. The app says so next to the data.
 • New York: NYS DEC's spring stocking plan, in DEC's own words such as "April - third week", never turned into a date.
 
 EVERY WATER'S HISTORY
-Open a water to see every time it has been on its state's schedule or report since Trout Truck began keeping it, with the species. In California and Tennessee, plants the agency later drops from its schedule stay in the history, marked as removed.
+Open a water to see every time it has been on its state's schedule or report since Trout Truck began keeping it, with the species. In California, plants CDFW later drops from its schedule stay in the history, marked as removed.
 
 ALERTS, PER STATE
-With a state's purchase, Trout Truck checks that state's source in the background and tells you on this device when a favorite is newly scheduled (California, Tennessee), newly reported as stocked (Massachusetts, Michigan), or when its planned period begins (New York). iOS decides when background checks run, so an alert can arrive a day or more after the agency posts. Mute any one water from the alert itself; it stays a favorite.
+With a state's purchase, Trout Truck checks that state's source in the background and tells you on this device when a favorite is newly scheduled (California), newly reported as stocked (Massachusetts, Michigan), or when its planned period begins (New York). iOS decides when background checks run, so an alert can arrive a day or more after the agency posts. Mute any one water from the alert itself; it stays a favorite.
 
 ON IPHONE, IPAD AND APPLE WATCH
 • iPad shows the list beside the water.
@@ -92,12 +118,12 @@ ONE PAYMENT PER STATE, NO SUBSCRIPTION
 Each state is a one-time purchase, and the App Store shows its price. If you bought Full Access, it still covers California exactly as before. Restore purchases brings back each state you bought on a new device.
 
 PRIVATE BY DESIGN
-No account, no ads, no analytics, no tracking. The app downloads one public schedule file; your favorites never leave your device. Privacy label: Data Not Collected.
+No account, no ads, no analytics. The app downloads one public schedule file; your favorites never leave your device. Privacy label: Data Not Collected.
 
 HONEST ABOUT THE DATA
 Agencies change plans with road, water, weather and hatchery conditions. Trout Truck says "scheduled", "stocked" or "planned" as the agency does, and when a state's source can't be read, the app says so instead of showing old data as new.
 
-Data: California Department of Fish and Wildlife; Tennessee Wildlife Resources Agency; MassWildlife; Michigan Department of Natural Resources; New York State Department of Environmental Conservation. Trout Truck is independent and is not affiliated with or endorsed by any of them.
+Data: California Department of Fish and Wildlife; MassWildlife; Michigan Department of Natural Resources; New York State Department of Environmental Conservation. Trout Truck is independent and is not affiliated with or endorsed by any of them.
 
 ---
 
@@ -107,8 +133,8 @@ Paste everything between the two rules.
 
 ---
 
-Four more states, iPad and Apple Watch.
-• Tennessee, Massachusetts, Michigan and New York, free to browse, each with its own one-time purchase for alerts, the widget and Apple Watch. Full Access still covers California exactly as before.
+More states, iPad and Apple Watch.
+• Massachusetts, Michigan and New York, free to browse, each with its own one-time purchase for alerts, the widget and Apple Watch. Full Access still covers California exactly as before.
 • New York favorites get a reminder when their planned stocking period begins, in DEC's own words.
 • The purchase screen now says when each state's data was last read, and says plainly if the newest check failed.
 • iPad shows the list beside the water.

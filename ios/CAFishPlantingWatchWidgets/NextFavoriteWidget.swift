@@ -25,7 +25,7 @@ struct NextFavoriteWidget: Widget {
                 .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("Next favorite")
-        .description("Your favorite water on CDFW's schedule this week, or the next one scheduled. Part of full access.")
+        .description("Your favorite water listed this week, or the next one on its agency's schedule or plan. Part of full access.")
         .supportedFamilies([.accessoryRectangular, .accessoryCircular, .accessoryInline, .accessoryCorner])
     }
 }

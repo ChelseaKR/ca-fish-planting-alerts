@@ -21,7 +21,8 @@ class CopyAndRulesTest {
         assertEquals(4, pages.size)
         assertEquals(pages.size, pages.map { it.id }.toSet().size)
         val text = pages.flatMap { listOf(it.title, it.body) + it.points }
-        text.forEach(::assertKeepsTheRules)
+        // "stocked" only quoted, as one of the words a report state's waters show.
+        text.map { it.replace("\"stocked\"", "") }.forEach(::assertKeepsTheRules)
         val alertLines = text.filter { it.contains("an alert", ignoreCase = true) }
         assertTrue(alertLines.isNotEmpty())
         alertLines.forEach { assertTrue("alerts are named with full access: $it", it.contains("Full access")) }
@@ -48,6 +49,20 @@ class CopyAndRulesTest {
         }
         assertEquals(17, checked)
         assertTrue("the introduction names states", OnboardingCopy.pages.any { it.body.startsWith("Pick a state") })
+    }
+
+    /** National framing (DECISIONS 0049), as `OnboardingTests.swift`: no state is the default. */
+    @Test fun theIntroductionTakesNoStateAsTheDefault() {
+        val pages = OnboardingCopy.pages
+        val welcome = pages.first { it.id == "welcome" }
+        (listOf(welcome.title, welcome.body) + welcome.points).forEach { assertFalse(it, it.contains("California")) }
+        pages.flatMap { listOf(it.title, it.body) + it.points }.forEach {
+            assertFalse(it, it.contains("CDFW"))
+            assertFalse(it, it.contains("every state", ignoreCase = true))
+        }
+        val honest = pages.first { it.id == "honest" }
+        listOf("\"scheduled\"", "\"stocked\"", "\"planned\"").forEach { assertTrue("the honest page names $it", honest.body.contains(it)) }
+        assertEquals(2, OnboardingCopy.VERSION)
     }
 
     @Test fun showsOnAFirstLaunchOnly() {

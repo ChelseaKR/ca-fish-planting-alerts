@@ -98,7 +98,7 @@ struct WaterEntityQuery: EntityStringQuery {
 /// the app, and always names that schedule's week.
 struct NextScheduledWeekIntent: AppIntent {
     static let title: LocalizedStringResource = "Next Scheduled Week"
-    static let description = IntentDescription("Says the next week CDFW's schedule lists a water for, from the schedule saved in Trout Truck. CDFW gives the week, not the day.")
+    static let description = IntentDescription("Says when a water's agency next lists it, or its newest stocking report, from the data saved in Trout Truck, never more precisely than the agency gives it.")
 
     @Parameter(title: "Water", requestValueDialog: "Which water?")
     var water: WaterEntity

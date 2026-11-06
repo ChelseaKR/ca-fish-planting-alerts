@@ -64,6 +64,7 @@ import com.chelseakr.cafishplanting.core.PlantStatus
 import com.chelseakr.cafishplanting.core.ScheduleWording
 import com.chelseakr.cafishplanting.core.ShareContent
 import com.chelseakr.cafishplanting.core.SnapshotEndpoint
+import com.chelseakr.cafishplanting.core.StateCheckWording
 import com.chelseakr.cafishplanting.core.Water
 import com.chelseakr.cafishplanting.core.Week
 import com.chelseakr.cafishplanting.rememberHaptics
@@ -146,6 +147,10 @@ fun WaterDetailScreen(
                             )
                         }
                         stateInfo?.recencyNote?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = secondaryText) }
+                        // The state's latest check failed: the weeks above are an old read's.
+                        stateInfo?.let(StateCheckWording::notice)?.let {
+                            Text(it, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                        }
                     }
                 }
             }
@@ -186,6 +191,8 @@ fun WaterDetailScreen(
                     Text(
                         if (muted) {
                             "Muted. ${water.name} stays in Favorites and the widget, with no alert when it is newly on the schedule."
+                        } else if (stateInfo != null && StateCheckWording.alertsPaused(stateInfo) != null) {
+                            StateCheckWording.alertsPaused(stateInfo).orEmpty()
                         } else if (water.state == "CA") {
                             "An alert on this device when ${water.name} is newly on CDFW's weekly schedule."
                         } else if (water.semantics == StateSemantics.PLAN) {

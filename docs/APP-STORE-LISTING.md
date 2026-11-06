@@ -1,5 +1,11 @@
 # App Store Connect: paste-ready listing copy (draft)
 
+**Frozen while 1.0.0's appeal is pending (2026-11-05).** This is the copy for
+1.0.0, the California-only build under App Review appeal. Don't edit it or
+the App Store Connect fields it describes until the Board answers. The next
+version's national copy is in `docs/app-store/LISTING-MULTISTATE.md`
+(DECISIONS 0049).
+
 Drafted 2026-09-17, and updated the same day for the name **Trout Truck**
 (DECISIONS 0010). This file holds only the text that gets pasted into App
 Store Connect. The review-clause analysis, the in-app purchase setup, the

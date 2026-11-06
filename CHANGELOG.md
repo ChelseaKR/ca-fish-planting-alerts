@@ -112,6 +112,15 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Apps: national wording (DECISIONS 0049). The introduction (now version 2)
+  opens with trout stocking schedules from state wildlife agencies instead of
+  California's schedule, and its last page is "Never more precise than the
+  agency". About names every unlocked state from the snapshot, says the app
+  is not affiliated with any state wildlife agency, and states California's
+  week-only rule as California's. The widget, Watch complication and
+  Shortcuts descriptions no longer name CDFW. Android's alert channel is
+  "Stocking alerts". No state picker yet.
+
 - iOS and Android: honest wording from the 2026-11-05 Android audit
   (findings 2, 3 and 5). A water CDFW added for an upcoming week now leads
   with it ("Next scheduled: the week of 2026-11-08. Last scheduled for the
@@ -300,6 +309,19 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Tennessee reads TWRA's 2027 schedule. "TBD 12/2027" in the STOCKING WEEK
+  column is a month ("December 2027"), never a week. A "week of" date that
+  isn't a Sunday (four in the 2026-11-05 file) is skipped, never moved to a
+  guessed Sunday, and named in the run log; the whole file is refused only
+  when more than 10 rows (or 2% of rows) are like that.
+- Site: a state hub whose latest check failed no longer says an empty week
+  is "not a failed read", or that "nothing else is on the schedule". It says
+  what the file last read holds, and that the check failed.
+- iOS and Android: a state whose latest check failed (Tennessee since
+  2026-10-15) never shows its old weeks as current. The widget and watch rows
+  say "Couldn't check TWRA's schedule since 2026-10-15", Favorites and the water
+  page say so, the alerts footer says alerts are paused, and Siri answers
+  that the schedule couldn't be checked instead of naming an old week.
 - Michigan: a stocking the DNR revises is no longer shown twice. The DNR's
   CSV is its whole database, so a row it no longer has is marked
   `withdrawn` in `pipeline/data/states/mi.json` (kept, never deleted) and

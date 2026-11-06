@@ -9,7 +9,9 @@ three columns, which is also its precision:
   month is set and the day is not, so the record is a month.
 - ``STOCKING WEEK``: a Sunday. TWRA: '"Week of" dates listed are all
   Sundays; the stocking event will occur within five days after the date
-  listed.' A week, never shown as a day.
+  listed.' A week, never shown as a day. The 2027 file also puts
+  ``TBD 12/2027`` here; that is a month, read exactly as the DAY column's
+  TBD, and never shown as a week.
 - ``STOCKING MONTHS``: one letter per month (``M, A, M, J, J, A, S``). TWRA:
   "Tailwater and Reservoir stocking dates are variable throughout the months
   indicated." The letters are ambiguous on their own ("M" is March or May),
@@ -17,7 +19,14 @@ three columns, which is also its precision:
   into dates.
 
 Read 2026-10-12: 616 rows, 136 waters, every week date a Sunday, dates from
-2026-01-01 to 2026-12-24. License: the TN.gov Linking Policy (quoted in
+2026-01-01 to 2026-12-24. Read 2026-11-05 (from Chelsea's Mac, not a
+runner): TWRA's 2027 schedule, 713 rows, 582 of them in 2027, out to
+2027-12-30. Four of its "week of" dates are not Sundays (3/21/2026, a
+Saturday; 7/12, 7/19 and 7/26/2027, Mondays). A row like that is skipped,
+never moved to a guessed Sunday, and named in the run log; the file is
+refused only when more than ``MAX_BAD_ROWS`` rows (or more than
+``MAX_BAD_SHARE`` of all rows) are like that, so a reshaped feed still fails.
+License: the TN.gov Linking Policy (quoted in
 ``LICENSE``) lets the information be copied when it identifies the agency
 and its web address and implies no endorsement.
 """
@@ -64,6 +73,10 @@ COLUMNS = (
     "SPECIES",
 )
 REGION_CODES = ("1", "2", "3", "4")
+# A few non-Sunday "week of" rows are TWRA typos and are skipped; more than
+# this many (or more than this share of rows) means the feed changed shape.
+MAX_BAD_ROWS = 10
+MAX_BAD_SHARE = 0.02
 
 _DAY_RE = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{4})$")
 _TBD_MONTH_RE = re.compile(r"^TBD\s+(\d{1,2})/(\d{4})$")
@@ -115,17 +128,27 @@ def _day_column(text: str) -> Period | None:
     )
 
 
+class _NotASunday(ValueError):
+    """A "week of" date that is not a Sunday: TWRA says they all are, so the
+    row's week cannot be known and the row is skipped (never guessed)."""
+
+
 def _week_column(text: str) -> Period | None:
     if not text:
         return None
+    m = _TBD_MONTH_RE.match(text)
+    if m:
+        # The 2027 file's "TBD 12/2027": a month, exactly like the DAY
+        # column's TBD. Never turned into a week.
+        month, year = int(m.group(1)), int(m.group(2))
+        if not 1 <= month <= 12:
+            raise StateFormatError(f"TWRA month {text!r} is not a month")
+        return Period.month(year, month)
     d = _date(text)
     if d is None:
         raise StateFormatError(f"TWRA's STOCKING WEEK column holds {text!r}")
     if d.weekday() != 6:
-        raise StateFormatError(
-            f"TWRA's 'week of' date {text!r} is a {d.strftime('%A')}; TWRA says "
-            "they are all Sundays, so the feed may have changed"
-        )
+        raise _NotASunday(f"week of {text} is a {d.strftime('%A')}, not a Sunday")
     return Period.week(d)
 
 
@@ -158,7 +181,9 @@ def parse(bodies: list[FetchedBody]) -> ParsedFeed:
     waters: dict[str, WaterMeta] = {}
     records: dict[tuple[str, str, str, str], ParsedRecord] = {}
     skipped = 0
-    for row in _rows(bodies):
+    bad: list[str] = []
+    rows = _rows(bodies)
+    for row in rows:
         county, location, species = row["COUNTY"], row["LOCATION"], row["SPECIES"]
         if not county or not location or not species:
             skipped += 1
@@ -166,14 +191,15 @@ def parse(bodies: list[FetchedBody]) -> ParsedFeed:
         region = row["REGION"]
         if region not in REGION_CODES:
             raise StateFormatError(f"TWRA region {region!r} is not one of 1-4")
-        periods = [
-            p
-            for p in (
-                _day_column(row["STOCKING DAY"]),
-                _week_column(row["STOCKING WEEK"]),
-            )
-            if p is not None
-        ]
+        try:
+            week = _week_column(row["STOCKING WEEK"])
+        except _NotASunday as exc:
+            # Skip the whole row: its week is unknowable, and a guessed
+            # Sunday would be a date TWRA never gave.
+            bad.append(f"{location} ({county} County), {species}: {exc}")
+            skipped += 1
+            continue
+        periods = [p for p in (_day_column(row["STOCKING DAY"]), week) if p is not None]
         months = row["STOCKING MONTHS"]
         if not periods and not months:
             skipped += 1
@@ -193,6 +219,13 @@ def parse(bodies: list[FetchedBody]) -> ParsedFeed:
         for period in periods:
             rec = ParsedRecord(water_id=wid, period=period, species=species)
             records[rec.key()] = rec
+    cap = min(MAX_BAD_ROWS, int(len(rows) * MAX_BAD_SHARE))
+    if len(bad) > cap:
+        raise StateFormatError(
+            f"{len(bad)} of TWRA's {len(rows)} rows have a 'week of' date that is "
+            f"not a Sunday (more than {cap}); TWRA says they are all Sundays, so "
+            f"the feed may have changed. First: {bad[0]}"
+        )
     first = bodies[0]
     return ParsedFeed(
         waters=waters,
@@ -201,6 +234,7 @@ def parse(bodies: list[FetchedBody]) -> ParsedFeed:
         content_sha256=combined_sha256(bodies),
         last_modified=first.last_modified,
         skipped=skipped,
+        skipped_notes=tuple(f"skipped {b}" for b in bad),
     )
 
 

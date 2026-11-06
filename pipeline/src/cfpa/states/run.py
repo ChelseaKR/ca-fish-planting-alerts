@@ -185,6 +185,7 @@ def run_states(
                     if withdrawn
                     else ""
                 )
+                + "".join(f"; {note}" for note in feed.skipped_notes)
             )
             runs.append(StateRun(source, merged, path, "updated", message))
         except NotModified:

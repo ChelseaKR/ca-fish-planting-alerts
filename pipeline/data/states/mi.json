@@ -2,8 +2,8 @@
   "schema": "cfpa-state-history-v1",
   "state": "MI",
   "checks": {
-    "last_attempt_at": "2026-11-05T13:21:22Z",
-    "last_success_at": "2026-11-05T13:21:22Z",
+    "last_attempt_at": "2026-11-06T01:19:29Z",
+    "last_success_at": "2026-11-06T01:19:29Z",
     "last_attempt_ok": true,
     "last_error": null,
     "content_sha256": "bb68808ccdf4b0a5b69d5791558f412239c8837029556d7ea00cef278205f87e",
@@ -28349,7 +28349,7 @@
         "end": "2026-09-26"
       },
       "species": "Brown trout",
-      "status": "reported",
+      "status": "withdrawn",
       "count": 10874,
       "first_observed_at": "2026-10-24T13:27:13Z",
       "last_observed_at": "2026-10-26T14:49:02Z"
@@ -51970,7 +51970,7 @@
         "end": "2026-09-26"
       },
       "species": "Brown trout",
-      "status": "reported",
+      "status": "withdrawn",
       "count": 14558,
       "first_observed_at": "2026-10-24T13:27:13Z",
       "last_observed_at": "2026-10-26T14:49:02Z"

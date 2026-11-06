@@ -1336,3 +1336,35 @@ links on any page. Two fixes to existing water pages.
 - **Risk.** The 2026-10-30 audit could not rule out that the affiliate
   block fed the 2026-10-23 re-rank. Moving it up makes it more prominent on
   about 310 California pages. Revert the move alone if that is a worry.
+
+## 0053 — Android asks which state on first run; no California default (2026-11-05)
+
+Plan N6 from the 2026-11-05 national plan, decision 9, option A: ask on
+first run with no location, and if the person skips, show the list of
+states. Chelsea hasn't picked an option for decision 9 yet; this builds the
+recommended one.
+
+- **What.** The introduction's "Find your waters" page lists the states in
+  the snapshot, none chosen, and saves a pick as it is made. Skipping, or
+  any launch with no pick, opens Browse on that same list instead of any one
+  state's waters. A pick the snapshot no longer carries counts as no pick,
+  never as California.
+- **Only from v2.** The list is the v2 snapshot's `states`, in its order.
+  Nothing in the app types a list of states. A v1 file (California alone,
+  from before states) offers none and says the data doesn't list its
+  states yet.
+- **Paused, never current.** Each row says what the agency publishes and
+  "Read <date>", from `checks.last_success_at`. A state whose latest check
+  failed and whose last good read is more than 7 days old says "Updates
+  paused since <date>" with a warning mark, the site's rule from 0051. The
+  same words show on the States sheet and in Browse's state menu. With the
+  bundled data, Tennessee shows "Updates paused since Oct 15, 2026".
+- **Existing installs.** `browse-state.json` written before this keeps its
+  pick. An install that never picked (it saw California by default) now
+  sees the list once and taps a state.
+- **No location.** The picker doesn't ask for or use location, so the Play
+  Data safety form and the iOS privacy label are unchanged (option C would
+  have changed both).
+- **iOS waits.** iOS is unchanged here. Its default (`AppEnvironment.swift`
+  `state = "CA"`) and onboarding change after the App Review Board answers,
+  in their own PR, with the same rules and words as `StateChoice.kt`.

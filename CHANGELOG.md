@@ -13,6 +13,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Android: the introduction asks which state you fish, from the snapshot's
+  list, with none chosen (DECISIONS 0053). Skipping opens Browse on the list
+  of states instead of California. A state whose updates have stopped says
+  "Updates paused since <date>" there, on the States sheet and in Browse's
+  state menu. iOS is unchanged until the App Review Board answers.
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the

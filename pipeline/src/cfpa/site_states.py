@@ -114,6 +114,154 @@ def status_label(status: str, semantics: str = "schedule") -> str:
     }[status]
 
 
+# A state whose latest check failed reads "Updates paused since <date>" once
+# its last good read is older than this many days. The same rule, and the
+# same number, as /states/ (DECISIONS 0051, cfpa.state_coverage in #145);
+# kept here until that lands so a water page and /states/ never disagree.
+PAUSED_AFTER_DAYS = 7
+
+
+def paused_since(state: dict[str, Any], now: dt.datetime) -> dt.date | None:
+    """The date of the last good read when a state's updates are paused
+    (its latest check failed and that read is more than PAUSED_AFTER_DAYS
+    old, as of ``now``, the snapshot's build time), else None."""
+    checks = state["checks"]
+    if checks["last_attempt_ok"]:
+        return None
+    last = dt.datetime.fromisoformat(checks["last_success_at"].replace("Z", "+00:00"))
+    if now - last <= dt.timedelta(days=PAUSED_AFTER_DAYS):
+        return None
+    return last.date()
+
+
+def period_text(period: dict[str, str]) -> str:
+    """A period as a phrase that follows a colon or a verb, at the precision
+    the agency gave it: "2026-11-07", "the week of 2026-11-01", "November
+    2026 (day not set yet)", or the agency's own words in quotes. A week is
+    never written as a day."""
+    precision = period["precision"]
+    if precision == "week":
+        return f"the {period['label']}"
+    if precision == "approximate":
+        return f"“{period['label']}”"
+    return when_label(period)
+
+
+def _in_week(period: dict[str, str], week: dict[str, str]) -> bool:
+    """Whether a day or a week falls in the state's current week. A month or
+    an agency's own words is never "this week" (as on the hub)."""
+    return (
+        period["precision"] in ("day", "week")
+        and period["start"] <= week["end"]
+        and period["end"] >= week["start"]
+    )
+
+
+def water_view(w: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
+    """Where one water stands, from its own plants: the current entry this
+    week (if any), the next one after this week, and the last one. Removed
+    plants never count. Each is a period or None, never a stand-in."""
+    week = state["current_week"]
+    current = sorted(
+        (p for p in w["plants"] if p["status"] in ("listed", "reported")),
+        key=lambda p: (p["period"]["start"], p["period"]["precision"]),
+    )
+    this_week = [p["period"] for p in current if _in_week(p["period"], week)]
+    after = [
+        p["period"]
+        for p in current
+        if p["status"] == "listed" and p["period"]["start"] > week["end"]
+    ]
+    return {
+        "this_week": this_week[0] if this_week else None,
+        "after_week": after[0] if after else None,
+        "next": w["next_period"],
+        "last": w["last_period"],
+    }
+
+
+def water_answer(
+    w: dict[str, Any], state: dict[str, Any], fetched_label: str
+) -> tuple[str, str]:
+    """The answer line at the top of a state water page (DECISIONS 0056), as
+    (the bold sentence, what follows it). It says what the agency publishes:
+    a schedule's day or week, a plan's own words, or a report of stockings
+    that happened. A water with nothing to say is said so in words."""
+    a = state["agency"]["short_name"]
+    v = water_view(w, state)
+    sem = state["semantics"]
+    if sem == "report":
+        if v["this_week"]:
+            return (f"Stocked this week: {period_text(v['this_week'])}.", "")
+        if v["last"]:
+            return (
+                f"Last stocked: {period_text(v['last'])}.",
+                f"{a} reports stockings after they happen, so no later "
+                "date is listed ahead of time.",
+            )
+        return (f"No stocking on record in the {a} reports this site has read.", "")
+    on = f"on {a}'s schedule" if sem == "schedule" else f"in {a}'s stocking plan"
+    last_on = "on the schedule" if sem == "schedule" else "in the plan"
+    if v["this_week"]:
+        rest = (
+            f"Next after this week: {period_text(v['after_week'])}."
+            if v["after_week"]
+            else ""
+        )
+        return (
+            f"{on[0].upper()}{on[1:]} this week: {period_text(v['this_week'])}.",
+            rest,
+        )
+    if v["next"]:
+        return (
+            f"Next {on}: {period_text(v['next'])}.",
+            f"Before that, last {last_on}: {period_text(v['last'])}."
+            if v["last"]
+            else "",
+        )
+    if v["last"]:
+        return (
+            f"Nothing later {on} yet, as of {fetched_label}.",
+            f"Last {last_on}: {period_text(v['last'])}.",
+        )
+    if w["months_note"]:
+        return (
+            f"No day or week {on} yet.",
+            f"{a} lists it by month only, shown below.",
+        )
+    return (f"No date {on} in the time this site has recorded.", "")
+
+
+def neighbor_when(o: dict[str, Any], state: dict[str, Any]) -> str:
+    """The few words after a same-county water's link: where it stands, in
+    the state's own verb. "" when it has no dated entry; the link then
+    stands alone, never with a zero or a "none"."""
+    v = water_view(o, state)
+    verb = "stocked" if state["semantics"] == "report" else words(state)["verb"]
+    if v["this_week"]:
+        return f"{verb} this week"
+    if v["next"]:
+        return f"next {verb} {period_text(v['next'])}"
+    if v["last"]:
+        return f"last {verb} {period_text(v['last'])}"
+    return ""
+
+
+def neighbor_order(o: dict[str, Any], state: dict[str, Any]) -> tuple[Any, ...]:
+    """This week's waters first, then those with a later date, then the rest
+    by their most recent date, newest first, then waters with no date; name
+    breaks ties (the same order as California's, DECISIONS 0054)."""
+    v = water_view(o, state)
+    if v["this_week"]:
+        return (0, 0, o["name"], o["slug"])
+    if v["next"]:
+        return (1, 0, o["name"], o["slug"])
+    if v["last"]:
+        start = dt.date.fromisoformat(v["last"]["start"]).toordinal()
+        return (2, -start, o["name"], o["slug"])
+    return (3, 0, o["name"], o["slug"])
+
+
 def place_phrase(
     w: dict[str, Any],
     state_name: str,
@@ -220,6 +368,17 @@ def _species_word(plants: list[dict[str, Any]], default: str = "fish") -> str:
     if not names:
         return default
     return "trout" if all("trout" in n for n in names) else "fish"
+
+
+def _neighbors(w: dict[str, Any], waters: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The state's other waters that share one of this water's counties (or,
+    with no county, one of its towns)."""
+    mine = set(w["counties"] or w["towns"])
+    return [
+        o
+        for o in waters
+        if o["id"] != w["id"] and set(o["counties"] or o["towns"]) & mine
+    ]
 
 
 def _water_lastmod(w: dict[str, Any], state: dict[str, Any]) -> str:
@@ -375,7 +534,13 @@ def render_states(
     hub_lastmods: dict[str, str] = {}
     for state in others:
         waters = sorted(by_state[state["code"]], key=lambda w: (w["name"], w["slug"]))
-        lastmods = {w["id"]: _water_lastmod(w, state) for w in waters}
+        own = {w["id"]: _water_lastmod(w, state) for w in waters}
+        # Every page shows its same-county waters' dates (DECISIONS 0056), so
+        # a neighbor's data change moves this page's lastmod too.
+        lastmods = {
+            w["id"]: max([own[w["id"]], *(own[o["id"]] for o in _neighbors(w, waters))])
+            for w in waters
+        }
         state_species = _species_word([p for w in waters for p in w["plants"]])
         shared = shared_names(waters)
         towns_on = {
@@ -415,6 +580,9 @@ def render_states(
                 state_species,
                 with_towns=towns_on[w["id"]],
                 qualifier=extra.get(w["id"], ""),
+                now=dt.datetime.fromisoformat(
+                    snap_v2["generated_at"].replace("Z", "+00:00")
+                ),
             )
             if not thin:
                 entries.append((url, lastmod))
@@ -604,6 +772,7 @@ def _render_water(
     state_species: str,
     with_towns: bool = False,
     qualifier: str = "",
+    now: dt.datetime | None = None,
 ) -> tuple[str, str, bool]:
     seg = state["code"].lower()
     page_url = f"{ctx.base_url}{w['site_path']}"
@@ -633,15 +802,12 @@ def _render_water(
             reverse=True,
         )
     ]
-    neighbors = sorted(
-        (
-            {"slug": o["slug"], "name": o["name"]}
-            for o in waters
-            if o["id"] != w["id"]
-            and set(o["counties"] or o["towns"]) & set(w["counties"] or w["towns"])
-        ),
-        key=lambda o: o["name"],
-    )
+    # Each same-county link says where that water stands, and the list leads
+    # with this week's waters (DECISIONS 0056, as 0054 for California).
+    neighbors = [
+        {"slug": o["slug"], "name": o["name"], "when": neighbor_when(o, state)}
+        for o in sorted(_neighbors(w, waters), key=lambda o: neighbor_order(o, state))
+    ]
     noun = f"stocking {wd['kind']}" if schedule else "stocking history"
     head = f"{w['name']} {species} {noun}"
     short = short_place_phrase(
@@ -696,6 +862,9 @@ def _render_water(
             "propertyID": f"{state['agency']['short_name']} water ID",
             "value": w["source_id"],
         }
+    fetched_label = _fmt_dt(state["checks"]["last_success_at"])
+    answer = water_answer(w, state, fetched_label)
+    paused = paused_since(state, now) if now is not None else None
     html = ctx.env.get_template("state_water.html.jinja").render(
         title=title,
         description=(
@@ -744,9 +913,11 @@ def _render_water(
             if w["counties"]
             else f"Other {', '.join(w['towns'])} waters on record"
         ),
+        answer=answer,
+        paused_label=paused.isoformat() if paused else "",
         next_label=when_label(w["next_period"]) if w["next_period"] else "",
         last_label=when_label(w["last_period"]) if w["last_period"] else "",
-        fetched_label=_fmt_dt(state["checks"]["last_success_at"]),
+        fetched_label=fetched_label,
         attempt_failed=not state["checks"]["last_attempt_ok"],
         attempt_label=_fmt_dt(state["checks"]["last_attempt_at"]),
     )

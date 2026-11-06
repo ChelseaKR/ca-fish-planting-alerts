@@ -1407,3 +1407,44 @@ nothing current, below the county lists.
 - **Unchanged.** URLs, titles, H1s and meta descriptions (the 10-30 title
   test is still being measured), the state (`/tn/water/` etc.) template, and
   the gear block.
+
+## 0056 — State water pages answer first, in each agency's own terms (2026-11-05)
+
+Follows 0054, which changed only California's water template. Tennessee had
+the two most-clicked water pages in Search Console (little-river-blount-county
+and beaverdam-creek-johnson-county, 2 clicks each, 2026-10-14 to 2026-11-03),
+and several Tennessee pages were engaged landings in GA4's last 28 days.
+
+- **One answer line, right under the H1.** It says what the agency
+  publishes, at the precision it gives, and never finer:
+  - a schedule (Tennessee): "On TWRA's schedule this week: <day or week>",
+    "Next on TWRA's schedule: <day, week or month>", or "Nothing later on
+    TWRA's schedule yet, as of <last good read>", with the last date after
+    it. A week reads "the week of <Sunday>" and is never turned into a day.
+    A water TWRA lists by month letters only says so.
+  - a plan (New York): the same shape with "in NYS DEC's stocking plan" and
+    the agency's own words in quotes. Never "scheduled".
+  - a report (Massachusetts, Michigan): "Stocked this week: <day>" or "Last
+    stocked: <day>", and that the agency reports stockings after they
+    happen. Never "scheduled".
+  - a water with no date at all says so in words. Nothing is a zero, a
+    blank or "none".
+- **Paused.** When a state's latest check failed and its last good read is
+  more than 7 days old, every water page says "Updates paused since <date of
+  the last good read>" above the answer. This is 0051's rule for /states/
+  (#145). Its helper is not on main yet, so `site_states.paused_since` uses
+  the same rule and number; switch to `state_coverage` after #145 lands.
+- **Same-county links say where each water stands.** "scheduled this week",
+  "next scheduled the week of X", "last stocked X", "last planned
+  “April - third week”", in the state's own verb, with this week's waters
+  first, then later dates, then the rest by most recent date. A water with
+  no date keeps a bare link.
+- **Lastmod.** A page now shows its same-county waters' dates, so its
+  sitemap lastmod also moves with theirs.
+- **No subscribe link to move.** State water pages have no calendar feed
+  (only California waters have `feed.ics`), so there is no subscribe link on
+  them and none is added here. California's subscribe link and its
+  `data-ga-*` attributes are untouched.
+- **Unchanged.** URLs, titles, H1s and meta descriptions (checked on the
+  pinned fixtures: 1,445 state water pages, 0 differences), the lede, the
+  history table and the gear block.

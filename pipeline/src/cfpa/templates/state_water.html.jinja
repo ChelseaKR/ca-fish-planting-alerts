@@ -2,6 +2,13 @@
 {% set share_card_kind = "state" %}
 {% block content %}
 <h1>{{ head }} ({{ place }})</h1>
+{#- The answer people come for, in one sentence, before the details
+    (DECISIONS 0056). It says what this agency publishes, at its precision;
+    a missing date is said in words. -#}
+{% if paused_label %}
+<p class="water-paused"><strong>Updates paused since {{ paused_label }}.</strong> {{ state.agency.short_name }}'s page could not be read after that, so this page shows that last good read.</p>
+{% endif %}
+<p class="water-answer"><strong>{{ answer[0] }}</strong>{% if answer[1] %} {{ answer[1] }}{% endif %}</p>
 <p class="lede">
   {% if schedule %}
   {{ water.name }} is on the {{ state.agency.name }}'s stocking {{ w_kind }}.{% if next_label %} Next {{ w_verb }}: {{ next_label }}.{% endif %}{% if last_label %} Most recently {{ w_verb }}: {{ last_label }}.{% endif %}{% if not next_label %} Nothing later is on {{ state.agency.short_name }}'s {{ w_kind }} right now. That means no date is listed, not that there are no fish.{% endif %}
@@ -70,9 +77,10 @@
 
 {% if neighbors %}
 <h2>{{ neighbors_heading }}</h2>
+<p class="muted">Waters {{ "stocked" if not schedule else w_verb }} this week come first, then {{ "those with a later date, then " if schedule else "" }}the most recent.</p>
 <ul class="water-index">
   {% for n in neighbors %}
-  <li><a href="../{{ n.slug }}/">{{ n.name }}</a></li>
+  <li><a href="../{{ n.slug }}/">{{ n.name }}</a>{% if n.when %}, {{ n.when }}{% endif %}</li>
   {% endfor %}
 </ul>
 {% endif %}

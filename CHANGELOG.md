@@ -13,6 +13,14 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: Tennessee, Massachusetts, Michigan and New York water pages answer
+  first too (DECISIONS 0056). One sentence right under the H1 says what the
+  agency publishes: a schedule's day or week, a plan's own words, or the
+  last stocking a report records. A state whose updates are paused says
+  "Updates paused since <date>" above it (the 0051 rule). Each same-county
+  link says where that water stands, with this week's waters first. URLs,
+  titles, H1s and descriptions are unchanged.
+
 - Site: California water pages answer the visit in the first screen
   (DECISIONS 0054). The status block opens with one sentence saying whether
   the water is on CDFW's schedule this week, when it is next, or when it was

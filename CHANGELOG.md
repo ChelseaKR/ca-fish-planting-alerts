@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: California water pages answer the visit in the first screen
+  (DECISIONS 0054). The status block opens with one sentence saying whether
+  the water is on CDFW's schedule this week, when it is next, or when it was
+  last, and the calendar subscribe action now sits right under it. Each
+  same-county water link says where that water stands, with this week's
+  waters first. URLs, titles and H1s are unchanged.
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the

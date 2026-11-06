@@ -13,6 +13,15 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: the "raceway" look. A hatchery-raceway teal masthead with the app
+  icon's gold trout as the mark, a gold and redband-rose stripe under it,
+  cool river-stone grounds, a larger headline scale and tabular week dates,
+  in light and dark. The tab icon is inline, so no page asks for
+  /favicon.ico. Colors only; no URL, title, H1 or description changes. The
+  water page's answer and subscribe box (DECISIONS 0054) sit no lower on a
+  phone than before, and `tests/test_site_identity.py` holds every color
+  pair to WCAG AA and keeps that block from being hidden or shrunk.
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the

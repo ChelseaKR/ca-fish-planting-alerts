@@ -1,9 +1,14 @@
 /* Trout Truck -- plain, accessible, no build step.
 
-   Colors, type, spacing and radius come from the Trout Truck design system
-   (tokens.json, synced from main@f9e0f32 on 2026-10-23). Values the site
-   already had keep their names and hex values; the rest are new tokens from
-   that system. */
+   Spacing, radius and type come from the Trout Truck design system
+   (tokens.json, synced from main@f9e0f32 on 2026-10-23). The colors are the
+   "raceway" identity (2026-11-05, growth/design-audit-trout-truck): a
+   hatchery-raceway teal for the masthead, cool river-stone grounds, the app
+   icon's trout gold, and one redband-rose stripe taken from a rainbow
+   trout's flank. It is kept off Family Greenhouse's leaf green and warm
+   cream on purpose, so the portfolio's sites do not read as one template.
+   Every text pair is WCAG AA or better in both schemes
+   (tests/test_site_identity.py holds the ratios). */
 
 /* Bitter (display) and Atkinson Hyperlegible Next (body), both SIL Open Font
    License 1.1 (assets/fonts/OFL-*.txt). Each file is Google Fonts' own Latin
@@ -31,25 +36,28 @@
 
 :root {
   color-scheme: light dark;
-  --bg: #ffffff;
-  --fg: #14231c;
-  --muted: #45564c;
-  --link: #0b5d3b;
-  --link-visited: #3a3a7a;
-  --border: #c9d3cd;
-  --header-bg: #eef5f0;
-  --row-alt: #f4f8f5;
-  --focus: #0b5d3b;
-  --surface-card: #f7f5ee;
-  --border-strong: #6b7d72;
+  --bg: #f5f7f6;
+  --fg: #13221f;
+  --muted: #435350;
+  --link: #0a5a50;
+  --link-visited: #4a3a78;
+  --border: #c5d3cf;
+  --header-bg: #e9efec;
+  --row-alt: #edf2f0;
+  --focus: #0a5a50;
+  --surface-card: #e9efec;
+  --border-strong: #66807a;
+  --thead-bg: #dde8e4;
   --trout-gold: #e6bd6d;
-  --on-gold: #14231c;
-  --masthead-bg: #08402a;
-  --masthead-fg: #f7f1e1;
-  --masthead-link: #f7f1e1;
+  --on-gold: #13221f;
+  --redband: #a3324f;
+  --flank-silver: #c9d6d2;
+  --masthead-bg: #0c3a36;
+  --masthead-fg: #f4efe2;
+  --masthead-link: #f4efe2;
   --masthead-gold: var(--trout-gold);
   --focus-on-masthead: var(--trout-gold);
-  --status-now-bg: #0b5d3b;
+  --status-now-bg: #0a5a50;
   --status-now-fg: #ffffff;
   --status-next-bg: #f6e3b4;
   --status-next-fg: #4a3210;
@@ -84,22 +92,25 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #101713;
-    --fg: #eaf1ec;
-    --muted: #b9c6bd;
-    --link: #7fd9a8;
-    --link-visited: #b7b7ff;
-    --border: #33463c;
-    --header-bg: #16211a;
-    --row-alt: #141d17;
-    --focus: #7fd9a8;
-    --surface-card: #18221c;
-    --border-strong: #7d9186;
-    --masthead-bg: #0b2c1e;
-    --masthead-fg: #eaf1ec;
-    --masthead-link: #cfe9da;
-    --status-now-bg: #7fd9a8;
-    --status-now-fg: #101713;
+    --bg: #0e1817;
+    --fg: #e7f0ed;
+    --muted: #b3c4bf;
+    --link: #80d6c6;
+    --link-visited: #c3b6ff;
+    --border: #2e423e;
+    --header-bg: #132120;
+    --row-alt: #132120;
+    --focus: #80d6c6;
+    --surface-card: #172422;
+    --border-strong: #7d948e;
+    --thead-bg: #1c2d2a;
+    --redband: #e07a93;
+    --flank-silver: #3c5550;
+    --masthead-bg: #0a2a27;
+    --masthead-fg: #e7f0ed;
+    --masthead-link: #cfe8e2;
+    --status-now-bg: #80d6c6;
+    --status-now-fg: #0e1817;
     --status-next-bg: #3a2c12;
     --status-next-fg: #f2d9a0;
     --status-next-border: #c98a3a;
@@ -116,6 +127,8 @@ body {
   color: var(--fg);
   font-family: var(--font-body);
   line-height: 1.55;
+  /* Week dates (2026-09-13) line up down a column and do not jitter. */
+  font-variant-numeric: tabular-nums;
   /* The CDFW source URL appears as plain text and as link text in every
      footer. Without this it cannot break, and the page scrolls sideways on
      a 320px screen (SC 1.4.10). It only breaks where nothing else would. */
@@ -158,40 +171,83 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   white-space: nowrap;
 }
 
-/* Header: the river-deep masthead band. Its links keep one color whether
-   visited or not (link-visited is too dark on the band), stay underlined,
-   and take the gold focus ring, because focus green is 1.5:1 on the band. */
+/* Header: the raceway masthead. Its links keep one color whether visited
+   or not (link-visited is too dark on the band), stay underlined, and take
+   the gold focus ring, because focus teal is too dark on the band.
+   Under it runs the trout stripe: the gold of the fish, the redband rose,
+   then flank silver into the page. It is the one bold thing on every page;
+   it carries no text and no meaning, so nothing reads it. */
 .site-header {
   background: var(--masthead-bg);
   color: var(--masthead-fg);
-  border-bottom: 1px solid var(--border);
 }
-.site-header .wrap { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-6); align-items: baseline; justify-content: space-between; }
+.site-header::after {
+  content: "";
+  display: block;
+  height: 9px;
+  background: linear-gradient(to bottom, var(--trout-gold) 0 2px, var(--redband) 2px 6px, var(--flank-silver) 6px 9px);
+}
+.site-header .wrap { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); align-items: center; justify-content: space-between; }
 .site-name { margin: var(--space-2) 0; }
+/* The mark: the app icon's gold trout over two ripple rings, drawn in the
+   stylesheet so it costs no request and adds no text to the link name. */
 .site-name a, .site-name a:visited {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-comfort);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   line-height: 1.2;
+  letter-spacing: -0.01em;
   color: var(--masthead-gold);
   text-decoration: none;
+  vertical-align: middle;
 }
-.site-tagline { color: var(--masthead-fg); font-size: 0.9rem; margin-left: var(--space-1); }
+.site-name a::before {
+  content: "";
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23e6bd6d' stroke-opacity='.6' stroke-width='1.2'%3E%3Cellipse cx='16' cy='25' rx='11.5' ry='3.2'/%3E%3Cellipse cx='16' cy='25' rx='6.5' ry='1.7'/%3E%3C/g%3E%3Cpath fill='%23e6bd6d' d='M3 15c3-4.5 8-6.5 13-6 3.4.3 6 1.8 8 3.8l4.5-3.3-1.4 5.5 1.4 5.5-4.5-3.3c-2 2-4.6 3.5-8 3.8-5 .5-10-1.5-13-6z'/%3E%3Cg fill='%230c3a36'%3E%3Ccircle cx='8' cy='13.6' r='1.1'/%3E%3Ccircle cx='14' cy='11.6' r='.7'/%3E%3Ccircle cx='17.5' cy='11.4' r='.7'/%3E%3Ccircle cx='21' cy='12.4' r='.7'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
+.site-tagline { color: var(--masthead-fg); font-size: 0.9rem; margin-left: var(--space-1); vertical-align: middle; }
+@media (max-width: 40rem) {
+  /* On a phone the tagline gets its own line under the mark instead of
+     wrapping beside it mid-phrase. */
+  .site-tagline { display: block; margin: 0 0 var(--space-1); }
+  .site-name { margin-bottom: 0; }
+  /* The four primary links fit one 390px line, so the water page's answer
+     (#148) stays as high on a phone as before the mark was added. */
+  .site-header nav a { font-size: 0.875rem; margin-right: var(--space-3); }
+  .site-header .wrap { padding-top: var(--space-2); padding-bottom: var(--space-2); }
+  .site-name a, .site-name a:visited { min-height: 2.25rem; font-size: 1.2rem; }
+  .site-name a::before { width: 1.9rem; height: 1.9rem; }
+  .site-tagline { font-size: 0.8125rem; }
+  h1 { margin-top: var(--space-4); }
+  h2 { font-size: 1.2rem; }
+}
 nav a { margin-right: var(--space-4); }
 .site-header nav a, .site-header nav a:visited {
   color: var(--masthead-link);
   display: inline-block;
   min-height: var(--tap-min);
-  padding: var(--space-0-5) 0;
+  padding: var(--space-1) 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration-thickness: 1px;
 }
+.site-header nav a:hover { text-decoration-thickness: 2px; }
 .site-header nav a:last-child { margin-right: 0; }
 .site-header a:focus-visible { outline-color: var(--focus-on-masthead); }
 
 .site-footer {
   background: var(--header-bg);
-  border-top: 1px solid var(--border);
+  border-top: 3px solid var(--masthead-bg);
   margin-top: var(--space-12);
 }
+.site-footer a { display: inline-block; min-height: var(--tap-min); padding: var(--space-0-5) 0; }
 .site-footer p { color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
 /* The footer's analytics opt-out is a button, because it changes a setting
    rather than going anywhere, drawn like the links next to it. The padding
@@ -209,10 +265,22 @@ nav a { margin-right: var(--space-4); }
 }
 
 h1, h2, h3 { font-family: var(--font-display); font-weight: 700; }
-h1 { font-size: 1.6rem; line-height: 1.2; margin-top: var(--space-5); }
-h2 { font-size: 1.2rem; line-height: 1.3; margin-top: var(--space-8); border-top: 1px solid var(--border); padding-top: var(--space-5); }
+/* Type scale: a 1.25 step from the 1rem body, Bitter heavy for the page's
+   one headline (the slab of stencil lettering on a hatchery truck door),
+   Bitter bold for the rest. Headlines are kept to about 30 characters a
+   line on a phone by size, not by cutting words. */
+h1 {
+  font-size: clamp(1.6rem, 0.9rem + 2.8vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: var(--space-6) 0 var(--space-4);
+  max-width: 34ch;
+  text-wrap: balance;
+}
+h2 { font-size: 1.3rem; line-height: 1.25; margin-top: var(--space-8); border-top: 1px solid var(--border); padding-top: var(--space-5); text-wrap: balance; }
 h3 { font-size: 1.05rem; line-height: 1.3; }
-.lede { font-size: 1.05rem; }
+.lede { font-size: 1.1rem; max-width: 68ch; }
 .muted { color: var(--muted); }
 code { font-size: 0.95em; }
 
@@ -227,8 +295,10 @@ th, td {
   border-bottom: 1px solid var(--border);
   vertical-align: top;
 }
+/* Schedule tables read as a board: a tinted header row on a raceway rule. */
 thead th {
-  border-bottom: 2px solid var(--fg);
+  background: var(--thead-bg);
+  border-bottom: 2px solid var(--masthead-bg);
   white-space: nowrap;
   font-weight: 700;
   line-height: 1.3;
@@ -290,16 +360,30 @@ ul.water-index li { break-inside: avoid; }
 .closest button {
   font: inherit;
   font-weight: 700;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.1rem;
   min-height: var(--tap-comfort);
   cursor: pointer;
-  color: var(--fg);
-  background: var(--surface-card);
-  border: 1px solid var(--border-strong);
+  color: var(--on-gold);
+  background: var(--trout-gold);
+  border: 1px solid var(--on-gold);
   border-radius: var(--radius-sm);
 }
+.closest button:hover { background: #edcd8c; }
 .closest-list { padding-left: 1.5rem; overflow-wrap: anywhere; }
 .closest-list li { margin: 0.25rem 0; }
+
+/* The water page's answer and calendar subscribe (DECISIONS 0054, #148).
+   Higher specificity than that block's own rule, so these hold whichever
+   lands first: a gold edge marks the subscribe box as the page's action,
+   and the answer sentence stays the largest body text on the page. */
+main .water-subscribe { border-left: 6px solid var(--trout-gold); }
+@media (min-width: 40rem) {
+  main .water-answer { font-size: 1.15rem; line-height: 1.45; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a, .closest button { transition: text-decoration-thickness 120ms ease-out, background-color 120ms ease-out; }
+}
 
 /* Status badge: the word is the status and color only repeats it. The three
    looks differ in fill as well as hue (solid, tinted, dashed outline), so they

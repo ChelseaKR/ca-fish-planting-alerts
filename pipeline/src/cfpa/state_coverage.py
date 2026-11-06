@@ -1,38 +1,67 @@
-"""Which of the 50 states and DC Trout Truck covers, for ``/states/``.
+"""Every state's status on ``/states/`` (DECISIONS 0051, plan N4).
 
-Each state has one of three statuses, always said in words (the design
-system's StateCoverageList):
+Each state and DC has one status, always said in words and always from data,
+never hand-typed per page:
 
-- **live**: the state has pages in this build (it is in ``snapshot/v2.json``),
-  so its card links to them;
-- **soon**: a state Trout Truck is adding (``COMING_SOON``) and that has no
-  pages in this build yet; the card says "Coming soon" and links nowhere;
-- **not covered**: every other state. Its card links to that state wildlife
-  agency's own stocking page (``AGENCY_LINKS``) and carries nothing else:
-  Trout Truck never copies, counts or summarizes a state it does not cover.
+- **live**: the state has pages in this build (it is in ``snapshot/v2.json``)
+  and its agency's page was read in the last ``PAUSED_AFTER_DAYS`` days, or
+  its latest check worked. The card links to its pages.
+- **paused**: in v2, but the latest check failed and the last good read is
+  more than ``PAUSED_AFTER_DAYS`` days old. The card still links to its pages
+  and says "Updates paused since <the last good read>", from
+  ``checks.last_success_at``.
+- **asking**: not in v2, and ``data/states_asked.json`` records the date
+  Chelsea sent that agency a request. Only the send date is stored, never
+  anything from a reply, and with no recorded date a state is never said to
+  be asked. The card says "Asking the agency, since <date>" and links the
+  agency's page.
+- **terms**: one of ``TERMS_DONT_ALLOW``, the states whose agency terms do
+  not allow reuse (plan decision 6A). The card says so, criticizes nobody,
+  and links the agency's page.
+- **not covered**: every other state. One sentence and one link to that
+  agency's own page; Trout Truck never copies, counts or summarizes a state
+  it does not carry.
 
-A coming-soon state turns live by itself on the first build that has its
-pages, so the page never calls a state "coming soon" while linking it in the
-table above.
+A state turns live by itself on the first build that has its pages, so no
+card can call a state live without linking it, or anything else while it is.
 
 Every link in ``AGENCY_LINKS`` is on the agency's own domain and was checked
 on ``LINKS_CHECKED`` with one short, polite GET that honored the host's
-robots.txt. Where no
-stocking page could be confirmed, the entry links the agency's home page and
-says so (``homepage_only``).
+robots.txt. Where no stocking page could be confirmed, the entry links the
+agency's home page and says so (``homepage_only``).
 """
 
 from __future__ import annotations
 
 import dataclasses
+import datetime as dt
+import json
+from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 from .states import SOURCES
 
 LINKS_CHECKED = "2026-10-23"
 
-# Being added: each has a reader in cfpa.states already.
-COMING_SOON: frozenset[str] = frozenset({"MA", "MI", "NY"})
+# A state whose latest check failed reads "paused" once its last good read is
+# older than this many days (plan section 4).
+PAUSED_AFTER_DAYS = 7
+
+# The do-not-do list (tt-national-plan-2026-11-05.md section 4, decision 6A):
+# each agency's terms bar reuse for this purpose, or reserve it, so Trout
+# Truck does not plan to carry the state.
+TERMS_DONT_ALLOW: frozenset[str] = frozenset(
+    {"AK", "ID", "IN", "MN", "MO", "NC", "TX", "WA"}
+)
+
+# The dates permission requests were sent, kept by Chelsea by hand.
+ASKED_PATH = Path(__file__).resolve().parents[2] / "data" / "states_asked.json"
+
+
+class AskedFileError(ValueError):
+    """``states_asked.json`` holds something that is not a dated entry."""
+
 
 STATE_NAMES: dict[str, str] = {
     "AL": "Alabama",
@@ -387,24 +416,90 @@ def agency_link(code: str) -> AgencyLink:
     return AgencyLink(src.agency_name, src.agency_short_name, src.source_url)
 
 
-def coverage(live: dict[str, str]) -> list[dict[str, Any]]:
+def load_asked(path: Path | None = None) -> dict[str, dt.date]:
+    """The recorded send date of each permission request, by state code.
+
+    The file is ``{"asked": {"OR": "2026-12-15", ...}}``. A missing file or
+    an empty ``asked`` means no state is being asked. Anything else that is
+    not a known state code mapped to a real ISO date, no later than today,
+    stops the build, so a typo can never put "Asking the agency" on a card."""
+    path = ASKED_PATH if path is None else path
+    if not path.exists():
+        return {}
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict) or not isinstance(raw.get("asked"), dict):
+        raise AskedFileError(f"{path}: expected an object with an 'asked' object")
+    out: dict[str, dt.date] = {}
+    for code, sent in raw["asked"].items():
+        if code not in STATE_NAMES:
+            raise AskedFileError(f"{path}: {code!r} is not a state code")
+        if not isinstance(sent, str):
+            raise AskedFileError(f"{path}: {code} needs its send date")
+        try:
+            day = dt.date.fromisoformat(sent)
+        except ValueError as exc:
+            raise AskedFileError(f"{path}: {code}: {sent!r} is not a date") from exc
+        if day > dt.datetime.now(dt.UTC).date():
+            raise AskedFileError(f"{path}: {code}: {sent} has not happened yet")
+        out[code] = day
+    return out
+
+
+def _paused_since(state: Mapping[str, Any], now: dt.datetime) -> dt.date | None:
+    """The last good read's date when a v2 state is paused, else None."""
+    checks = state["checks"]
+    if checks["last_attempt_ok"]:
+        return None
+    last = dt.datetime.fromisoformat(checks["last_success_at"].replace("Z", "+00:00"))
+    if now - last <= dt.timedelta(days=PAUSED_AFTER_DAYS):
+        return None
+    return last.date()
+
+
+def coverage(
+    live: dict[str, str],
+    *,
+    states: Sequence[Mapping[str, Any]] | None = None,
+    now: dt.datetime | None = None,
+    asked: Mapping[str, dt.date] | None = None,
+) -> list[dict[str, Any]]:
     """One entry per state and DC, alphabetical by name. ``live`` maps each
-    state code with pages in this build to its URL relative to /states/."""
+    state code with pages in this build to its URL relative to /states/;
+    ``states`` are v2's state entries (their checks decide "paused", as of
+    ``now``, v2's ``generated_at``); ``asked`` is ``load_asked()``."""
+    by_code = {s["code"]: s for s in states or []}
+    asked = asked or {}
     out: list[dict[str, Any]] = []
     for code, name in sorted(STATE_NAMES.items(), key=lambda kv: kv[1]):
-        entry: dict[str, Any] = {"code": code, "name": name}
+        entry: dict[str, Any] = {
+            "code": code,
+            "name": name,
+            "id": f"state-{code.lower()}",
+        }
         if code in live:
-            entry.update(status="live", href=live[code])
-        elif code in COMING_SOON:
-            entry.update(status="soon")
-        else:
-            link = agency_link(code)
-            entry.update(
-                status="none",
-                agency=link.agency,
-                short=link.short,
-                url=link.url,
-                homepage_only=link.homepage_only,
+            paused = (
+                _paused_since(by_code[code], now)
+                if code in by_code and now is not None
+                else None
             )
+            if paused is None:
+                entry.update(status="live", href=live[code])
+            else:
+                entry.update(status="paused", href=live[code], since=paused)
+            out.append(entry)
+            continue
+        link = agency_link(code)
+        entry.update(
+            agency=link.agency,
+            short=link.short,
+            url=link.url,
+            homepage_only=link.homepage_only,
+        )
+        if code in asked:
+            entry.update(status="asking", since=asked[code])
+        elif code in TERMS_DONT_ALLOW:
+            entry.update(status="terms")
+        else:
+            entry.update(status="none")
         out.append(entry)
     return out

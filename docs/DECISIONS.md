@@ -1372,3 +1372,36 @@ focused on california." She approved the nine recommendations in the
   (`docs/app-store/LISTING-MULTISTATE.md`) and a Play listing draft
   (`docs/PLAY-LISTING.md`) are reworded national. `docs/APP-STORE-LISTING.md`
   gets only a "frozen during the appeal" note.
+
+## 0051 — /states/ says where each state stands, from data (2026-11-05)
+
+Follows 0049 and the national plan's stage 2 (`tt-national-plan-2026-11-05.md`
+section 4, PR N4). Merge on or after 2026-12-14.
+
+- **Title and H1.** "Trout stocking schedule by state | Trout Truck" and
+  "Trout stocking schedule by state" (plan decision 3A). The old "all 50
+  states" and "every state" read as coverage the site does not have. A test
+  (`test_states_copy_guard.py`) fails if any title, heading or social title
+  on the site says "all 50 states", "every state", "all states" or
+  "nationwide".
+- **Statuses, all from data** (`cfpa.state_coverage`), replacing the stale
+  `COMING_SOON` (Massachusetts, Michigan and New York are live):
+  - "Live on Trout Truck": the state is in v2.
+  - "Updates paused since <date>": in v2, its latest check failed and its
+    last good read (`checks.last_success_at`) is more than 7 days old. The
+    pages stay linked. This is how Tennessee reads while TWRA's page cannot
+    be read.
+  - "Asking the agency, since <date>": only for a state whose send date is
+    recorded in `pipeline/data/states_asked.json`, which Chelsea keeps by
+    hand and which is empty at merge. Only the send date is stored. A
+    missing, malformed or future date stops the build.
+  - "Not planned. The agency's terms don't allow reuse.": AK, ID, IN, MN,
+    MO, NC, TX and WA, the do-not-do list (plan decision 6A). No agency is
+    criticized.
+  - "Not covered. Trout Truck doesn't carry <State>.": every other state,
+    with one link to its agency's own page.
+- **Anchors.** Each card has `id="state-<xx>"`, so the home page and the
+  apps can link to one state (`/states/#state-or`).
+- **Not done, on purpose.** No per-state stub pages (a new page family and a
+  doorway pattern) and no signup or notify channel (plan decision 7B).
+

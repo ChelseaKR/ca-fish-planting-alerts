@@ -1,12 +1,14 @@
 {% extends "base.html.jinja" %}
 {% set share_card_kind = "state" %}
 {% block content %}
-<h1>Trout stocking schedule for every state</h1>
+{# DECISIONS 0051: the H1 and title are site_states.STATES_INDEX_HEADING;
+   test_states_copy_guard keeps coverage claims out of both. #}
+<h1>{{ heading }}</h1>
 <p class="lede">
   {{ site_name }} carries {{ live_names }} from each state's own wildlife
-  agency. For every other state and the District of Columbia, the list below
-  says so and links to that agency's own page: {{ site_name }} does not copy
-  or summarize those states' data.
+  agency. For the other states and the District of Columbia, the list below
+  says where each one stands and links to that agency's own page:
+  {{ site_name }} does not copy or summarize those states' data.
 </p>
 
 <h2>States on {{ site_name }}</h2>
@@ -40,7 +42,7 @@
       <td role="cell" data-label="Agency">{{ r.agency }}</td>
       <td role="cell" data-label="What it publishes">{{ r.kind }}</td>
       <td role="cell" data-label="Waters">{{ r.waters }}</td>
-      <td role="cell" data-label="Last checked">{{ r.checked }}</td>
+      <td role="cell" data-label="Last checked">{% if r.paused_since %}Updates paused since {{ r.paused_since }}{% else %}{{ r.checked }}{% endif %}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -51,31 +53,48 @@
   state. <a href="{{ root }}about/">About &amp; attribution</a>.
 </p>
 
-{# The design system's StateCoverageList (cfpa.state_coverage): all 50
-   states and DC, alphabetical, each status in words. A state that is not
-   covered gets one link to its agency's own page and nothing else. #}
-<h2 id="every-state">Every state</h2>
+{# The design system's StateCoverageList (cfpa.state_coverage, DECISIONS
+   0051): the 50 states and DC, alphabetical, each status in words and from
+   data. A state that is not carried gets one sentence and one link to its
+   agency's own page, and nothing else. #}
+<h2 id="every-state">Where each state stands</h2>
+{% set shown = coverage|map(attribute="status")|list %}
 <p>
   &ldquo;Live on {{ site_name }}&rdquo; links to that state's pages here.
-  &ldquo;Coming soon&rdquo; is a state {{ site_name }} is adding. Every other
-  state links to its wildlife agency's own stocking page, the official
-  schedule, which {{ site_name }} does not copy. Agency links were checked
-  {{ coverage_checked }}; agencies move pages, so if one is out of date, the
-  agency's home page has it.
+  {% if "paused" in shown %}&ldquo;Updates paused&rdquo; means the agency's
+  page could not be read lately; the pages stay up with the last good read
+  and its date.
+  {% endif %}{% if "asking" in shown %}&ldquo;Asking the agency&rdquo; means a
+  request to use its data was sent on that date; nothing is promised.
+  {% endif %}{% if "terms" in shown %}&ldquo;Not planned&rdquo; means the
+  agency's terms don't allow reuse.
+  {% endif %}For the rest, the agency's own stocking
+  page is the official source, which {{ site_name }} does not copy. Agency
+  links were checked {{ coverage_checked }}; agencies move pages, so if one is
+  out of date, the agency's home page has it.
 </p>
 <ul class="tt-states" aria-label="Trout stocking coverage by state">
   {% for s in coverage %}
-  <li class="tt-state{% if s.status == 'live' %} tt-state--live{% endif %}">
+  <li class="tt-state{% if s.status in ('live', 'paused') %} tt-state--live{% endif %}" id="{{ s.id }}">
     <h3>{{ s.name }}</h3>
     {% if s.status == "live" %}
     <p><span class="tt-badge tt-badge--now">Live on {{ site_name }}</span> <a href="{{ s.href }}">Open {{ s.name }}'s schedule</a></p>
-    {% elif s.status == "soon" %}
-    <p><span class="tt-badge tt-badge--next">Coming soon</span></p>
-    {% elif s.homepage_only %}
-    <p><span class="tt-badge tt-badge--none">Not covered</span> <a href="{{ s.url }}" rel="noopener">see {{ s.short }}'s website<span class="visually-hidden">: {{ s.agency }}</span></a></p>
+    {% elif s.status == "paused" %}
+    <p><span class="tt-badge tt-badge--next">Updates paused since {{ s.since_label }}</span> <a href="{{ s.href }}">Open {{ s.name }}'s schedule</a></p>
+    {% else %}
+    {% if s.status == "asking" %}
+    <p><span class="tt-badge tt-badge--next">Asking the agency, since {{ s.since_label }}</span></p>
+    {% elif s.status == "terms" %}
+    <p><span class="tt-badge tt-badge--none">Not planned</span> The agency&rsquo;s terms don&rsquo;t allow reuse.</p>
+    {% else %}
+    <p><span class="tt-badge tt-badge--none">Not covered</span> {{ site_name }} doesn&rsquo;t carry {{ s.name }}.</p>
+    {% endif %}
+    {% if s.homepage_only %}
+    <p><a href="{{ s.url }}" rel="noopener">See {{ s.short }}'s website<span class="visually-hidden">: {{ s.agency }}</span></a></p>
     <p class="muted">No stocking page could be confirmed, so this links to the agency's own site.</p>
     {% else %}
-    <p><span class="tt-badge tt-badge--none">Not covered</span> <a href="{{ s.url }}" rel="noopener">see the official schedule<span class="visually-hidden">: {{ s.agency }} stocking page for {{ s.name }}</span></a></p>
+    <p><a href="{{ s.url }}" rel="noopener">{{ s.short }}&rsquo;s own stocking page is the official source<span class="visually-hidden">: {{ s.agency }}, {{ s.name }}</span></a></p>
+    {% endif %}
     {% endif %}
   </li>
   {% endfor %}

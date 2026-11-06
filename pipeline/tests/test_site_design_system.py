@@ -2,10 +2,10 @@
 
 - Status badges are words from one table (site.STATUS_BADGE_WORDS and the
   three coverage words), never a number: ``_badge_problems`` is the checker.
-- ``/states/`` lists all 50 states and DC, alphabetical: live states link to
-  their pages, coming-soon states link nowhere, and every other state has
-  exactly one link, to its agency's own page, and no other words than the
-  template's: ``_coverage_problems`` is the checker. It is how the page is held
+- ``/states/`` lists the 50 states and DC, alphabetical: live states link to
+  their pages, and every other state has exactly one link, to its agency's
+  own page, and no other words than the template's for its status
+  (DECISIONS 0051): ``_coverage_problems`` is the checker. It is how the page is held
   to "never republish a state that is not covered".
 - The two web fonts are first-party files, preloaded, with font-display: swap.
 
@@ -32,9 +32,14 @@ FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "snapshot.v1.json"
 BASE_URL = "https://example.invalid/ca-fish-planting-alerts"
 
-COVERAGE_WORDS = {"Live on Trout Truck", "Coming soon", "Not covered"}
+# The fixed coverage words. "Updates paused since <date>" and "Asking the
+# agency, since <date>" carry a date, so they are matched by pattern.
+COVERAGE_WORDS = {"Live on Trout Truck", "Not planned", "Not covered"}
+DATED_COVERAGE = re.compile(
+    r"(Updates paused since|Asking the agency, since) [A-Z][a-z]{2} \d{1,2}, \d{4}"
+)
 BADGE_RE = re.compile(r'<span class="tt-badge tt-badge--(\w+)">(.*?)</span>', re.S)
-CARD_RE = re.compile(r'<li class="tt-state[^"]*">(.*?)</li>', re.S)
+CARD_RE = re.compile(r'<li class="tt-state[^"]*" id="state-\w\w">(.*?)</li>', re.S)
 TAG_RE = re.compile(r"<[^>]+>")
 
 
@@ -93,6 +98,8 @@ def _badge_problems(pages: dict[str, str]) -> list[str]:
     problems = []
     for name, text in pages.items():
         for state, word in BADGE_RE.findall(text):
+            if name == "states/index.html" and DATED_COVERAGE.fullmatch(word):
+                continue  # a dated coverage status: a date, not a count
             if word not in allowed:
                 problems.append(f"{name}: badge {state!r} says {word!r}")
             if re.search(r"\d", word):
@@ -215,19 +222,21 @@ def _expected_card(
     the links of a live card, which point at the state's own pages."""
     if code in live:
         return f"{name} Live on Trout Truck Open {name}'s schedule", None
-    if code in state_coverage.COMING_SOON:
-        return f"{name} Coming soon", []
     link = state_coverage.agency_link(code)
+    if code in state_coverage.TERMS_DONT_ALLOW:
+        status = "Not planned The agency\u2019s terms don\u2019t allow reuse."
+    else:
+        status = f"Not covered Trout Truck doesn\u2019t carry {name}."
     if link.homepage_only:
         words = (
-            f"{name} Not covered see {link.short}'s website: {link.agency} "
+            f"{name} {status} See {link.short}'s website: {link.agency} "
             "No stocking page could be confirmed, so this links to the agency's "
             "own site."
         )
     else:
         words = (
-            f"{name} Not covered see the official schedule: {link.agency} "
-            f"stocking page for {name}"
+            f"{name} {status} {link.short}\u2019s own stocking page is the "
+            f"official source: {link.agency}, {name}"
         )
     return words, [html_mod.escape(link.url, quote=True)]
 
@@ -260,13 +269,13 @@ def test_states_page_lists_every_state_with_production_coverage(built: Path) -> 
     assert _coverage_problems(text, {"CA", "TN"}) == []
     assert 'href="../">Open California' in text
     assert 'href="../tn/">Open Tennessee' in text
-    assert text.count("Coming soon</span>") == 3
+    assert "Coming soon" not in text
 
 
-def test_a_coming_soon_state_turns_live_when_its_pages_exist(built_all: Path) -> None:
+def test_a_state_turns_live_when_its_pages_exist(built_all: Path) -> None:
     text = (built_all / "states" / "index.html").read_text(encoding="utf-8")
     assert _coverage_problems(text, {"CA", "TN", "MA", "MI", "NY"}) == []
-    assert "Coming soon</span>" not in text
+    assert "Coming soon" not in text
     assert 'href="../ny/">Open New York' in text
 
 
@@ -316,7 +325,7 @@ def test_states_page_title_description_and_sitemap(built: Path) -> None:
     pages = _pages(built)
     text = pages["states/index.html"]
     title = _search(r"<title>(.*?)</title>", text).group(1)
-    assert title == "Trout stocking schedule for all 50 states | Trout Truck"
+    assert title == "Trout stocking schedule by state | Trout Truck"
     others = [
         n
         for n, t in pages.items()
@@ -325,7 +334,10 @@ def test_states_page_title_description_and_sitemap(built: Path) -> None:
     assert others == []
     desc = _search(r'<meta name="description" content="([^"]*)"', text).group(1)
     assert len(html_mod.unescape(desc)) <= 160
-    assert "Massachusetts, Michigan and New York coming soon" in html_mod.unescape(desc)
+    assert html_mod.unescape(desc) == (
+        "Trout stocking schedule by state: California and Tennessee. "
+        "Each other state links to its agency's official page."
+    )
     sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
     assert f"<loc>{BASE_URL}/states/</loc>" in sitemap
 
@@ -480,11 +492,11 @@ def test_negative_control_a_label_out_of_step_with_its_header_is_caught(
 
 def test_states_description_leads_with_the_search_phrase_when_it_fits() -> None:
     live = ["California", "Massachusetts", "Michigan", "New York", "Tennessee"]
-    got = site_states._index_description(live, [])
+    got = site_states._index_description(live)
     assert got.startswith("Trout stocking schedule by state: California, ")
     assert len(got) <= 160
-    # Too long with the phrase: the old wording, still within the limit.
-    soon = ["Massachusetts", "Michigan", "New York"]
-    longer = site_states._index_description(["California", "Tennessee"], soon)
-    assert longer.startswith("California and Tennessee trout stocking schedules; ")
-    assert len(longer) <= 160
+    # Too long with the phrase: the shorter wording, still within the limit.
+    many = [f"State {i}" for i in range(12)]
+    longer = site_states._index_description(many)
+    assert longer.startswith("State 0, State 1, ")
+    assert "trout stocking schedules. Each other state" in longer

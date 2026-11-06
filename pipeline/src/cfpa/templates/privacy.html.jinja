@@ -11,7 +11,7 @@
   {% endif %}
   {# correction 1 (apps coverage): lede begins #}
   The {{ site_name }} apps for iPhone (with widgets) and for
-  Android collect no data: no analytics, no tracking, no advertising and no
+  Android collect no data: no analytics, no advertising and no
   account. Neither app includes analytics, advertising or crash-reporting code.
   The Android app is free, sells nothing and does include one library from
   Google, described under <a href="#app">The apps</a>.
@@ -20,13 +20,13 @@
 {% else %}
 <p class="lede">
   Neither the {{ site_name }} website nor its apps for iPhone and Android collect
-  personal data. There is no account, no analytics, no advertising, no
-  tracking, and no third-party script on the website.
+  personal data. There is no account, no analytics, no advertising and no
+  third-party script on the website.
 </p>
 {% endif %}
 <p>
   The website's water pages and its &ldquo;What to bring&rdquo; page do carry
-  plain links to Amazon.com that earn the owner a commission; they are links, not ads, scripts or trackers. See
+  plain links to Amazon.com that earn the owner a commission; they are plain links, not ads or scripts. See
   <a href="#affiliate">Gear links</a>.
 </p>
 {# correction 1 (apps coverage): scope line #}
@@ -166,7 +166,7 @@
 <ul>
   <li>The links are on the website, never in the iOS app.</li>
   <li>They are ordinary links. Nothing loads from Amazon when a page opens,
-      and this site adds no script, pixel or tracking for them.</li>
+      and this site adds no script or pixel for them.</li>
   <li>Once you click, Amazon&rsquo;s own site and privacy notice apply, and
       Amazon uses the link&rsquo;s tag to credit this site.{% if ga4_measurement_id %}
       The analytics described above can count a click on any link to another
@@ -181,7 +181,7 @@
 <h2 id="app">The apps</h2>
 <ul>
   {# correction 1 (apps coverage): items begin #}
-  <li><strong>No analytics:</strong> neither app has analytics, tracking,
+  <li><strong>No analytics:</strong> neither app has analytics,
       advertising or crash reporting.{% if ga4_measurement_id %} The website's
       Google Analytics does not run inside the apps.{% endif %}</li>
   <li><strong>iPhone and widgets:</strong> the iPhone app and its widgets use
@@ -221,9 +221,9 @@
       from.</li>
   {# correction 3 (request wording): item ends #}
   {# correction 2 (link scope): item begins #}
-  <li><strong>Links:</strong> links to CDFW's map, to CDFW's schedule and to
-      the other source sites open in your browser, on those sites. CDFW and
-      those sites have their own privacy policies, and this site's analytics
+  <li><strong>Links:</strong> links to each agency's map and schedule (CDFW's
+      in California) and to the other source sites open in your browser, on
+      those sites. The agencies and those sites have their own privacy policies, and this site's analytics
       does not apply to them.{% if ga4_measurement_id %} This site's Google
       Analytics applies to this site's own pages only, as described
       above.{% endif %}</li>

@@ -11,6 +11,35 @@
 </p>
 {% endif %}
 
+{% if national %}
+{# DECISIONS 0050. _support_faq holds the same words, agency for agency. #}
+<h2 id="schedule">Where does the data come from?</h2>
+<p>
+  From each state's wildlife agency, credited on every page:
+  {{ national.agencies_text }}. California's is the California Department of
+  Fish and Wildlife's
+  <a href="https://nrm.dfg.ca.gov/FishPlants/PublicPlantSearch">Fish Planting
+  Schedule</a>, checked twice a day. The schedule was last checked
+  {{ source_fetched_label }}. CDFW updates it weekly and lists plants by
+  <strong>week</strong>, never by day, on purpose. Plants are subject to
+  change, so everything here is scheduled, not confirmed.
+</p>
+
+<h2 id="history">Why does this site show more weeks than the agency's page?</h2>
+<p>
+  An agency's page can keep a short window: CDFW's shows about a year. This
+  site keeps every week it has recorded, so a water's history keeps growing
+  after the agency's page has moved on.
+</p>
+
+<h2 id="new-state">Will my state be added?</h2>
+<p>
+  A state is added when its agency's terms allow reuse, or the agency agrees
+  in writing, and its site can be read without getting around anything. Until
+  then, its entry on the states page links to the agency's own page.
+  <a href="{{ root }}states/#every-state">See each state's status</a>.
+</p>
+{% else %}
 <h2 id="schedule">Where does the schedule come from?</h2>
 <p>
   From the California Department of Fish and Wildlife's
@@ -26,6 +55,7 @@
   CDFW's page only shows about a year. This site keeps every week it has
   recorded, so a water's history keeps growing after CDFW's page has moved on.
 </p>
+{% endif %}
 
 <h2 id="calendar">How do I subscribe to a water's calendar?</h2>
 <p>

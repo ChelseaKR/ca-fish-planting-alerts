@@ -197,9 +197,9 @@ def test_privacy_page_never_names_play_billing(
 # ---- correction 2: link scope
 
 NEW_LINKS = (
-    "links to cdfw's map, to cdfw's schedule and to the other source sites open in "
-    "your browser, on those sites. cdfw and those sites have their own privacy "
-    "policies, and this site's analytics does not apply to them. this site's "
+    "links to each agency's map and schedule (cdfw's in california) and to the "
+    "other source sites open in your browser, on those sites. the agencies and "
+    "those sites have their own privacy policies, and this site's analytics does not apply to them. this site's "
     "google analytics applies to this site's own pages only"
 )
 OLD_LINKS = "links to cdfw's map or to this site open in your browser"

@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: national chrome (DECISIONS 0050). In a multi-state build the header
+  reads "Trout stocking schedules, state by state", California pages' nav is
+  "California this week", "California counties", "All states", and the
+  about, support, gear and 404 openings name each state and agency from v2.
+  California URLs, the home page's title and H1 and the /county/ title are
+  unchanged. The privacy page drops "no tracking" (TT-8).
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the

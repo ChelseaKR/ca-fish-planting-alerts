@@ -128,7 +128,9 @@ def test_a_california_only_v2_leaves_every_california_page_unchanged(tmp_path: P
 
 def test_the_california_pages_link_the_states_only_when_there_are_some(built: Path):
     home = (built / "site" / "index.html").read_text()
-    assert 'href="./states/">Other states</a>' in home
+    # DECISIONS 0050: the national nav names California and links all states.
+    assert 'href="./states/">All states</a>' in home
+    assert 'href="./">California this week</a>' in home
     # Every California URL is where it was.
     assert (built / "site" / "water").is_dir()
     assert (built / "site" / "county").is_dir()

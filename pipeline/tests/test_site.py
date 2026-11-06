@@ -101,7 +101,7 @@ def test_about_page_privacy_claims_match_reality(tmp_path: Path):
     assert "No cookies" in about or "no cookies" in about.lower()
     # The one script is the home page's own "closest to me" button; the claim
     # that no JavaScript runs at all was true until it shipped (DECISIONS 0024).
-    assert "no analytics, tracking or third-party script" in about.lower()
+    assert "no analytics and no third-party script" in about.lower()
     assert "sort by closest to me" in about.lower()
     assert "no javascript runs on this site" not in about.lower()
 

@@ -1372,3 +1372,36 @@ focused on california." She approved the nine recommendations in the
   (`docs/app-store/LISTING-MULTISTATE.md`) and a Play listing draft
   (`docs/PLAY-LISTING.md`) are reworded national. `docs/APP-STORE-LISTING.md`
   gets only a "frozen during the appeal" note.
+
+## 0050 — National site chrome; California pages and URLs unchanged (2026-11-05)
+
+Follows 0049 (national framing, every California URL unchanged) and the
+national plan's stage 1 (`tt-national-plan-2026-11-05.md`, PR N3). Merge on
+or after 2026-12-07, after the 0042 freeze and TT-W1.
+
+- **Only in a multi-state build.** Everything below switches on when v2
+  carries more than one state (`site._national`). A California-only build,
+  or one with no v2, is byte for byte what it was.
+- **Header and nav.** California and site-wide pages say "Trout stocking
+  schedules, state by state" (plan decision 1A). Their nav is "California
+  this week", "California counties", "All states", "About & privacy", the
+  pattern the other states' pages already use. Other states' headers are
+  unchanged.
+- **Titles.** The about, privacy, support, terms, 404, data and gear titles
+  end in "trout stocking schedules by state". The home page's title and H1,
+  `/county/`'s title and H1, and every California water, county, region,
+  species and week page are unchanged.
+- **Openings.** About's "What this is", the support FAQ's first answers and
+  a new "Will my state be added?", the gear guide's title, lede and license
+  line, and the 404 now speak for every state in the build. Each state or
+  agency they name is read from v2, never typed, so adding or dropping a
+  state changes the words by itself. Only California's license page is a
+  checked license URL; the other states' line links each agency's own page
+  from v2. The holiday gift section (0043) is untouched.
+- **Privacy.** The store-listing-truth TT-8 wording: the privacy page no
+  longer says "no tracking", and app links are "each agency's map and
+  schedule".
+- **Not changed.** The MobileApplication JSON-LD description stays
+  California-worded: it renders only when the App Store switch is on, and
+  the build Apple would list is the California-only 1.0.0.
+

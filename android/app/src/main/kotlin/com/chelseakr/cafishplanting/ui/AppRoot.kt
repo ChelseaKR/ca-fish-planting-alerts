@@ -54,8 +54,10 @@ import com.chelseakr.cafishplanting.OpenRequest
 import com.chelseakr.cafishplanting.PurchaseBackend
 import com.chelseakr.cafishplanting.Router
 import com.chelseakr.cafishplanting.Tab
+import com.chelseakr.cafishplanting.core.StateChoice
 import com.chelseakr.cafishplanting.rememberHaptics
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 @Composable
 fun AppRoot(env: AppEnvironment, router: Router, purchases: PurchaseBackend, activity: Activity) {
@@ -132,11 +134,16 @@ fun AppRoot(env: AppEnvironment, router: Router, purchases: PurchaseBackend, act
         PurchaseSheet(activity, env, purchases, stateCode = route.purchaseState, onDismiss = { router.setPurchase(false) })
     }
     if (route.showingOnboarding) {
-        OnboardingScreen(onFinish = {
-            env.completeOnboarding()
-            router.setOnboarding(false)
-            haptics.success()
-        })
+        OnboardingScreen(
+            states = StateChoice.options(state.snapshot, Instant.now()),
+            selectedState = state.browseState,
+            onPickState = env::setBrowseState,
+            onFinish = {
+                env.completeOnboarding()
+                router.setOnboarding(false)
+                haptics.success()
+            },
+        )
     }
 }
 

@@ -26,6 +26,7 @@ import com.chelseakr.cafishplanting.core.SnapshotMeta
 import com.chelseakr.cafishplanting.core.SnapshotOrigin
 import com.chelseakr.cafishplanting.core.SnapshotRefresher
 import com.chelseakr.cafishplanting.core.SnapshotStore
+import com.chelseakr.cafishplanting.core.StateChoice
 import com.chelseakr.cafishplanting.core.Stores
 import com.chelseakr.cafishplanting.core.Water
 import com.chelseakr.cafishplanting.core.WidgetDigest
@@ -69,8 +70,8 @@ data class AppState(
     /** Any state unlocked: the widget and the general alert words. */
     val hasAnyAccess: Boolean get() = entitlements.hasAnyAccess
 
-    /** The state Browse shows, if the snapshot still has it; else California. */
-    val browseState: String get() = if (snapshot?.state(browseChoice.state) == null) "CA" else browseChoice.state
+    /** The state Browse shows, if one was picked and the snapshot still has it; else none (DECISIONS 0053). */
+    val browseState: String? get() = StateChoice.resolve(browseChoice, snapshot)
 
     fun freshness(now: Instant = Instant.now()): SnapshotFreshness? {
         val snapshot = snapshot ?: return null

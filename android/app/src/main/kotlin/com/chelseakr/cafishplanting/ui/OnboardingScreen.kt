@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import com.chelseakr.cafishplanting.core.OnboardingCopy
 import com.chelseakr.cafishplanting.BuildConfig
 import com.chelseakr.cafishplanting.core.FreeLaunch
+import com.chelseakr.cafishplanting.core.StateChoice
+import com.chelseakr.cafishplanting.core.StateOption
 import com.chelseakr.cafishplanting.rememberHaptics
 import kotlinx.coroutines.launch
 
@@ -56,10 +58,13 @@ import kotlinx.coroutines.launch
  * The introduction: four pages on a first launch, swiped or stepped through
  * with Continue, skippable. The words are `OnboardingCopy` (shared rules with
  * the iOS app). It asks for nothing; the notification prompt stays behind
- * the first favorite's own explanation.
+ * the first favorite's own explanation. The "Find your waters" page asks
+ * which state, from the snapshot's own list, with nothing chosen for the
+ * person (DECISIONS 0053); a pick is saved as it is made, and skipping
+ * leaves no state chosen, so Browse opens on the list of states.
  */
 @Composable
-fun OnboardingScreen(onFinish: () -> Unit) {
+fun OnboardingScreen(states: List<StateOption>, selectedState: String?, onPickState: (String) -> Unit, onFinish: () -> Unit) {
     val pages = if (BuildConfig.FREE_TIER) FreeLaunch.onboardingPages else OnboardingCopy.pages
     val pager = rememberPagerState { pages.size }
     val scope = rememberCoroutineScope()
@@ -75,7 +80,11 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 TextButton(onClick = onFinish, enabled = !isLast, modifier = Modifier.alpha(if (isLast) 0f else 1f)) { Text("Skip") }
             }
             HorizontalPager(pager, Modifier.weight(1f)) { index ->
-                Page(pages[index], index + 1, pages.size)
+                Page(pages[index], index + 1, pages.size) {
+                    if (pages[index].id == StateChoice.PICKER_PAGE_ID && states.isNotEmpty()) {
+                        StatePickerCard(states, selectedState, onPickState)
+                    }
+                }
             }
             Row(Modifier.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 pages.indices.forEach { i ->
@@ -102,7 +111,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
 }
 
 @Composable
-private fun Page(page: OnboardingCopy.Page, number: Int, count: Int) {
+private fun Page(page: OnboardingCopy.Page, number: Int, count: Int, extra: @Composable () -> Unit = {}) {
     val icon = when (page.icon) {
         "truck" -> Icons.Filled.LocalShipping
         "map" -> Icons.Filled.Map
@@ -147,6 +156,23 @@ private fun Page(page: OnboardingCopy.Page, number: Int, count: Int) {
                 }
             }
         }
+        extra()
         Spacer(Modifier.size(24.dp))
+    }
+}
+
+@Composable
+private fun StatePickerCard(states: List<StateOption>, selected: String?, onPick: (String) -> Unit) {
+    Column(
+        Modifier
+            .widthIn(max = 560.dp)
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background, RoundedCornerShape(16.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(StateChoice.PICKER_TITLE, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.semantics { heading() })
+        Text(StateChoice.PICKER_NOTE, style = MaterialTheme.typography.bodySmall, color = secondaryText)
+        StateChoiceList(states, selected, onPick)
     }
 }

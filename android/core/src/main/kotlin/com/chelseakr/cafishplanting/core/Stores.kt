@@ -140,9 +140,14 @@ data class PurchaseEntitlement(
     }
 }
 
-/** Which state Browse shows: a file like favorites, California until the person picks another. */
+/**
+ * Which state Browse shows: a file like favorites. No state until the person
+ * picks one (DECISIONS 0053): a missing or corrupt file, or `null`, means
+ * Browse shows the list of states, never California in its place. A file
+ * written before 0053 (`{"state": "CA"}`) still reads as that pick.
+ */
 @Serializable
-data class BrowseChoice(val state: String = "CA")
+data class BrowseChoice(val state: String? = null)
 
 /**
  * The stores the app keeps, each reading a missing or corrupt file as its

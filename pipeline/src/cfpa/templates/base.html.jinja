@@ -68,18 +68,21 @@
 <a class="skip-link" href="#main">Skip to main content</a>
 <header class="site-header">
   <div class="wrap">
-    <p class="site-name"><a href="{{ root }}">{{ site_name }}</a> <span class="site-tagline">{% if header_tagline %}{{ header_tagline }}{% else %}California trout planting &amp; stocking schedule{% endif %}</span></p>
+    <p class="site-name"><a href="{{ root }}">{{ site_name }}</a> <span class="site-tagline">{% if header_tagline %}{{ header_tagline }}{% elif national %}Trout stocking schedules, state by state{% else %}California trout planting &amp; stocking schedule{% endif %}</span></p>
     <nav aria-label="Primary">
       {% if nav_links %}
       {% for label, href in nav_links %}
       <a href="{{ href }}">{{ label }}</a>
       {% endfor %}
+      {% elif national %}
+      {# DECISIONS 0050: the other states' nav pattern (site_states.py). #}
+      <a href="{{ root }}">California this week</a>
+      <a href="{{ root }}county/">California counties</a>
+      <a href="{{ root }}states/">All states</a>
+      <a href="{{ root }}about/">About &amp; privacy</a>
       {% else %}
       <a href="{{ root }}">This week</a>
       <a href="{{ root }}county/">By county</a>
-      {% if states_nav %}
-      <a href="{{ root }}states/">Other states</a>
-      {% endif %}
       <a href="{{ root }}about/">About &amp; privacy</a>
       {% endif %}
     </nav>

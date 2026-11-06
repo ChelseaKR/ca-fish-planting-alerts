@@ -18,10 +18,11 @@
 </p>
 {% endmacro %}
 {% block content %}
-<h1>What to bring fishing at a California trout water</h1>
+<h1>{{ guide_title }}</h1>
 <p class="lede">
-  A short packing list for a day at a California lake, pond or stream that is
-  on the planting schedule. It is general fishing know-how, not a product
+  {% if national %}A short packing list for a day at a lake, pond or stream
+  that is on a state's trout stocking schedule or report.{% else %}A short packing list for a day at a California lake, pond or stream that is
+  on the planting schedule.{% endif %} It is general fishing know-how, not a product
   review. Bring what the day and the water call for, and leave the rest.
 </p>
 {{ disclosure("gear-disclosure") }}
@@ -44,20 +45,40 @@
 
 <h2 id="license">License and rules</h2>
 <ul>
+  {% if national %}
+  {# DECISIONS 0050. Agency links come from v2; California's license page is
+     the one license URL checked by hand, so the others link the agency. #}
+  <li>Anglers generally need a fishing license from the state they fish in,
+      and ages and rules differ. In California, anglers 16 and older generally
+      need one; the Department of Fish and Wildlife explains the types and how
+      to get one on its <a href="{{ cdfw_license_url }}">fishing license
+      page</a>. Elsewhere, start at the state's agency:
+      {% for s in national.states if s.code != "CA" %}<a href="{{ s.agency_url }}">{{ s.agency }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+      Check there, because rules and fees change.</li>
+  {% else %}
   <li>Anglers 16 and older generally need a California fishing license. The
       Department of Fish and Wildlife explains the types and how to get one on
       its <a href="{{ cdfw_license_url }}">fishing license page</a>. Check
       there, because rules and fees change.</li>
+  {% endif %}
   <li>Rules differ by water. Some waters limit the bait, the hooks or the
       number of fish you may keep, and parks and reservoirs may charge a
       day-use fee or post rules of their own. Read the signs at the water.</li>
+  {% if national %}
+  <li>A water&rsquo;s page here shows what its agency publishes, never more
+      precisely than the agency does: California schedules plants by week,
+      never by day. Plans change, so a scheduled week is not a promise that
+      fish are in the water on the day you arrive.</li>
+  {% else %}
   <li>A water&rsquo;s page here shows what CDFW has scheduled, by week, never
       by day. Plants are subject to change, so a scheduled week is not a
       promise that fish are in the water on the day you arrive.</li>
+  {% endif %}
 </ul>
 <p class="muted">
-  This is a reminder, not legal advice. CDFW&rsquo;s own pages are the
-  authority on licenses and regulations.
+  This is a reminder, not legal advice. {% if national %}Each state agency&rsquo;s
+  own pages are the authority on its licenses and regulations.{% else %}CDFW&rsquo;s own pages are the
+  authority on licenses and regulations.{% endif %}
 </p>
 
 <h2 id="species">Trout and catfish: what differs</h2>

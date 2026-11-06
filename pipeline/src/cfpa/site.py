@@ -101,6 +101,12 @@ SITE_NAME = "Trout Truck"
 # Appended after the brand on pages whose own label carries no search terms
 # (about, privacy, support, terms, 404).
 SITE_TAGLINE = "CA trout planting schedule"
+# The same, once the build carries more than one state (DECISIONS 0050). A
+# California-only build keeps SITE_TAGLINE, so its pages are unchanged.
+SITE_TAGLINE_NATIONAL = "trout stocking schedules by state"
+# The header line on California and site-wide pages of a multi-state build
+# (DECISIONS 0050, plan decision 1A). True at one state or fifty.
+HEADER_TAGLINE_NATIONAL = "Trout stocking schedules, state by state"
 
 # Where the site has lived since it launched, and what the iOS app's snapshot
 # URL and per-water links point at (ios/PlantingCore SnapshotEndpoint.swift;
@@ -452,6 +458,13 @@ GEAR_GUIDE_DESCRIPTION = (
     "A packing list for a day at a water on California's trout planting "
     "schedule: license reminder, trout and catfish basics, tackle, cold and "
     "sun gear, and a cooler."
+)
+# The guide's title and description in a multi-state build (DECISIONS 0050).
+GEAR_GUIDE_TITLE_NATIONAL = "What to bring fishing at a stocked trout water"
+GEAR_GUIDE_DESCRIPTION_NATIONAL = (
+    "A packing list for a day at a water on a state's trout stocking "
+    "schedule or report: license reminder, trout and catfish basics, tackle, "
+    "cold and sun gear, and a cooler."
 )
 
 
@@ -887,6 +900,37 @@ def _group_by_region(waters: list[dict[str, Any]]) -> dict[str, list[dict[str, A
     for w in waters:
         out.setdefault(w["region"], []).append(w)
     return out
+
+
+def _national(snapshot_v2: dict[str, Any] | None) -> dict[str, Any] | None:
+    """What the national chrome says about the states (DECISIONS 0050), all
+    of it read from v2 so that no shared page hand-types a state: a state
+    added to or dropped from v2 changes every sentence by itself. None
+    without v2 or with California alone, so those builds are unchanged.
+
+    ``states`` is v2's order (California, then the others as v2 lists them);
+    ``names_text`` and ``agencies_text`` are those states and their agencies
+    as one phrase each."""
+    if snapshot_v2 is None or len(snapshot_v2["states"]) <= 1:
+        return None
+    states = [
+        {
+            "code": s["code"],
+            "name": s["name"],
+            "agency": s["agency"]["name"],
+            "short": s["agency"]["short_name"],
+            "agency_url": s["agency"]["url"],
+            "seg": s["code"].lower(),
+        }
+        for s in snapshot_v2["states"]
+    ]
+    return {
+        "states": states,
+        # A path to show as an example of another state's pages (the 404).
+        "example_seg": next(s["seg"] for s in states if s["code"] != "CA"),
+        "names_text": _join_names([s["name"] for s in states]),
+        "agencies_text": _join_names([f"{s['agency']} ({s['short']})" for s in states]),
+    }
 
 
 def _other_states(snapshot_v2: dict[str, Any] | None) -> list[dict[str, str]]:
@@ -1446,27 +1490,60 @@ _APP_RESTORE_FAQ_NOT_YET = (
 
 
 def _support_faq(
-    source_fetched_label: str, *, app_store_live: bool = False
+    source_fetched_label: str,
+    *,
+    app_store_live: bool = False,
+    national: dict[str, Any] | None = None,
 ) -> list[tuple[str, str]]:
     """The support page's questions and answers as plain text. Each answer is
     the visible answer with its links reduced to their text. The last two
     are about the iPhone app, so they follow the launch switch: until the app
-    is on the App Store they say so (support.html.jinja holds the same words)."""
-    return [
-        (
-            "Where does the schedule come from?",
-            "From the California Department of Fish and Wildlife's Fish "
-            "Planting Schedule, checked twice a day. The schedule was last "
-            f"checked {source_fetched_label}. CDFW updates it weekly and lists "
-            "plants by week, never by day, on purpose. Plants are subject to "
-            "change, so everything here is scheduled, not confirmed.",
-        ),
-        (
+    is on the App Store they say so (support.html.jinja holds the same words).
+
+    ``national`` (``_national(snapshot_v2)``) is set in a multi-state build:
+    the first answer then names every agency in the build, from the data,
+    and a question about adding a state follows (DECISIONS 0050)."""
+    ca_answer = (
+        "the California Department of Fish and Wildlife's Fish "
+        "Planting Schedule, checked twice a day. The schedule was last "
+        f"checked {source_fetched_label}. CDFW updates it weekly and lists "
+        "plants by week, never by day, on purpose. Plants are subject to "
+        "change, so everything here is scheduled, not confirmed."
+    )
+    if national is None:
+        source = ("Where does the schedule come from?", f"From {ca_answer}")
+        history = (
             "Why does this site show more weeks than CDFW's page?",
             "CDFW's page only shows about a year. This site keeps every week "
             "it has recorded, so a water's history keeps growing after CDFW's "
             "page has moved on.",
-        ),
+        )
+        added: list[tuple[str, str]] = []
+    else:
+        source = (
+            "Where does the data come from?",
+            "From each state's wildlife agency, credited on every page: "
+            f"{national['agencies_text']}. California's is {ca_answer}",
+        )
+        history = (
+            "Why does this site show more weeks than the agency's page?",
+            "An agency's page can keep a short window: CDFW's shows about a "
+            "year. This site keeps every week it has recorded, so a water's "
+            "history keeps growing after the agency's page has moved on.",
+        )
+        added = [
+            (
+                "Will my state be added?",
+                "A state is added when its agency's terms allow reuse, or the "
+                "agency agrees in writing, and its site can be read without "
+                "getting around anything. Until then, its entry on the states "
+                "page links to the agency's own page. See each state's status.",
+            )
+        ]
+    return [
+        source,
+        history,
+        *added,
         (
             "How do I subscribe to a water's calendar?",
             "Every water page links to a calendar feed (.ics). Copy that link "
@@ -1706,7 +1783,7 @@ def _write_open_data(
     open_states = _open_data_states(snapshot_v2, open_files, base_url=base_url)
     data_updated = str(max(e["updated"] for e in open_states))
     data_html = env.get_template("data.html.jinja").render(
-        title=f"Open data: CSV and JSON downloads | {SITE_NAME}, {SITE_TAGLINE}",
+        title=f"Open data: CSV and JSON downloads | {SITE_NAME}, {common['site_tagline']}",
         description=(
             "Download the fish planting schedule this site mirrors as CSV and "
             "JSON: this week and later, and the full weekly history, with a "
@@ -2273,9 +2350,19 @@ def _render_gear_page(ctx: _PageContext, build_date: dt.date) -> str:
     ``build_date`` is in the window (DECISIONS 0043). Returns its URL."""
     page_url = f"{ctx.base_url}/gear/"
     trail = [ctx.home_crumb, ("What to bring", page_url)]
+    national = ctx.common.get("national")
+    guide_title = GEAR_GUIDE_TITLE_NATIONAL if national else GEAR_GUIDE_TITLE
+    about: Any = (
+        [{"@type": "State", "name": s["name"]} for s in national["states"]]
+        if national
+        else {"@type": "State", "name": "California"}
+    )
     html = ctx.env.get_template("gear.html.jinja").render(
-        title=f"{GEAR_GUIDE_TITLE} | {SITE_NAME}, {SITE_TAGLINE}",
-        description=GEAR_GUIDE_DESCRIPTION,
+        title=f"{guide_title} | {SITE_NAME}, {ctx.common['site_tagline']}",
+        description=(
+            GEAR_GUIDE_DESCRIPTION_NATIONAL if national else GEAR_GUIDE_DESCRIPTION
+        ),
+        guide_title=guide_title,
         canonical_url=page_url,
         root="../",
         **ctx.common,
@@ -2283,9 +2370,9 @@ def _render_gear_page(ctx: _PageContext, build_date: dt.date) -> str:
             _ld_page(
                 "WebPage",
                 page_url=page_url,
-                name=GEAR_GUIDE_TITLE,
+                name=guide_title,
                 base_url=ctx.base_url,
-                about={"@type": "State", "name": "California"},
+                about=about,
             ),
             _ld_breadcrumb(page_url, trail),
         ),
@@ -2910,7 +2997,7 @@ def _privacy_description(*, ads_enabled: bool, analytics: bool) -> str:
         )
     return (
         f"What the {SITE_NAME} trout planting site and iOS app collect: "
-        "nothing. No account, no analytics, no tracking."
+        "nothing. No account and no analytics."
     )
 
 
@@ -3031,6 +3118,13 @@ def build_site(
     # California-only build keeps its header byte for byte.
     common["open_data"] = snapshot_v2 is not None
     common["states_nav"] = snapshot_v2 is not None and len(snapshot_v2["states"]) > 1
+    # The national chrome (DECISIONS 0050): the header, the nav and the
+    # site-wide pages' openings, with every state named from v2. None in a
+    # California-only build, which keeps every page byte for byte.
+    national = _national(snapshot_v2)
+    common["national"] = national
+    site_tagline = SITE_TAGLINE_NATIONAL if national else SITE_TAGLINE
+    common["site_tagline"] = site_tagline
     # The other states' hubs, for the visible links on the home page and the
     # county index; empty (so nothing renders) in a California-only build.
     common["other_states"] = _other_states(snapshot_v2)
@@ -3147,8 +3241,16 @@ def build_site(
                 "url": f"{base_url}/",
                 "name": SITE_NAME,
                 "description": (
-                    f"CDFW's weekly California {site_species} planting schedule, "
-                    "by water and county, with each water's planting history."
+                    (
+                        "Trout stocking schedules and reports from state "
+                        "wildlife agencies, by water, with each water's history."
+                    )
+                    if national
+                    else (
+                        f"CDFW's weekly California {site_species} planting "
+                        "schedule, by water and county, with each water's "
+                        "planting history."
+                    )
                 ),
                 "inLanguage": "en-US",
             },
@@ -3187,7 +3289,7 @@ def build_site(
     about_html = env.get_template("about.html.jinja").render(
         locations_placed=len(coords) if coords else None,
         locations_total=len(snapshot["waters"]),
-        title=f"About, attribution & privacy | {SITE_NAME}, {SITE_TAGLINE}",
+        title=f"About, attribution & privacy | {SITE_NAME}, {site_tagline}",
         description=(
             f"What {SITE_NAME} is, {about_collects}, and where its trout planting "
             "and stocking data and license terms come from."
@@ -3236,20 +3338,20 @@ def build_site(
         (
             "privacy",
             "privacy.html.jinja",
-            f"Privacy policy | {SITE_NAME}, {SITE_TAGLINE}",
+            f"Privacy policy | {SITE_NAME}, {site_tagline}",
             privacy_description,
         ),
         (
             "support",
             "support.html.jinja",
-            f"Support & FAQ | {SITE_NAME}, {SITE_TAGLINE}",
+            f"Support & FAQ | {SITE_NAME}, {site_tagline}",
             "How the trout planting schedule, stocking calendar feeds and iOS app alerts work, "
             "and why an alert may not arrive.",
         ),
         (
             "terms",
             "terms.html.jinja",
-            f"Terms of use | {SITE_NAME}, {SITE_TAGLINE}",
+            f"Terms of use | {SITE_NAME}, {site_tagline}",
             f"The terms for using {SITE_NAME}: who runs it, where its stocking data comes from, "
             "why that data can be wrong or late, and the affiliate links.",
         ),
@@ -3267,6 +3369,7 @@ def build_site(
                         _support_faq(
                             source_fetched_label,
                             app_store_live=app_store_live,
+                            national=national,
                         ),
                     ),
                     *(
@@ -3287,7 +3390,7 @@ def build_site(
     # e.g. /ca-fish-planting-alerts/ -- rather than ./ or ../; never
     # indexed, no canonical)
     not_found_html = env.get_template("404.html.jinja").render(
-        title=f"Page not found | {SITE_NAME}, {SITE_TAGLINE}",
+        title=f"Page not found | {SITE_NAME}, {site_tagline}",
         description="This page does not exist.",
         canonical_url=None,
         noindex=True,

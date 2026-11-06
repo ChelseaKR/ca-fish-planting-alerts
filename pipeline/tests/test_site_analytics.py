@@ -251,7 +251,9 @@ def test_no_analytics_detector_is_not_vacuous(no_id_pages, id_pages):
 
 def test_no_id_copy_still_says_the_site_collects_nothing(no_id_pages):
     privacy = _text(no_id_pages["privacy/index.html"])
-    assert "no analytics, no advertising, no tracking" in privacy
+    # store-listing-truth TT-8: "tracking" is never claimed absent.
+    assert "no analytics, no advertising and no third-party script" in privacy
+    assert "no tracking" not in privacy
     assert "no cookies are set." in privacy
     # The script that exists is named, not denied (DECISIONS 0024).
     assert "no javascript runs" not in privacy
@@ -296,7 +298,7 @@ def test_id_build_copy_describes_ga4_and_keeps_the_app_at_data_not_collected(id_
         "the eea, the uk and switzerland",
         "google signals and ad personalization are turned off",
         "14 months",
-        "collect no data: no analytics, no tracking, no advertising and no account",
+        "collect no data: no analytics, no advertising and no account",
         "app store privacy label: data not collected",
     ):
         assert phrase in privacy, phrase

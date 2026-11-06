@@ -1,10 +1,20 @@
 {% extends "base.html.jinja" %}
 {% block content %}
 <h1>Page not found</h1>
+{% if national %}
+<p class="lede">
+  There is no page at this address. California's water pages live at
+  <code>water/&lt;name&gt;/</code>, and another state's under its two-letter
+  code, such as <code>{{ national.example_seg }}/water/&lt;name&gt;/</code>;
+  a water no agency has listed has no page here.
+</p>
+<p><a href="{{ root }}">California's planting schedule this week and every water, A&ndash;Z</a>, or <a href="{{ root }}states/">all states</a>.</p>
+{% else %}
 <p class="lede">
   There is no page at this address. Water pages live at
   <code>water/&lt;name&gt;/</code>; a water that CDFW has never scheduled has
   no page here.
 </p>
 <p><a href="{{ root }}">This week's planting schedule and every water, A&ndash;Z</a>.</p>
+{% endif %}
 {% endblock %}

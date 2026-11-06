@@ -3,6 +3,24 @@
 <h1>About, attribution &amp; privacy</h1>
 
 <h2>What this is</h2>
+{% if national %}
+{# DECISIONS 0050: every state named here comes from v2. #}
+<p>
+  {{ site_name }} is a free, static site that shows trout stocking schedules
+  and reports from state wildlife agencies, organized by water, with each
+  water's history kept after the agency's own page moves on. It carries
+  {{ national.names_text }} today (<a href="{{ root }}states/">each state's
+  status</a>). In California it mirrors the California Department of Fish and
+  Wildlife's weekly trout (and occasional catfish) planting schedule &mdash;
+  CDFW's own page shows a rolling window of about a year, and this site keeps
+  every week it has recorded after that window moves on.
+</p>
+<p>
+  The name comes from what anglers call the hatchery truck that delivers
+  planted trout. The site shows what each agency publishes, not where any
+  truck is right now.
+</p>
+{% else %}
 <p>
   {{ site_name }} is a free, static mirror of the California Department of
   Fish and Wildlife's weekly trout (and occasional catfish) planting schedule,
@@ -15,6 +33,7 @@
   planted trout. The site shows CDFW's published weekly schedule, not where
   any truck is right now.
 </p>
+{% endif %}
 
 {% if ga4_measurement_id %}
 <h2 id="privacy">Privacy: the website counts visits; the app collects nothing</h2>
@@ -52,7 +71,7 @@
 <p>This is a plain static site. Specifically:</p>
 <ul>
   <li>No cookies are set by this site.</li>
-  <li>There is no analytics, tracking or third-party script. The one script
+  <li>There is no analytics and no third-party script. The one script
       is the home page's &ldquo;Sort by closest to me&rdquo; button, which does
       nothing until you press it (see
       <a href="{{ root }}privacy/#location">Your location</a>).</li>
@@ -80,8 +99,10 @@
   a new week's schedule. The notification is generated on your device from a
   snapshot the app downloads periodically in the background &mdash; there is
   no push service, no account, and no server that knows which waters you
-  favorited. The schedule updates weekly, so alerts arrive on CDFW's
-  schedule, not instantly.
+  favorited. {% if national %}Each agency updates on its own rhythm, and
+  California's schedule updates weekly, so alerts arrive on the agency's
+  schedule, not instantly.{% else %}The schedule updates weekly, so alerts arrive on CDFW's
+  schedule, not instantly.{% endif %}
 </p>
 {% if app_store_url %}
 <p><a href="{{ app_store_url }}" data-app-store-placement="about" data-app-store-kind="link">Get the app on the App Store</a>.</p>

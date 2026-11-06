@@ -62,6 +62,21 @@ struct AboutView: View {
                 SectionHeader("How alerts work")
             }
 
+            // Support from inside the app (DECISIONS 0058). The footnote shows
+            // the address, so it still works with no email app set up.
+            Section {
+                if let feedbackURL = FeedbackMail.url(version: FeedbackMail.appVersion(), platform: "iOS") {
+                    Link(FeedbackMail.rowTitle, destination: feedbackURL)
+                        .accessibilityHint("Opens your email app")
+                }
+                Text(FeedbackMail.rowFootnote)
+                    .font(.footnote)
+                    .foregroundStyle(.secondaryText)
+                    .textSelection(.enabled)
+            } header: {
+                SectionHeader(FeedbackMail.sectionHeader)
+            }
+
             Section {
                 Link(AppStoreReviewLink.rowTitle, destination: AppStoreReviewLink.writeReviewURL)
                     .accessibilityHint("Opens the App Store")

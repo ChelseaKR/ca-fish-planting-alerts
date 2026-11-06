@@ -22,6 +22,14 @@ This repository was republished with a new history on 2026-09-18
   phone than before, and `tests/test_site_identity.py` holds every color
   pair to WCAG AA and keeps that block from being hidden or shrunk.
 
+- Site: share cards in the raceway look. Every link-preview card is now the
+  masthead teal with the site's gold trout mark, Bitter 800 for the name and
+  headline, and the gold, redband-rose and silver stripe along the bottom.
+  Same copy, same 1200x630 size, same `assets/share/<kind>.png` names. The
+  colors are read from the style.css tokens in `tests/test_share_cards.py`,
+  and copy too long for a card now fails the build. The old app-icon image
+  the cards were drawn from (`templates/social-card.png`) is removed.
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the

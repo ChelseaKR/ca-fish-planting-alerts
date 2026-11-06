@@ -13,9 +13,14 @@ that fish are in the water. Every string a card shows is in ``CARD_KINDS``,
 ``SITE_NAME`` or the freshness line built here, so the exact copy is
 reviewable in one place.
 
-Rendering uses Pillow with the font Pillow itself ships (Aileron, CC0). No
-font file is committed and none is fetched. The icon on each card is the
-app icon already in the package (``social-card.png``).
+Look: the site's "raceway" identity (style.css, from the design audit of
+2026-11-05). A raceway-teal ground, the site's gold trout mark over two
+ripple rings, Bitter 800 for the name and the headline,
+Atkinson Hyperlegible Next for the rest, and the gold, redband-rose and
+silver stripe along the bottom edge. The colors are the style.css tokens of
+the same names (``PALETTE``); tests/test_share_cards.py reads style.css and
+fails if the two drift apart. The fonts are the site's own self-hosted
+files (SIL OFL 1.1, templates/fonts), so nothing is fetched to draw a card.
 """
 
 from __future__ import annotations
@@ -32,18 +37,72 @@ CARD_WIDTH = 1200
 CARD_HEIGHT = 630
 CARD_DIR = "assets/share"
 
-# The icon's own background gradient (top and bottom edge pixels), so the
-# card and the icon meet without a seam.
-_TOP = (15, 122, 76)
-_BOTTOM = (8, 64, 42)
-_TITLE = (255, 255, 255)
-_BODY = (214, 236, 223)
-_MUTED = (190, 220, 202)
-_ICON_SIZE = 380
+# The style.css tokens a card uses, by their CSS names (light scheme: a
+# link preview has no dark mode). Text sits on the masthead teal only.
+PALETTE: dict[str, str] = {
+    "masthead-bg": "#0c3a36",
+    "masthead-fg": "#f4efe2",
+    "trout-gold": "#e6bd6d",
+    "redband": "#a3324f",
+    "flank-silver": "#c9d6d2",
+}
+# The dark-scheme masthead (#0a2a27) is the bottom of the ground's gentle
+# fall, so the card reads as the site's header band at any size.
+MASTHEAD_DEEP = "#0a2a27"
+
+
+def _rgb(hex_color: str) -> tuple[int, int, int]:
+    h = hex_color.lstrip("#")
+    return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+
+
+_TOP = _rgb(PALETTE["masthead-bg"])
+_BOTTOM = _rgb(MASTHEAD_DEEP)
+_NAME = _rgb(PALETTE["trout-gold"])
+_TITLE = _rgb(PALETTE["masthead-fg"])
+_BODY = _rgb(PALETTE["masthead-fg"])
+_MUTED = _rgb(PALETTE["flank-silver"])
+# The stripe under every masthead, scaled from the site's 2px/4px/3px.
+STRIPE: tuple[tuple[str, int], ...] = (
+    ("trout-gold", 6),
+    ("redband", 12),
+    ("flank-silver", 9),
+)
+STRIPE_HEIGHT = sum(h for _, h in STRIPE)
+
+_MARK_SIZE = 380
+_MARK_X = 70
 _TEXT_X = 520
 _TEXT_RIGHT = CARD_WIDTH - 60
+_FRESHNESS_Y = CARD_HEIGHT - STRIPE_HEIGHT - 80
 
-_ICON_FILE = Path(__file__).parent / "templates" / "social-card.png"
+_FONT_DIR = Path(__file__).parent / "templates" / "fonts"
+_DISPLAY_FONT = _FONT_DIR / "bitter-latin.woff2"
+_BODY_FONT = _FONT_DIR / "atkinson-hyperlegible-next-latin.woff2"
+
+# The mark, in the 32x32 units of the SVG in style.css (.site-name a::before).
+# The fish outline is that path with its curves written out absolutely:
+# each entry is a line to a point, or a cubic curve (two controls, an end).
+_FISH_START = (3.0, 15.0)
+_FISH: tuple[tuple[tuple[float, float], ...], ...] = (
+    ((6.0, 10.5), (11.0, 8.5), (16.0, 9.0)),
+    ((19.4, 9.3), (22.0, 10.8), (24.0, 12.8)),
+    ((28.5, 9.5),),
+    ((27.1, 15.0),),
+    ((28.5, 20.5),),
+    ((24.0, 17.2),),
+    ((22.0, 19.2), (19.4, 20.7), (16.0, 21.0)),
+    ((11.0, 21.5), (6.0, 19.5), (3.0, 15.0)),
+)
+# Eye, then three spots: (cx, cy, r).
+_FISH_DOTS = ((8.0, 13.6, 1.1), (14.0, 11.6, 0.7), (17.5, 11.4, 0.7), (21.0, 12.4, 0.7))
+# Ripple rings: (cx, cy, rx, ry), stroked 1.2 units at 60% opacity.
+_RIPPLES = ((16.0, 25.0, 11.5, 3.2), (16.0, 25.0, 6.5, 1.7))
+_RIPPLE_WIDTH = 1.2
+_RIPPLE_OPACITY = 0.6
+# Drawn this many times larger, then scaled down: smooth edges, same bytes
+# every run.
+_SUPERSAMPLE = 4
 
 
 @dataclass(frozen=True)
@@ -113,31 +172,106 @@ def card_meta(
 
 
 @cache
-def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    return ImageFont.load_default(size)
+def _font(size: int, *, display: bool = False, weight: int = 400) -> Any:
+    """Bitter (display) or Atkinson Hyperlegible Next at one weight."""
+    font = ImageFont.truetype(str(_DISPLAY_FONT if display else _BODY_FONT), size)
+    font.set_variation_by_axes([weight])
+    return font
+
+
+def _cubic(
+    p0: tuple[float, float],
+    p1: tuple[float, float],
+    p2: tuple[float, float],
+    p3: tuple[float, float],
+    steps: int = 24,
+) -> list[tuple[float, float]]:
+    out = []
+    for i in range(1, steps + 1):
+        t = i / steps
+        u = 1 - t
+        out.append(
+            (
+                u**3 * p0[0]
+                + 3 * u * u * t * p1[0]
+                + 3 * u * t * t * p2[0]
+                + t**3 * p3[0],
+                u**3 * p0[1]
+                + 3 * u * u * t * p1[1]
+                + 3 * u * t * t * p2[1]
+                + t**3 * p3[1],
+            )
+        )
+    return out
+
+
+def _fish_outline() -> list[tuple[float, float]]:
+    points = [_FISH_START]
+    for seg in _FISH:
+        if len(seg) == 1:
+            points.append(seg[0])
+        else:
+            points.extend(_cubic(points[-1], seg[0], seg[1], seg[2]))
+    return points
+
+
+def _blend(
+    fg: tuple[int, int, int], bg: tuple[int, int, int], alpha: float
+) -> tuple[int, int, int]:
+    r, g, b = (round(f * alpha + k * (1 - alpha)) for f, k in zip(fg, bg, strict=True))
+    return r, g, b
+
+
+def _mark(size: int) -> Image.Image:
+    """The site's mark (gold trout over two ripple rings) as a size x size
+    RGBA image, drawn from the same shapes as the SVG in style.css."""
+    big = size * _SUPERSAMPLE
+    scale = big / 32
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    ring = (*_NAME, round(255 * _RIPPLE_OPACITY))
+    half = _RIPPLE_WIDTH * scale / 2
+    for cx, cy, rx, ry in _RIPPLES:
+        draw.ellipse(
+            (
+                (cx - rx) * scale - half,
+                (cy - ry) * scale - half,
+                (cx + rx) * scale + half,
+                (cy + ry) * scale + half,
+            ),
+            outline=ring,
+            width=round(_RIPPLE_WIDTH * scale),
+        )
+    draw.polygon([(x * scale, y * scale) for x, y in _fish_outline()], fill=_NAME)
+    for cx, cy, r in _FISH_DOTS:
+        draw.ellipse(
+            ((cx - r) * scale, (cy - r) * scale, (cx + r) * scale, (cy + r) * scale),
+            fill=_TOP,
+        )
+    return img.resize((size, size), Image.Resampling.LANCZOS)
 
 
 @cache
 def _background() -> Image.Image:
-    """The gradient with the icon on it. Cached: it is the same for every card."""
+    """The teal ground, the mark and the stripe. Cached: the same for every
+    card."""
     img = Image.new("RGB", (CARD_WIDTH, CARD_HEIGHT))
     px = ImageDraw.Draw(img)
-    for y in range(CARD_HEIGHT):
-        t = y / (CARD_HEIGHT - 1)
+    ground = CARD_HEIGHT - STRIPE_HEIGHT
+    for y in range(ground):
+        t = y / (ground - 1)
         px.line(
             [(0, y), (CARD_WIDTH, y)],
             fill=tuple(
                 round(a + (b - a) * t) for a, b in zip(_TOP, _BOTTOM, strict=True)
             ),
         )
-    icon = Image.open(_ICON_FILE).convert("RGB")
-    icon = icon.resize((_ICON_SIZE, _ICON_SIZE), Image.Resampling.LANCZOS)
-    # Rounded like an app icon, so its own gradient edge never shows as a box.
-    mask = Image.new("L", (_ICON_SIZE, _ICON_SIZE), 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        (0, 0, _ICON_SIZE - 1, _ICON_SIZE - 1), radius=84, fill=255
-    )
-    img.paste(icon, (70, (CARD_HEIGHT - _ICON_SIZE) // 2), mask)
+    y = ground
+    for token, height in STRIPE:
+        px.rectangle((0, y, CARD_WIDTH, y + height - 1), fill=_rgb(PALETTE[token]))
+        y += height
+    mark = _mark(_MARK_SIZE)
+    img.paste(mark, (_MARK_X, (ground - _MARK_SIZE) // 2), mark)
     return img
 
 
@@ -157,33 +291,40 @@ def _wrap(draw: ImageDraw.ImageDraw, text: str, font: Any, width: int) -> list[s
 
 
 def render_card(kind: str, *, site_name: str, checked_on: str) -> bytes:
-    """The PNG bytes for one kind. Deterministic: same input, same bytes."""
+    """The PNG bytes for one kind. Deterministic: same input, same bytes.
+
+    Raises ValueError if a kind's copy runs into the freshness line, so a
+    new kind with long copy fails the build instead of shipping overlapped
+    text."""
     if kind not in CARD_KINDS:
         raise ValueError(f"unknown share card kind {kind!r}")
     c = CARD_KINDS[kind]
     img = _background().copy()
     draw = ImageDraw.Draw(img)
     width = _TEXT_RIGHT - _TEXT_X
-    y = 70
-    draw.text((_TEXT_X, y), site_name, font=_font(40), fill=_MUTED)
-    y += 90
-    title_font = _font(58)
+    y = 64
+    draw.text(
+        (_TEXT_X, y), site_name, font=_font(44, display=True, weight=800), fill=_NAME
+    )
+    y += 92
+    title_font = _font(54, display=True, weight=800)
     for line in _wrap(draw, c.title, title_font, width):
         draw.text((_TEXT_X, y), line, font=title_font, fill=_TITLE)
-        y += 70
-    y += 20
-    sub_font = _font(34)
+        y += 66
+    y += 18
+    sub_font = _font(32)
     for line in _wrap(draw, c.subtitle, sub_font, width):
         draw.text((_TEXT_X, y), line, font=sub_font, fill=_BODY)
-        y += 46
+        y += 44
+    if y > _FRESHNESS_Y:
+        raise ValueError(f"share card {kind!r}: the copy runs into the date line")
     draw.text(
-        (_TEXT_X, CARD_HEIGHT - 90),
+        (_TEXT_X, _FRESHNESS_Y),
         freshness_line(checked_on),
-        font=_font(32),
+        font=_font(30),
         fill=_MUTED,
     )
-    out = _png_bytes(img)
-    return out
+    return _png_bytes(img)
 
 
 def _png_bytes(img: Image.Image) -> bytes:

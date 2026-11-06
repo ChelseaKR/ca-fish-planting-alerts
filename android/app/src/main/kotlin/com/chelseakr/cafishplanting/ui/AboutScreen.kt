@@ -43,6 +43,7 @@ import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.AppState
 import com.chelseakr.cafishplanting.BuildConfig
 import com.chelseakr.cafishplanting.core.AboutCopy
+import com.chelseakr.cafishplanting.core.FeedbackMail
 import com.chelseakr.cafishplanting.core.FreeLaunch
 import com.chelseakr.cafishplanting.core.PlayStoreReviewLink
 import com.chelseakr.cafishplanting.core.SnapshotOrigin
@@ -129,6 +130,20 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
                         }
                     }
                 }
+            }
+
+            // Support from inside the app (DECISIONS 0057). The footnote shows the
+            // address, so it still works on a device with no email app.
+            SectionHeader(FeedbackMail.SECTION_HEADER, ReadableWidth.fillMaxWidth())
+            Card(ReadableWidth) {
+                ButtonRow(FeedbackMail.ROW_TITLE) {
+                    try {
+                        context.startActivity(Intent(Intent.ACTION_SENDTO, FeedbackMail.url(BuildConfig.VERSION_NAME, "Android").toUri()))
+                    } catch (_: ActivityNotFoundException) {
+                        // No email app on this device: the address is in the footnote.
+                    }
+                }
+                Para(FeedbackMail.ROW_FOOTNOTE, secondary = true, small = true)
             }
 
             SectionHeader("Google Play", ReadableWidth.fillMaxWidth())

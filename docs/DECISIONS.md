@@ -1405,3 +1405,23 @@ recommended one.
   `state = "CA"`) and onboarding change after the App Review Board answers,
   in their own PR, with the same rules and words as `StateChoice.kt`.
 
+
+## 0057 — Android About gets "Write to the developer"; alerts keep their one button (2026-11-06)
+
+From the 2026-11-05 app parity audit (Trout Truck items 2 and 3; Chelsea
+chose all recommended).
+
+- **What.** About has a "Questions and corrections" section with one row,
+  "Write to the developer". It opens the email app with a `mailto:` to
+  chelsea@chelseakr.com (the address `/support/` shows) and a subject of
+  "Trout Truck <version> for Android". The footnote shows the address, so it
+  still works on a device with no email app. When the build carries no
+  version, the subject leaves it out rather than showing a placeholder.
+- **Nothing new is sent.** The app sends no email itself and makes no new
+  network request. The Data safety answers are unchanged.
+- **Notification actions: none added.** The audit said alerts had no action
+  button. They already have one: "Mute this water" (`MuteReceiver`, since
+  the first Android build), and tapping the alert opens the water. An extra
+  "Open water" button would repeat the tap, so it isn't added.
+- **iOS waits.** The same row comes to iOS after the App Review Board
+  answers, in its own PR, with the same words (`FeedbackMail.swift`).

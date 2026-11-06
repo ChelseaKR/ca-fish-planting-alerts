@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: /states/ says where each state stands (DECISIONS 0051). Title and H1
+  "Trout stocking schedule by state"; dated statuses from data (live, updates
+  paused since the last good read, asking the agency since a recorded send
+  date, the agency's terms don't allow reuse, not covered); an anchor per
+  state; and a test that blocks "all 50 states" and "every state" in any
+  title or heading.
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the

@@ -428,7 +428,14 @@ def render_states(
                 _build_date(state, snap_v2["generated_at"]),
             )
         )
-    entries.append(_render_index(ctx, snap_v2["states"], max(hub_lastmods.values())))
+    entries.append(
+        _render_index(
+            ctx,
+            snap_v2["states"],
+            max(hub_lastmods.values()),
+            snap_v2["generated_at"],
+        )
+    )
     return entries
 
 
@@ -446,22 +453,34 @@ def _join_names(names: list[str]) -> str:
     return ", ".join(names[:-1]) + " and " + names[-1]
 
 
-def _index_description(live: list[str], soon: list[str]) -> str:
-    """The /states/ meta description: what is live, what is coming, and that
-    every other state links to its agency. Under 160 characters for the
+def _index_description(live: list[str]) -> str:
+    """The /states/ meta description: the states with pages here, and that
+    each other state links to its agency. Under 160 characters for the
     states as they are; a longer list still says the same thing. It leads
     with "trout stocking schedule", the query this page was shown for most
-    in Search Console (2026-07-31 to 2026-10-28)."""
-    tail = f"; {_join_names(soon)} coming soon" if soon else ""
-    tail += ". Every other state links to its agency's official page."
+    in Search Console (2026-07-31 to 2026-10-28). It promises no state."""
+    tail = ". Each other state links to its agency's official page."
     led = f"Trout stocking schedule by state: {_join_names(live)}{tail}"
     if len(led) <= 160:
         return led
     return f"{_join_names(live)} trout stocking schedules{tail}"
 
 
+STATES_INDEX_HEADING = "Trout stocking schedule by state"
+"""The /states/ H1, and its title before the brand (plan decision 3A)."""
+
+
+def _fmt_day(day: dt.date) -> str:
+    """ "Oct 15, 2026": the date alone, never a time (a check's date is what
+    the card claims)."""
+    return f"{day.strftime('%b')} {day.day}, {day.year}"
+
+
 def _render_index(
-    ctx: StatesContext, states: list[dict[str, Any]], lastmod: str
+    ctx: StatesContext,
+    states: list[dict[str, Any]],
+    lastmod: str,
+    generated_at: str,
 ) -> tuple[str, str | None]:
     page_url = f"{ctx.base_url}/states/"
     rows = [
@@ -479,15 +498,29 @@ def _render_index(
         }
         for s in states
     ]
-    title = f"Trout stocking schedule for all 50 states | {ctx.site_name}"
+    # Plan decision 3A (DECISIONS 0051): no "all 50 states", which read as
+    # coverage the site does not have. test_states_copy_guard holds it.
+    title = f"{STATES_INDEX_HEADING} | {ctx.site_name}"
     live = {s["code"]: row["href"] for s, row in zip(states, rows, strict=True)}
-    entries = state_coverage.coverage(live)
-    live_names = [e["name"] for e in entries if e["status"] == "live"]
-    soon_names = [e["name"] for e in entries if e["status"] == "soon"]
+    entries = state_coverage.coverage(
+        live,
+        states=states,
+        now=dt.datetime.fromisoformat(generated_at.replace("Z", "+00:00")),
+        asked=state_coverage.load_asked(),
+    )
+    paused = {e["code"]: e["since"] for e in entries if e["status"] == "paused"}
+    for s, row in zip(states, rows, strict=True):
+        since = paused.get(s["code"])
+        row["paused_since"] = _fmt_day(since) if since else None
+    for e in entries:
+        if "since" in e:
+            e["since_label"] = _fmt_day(e["since"])
+    live_names = [e["name"] for e in entries if e["status"] in ("live", "paused")]
     trail = _trail_root(ctx)
     html = ctx.env.get_template("states.html.jinja").render(
         title=title,
-        description=_index_description(live_names, soon_names),
+        heading=STATES_INDEX_HEADING,
+        description=_index_description(live_names),
         live_names=_join_names(live_names),
         coverage=entries,
         coverage_checked=state_coverage.LINKS_CHECKED,

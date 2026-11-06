@@ -17,7 +17,7 @@ struct StatesView: View {
         NavigationStack {
             List {
                 Section {
-                    Text("Browsing, every water's history and favorites are free in every state. Alerts and the widget are a one-time purchase for each state.")
+                    Text("Browsing, every water's history and favorites are free in each state. Alerts and the widget are a one-time purchase for each state.")
                         .font(.footnote)
                         .foregroundStyle(.secondaryText)
                 }

@@ -11,6 +11,12 @@ import Foundation
 public enum ScheduleAnswer {
     public static func nextScheduled(for water: Water, in snapshot: Snapshot, now: Date) -> String {
         let week = snapshot.currentWeek(for: water)
+        if let since = StateCheckWording.failedSince(snapshot.state(of: water)) {
+            // The state's latest check failed: its weeks are an old read's,
+            // so none is said as the current answer.
+            return StateCheckWording.answer(waterName: water.name, agencyShortName: water.agencyShortName,
+                                            semantics: water.semantics, since: since)
+        }
         if water.semantics == .report {
             // A report has no future: say what the newest record is, and how
             // the agency's records lag when they do.

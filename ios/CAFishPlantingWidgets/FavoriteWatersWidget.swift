@@ -21,7 +21,7 @@ struct FavoriteWatersWidget: Widget {
                 .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("Favorite waters")
-        .description("Which of your favorite waters are on CDFW's schedule this week. Part of full access.")
+        .description("Your favorite waters, and where each stands on its state agency's schedule, report or plan. Part of full access.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
@@ -261,7 +261,7 @@ private struct StatusMark: View {
     private var isScheduled: Bool {
         switch status {
         case .scheduledThisWeek, .scheduledForEndedWeek: return true
-        case .scheduledLater, .notListed: return false
+        case .scheduledLater, .notListed, .checkFailed: return false
         }
     }
 
@@ -270,6 +270,7 @@ private struct StatusMark: View {
         case .scheduledThisWeek, .scheduledForEndedWeek: return "checkmark.circle.fill"
         case .scheduledLater: return "calendar"
         case .notListed: return "minus.circle"
+        case .checkFailed: return "exclamationmark.triangle"
         }
     }
 }
@@ -362,6 +363,7 @@ private struct RectangularView: View {
         case .scheduledThisWeek, .scheduledForEndedWeek: return "scheduled"
         case .scheduledLater: return "later"
         case .notListed: return "not listed"
+        case .checkFailed: return "couldn't check"
         }
     }
 }

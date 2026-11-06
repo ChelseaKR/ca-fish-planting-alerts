@@ -72,6 +72,7 @@ extension WidgetDigest {
     /// A report state's water (DECISIONS 0025) says "stocked", never
     /// "scheduled", and has no next week.
     public func shortStatus(of favorite: Favorite, at now: Date) -> String {
+        if favorite.checkFailedSince != nil { return StateCheckWording.shortTag }
         if favorite.isReport {
             if favorite.isListedThisWeek, !isStale(at: now) { return ReportWording.stockedThisWeekTag }
             return favorite.lastListedWeek.map(ReportWording.lastStocked) ?? ReportWording.noStockingOnRecord
@@ -86,6 +87,7 @@ extension WidgetDigest {
         case .scheduledForEndedWeek: return "Scheduled that week"
         case .scheduledLater(let week): return "Next: \(week.label)"
         case .notListed: return "Not listed"
+        case .checkFailed: return StateCheckWording.shortTag
         }
     }
 
@@ -105,6 +107,8 @@ extension WidgetDigest {
     /// The next listed week after the digest's week, in words. `nil` for a
     /// report state's water: a stocking report has no future weeks.
     public func nextScheduledLine(of favorite: Favorite) -> String? {
+        // A failed check: no "No later week listed yet" from an old read.
+        if let line = favorite.checkFailedLine { return line }
         if favorite.isReport { return nil }
         if favorite.isPlan {
             guard let next = favorite.nextWeek else { return "No planned period ahead" }

@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.AppState
 import com.chelseakr.cafishplanting.BuildConfig
+import com.chelseakr.cafishplanting.core.AboutCopy
 import com.chelseakr.cafishplanting.core.FreeLaunch
 import com.chelseakr.cafishplanting.core.PlayStoreReviewLink
 import com.chelseakr.cafishplanting.core.SnapshotOrigin
@@ -70,13 +71,15 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
             } else {
                 SectionHeader("Full access", ReadableWidth.fillMaxWidth())
                 Card(ReadableWidth) {
-                    if (state.isEntitled("CA")) {
+                    // Each unlocked state, named from the snapshot (DECISIONS 0049).
+                    AboutCopy.unlockedLines(state.snapshot?.states.orEmpty(), state.entitlements.entitledStates).forEach { line ->
                         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             // Green on the seal only: green text on white is below 4.5:1.
                             Icon(Icons.Filled.Verified, null, tint = Color(0xFF34C759))
-                            Text("California unlocked", Modifier.padding(start = 12.dp))
+                            Text(line, Modifier.padding(start = 12.dp))
                         }
-                    } else {
+                    }
+                    if (!state.isEntitled("CA")) {
                         Para(
                             "Favoriting and browsing are free and unlimited. Full access adds an alert on this device when a favorite is newly on the schedule, " +
                                 "and the Favorite waters widget for your home screen.",
@@ -97,21 +100,9 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
 
             SectionHeader("What this app does", ReadableWidth.fillMaxWidth())
             Card(ReadableWidth) {
-                Para(
-                    if (BuildConfig.FREE_TIER) {
-                        FreeLaunch.ABOUT_WHAT_IT_DOES
-                    } else {
-                        "Favorite any California water for free and browse its full schedule history. With full access, also get a notification on this device " +
-                            "when a favorite appears in the California Department of Fish and Wildlife's weekly stocking schedule, and a home screen widget with your favorites."
-                    },
-                )
-                Para("CDFW publishes the week a plant is scheduled, not the day, and all plants are subject to change. This app always shows a week, never a day, and says \"scheduled\" rather than \"stocked\".")
-                if (manyStates) {
-                    Para(
-                        "Other states come from their own wildlife agencies. Each date is shown as precisely as the agency gives it: a day, a week, or a month. " +
-                            "Where an agency reports stockings after they happen instead of scheduling them, the app says so and shows how recent its newest record is.",
-                    )
-                }
+                Para(if (BuildConfig.FREE_TIER) FreeLaunch.ABOUT_WHAT_IT_DOES else AboutCopy.WHAT_IT_DOES)
+                Para(AboutCopy.CALIFORNIA)
+                if (manyStates) Para(AboutCopy.OTHER_STATES)
                 ButtonRow("Show the introduction", onShowIntroduction)
             }
 
@@ -119,10 +110,10 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
             Card(ReadableWidth) {
                 Para(
                     (if (BuildConfig.FREE_TIER) FreeLaunch.ABOUT_HOW_ALERTS_WORK else "Alerts are local notifications this app makes on this device for full-access purchasers only. There is no server, no push service, and no account. ") +
-                        "Android decides when the app may refresh in the background, and the schedule itself is weekly, so an alert arrives within the week a water is added, not the minute it is.",
+                        AboutCopy.ALERT_TIMING,
                 )
                 Para("To stop one water's alerts and keep it as a favorite, choose Mute this water on its alert, or use the switch on the water's page.")
-                Para("The app also checks for a newer schedule when you open it, at most every few hours. If it can't, it says so and keeps showing the last schedule it has, with that schedule's week.")
+                Para(AboutCopy.CHECKING)
                 val status = when {
                     state.notificationsAllowed -> "on"
                     Build.VERSION.SDK_INT >= 33 -> "off (turn them on to receive alerts)"
@@ -166,17 +157,18 @@ fun AboutScreen(env: AppEnvironment, state: AppState, onUnlock: () -> Unit, onSh
 
             val snapshot = state.snapshot
             if (snapshot != null) {
-                SectionHeader("Data source and license", ReadableWidth.fillMaxWidth())
+                Card(ReadableWidth) { Para(AboutCopy.INDEPENDENCE) }
+
+                SectionHeader(AboutCopy.dataSourceHeader(snapshot.state("CA")?.name ?: "California"), ReadableWidth.fillMaxWidth())
                 Card(ReadableWidth) {
                     Para(snapshot.attribution.text)
-                    Para("This app is independent. It is not affiliated with or endorsed by the California Department of Fish and Wildlife.")
                     ButtonRow("CDFW Fish Planting Schedule") { uri.openUri(snapshot.attribution.url) }
                     Para(snapshot.license.summary, secondary = true, small = true)
                     snapshot.license.sources.forEach { source -> ButtonRow(source.name) { uri.openUri(source.termsURL) } }
                 }
 
                 snapshot.states.filter { it.code != "CA" }.forEach { other ->
-                    SectionHeader("${other.name}: data source and license", ReadableWidth.fillMaxWidth())
+                    SectionHeader(AboutCopy.dataSourceHeader(other.name), ReadableWidth.fillMaxWidth())
                     Card(ReadableWidth) {
                         Para(other.attribution.text)
                         Para(other.disclaimer)

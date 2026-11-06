@@ -1,0 +1,9 @@
+[
+ {"FKintLocationID": 901, "LOCATION": "Cedar Hollow Pond", "County": "Garrett", "NumOfFish": "600", "Species": "Rainbow/Golden", "RegulationDetails": "Put and Take", "ActivityDate": "2026-10-20T00:00:00", "ClosureCode": 0},
+ {"FKintLocationID": 901, "LOCATION": "Cedar Hollow Pond", "County": "Garrett", "NumOfFish": "400", "Species": "Rainbow/Golden", "RegulationDetails": "Put and Take", "ActivityDate": "2026-10-20T00:00:00", "ClosureCode": 0},
+ {"FKintLocationID": 901, "LOCATION": "Cedar Hollow Pond", "County": "Garrett", "NumOfFish": "350", "Species": "Rainbow", "RegulationDetails": "Put and Take", "ActivityDate": "2026-11-02T00:00:00", "ClosureCode": 1},
+ {"FKintLocationID": 902, "LOCATION": "Laurel Branch", "County": "Montgomery - Howard", "NumOfFish": "250", "Species": "Rainbow/Brown", "RegulationDetails": "Delayed Harvest Group 1", "ActivityDate": "2026-10-27T00:00:00", "ClosureCode": 0},
+ {"FKintLocationID": 903, "LOCATION": "Fox Meadow Lake", "County": "Cecill", "NumOfFish": "500", "Species": "Rainbow", "RegulationDetails": "Put and Take", "ActivityDate": "2026-10-28T00:00:00", "ClosureCode": 2},
+ {"FKintLocationID": 904, "LOCATION": "Stony Mill Run", "County": "County", "NumOfFish": "300", "Species": "Brown", "RegulationDetails": "Put and Take", "ActivityDate": "2026-10-29T00:00:00", "ClosureCode": 0},
+ {"FKintLocationID": 905, "LOCATION": "Heron Point Pond", "County": "Prince George's", "NumOfFish": "", "Species": "Rainbow/Golden/Brown", "RegulationDetails": "Put and Take,Youth", "ActivityDate": "2026-11-03T00:00:00", "ClosureCode": 0}
+]

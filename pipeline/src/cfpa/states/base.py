@@ -391,6 +391,42 @@ def get_text(
     )
 
 
+def post_json_for_text(
+    client: httpx.Client,
+    url: str,
+    user_agent: str,
+    payload: Mapping[str, str],
+    *,
+    accept: str = "text/html",
+) -> FetchedBody:
+    """One honest POST of a small JSON search form, the same request the
+    agency's own page sends (Pennsylvania's county search has no GET and no
+    download). Never a browser User-Agent; redirects are not followed."""
+    headers = {
+        "User-Agent": user_agent,
+        "Accept": accept,
+        "Content-Type": "application/json; charset=utf-8",
+    }
+    try:
+        resp = client.post(
+            url,
+            json=dict(payload),
+            headers=headers,
+            timeout=120,
+            follow_redirects=False,
+        )
+        resp.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise StateFetchError(f"POST to {url} failed: {exc}") from exc
+    return FetchedBody(
+        url=str(resp.url),
+        text=resp.text,
+        fetched_at=dt.datetime.now(dt.UTC),
+        last_modified=resp.headers.get("last-modified"),
+        etag=resp.headers.get("etag"),
+    )
+
+
 def no_sleep(_seconds: float) -> None:
     """For tests and fixtures: nothing to be polite to."""
 

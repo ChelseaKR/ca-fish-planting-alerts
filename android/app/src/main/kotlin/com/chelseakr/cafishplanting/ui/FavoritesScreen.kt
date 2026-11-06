@@ -156,7 +156,7 @@ fun FavoritesList(env: AppEnvironment, state: AppState, selected: String?, onOpe
                     items(missing, key = { "missing-$it" }) { id -> MissingFavoriteRow(id) { env.removeFavorite(id) } }
                     item {
                         Text(
-                            "This schedule no longer lists these favorites. CDFW may have renamed or dropped the water. Use Remove to take one off.",
+                            "The saved data no longer lists these favorites. The agency may have renamed or dropped the water. Use Remove to take one off.",
                             style = MaterialTheme.typography.bodySmall,
                             color = secondaryText,
                             modifier = Modifier.padding(16.dp),

@@ -31,14 +31,16 @@ final class OnboardingTests: XCTestCase {
     }
 
     /// The app's wording rules hold on every page: never a day, never
-    /// "stocked", never a price, and alerts only ever as part of full access.
+    /// "stocked" as the intro's own word (only quoted, as one of the words a
+    /// report state's waters show), never a price, and alerts only ever as
+    /// part of full access.
     func testTheCopyKeepsTheAppsWordingRules() {
         let pages = OnboardingCopy.pages
         XCTAssertEqual(Set(pages.map(\.id)).count, pages.count, "page ids are unique")
         let text = pages.flatMap { [$0.title, $0.body] + $0.points }
         let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "today", "tomorrow"]
         for line in text {
-            XCTAssertFalse(line.localizedCaseInsensitiveContains("stocked"), line)
+            XCTAssertFalse(line.replacingOccurrences(of: "\"stocked\"", with: "").localizedCaseInsensitiveContains("stocked"), line)
             XCTAssertFalse(line.contains("$"), "no price: \(line)")
             for day in days { XCTAssertFalse(line.localizedCaseInsensitiveContains(day), "\(day) in: \(line)") }
         }
@@ -47,6 +49,33 @@ final class OnboardingTests: XCTestCase {
         for line in alertLines {
             XCTAssertTrue(line.contains("Full access"), "alerts are named with full access: \(line)")
         }
+    }
+
+    /// National framing (DECISIONS 0049): the welcome names no state, no
+    /// line names one agency as the app's source, and California appears
+    /// only where a line is about California alone.
+    func testTheIntroductionTakesNoStateAsTheDefault() throws {
+        let pages = OnboardingCopy.pages
+        let welcome = try XCTUnwrap(pages.first { $0.id == "welcome" })
+        for line in [welcome.title, welcome.body] + welcome.points {
+            XCTAssertFalse(line.contains("California"), line)
+        }
+        let text = pages.flatMap { [$0.title, $0.body] + $0.points }
+        for line in text {
+            XCTAssertFalse(line.contains("CDFW"), line)
+            XCTAssertFalse(line.localizedCaseInsensitiveContains("every state"), line)
+        }
+        let honest = try XCTUnwrap(pages.first { $0.id == "honest" })
+        for word in ["\"scheduled\"", "\"stocked\"", "\"planned\""] {
+            XCTAssertTrue(honest.body.contains(word), "the honest page names \(word)")
+        }
+    }
+
+    /// The national wording is something to say again: version 2, so a
+    /// person who finished version 1 and keeps no favorites sees it.
+    func testTheNationalIntroductionIsVersionTwo() {
+        XCTAssertEqual(OnboardingCopy.version, 2)
+        XCTAssertTrue(OnboardingState(completedVersion: 1).shouldShow(hasFavorites: false))
     }
 }
 

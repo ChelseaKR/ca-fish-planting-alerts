@@ -105,6 +105,15 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Apps: national wording (DECISIONS 0049). The introduction (now version 2)
+  opens with trout stocking schedules from state wildlife agencies instead of
+  California's schedule, and its last page is "Never more precise than the
+  agency". About names every unlocked state from the snapshot, says the app
+  is not affiliated with any state wildlife agency, and states California's
+  week-only rule as California's. The widget, Watch complication and
+  Shortcuts descriptions no longer name CDFW. Android's alert channel is
+  "Stocking alerts". No state picker yet.
+
 - iOS and Android: honest wording from the 2026-11-05 Android audit
   (findings 2, 3 and 5). A water CDFW added for an upcoming week now leads
   with it ("Next scheduled: the week of 2026-11-08. Last scheduled for the

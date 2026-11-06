@@ -18,7 +18,7 @@ data class OnboardingState(val completedVersion: Int = 0) {
  * `CopyAndRulesTest` holds every other word to `Onboarding.swift`.
  */
 object OnboardingCopy {
-    const val VERSION = 1
+    const val VERSION = 2
 
     data class Page(val id: String, val icon: String, val title: String, val body: String, val points: List<String>)
 
@@ -27,10 +27,10 @@ object OnboardingCopy {
             id = "welcome",
             icon = "truck",
             title = "Welcome to Trout Truck",
-            body = "California's fish planting schedule from the Department of Fish and Wildlife, a week at a time, " +
-                "and other states' trout schedules and reports from their own agencies.",
+            body = "Trout stocking schedules and reports from state wildlife agencies, " +
+                "each shown the way the agency publishes it.",
             points = listOf(
-                "Every water on CDFW's weekly schedule",
+                "Schedules, stocking reports and plans, in each agency's own words",
                 "Each water's history, which the agencies' own pages don't keep",
             ),
         ),
@@ -41,7 +41,7 @@ object OnboardingCopy {
             body = "Pick a state, then browse by region and county, or search by a water's name, " +
                 "a name the agency used before, or its county.",
             points = listOf(
-                "Waters on the current week's schedule are tagged This week",
+                "California waters on the current week's schedule are tagged This week",
                 "Swipe down on a list to check for a newer schedule",
             ),
         ),
@@ -49,7 +49,7 @@ object OnboardingCopy {
             id = "favorites",
             icon = "star",
             title = "Star the waters you fish",
-            body = "Favorites, browsing and history are free and unlimited, in every state.",
+            body = "Favorites, browsing and history are free and unlimited, in each state.",
             points = listOf(
                 "Full access is a one-time purchase for each state. It adds an alert when a favorite there is " +
                     "newly on the agency's schedule or in its stocking report",
@@ -60,10 +60,11 @@ object OnboardingCopy {
         Page(
             id = "honest",
             icon = "calendar",
-            title = "A week, never a day",
-            body = "CDFW schedules plants by the week and says plans can change, so the app shows the week and says \"scheduled\".",
+            title = "Never more precise than the agency",
+            body = "California schedules plants by the week. Other states report stockings after they happen, or publish a spring plan. " +
+                "The app shows exactly what each agency gives, and says \"scheduled\", \"stocked\" or \"planned\" as it does.",
             points = listOf(
-                "If the app can't check for a newer schedule, it says so and keeps the last one, labeled with its week",
+                "If the app can't check a state's source, it says so and keeps the last data it has, labeled with how current it is",
                 "No account needed. Favorites stay on this device",
             ),
         ),

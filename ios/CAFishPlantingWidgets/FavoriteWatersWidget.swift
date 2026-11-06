@@ -21,7 +21,7 @@ struct FavoriteWatersWidget: Widget {
                 .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("Favorite waters")
-        .description("Which of your favorite waters are on CDFW's schedule this week. Part of full access.")
+        .description("Your favorite waters, and where each stands on its state agency's schedule, report or plan. Part of full access.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }

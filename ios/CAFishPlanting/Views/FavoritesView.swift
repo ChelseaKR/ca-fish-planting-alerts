@@ -108,7 +108,7 @@ struct FavoritesView: View {
                 } header: {
                     SectionHeader("Not in this schedule")
                 } footer: {
-                    Text("This schedule no longer lists these favorites. CDFW may have renamed or dropped the water. Swipe to remove one.")
+                    Text("The saved data no longer lists these favorites. The agency may have renamed or dropped the water. Swipe to remove one.")
                         .foregroundStyle(.secondaryText)
                 }
             }

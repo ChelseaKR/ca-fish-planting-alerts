@@ -188,7 +188,7 @@ final class StatesWave2Tests: XCTestCase {
         let spring = "ny-albany-berne-thompsons-lake"
         let genesee = "ny-allegany-amity-genesee-river"
         let digest = WidgetDigest(snapshot: s, meta: meta, favorites: [spring, genesee], locked: false, entitledStates: ["NY"])
-        XCTAssertEqual(digest.version, 3)
+        XCTAssertGreaterThanOrEqual(digest.version, 3, "3 added plan favorites")
         let now = Date(timeIntervalSince1970: 1_772_323_200) // 2026-03-01T00:00:00Z
         let ahead = try XCTUnwrap(digest.favorites.first { $0.id == genesee })
         XCTAssertTrue(ahead.isPlan)

@@ -21,6 +21,24 @@ struct WaterDetailView: View {
         isFavorite && (environment.purchases.isEntitled(state: water.state) || alertsMuted)
     }
 
+    /// Under the alerts switch. While the state's latest check is failing,
+    /// no alert can come, so it says alerts are paused (`StateCheckWording`).
+    private var alertsFooter: String {
+        if alertsMuted {
+            return "Muted. \(water.name) stays in Favorites and the widget, with no alert when it is newly on the schedule."
+        }
+        if let state, let paused = StateCheckWording.alertsPaused(state) { return paused }
+        if water.state == "CA" { return "An alert on this device when \(water.name) is newly on CDFW's weekly schedule." }
+        switch water.semantics {
+        case .plan:
+            return "An alert on this device when \(water.name) is in \(water.agencyShortName)'s spring plan, and a reminder when each planned period begins."
+        case .report:
+            return "An alert on this device when \(water.name) is new in \(water.agencyShortName)'s stocking report."
+        case .schedule:
+            return "An alert on this device when \(water.name) is newly on \(water.agencyShortName)'s schedule."
+        }
+    }
+
     var body: some View {
         List {
             Section {
@@ -29,6 +47,11 @@ struct WaterDetailView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondaryText)
                     lastScheduledLine
+                    if let state, let notice = StateCheckWording.notice(state) {
+                        Label(notice, systemImage: "exclamationmark.triangle")
+                            .font(.footnote)
+                            .accessibilityIdentifier("state-check-failed")
+                    }
                     if !water.speciesSeen.isEmpty {
                         Text("Species seen: \(water.speciesSeen.joined(separator: ", "))")
                             .font(.subheadline)
@@ -66,15 +89,7 @@ struct WaterDetailView: View {
                 } header: {
                     SectionHeader("Alerts")
                 } footer: {
-                    Text(alertsMuted
-                         ? "Muted. \(water.name) stays in Favorites and the widget, with no alert when it is newly on the schedule."
-                         : water.state == "CA"
-                         ? "An alert on this device when \(water.name) is newly on CDFW's weekly schedule."
-                         : water.semantics == .plan
-                         ? "An alert on this device when \(water.name) is in \(water.agencyShortName)'s spring plan, and a reminder when each planned period begins."
-                         : water.semantics == .report
-                         ? "An alert on this device when \(water.name) is new in \(water.agencyShortName)'s stocking report."
-                         : "An alert on this device when \(water.name) is newly on \(water.agencyShortName)'s schedule.")
+                    Text(alertsFooter)
                         .foregroundStyle(.secondaryText)
                 }
             }

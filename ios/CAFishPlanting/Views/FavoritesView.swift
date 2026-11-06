@@ -58,6 +58,22 @@ struct FavoritesView: View {
                     FreshnessRow(freshness: freshness)
                 }
             }
+            // A state whose latest check failed: its favorites' weeks are an
+            // old read's, said here instead of passing for current.
+            let failing = snapshot.states.filter { state in
+                StateCheckWording.failedSince(state) != nil && present.contains { $0.state == state.code }
+            }
+            if !failing.isEmpty {
+                Section {
+                    ForEach(failing) { state in
+                        if let notice = StateCheckWording.notice(state) {
+                            Label(notice, systemImage: "exclamationmark.triangle")
+                                .font(.footnote)
+                                .accessibilityIdentifier("state-check-failed-\(state.code)")
+                        }
+                    }
+                }
+            }
             Section {
                 if shown.isEmpty && !present.isEmpty {
                     noMatches(activeSearch)

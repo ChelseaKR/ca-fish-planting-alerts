@@ -29,7 +29,23 @@ class MultiStateParityTest {
     private val doc = Json.parseToJsonElement(File(fixtures, "alert-planner-parity-states.json").readText()).jsonObject
 
     private val snapshots: Map<String, Snapshot> = doc.getValue("snapshots").jsonObject.mapValues { (_, spec) ->
-        SnapshotDecoder.decode(File(fixtures, spec.jsonObject.getValue("file").jsonPrimitive.content).readBytes())
+        val bytes = File(fixtures, spec.jsonObject.getValue("file").jsonPrimitive.content).readBytes()
+        val failed = spec.jsonObject["failed_checks"]?.jsonObject?.mapValues { it.value.jsonPrimitive.content }
+        SnapshotDecoder.decode(if (failed == null) bytes else failingChecks(bytes, failed))
+    }
+
+    /** The snapshot with each named state's latest check marked failed at the given time; the data is unchanged. */
+    private fun failingChecks(bytes: ByteArray, failed: Map<String, String>): ByteArray {
+        val root = Json.parseToJsonElement(bytes.decodeToString()).jsonObject
+        val states = root.getValue("states").jsonArray.map { element ->
+            val state = element.jsonObject
+            val at = failed[state.getValue("code").jsonPrimitive.content] ?: return@map state
+            val checks = JsonObject(
+                state.getValue("checks").jsonObject + mapOf("last_attempt_ok" to JsonPrimitive(false), "last_attempt_at" to JsonPrimitive(at)),
+            )
+            JsonObject(state + ("checks" to checks))
+        }
+        return JsonObject(root + ("states" to JsonArray(states))).toString().encodeToByteArray()
     }
 
     @Test
@@ -80,6 +96,14 @@ class MultiStateParityTest {
                             put("summary", digest.summary(now))
                             put("favorites_in_other_states", digest.favoritesInOtherStates)
                             put("missing_favorites", digest.missingFavorites)
+                        }
+                    }
+                    "state_check" -> {
+                        val info = snapshots.getValue(step.str("snapshot")).state(step.str("state")) ?: error("$name: no state")
+                        buildJsonObject {
+                            put("failed_since", StateCheckWording.failedSince(info)?.isoDate.orEmpty())
+                            put("notice", StateCheckWording.notice(info).orEmpty())
+                            put("alerts_paused", StateCheckWording.alertsPaused(info).orEmpty())
                         }
                     }
                     else -> error("$name: unknown op $op")

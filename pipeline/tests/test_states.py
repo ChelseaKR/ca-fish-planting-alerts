@@ -100,13 +100,101 @@ def test_tn_ids_and_slugs_keep_counties_apart():
     assert len(slugs) == len(set(slugs))
 
 
-def test_tn_negative_control_a_week_date_that_is_not_a_sunday_is_refused():
+def _tn_2027_text() -> str:
+    # Constructed from the real 2026 file plus the five rows the 2026-11-05
+    # read of TWRA's 2027 file found (see the fixture's "_fixture_note").
+    return (STATE_FIXTURES / "tn-2027-constructed.json").read_text(encoding="utf-8")
+
+
+def test_tn_2027_file_parses_and_skips_exactly_the_four_non_sunday_weeks():
+    feed = tn.parse([_body(_tn_2027_text())])
+    assert len(feed.skipped_notes) == 4
+    assert feed.skipped >= 4
+    joined = " | ".join(feed.skipped_notes)
+    for date, day in (
+        ("3/21/2026", "Saturday"),
+        ("7/12/2027", "Monday"),
+        ("7/19/2027", "Monday"),
+        ("7/26/2027", "Monday"),
+    ):
+        assert f"week of {date} is a {day}, not a Sunday" in joined
+    # Each note names the water, so the run log says which rows were dropped.
+    assert all("County)" in n for n in feed.skipped_notes)
+    # No skipped row was moved to a guessed Sunday: the weeks read are exactly
+    # the Sunday cells in the file, nothing more.
+    sundays = set()
+    for row in json.loads(_tn_2027_text())["data"]:
+        m, d, y = [*row["STOCKING WEEK"].split("/"), "", "", ""][:3]
+        if y.isdigit() and m.isdigit():
+            when = dt.date(int(y), int(m), int(d))
+            if when.weekday() == 6:
+                wid = tn.water_id(row["COUNTY"].strip(), row["LOCATION"].strip())
+                sundays.add((wid, row["SPECIES"].strip(), when))
+    weeks = {
+        (r.water_id, r.species, r.period.start)
+        for r in feed.records
+        if r.period.precision == "week"
+    }
+    assert weeks == sundays
+    assert max(r.period.end for r in feed.records) >= dt.date(2027, 12, 1)
+
+
+def test_tn_tbd_in_the_week_column_is_a_month_never_a_week():
+    feed = tn.parse([_body(_tn_2027_text())])
+    hurricane = [r for r in feed.records if r.water_id == "tn-houston-hurricane-creek"]
+    months = [r.period for r in hurricane if r.period.precision == "month"]
+    assert months == [Period.month(2027, 12)]
+    assert months[0].label == "December 2027"
+    assert not any(
+        r.period.precision == "week"
+        and r.period.start.month == 12
+        and r.period.start.year == 2027
+        for r in hurricane
+    )
+
+
+def test_tn_skipped_rows_are_named_in_the_run_report(tmp_path: Path):
+    fixtures = tmp_path / "fx"
+    fixtures.mkdir()
+    (fixtures / "tn.json").write_text(_tn_2027_text(), encoding="utf-8")
+    runs = srun.run_states(
+        states_dir=tmp_path,
+        fetch_codes=["TN"],
+        user_agent=UA,
+        now=NOW,
+        fixtures_dir=fixtures,
+    )
+    tn_run = next(r for r in runs if r.source.code == "TN")
+    assert tn_run.outcome == "updated"
+    assert "week of 7/12/2027 is a Monday" in tn_run.message
+    assert "skipped" in tn_run.message
+
+
+def test_tn_negative_control_non_sunday_weeks_over_the_cap_refuse_the_file():
+    doc = _tn_doc()
+    rows = [r for r in doc["data"] if r["STOCKING WEEK"].strip()]
+    cap = min(tn.MAX_BAD_ROWS, int(len(doc["data"]) * tn.MAX_BAD_SHARE))
+    # At the cap: still read.
+    for r in rows[:cap]:
+        r["STOCKING WEEK"] = "10/13/2026"  # a Tuesday
+    text = json.dumps(doc)
+    assert text.count('"STOCKING WEEK": "10/13/2026"') == cap  # the sabotage landed
+    assert len(tn.parse([_body(text)]).skipped_notes) == cap
+    # One over the cap: refused, so a reshaped feed is never read as fewer weeks.
+    rows[cap]["STOCKING WEEK"] = "10/13/2026"
+    text = json.dumps(doc)
+    assert text.count('"STOCKING WEEK": "10/13/2026"') == cap + 1
+    with pytest.raises(StateFormatError, match="Sunday"):
+        tn.parse([_body(text)])
+
+
+def test_tn_negative_control_an_unknown_week_form_is_still_refused():
     doc = _tn_doc()
     row = next(r for r in doc["data"] if r["STOCKING WEEK"].strip())
-    row["STOCKING WEEK"] = "10/13/2026"  # a Tuesday
+    row["STOCKING WEEK"] = "TBD"
     text = json.dumps(doc)
-    assert '"STOCKING WEEK": "10/13/2026"' in text  # the sabotage landed
-    with pytest.raises(StateFormatError, match="Sunday"):
+    assert '"STOCKING WEEK": "TBD"' in text
+    with pytest.raises(StateFormatError, match="STOCKING WEEK"):
         tn.parse([_body(text)])
 
 

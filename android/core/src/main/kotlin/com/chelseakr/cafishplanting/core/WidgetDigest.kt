@@ -55,8 +55,22 @@ data class WidgetDigest(
         val isReport: Boolean = false,
         /** A plan state's water (New York): its rows say "planned for" in the agency's own words, never a date. */
         val isPlan: Boolean = false,
+        /**
+         * The last good read's date when the water's state's latest check failed. Then
+         * [speciesThisWeek] is empty and [nextWeek] is null: the old read's weeks are never shown as current.
+         */
+        @Serializable(with = PlainDateSerializer::class) val checkFailedSince: PlainDate? = null,
+        /** The agency's short name, for the check-failed line ("TWRA"). */
+        val agencyShortName: String = "CDFW",
     ) {
         val isListedThisWeek: Boolean get() = speciesThisWeek.isNotEmpty()
+
+        val semantics: StateSemantics
+            get() = if (isReport) StateSemantics.REPORT else if (isPlan) StateSemantics.PLAN else StateSemantics.SCHEDULE
+
+        /** "Couldn't check TWRA's schedule since 2026-10-15", or `null`. */
+        val checkFailedLine: String?
+            get() = checkFailedSince?.let { StateCheckWording.short(agencyShortName, semantics, it) }
     }
 
     sealed interface Status {
@@ -64,6 +78,9 @@ data class WidgetDigest(
         data class ScheduledForEndedWeek(val week: Week, val species: List<String>) : Status
         data class ScheduledLater(val week: Week) : Status
         data class NotListed(val week: Week, val lastListed: Week?) : Status
+
+        /** The water's state couldn't be checked since [since] (the last good read). */
+        data class CheckFailed(val since: PlainDate) : Status
     }
 
     fun isStale(now: Instant): Boolean = SnapshotFreshness.scheduleDate(now) > week.end
@@ -87,6 +104,7 @@ data class WidgetDigest(
     }
 
     fun status(favorite: Favorite, now: Instant): Status {
+        favorite.checkFailedSince?.let { return Status.CheckFailed(it) }
         if (favorite.isListedThisWeek) {
             return if (isStale(now)) {
                 Status.ScheduledForEndedWeek(week.toWeek(), favorite.speciesThisWeek)
@@ -99,6 +117,7 @@ data class WidgetDigest(
     }
 
     fun statusLine(favorite: Favorite, now: Instant): String {
+        favorite.checkFailedLine?.let { return it }
         if (favorite.isReport) {
             if (favorite.isListedThisWeek && !isStale(now)) return ReportWording.stockedThisWeek(favorite.speciesThisWeek)
             return favorite.lastListedWeek?.let { ReportWording.lastStocked(it.toWeek()) } ?: ReportWording.NO_STOCKING_ON_RECORD
@@ -117,6 +136,7 @@ data class WidgetDigest(
                 val listed = "Not listed for ${s.week.phrase}"
                 if (s.lastListed == null) listed else "$listed. Last scheduled for ${s.lastListed.phrase}"
             }
+            is Status.CheckFailed -> favorite.checkFailedLine.orEmpty()
         }
     }
 
@@ -126,6 +146,7 @@ data class WidgetDigest(
             fun rank(f: Favorite) = when {
                 f.isListedThisWeek -> 0
                 f.nextWeek != null -> 1
+                f.checkFailedSince != null -> 3
                 else -> 2
             }
             return favorites.withIndex().sortedWith(compareBy({ rank(it.value) }, { it.index })).map { it.value }
@@ -172,8 +193,10 @@ data class WidgetDigest(
          * favorites in a state without its purchase are counted, never shown.
          * 3: a plan state's favorites ([Favorite.isPlan], New York) say
          * "planned for" in the agency's own words.
+         * 4: a favorite in a state whose latest check failed carries
+         * [Favorite.checkFailedSince] and no current weeks ([StateCheckWording]).
          */
-        const val CURRENT_VERSION = 3
+        const val CURRENT_VERSION = 4
 
         /** No digest yet: the widget says to open the app, never "nothing scheduled". */
         const val NO_DIGEST_MESSAGE = "Open Trout Truck to load the schedule here."
@@ -222,15 +245,20 @@ data class WidgetDigest(
                     } else {
                         null
                     }
+                    // A state whose latest check failed: its weeks are from an old read,
+                    // so none is carried as this week or next.
+                    val failedSince = StateCheckWording.failedSince(snapshot.stateOf(water))
                     favorites += Favorite(
                         id = water.id,
                         name = water.name,
                         countyLabel = water.countyLabel,
-                        speciesThisWeek = species,
-                        nextWeek = next?.let(DigestWeek::of),
+                        speciesThisWeek = if (failedSince == null) species else emptyList(),
+                        nextWeek = if (failedSince == null) next?.let(DigestWeek::of) else null,
                         lastListedWeek = water.lastListedWeek?.let(DigestWeek::of),
                         isReport = water.semantics == StateSemantics.REPORT,
                         isPlan = water.semantics == StateSemantics.PLAN,
+                        checkFailedSince = failedSince,
+                        agencyShortName = water.agencyShortName,
                     )
                 }
             }

@@ -48,15 +48,14 @@ def _states_dir(tmp_path: Path) -> Path:
     return d
 
 
-def _import(states: Path, csv_path: Path = SAMPLE, **kw: object) -> StateHistory:
-    args: dict[str, object] = {
-        "states_dir": states,
-        "downloaded_at": DOWNLOADED,
-        "now": IMPORTED,
-        "min_rows": 5,
-    }
-    args.update(kw)
-    result = import_csv(csv_path, **args)  # type: ignore[arg-type]
+def _import(states: Path, csv_path: Path = SAMPLE) -> StateHistory:
+    result = import_csv(
+        csv_path,
+        states_dir=states,
+        downloaded_at=DOWNLOADED,
+        now=IMPORTED,
+        min_rows=5,
+    )
     result.history.save(result.path)
     return StateHistory.load(states / "tn.json", "TN")
 
@@ -318,8 +317,21 @@ def test_cli_success_path(tmp_path: Path, capsys, monkeypatch):
     states = _states_dir(tmp_path)
     real = import_tn_csv.import_csv
 
-    def small_floor(*a: object, **kw: object) -> import_tn_csv.ImportResult:
-        return real(*a, min_rows=5, **kw)  # type: ignore[arg-type]
+    def small_floor(
+        path: Path,
+        *,
+        states_dir: Path,
+        downloaded_at: dt.datetime,
+        now: dt.datetime,
+        min_rows: int | None = None,
+    ) -> import_tn_csv.ImportResult:
+        return real(
+            path,
+            states_dir=states_dir,
+            downloaded_at=downloaded_at,
+            now=now,
+            min_rows=5,
+        )
 
     monkeypatch.setattr(import_tn_csv, "import_csv", small_floor)
     code = import_tn_csv.main(

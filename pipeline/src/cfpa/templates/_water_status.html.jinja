@@ -1,11 +1,14 @@
 {# Status block at the top of a water page. Needs: water, water_status.
    Every date is a recorded week from CDFW's schedule; nothing is estimated.
    This week and next are never over, and CDFW posts most of a week's waters
-   after it begins, so a missing entry there says "yet" and when we checked. #}
+   after it begins, so a missing entry there says "yet" and when we checked.
+   The calendar box follows the badge (DECISIONS 0062), so the way to hear
+   about the next week is on a phone's first screen, next to the status. #}
 {% from "_status_badge.html.jinja" import status_badge %}
 <section class="water-status" aria-labelledby="water-status-heading">
   <h2 id="water-status-heading">Where {{ water.name }} stands on CDFW's schedule</h2>
   <p>{{ status_badge(water_status.badge) }}</p>
+  {% include "_calendar_subscribe.html.jinja" %}
   <dl>
     <dt>Last on the schedule</dt>
     <dd>{{ water_status.last_sentence }}</dd>

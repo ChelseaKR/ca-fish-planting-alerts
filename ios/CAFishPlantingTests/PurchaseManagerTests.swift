@@ -39,7 +39,7 @@ final class PurchaseManagerTests: XCTestCase {
         try await waitForProductToLoad(manager)
         XCTAssertFalse(manager.isEntitled)
 
-        await manager.purchase()
+        try await withinDeadline { await manager.purchase() }
 
         XCTAssertTrue(manager.isEntitled, "a successful purchase must grant entitlement immediately")
         XCTAssertEqual(manager.uiState, .idle)
@@ -56,7 +56,7 @@ final class PurchaseManagerTests: XCTestCase {
         session.failTransactionsEnabled = true
         session.failureError = .unknown
 
-        await manager.purchase()
+        try await withinDeadline { await manager.purchase() }
 
         XCTAssertFalse(manager.isEntitled, "a failed purchase must never grant entitlement")
         guard case .failed = manager.uiState else {
@@ -85,7 +85,7 @@ final class PurchaseManagerTests: XCTestCase {
         // "Buy" once, as if on a previous device/install under this account.
         let firstManager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir.appendingPathComponent("first-install"))))
         try await waitForProductToLoad(firstManager)
-        await firstManager.purchase()
+        try await withinDeadline { await firstManager.purchase() }
         XCTAssertTrue(firstManager.isEntitled)
 
         // A fresh install: its own empty entitlement cache, same simulated
@@ -96,7 +96,7 @@ final class PurchaseManagerTests: XCTestCase {
         try await waitForProductToLoad(secondManager)
         XCTAssertFalse(secondManager.isEntitled, "a fresh install must start locked, never assume entitlement")
 
-        await secondManager.restorePurchases()
+        try await withinDeadline { await secondManager.restorePurchases() }
 
         XCTAssertTrue(secondManager.isEntitled, "restore must recover a purchase made under the same account")
         XCTAssertTrue(secondStore.load().isPurchased)
@@ -114,7 +114,7 @@ final class PurchaseManagerTests: XCTestCase {
     func testLaunchAfterAPurchaseUnlocksEvenWithNoLocalCache() async throws {
         let purchasingManager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir.appendingPathComponent("purchasing-device"))))
         try await waitForProductToLoad(purchasingManager)
-        await purchasingManager.purchase()
+        try await withinDeadline { await purchasingManager.purchase() }
         XCTAssertTrue(purchasingManager.isEntitled)
 
         // A brand-new launch on the same account with no cache file at
@@ -139,7 +139,7 @@ final class PurchaseManagerTests: XCTestCase {
 
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: layout))
         try await waitForProductToLoad(manager)
-        await manager.purchase()
+        try await withinDeadline { await manager.purchase() }
         XCTAssertTrue(manager.isEntitled)
 
         let env = AppEnvironment(purchases: manager)
@@ -166,7 +166,7 @@ final class PurchaseManagerTests: XCTestCase {
 
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: layout))
         try await waitForProductToLoad(manager)
-        await manager.purchase()
+        try await withinDeadline { await manager.purchase() }
         XCTAssertTrue(manager.isEntitled)
 
         let env = AppEnvironment(purchases: manager, refresher: makeMockedSnapshotRefresher())
@@ -204,7 +204,7 @@ final class PurchaseManagerTests: XCTestCase {
     func testBuyingNewYorkUnlocksNewYorkOnly() async throws {
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
         try await waitForProductToLoad(manager)
-        await manager.purchase(state: "NY")
+        try await withinDeadline { await manager.purchase(state: "NY") }
         XCTAssertEqual(manager.entitledStates, ["NY"])
         XCTAssertEqual(manager.uiState, .idle)
     }
@@ -214,8 +214,8 @@ final class PurchaseManagerTests: XCTestCase {
     func testARefundLocksThatStateAgainAndKeepsTheOthers() async throws {
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
         try await waitForProductToLoad(manager)
-        await manager.purchase(state: "TN")
-        await manager.purchase(state: "MA")
+        try await withinDeadline { await manager.purchase(state: "TN") }
+        try await withinDeadline { await manager.purchase(state: "MA") }
         XCTAssertEqual(manager.entitledStates, ["TN", "MA"])
 
         let tennessee = try XCTUnwrap(session.allTransactions().first { $0.productIdentifier == "com.chelseakr.cafishplanting.state.tn" })
@@ -230,10 +230,10 @@ final class PurchaseManagerTests: XCTestCase {
     func testAFailedStatePurchaseUnlocksNothingAndKeepsWhatWasBought() async throws {
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
         try await waitForProductToLoad(manager)
-        await manager.purchase(state: "MI")
+        try await withinDeadline { await manager.purchase(state: "MI") }
         session.failTransactionsEnabled = true
         session.failureError = .unknown
-        await manager.purchase(state: "NY")
+        try await withinDeadline { await manager.purchase(state: "NY") }
         XCTAssertEqual(manager.entitledStates, ["MI"])
         guard case .failed = manager.uiState else {
             XCTFail("expected .failed, got \(manager.uiState)")
@@ -247,7 +247,7 @@ final class PurchaseManagerTests: XCTestCase {
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir)))
         try await waitForProductToLoad(manager)
         session.askToBuyEnabled = true
-        await manager.purchase(state: "MA")
+        try await withinDeadline { await manager.purchase(state: "MA") }
         XCTAssertEqual(manager.entitledStates, [], "a pending purchase must not unlock")
         XCTAssertEqual(manager.uiState, .idle, "pending is not an error")
 
@@ -264,7 +264,7 @@ final class PurchaseManagerTests: XCTestCase {
         let store = EntitlementStore(layout: AppStorageLayout(directory: tempDir))
         let manager = PurchaseManager(entitlementStore: store)
         try await waitForProductToLoad(manager)
-        await manager.purchase(state: "TN")
+        try await withinDeadline { await manager.purchase(state: "TN") }
         XCTAssertEqual(manager.entitledStates, ["TN"])
         XCTAssertFalse(manager.isEntitled, "Tennessee doesn't unlock California")
         XCTAssertEqual(store.load().ownedProductIDs, ["com.chelseakr.cafishplanting.state.tn"])
@@ -273,24 +273,69 @@ final class PurchaseManagerTests: XCTestCase {
     func testACaliforniaBuyerKeepsCaliforniaAfterBuyingAnotherStateAndAfterRestore() async throws {
         let manager = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir.appendingPathComponent("a"))))
         try await waitForProductToLoad(manager)
-        await manager.purchase()
-        await manager.purchase(state: "MI")
+        try await withinDeadline { await manager.purchase() }
+        try await withinDeadline { await manager.purchase(state: "MI") }
         XCTAssertEqual(manager.entitledStates, ["CA", "MI"])
 
         let fresh = PurchaseManager(entitlementStore: EntitlementStore(layout: AppStorageLayout(directory: tempDir.appendingPathComponent("b"))))
         try await waitForProductToLoad(fresh)
-        await fresh.restorePurchases()
+        try await withinDeadline { await fresh.restorePurchases() }
         XCTAssertEqual(fresh.entitledStates, ["CA", "MI"], "restore must recover every state bought")
     }
 
     // MARK: -
 
+    /// Waits for every product in `Configuration.storekit`, not just
+    /// California's. When the `SKTestSession` isn't connected (the iOS 26.5
+    /// simulator bug, `ios/README.md`), StoreKit answers from the real App
+    /// Store sandbox instead: only California's product comes back, and
+    /// `purchase()` then waits forever on a sign-in no one answers
+    /// (DECISIONS 0060). Stopping here fails the test in seconds.
     private func waitForProductToLoad(_ manager: PurchaseManager, timeout: TimeInterval = 8) async throws {
+        let expected = StateAccess.allProductIDs
         let deadline = Date().addingTimeInterval(timeout)
-        while manager.product == nil && Date() < deadline {
+        while !expected.isSubset(of: Set(manager.products.keys)) && Date() < deadline {
             try await Task.sleep(for: .milliseconds(50))
         }
-        XCTAssertNotNil(manager.product, "the local .storekit configuration should have loaded \(PurchaseManager.productID). If the log also shows [SKTestSession] ... SKInternalErrorDomain Code=3, this is the iOS 26.5 simulator StoreKit bug. See ios/README.md, \"StoreKit tests can't pass on the iOS 26.5 simulator\".")
+        let loaded = expected.intersection(manager.products.keys).count
+        guard loaded == expected.count else {
+            throw StoreKitTestFailure("only \(loaded) of the \(expected.count) products in the local .storekit configuration loaded, so the SKTestSession isn't serving it. If the log also shows [SKTestSession] ... SKInternalErrorDomain Code=3, this is the iOS 26.5 simulator StoreKit bug. See ios/README.md, \"StoreKit tests can't pass on the iOS 26.5 simulator\".")
+        }
+    }
+
+    /// Runs one StoreKit call and fails the test if it hasn't returned in
+    /// `seconds`, instead of letting a stuck call stall the whole run
+    /// (DECISIONS 0060). The stuck call is left behind; the test moves on.
+    private func withinDeadline(seconds: Double = 30, _ operation: @escaping @MainActor () async -> Void) async throws {
+        let finished = await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
+            let once = ResumeOnce(continuation)
+            Task { @MainActor in
+                await operation()
+                once.resume(true)
+            }
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(seconds))
+                once.resume(false)
+            }
+        }
+        guard finished else {
+            throw StoreKitTestFailure("a StoreKit call didn't return within \(Int(seconds)) seconds")
+        }
+    }
+
+    @MainActor
+    private final class ResumeOnce {
+        private var continuation: CheckedContinuation<Bool, Never>?
+        init(_ continuation: CheckedContinuation<Bool, Never>) { self.continuation = continuation }
+        func resume(_ value: Bool) {
+            continuation?.resume(returning: value)
+            continuation = nil
+        }
+    }
+
+    private struct StoreKitTestFailure: Error, CustomStringConvertible {
+        let description: String
+        init(_ description: String) { self.description = description }
     }
 
     private static func configurationURL() throws -> URL {

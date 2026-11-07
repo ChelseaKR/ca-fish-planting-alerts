@@ -4,7 +4,7 @@
 <h1>{{ head }} ({{ place }})</h1>
 <p class="lede">
   {% if schedule %}
-  {{ water.name }} is on the {{ state.agency.name }}'s stocking {{ w_kind }}.{% if next_label %} Next {{ w_verb }}: {{ next_label }}.{% endif %}{% if last_label %} Most recently {{ w_verb }}: {{ last_label }}.{% endif %}{% if not next_label %} Nothing later is on {{ state.agency.short_name }}'s {{ w_kind }} right now. That means no date is listed, not that there are no fish.{% endif %}
+  {{ water.name }} is on the {{ state.agency.name }}'s stocking {{ w_kind }}.{% if next_label %} Next {{ w_verb }}: {{ next_label }}.{% endif %}{% if last_label %} Most recently {{ w_verb }}: {{ last_label }}.{% endif %}{% if not next_label %}{% if attempt_failed %} Nothing later was on {{ state.agency.short_name }}'s {{ w_kind }} when it was last read, on {{ fetched_date }}. The checks since then failed, so {{ state.agency.short_name }} may have listed later dates that this page does not have.{% else %} Nothing later is on {{ state.agency.short_name }}'s {{ w_kind }} right now. That means no date is listed, not that there are no fish.{% endif %}{% endif %}
 
   {% else %}
   {{ water.name }} is in the {{ state.agency.name }}'s stocking report.{% if last_label %} The newest stocking on record: {{ last_label }}.{% endif %}

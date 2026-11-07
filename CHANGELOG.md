@@ -319,6 +319,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Site: a state water page whose latest check failed no longer says
+  "Nothing later is on TWRA's schedule right now" when the last good read
+  has no later date. It says nothing later was listed when the file was last
+  read, on that date, and that the agency may have listed later dates since.
+  The meta description drops "nothing later listed" the same way. Tennessee's
+  checks have failed since 2026-10-15 while TWRA's file, checked 2026-11-07,
+  lists 2027 dates for waters such as Doe River.
 - Tennessee reads TWRA's 2027 schedule. "TBD 12/2027" in the STOCKING WEEK
   column is a month ("December 2027"), never a week. A "week of" date that
   isn't a Sunday (four in the 2026-11-05 file) is skipped, never moved to a

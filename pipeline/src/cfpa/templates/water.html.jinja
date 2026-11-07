@@ -46,20 +46,6 @@
   entry is scheduled, not confirmed.
 </p>
 
-<p>
-  {#- webcal:// makes a phone or desktop calendar subscribe and keep polling
-      the feed; an https .ics link only imports today's copy. -#}
-  {% set webcal_url = "webcal://" ~ canonical_url.split("://", 1)[1] ~ "feed.ics" %}
-  <a href="{{ webcal_url }}" data-ga-event="calendar_subscribe_click" data-ga-placement="water" data-ga-type="webcal">Subscribe to {{ water.name }}'s planting calendar</a>
-  (your calendar app keeps it up to date) or
-  <a href="feed.ics" data-ga-event="calendar_subscribe_click" data-ga-placement="water" data-ga-type="ics">download a one-time copy (.ics)</a>, which does not update
-  {% if app_store_url %}
-  &middot; <a href="{{ app_store_url }}" data-app-store-placement="water" data-app-store-kind="link">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
-  {% else %}
-  &middot; an iOS app with a notification when {{ water.name }} appears in a new week is on its way (<a href="{{ root }}about/#app">how it will work</a>).
-  {% endif %}
-</p>
-
 <h2>Planting history</h2>
 {% if water.plants %}
 <table{% if water.has_removed_weeks %} aria-describedby="status-note"{% endif %}>

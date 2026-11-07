@@ -13,6 +13,10 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Android: About has a "Write to the developer" row that opens your email
+  app addressed to chelsea@chelseakr.com, with the app version in the
+  subject (DECISIONS 0057). Alerts keep their one button, "Mute this water".
+
 - Android: the introduction asks which state you fish, from the snapshot's
   list, with none chosen (DECISIONS 0053). Skipping opens Browse on the list
   of states instead of California. A state whose updates have stopped says

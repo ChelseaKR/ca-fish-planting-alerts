@@ -260,12 +260,21 @@ runtime. It is not a problem with this repo's code, the product ID, or the
 `Error Domain=SKInternalErrorDomain Code=3 "(null)"`: saving the
 configuration file, clearing overrides, and deleting transactions. In the
 simulator, `storekitd` logs `Allows client override: NO` for the test host.
-`Product.products(for:)` comes back empty, so the purchase tests fail with
-`failed("productUnavailable")` and "the local .storekit configuration
-should have loaded com.chelseakr.cafishplanting.fullaccess". Then
-`testRestorePurchasesRecoversEntitlementOnAFreshInstall` blocks in
-`AppStore.sync()` and never returns. That is why earlier runs "took 80
-minutes" or never finished.
+On 2026-09-17, `Product.products(for:)` came back empty and
+`testRestorePurchasesRecoversEntitlementOnAFreshInstall` blocked in
+`AppStore.sync()`. Measured again on 2026-11-06 (Xcode 26.6, iOS 26.5
+simulator, `main` at 3df4d6c): StoreKit now answers from the real App Store
+sandbox instead of the local file. Only California's product comes back
+(1 of 5), and the first `purchase()` waits forever on a sign-in no one
+answers. Three runs of `PurchaseManagerTests` all stalled on the first test
+until they were killed at 15 minutes.
+
+Since DECISIONS 0060 the tests stop early instead. Each one waits for all 5
+products in `Configuration.storekit`, and fails in about 8 seconds, saying
+how many loaded, if any are missing. Every `purchase()` and
+`restorePurchases()` call in the tests also has a 30-second deadline. On
+this simulator the class now finishes red in about 105 seconds: 13
+failures, 3 passes.
 
 **Cause.** The iOS & iPadOS 26.6 release notes list this as fixed under
 StoreKit (163377768): "SKTestSessions does not properly connect to the test
@@ -281,8 +290,9 @@ even with the corrected scheme path.
 - Treat a red `PurchaseManagerTests` on an iOS 26.5 simulator as this bug
   only when the log shows the `SKInternalErrorDomain Code=3` lines above.
   Any other failure is real.
-- Pass test timeouts so a stuck `AppStore.sync()` fails the test instead
-  of hanging the run:
+- The tests fail fast on their own (above). Xcode's test timeouts are a
+  second backstop for anything else that hangs; the scheme doesn't turn
+  them on, so pass them:
   ```sh
   xcodebuild -project CAFishPlanting.xcodeproj -scheme CAFishPlanting \
     -destination 'platform=iOS Simulator,id=<UDID>' \

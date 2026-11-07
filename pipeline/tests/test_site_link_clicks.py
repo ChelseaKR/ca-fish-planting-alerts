@@ -21,7 +21,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -173,21 +173,40 @@ def _click(
 # ---- the markup
 
 
-def test_water_page_marks_four_gear_links_and_two_calendar_links(water_page):
+def _cal(page: str, kind: str) -> dict[str, object]:
+    """The one calendar link of this data-ga-type on the page."""
+    hits = [
+        a
+        for a in _anchors(page, "calendar_subscribe_click")
+        if a["data-ga-type"] == kind
+    ]
+    assert len(hits) == 1, kind
+    return hits[0]
+
+
+def test_water_page_marks_four_gear_links_and_three_calendar_links(water_page):
     gear = _anchors(water_page, "gear_click")
     cal = _anchors(water_page, "calendar_subscribe_click")
     assert len(gear) == 4
-    assert len(cal) == 2
+    assert len(cal) == 3
     for a in gear:
         assert urlsplit(str(a["href"])).hostname == "www.amazon.com"
         assert a["data-ga-placement"] == "water"
         assert a["data-ga-type"] == "amazon_search"
-    webcal, ics = cal
+    # DECISIONS 0062: Apple's webcal first, Google's add-by-URL second, the
+    # one-time file last, in that order on the page.
+    assert [a["data-ga-type"] for a in cal] == ["webcal", "google", "ics"]
+    webcal, google, ics = cal
     assert urlsplit(str(webcal["href"])).scheme == "webcal"
     assert str(webcal["href"]).endswith("/feed.ics")
-    assert webcal["data-ga-type"] == "webcal"
+    g = urlsplit(str(google["href"]))
+    assert (g.scheme, g.hostname, g.path) == (
+        "https",
+        "calendar.google.com",
+        "/calendar/r",
+    )
+    assert parse_qs(g.query) == {"cid": [webcal["href"]]}
     assert ics["href"] == "feed.ics"
-    assert ics["data-ga-type"] == "ics"
     assert {a["data-ga-placement"] for a in cal} == {"water"}
 
 
@@ -250,7 +269,7 @@ def test_a_gear_click_sends_placement_type_and_host_only(tmp_path, tag_js, water
 def test_a_calendar_click_sends_placement_type_and_host_only(
     tmp_path, tag_js, water_page
 ):
-    anchor = _anchors(water_page, "calendar_subscribe_click")[1]
+    anchor = _cal(water_page, "ics")
     ran = _click(tmp_path, tag_js, anchor, {"navigator": {}})
     assert ran["events"] == [
         [
@@ -262,7 +281,7 @@ def test_a_calendar_click_sends_placement_type_and_host_only(
 
 
 def test_a_subscribe_click_sends_webcal_and_the_site_host(tmp_path, tag_js, water_page):
-    anchor = _anchors(water_page, "calendar_subscribe_click")[0]
+    anchor = _cal(water_page, "webcal")
     host = urlsplit(str(anchor["href"])).hostname
     assert host
     ran = _click(tmp_path, tag_js, anchor, {"navigator": {}})
@@ -271,6 +290,24 @@ def test_a_subscribe_click_sends_webcal_and_the_site_host(tmp_path, tag_js, wate
             "event",
             "calendar_subscribe_click",
             {"placement": "water", "link_type": "webcal", "link_host": host},
+        ]
+    ]
+
+
+def test_a_google_calendar_click_sends_google_and_its_host(
+    tmp_path, tag_js, water_page
+):
+    anchor = _cal(water_page, "google")
+    ran = _click(tmp_path, tag_js, anchor, {"navigator": {}})
+    assert ran["events"] == [
+        [
+            "event",
+            "calendar_subscribe_click",
+            {
+                "placement": "water",
+                "link_type": "google",
+                "link_host": "calendar.google.com",
+            },
         ]
     ]
 
@@ -325,7 +362,7 @@ def test_negative_control_catches_a_removed_ga_disable_check(
 def test_negative_control_catches_a_removed_gpc_dnt_and_stored_opt_out_guard(
     tmp_path, tag_js, water_page
 ):
-    anchor = _anchors(water_page, "calendar_subscribe_click")[1]
+    anchor = _cal(water_page, "ics")
     for guard, name in (
         ("if (n.globalPrivacyControl === true) return;", "gpc"),
         ('if (dnt === "1" || dnt === "yes") return;', "dnt-1"),

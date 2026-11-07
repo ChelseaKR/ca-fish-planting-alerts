@@ -3,6 +3,7 @@ import datetime as dt
 import json
 import re
 from pathlib import Path
+from urllib.parse import quote
 
 from cfpa import cli, site
 
@@ -489,6 +490,60 @@ def test_water_page_subscribe_link_is_webcal_to_its_own_feed(tmp_path: Path):
         assert f'href="{webcal}"' in html, w["slug"]
         assert 'href="feed.ics"' in html
         assert "download a one-time copy (.ics)" in html, w["slug"]
+
+
+def _box_follows_status(html: str) -> bool:
+    """True when the calendar box is the next element after the status badge,
+    inside the status block and before its facts, the lede and the history
+    table (DECISIONS 0062)."""
+    status = html.index('class="water-status"')
+    badge_end = html.index("</p>", status) + len("</p>")
+    box = html.index('class="calendar-subscribe"')
+    gap = html[badge_end:box]
+    return gap.strip() == "<div" and (
+        box
+        < html.index("<dl>", box)
+        < html.index("</section>", status)
+        < html.index('class="lede"')
+        < html.index("<h2>Planting history</h2>")
+    )
+
+
+def test_water_page_calendar_box_follows_the_status_badge(tmp_path: Path):
+    """DECISIONS 0062: the subscribe box is the next thing after the status
+    badge, before the status facts, the lede and the history table, and it
+    offers Apple's webcal link and Google Calendar's add-by-URL link, both to
+    the page's own feed."""
+    out = _build_site(tmp_path)
+    snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    for w in snap["waters"][:25]:
+        html = _water_html(out, w["slug"])
+        assert _box_follows_status(html), w["slug"]
+        canonical = re.search(r'<link rel="canonical" href="([^"]+)"', html)
+        assert canonical is not None
+        webcal = "webcal://" + canonical.group(1).split("://", 1)[1] + "feed.ics"
+        google = "https://calendar.google.com/calendar/r?cid=" + quote(webcal, safe="")
+        assert f'href="{google}"' in html, w["slug"]
+        assert "Apple Calendar (iPhone, iPad, Mac): subscribe" in html
+        assert "Google Calendar (any phone or computer): add it" in html
+        assert canonical.group(1) + "feed.ics" in html  # the address, for other apps
+
+
+def test_negative_control_box_order_check_catches_the_old_placement(tmp_path: Path):
+    """The order check above fails on a page where the box sits after the
+    lede, as the old inline link did."""
+    out = _build_site(tmp_path)
+    snap = json.loads((out / "snapshot" / "v1.json").read_text(encoding="utf-8"))
+    html = _water_html(out, snap["waters"][0]["slug"])
+    start = html.index('<div class="calendar-subscribe"')
+    end = html.index("</div>", start) + len("</div>")
+    box = html[start:end]
+    moved = html[:start] + html[end:]
+    lede_end = moved.index("</p>", moved.index('class="lede"')) + len("</p>")
+    moved = moved[:lede_end] + box + moved[lede_end:]
+    assert moved != html  # the sabotage landed
+    assert _box_follows_status(html)
+    assert not _box_follows_status(moved)
 
 
 def test_every_built_feed_is_named_for_the_species_on_its_own_page(tmp_path: Path):

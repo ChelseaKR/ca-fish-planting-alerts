@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: a California water page has a calendar box right after the status
+  badge, with one button for Apple Calendar and one for Google Calendar,
+  which is the way in on Android phones (DECISIONS 0062). Before, the only
+  subscribe link was an inline webcal:// link more than a phone screen down,
+  which Android does not open without an extra app. The privacy page says
+  how the Google Calendar link works.
+
 - iOS: About has the same "Write to the developer" row as Android
   (DECISIONS 0058), with the app version in the subject. It ships after the
   App Review Board answers.

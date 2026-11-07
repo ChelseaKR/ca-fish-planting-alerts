@@ -312,6 +312,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Pipeline: Massachusetts no longer calls a stale file a good check
+  (DECISIONS 0063). ArcGIS Hub marks its copy of MassWildlife's layer
+  stale; the copy was built 2026-10-13 (150 rows; the layer has 155). The check now fails,
+  the last good data is kept, and the pages say the check failed.
+
 - Tennessee reads TWRA's 2027 schedule. "TBD 12/2027" in the STOCKING WEEK
   column is a month ("December 2027"), never a week. A "week of" date that
   isn't a Sunday (four in the 2026-11-05 file) is skipped, never moved to a

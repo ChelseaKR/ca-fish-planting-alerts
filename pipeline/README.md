@@ -100,6 +100,31 @@ It scans the 2 GB NHD file once (a few minutes) and prints the counts per
 status. The report lists every ambiguous water with its candidates; to
 settle one, add an override and run it again.
 
+### Tennessee from TWRA's CSV (`import-tn-csv`, by hand)
+
+tn.gov refuses the pipeline's automated read (HTTP 403, issue #97), and the
+pipeline does not work around a site's security settings (DECISIONS 0061).
+TWRA's page (https://www.tn.gov/twra/fishing/trout-information-stockings.html)
+offers the same schedule as a CSV download. To load it, download the CSV in
+a browser, then from the repository root:
+
+    make import-tn-csv CSV="$HOME/Downloads/Trout Fishing and Stockings in Tennessee.csv"
+
+The download time defaults to the file's modification time; pass
+`DOWNLOADED_AT=2026-11-07` (noon Central) or
+`DOWNLOADED_AT=2026-11-07T11:23-08:00` to set it. The import refuses, and
+writes nothing, when the header is not TWRA's eight columns exactly, a row
+is short or long, the file parses to fewer than 100 records, the file is
+not newer than the data on file, or the same file is already loaded. It
+writes `data/states/tn.json` with the file's provenance in
+`checks.manual_file`, and the pages then say the data is "from TWRA's
+published schedule file, downloaded <date>". The daily run keeps trying
+tn.gov; a failed run changes only its own attempt fields, and a good one
+clears the manual label. `data/` is committed by the publish job, so the
+changed `tn.json` goes to `main` through a pull request; merge it before the
+next scheduled run rewrites `tn.json`, or re-run the import on a fresh
+branch.
+
 ## Coverage report
 
 Every run prints one line, always as paired numbers:

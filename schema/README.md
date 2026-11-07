@@ -117,6 +117,14 @@ builds that read it. v2 is built by the same run.
   A water may have no plants and only this note.
 - **`checks`:** a failed fetch keeps the last good data;
   `last_attempt_ok: false` means show that the newest check failed.
+- **`source.read_method`:** `automated` (the pipeline's fetch) or `manual`
+  (the agency's published file, downloaded in a browser and loaded by hand,
+  docs/DECISIONS.md 0061; Tennessee while tn.gov refuses the pipeline).
+  With `manual`, `source.fetched_at` is the download time, and `checks`
+  still describe the automated fetch, which may be failing. Say where the
+  data came from and its date ("from TWRA's published schedule file,
+  downloaded 2026-11-07"); don't present the failing check as the data's
+  age. Absent means `automated`.
 - **`recency_note`:** show it beside the state's data (Michigan's lag).
 - **`site_path`:** the water's page on the site. California keeps
   `/water/<slug>/`.

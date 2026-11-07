@@ -131,7 +131,8 @@
             "url": { "$ref": "#/$defs/https_url" },
             "fetched_at": { "$ref": "#/$defs/datetime", "description": "The last successful fetch." },
             "content_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-            "last_modified": { "type": ["string", "null"], "description": "The agency's HTTP Last-Modified, verbatim, when it sent one." }
+            "last_modified": { "type": ["string", "null"], "description": "The agency's HTTP Last-Modified, verbatim, when it sent one." },
+            "read_method": { "enum": ["automated", "manual"], "description": "How the data at fetched_at was read. automated: the pipeline's own fetch. manual: the owner downloaded the agency's published file in a browser and loaded it (docs/DECISIONS.md 0061); fetched_at is the download time, and checks still describe the automated fetch. Absent in snapshots written before 2026-11-07: automated." }
           }
         },
         "checks": {

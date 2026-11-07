@@ -297,6 +297,9 @@ def _state_entry(
             "fetched_at": _iso_z(checks.last_success_at),
             "content_sha256": checks.content_sha256 or "0" * 64,
             "last_modified": checks.last_modified,
+            # "manual": the newest data is an agency file a person downloaded
+            # and loaded (DECISIONS 0061); fetched_at is its download time.
+            "read_method": checks.read_method,
         },
         "checks": {
             "last_attempt_at": _iso_z(checks.last_attempt_at or checks.last_success_at),

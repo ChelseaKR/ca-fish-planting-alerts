@@ -1425,3 +1425,35 @@ chose all recommended).
   "Open water" button would repeat the tap, so it isn't added.
 - **iOS waits.** The same row comes to iOS after the App Review Board
   answers, in its own PR, with the same words (`FeedbackMail.swift`).
+
+
+## 0061 — Tennessee: load TWRA's published download by hand while the automated read is refused (2026-11-07)
+
+tn.gov has answered the pipeline's requests with HTTP 403 since 2026-10-15
+(issue #97), so Tennessee's pages froze at that read. TWRA's communications
+manager pointed Chelsea to the page's own download formats, and Chelsea told
+TWRA that Trout Truck won't get around tn.gov's security settings.
+
+- **No workaround of tn.gov's filter.** The automated fetch, its honest
+  User-Agent and the strict robots.txt rule (0025) are unchanged. Nothing
+  fetches tn.gov from a laptop, and nothing needs a laptop on daily.
+- **Manual import of TWRA's published CSV.** Now and then Chelsea downloads
+  the CSV from TWRA's page in a browser and runs `make import-tn-csv`
+  (`cfpa.import_tn_csv`). Its eight columns and values are the ones the JSON
+  reader reads, so the rows go through the reader's own `tn.parse_rows`: TBD
+  months, week-of Sundays, verbatim month letters, skipped non-Sunday weeks
+  and TWRA's spellings ("Caroll"). Any header drift is refused, as is an
+  older or repeated file.
+- **Provenance.** `tn.json` records the file (`checks.manual_file`: source
+  "TWRA's downloadable CSV", page URL, file name, SHA-256, row count,
+  download and import times); `last_success_at` is the download time. The
+  snapshot's `source.read_method` is `manual`. Pages say "This data is from
+  TWRA's published schedule file, downloaded <date>", and a water with no
+  later date says nothing later was in that file, never "right now".
+- **The daily read keeps failing honestly.** `checks.last_attempt_*` stay
+  the automated read's own. A failed run changes only those and never
+  relabels or replaces the imported data; the run log still warns. The first
+  good automated read clears `manual_file`, and the pages go back to the
+  automated wording.
+- **Data lands by pull request.** The publish job is the only direct writer
+  of `pipeline/data/`, so an imported `tn.json` goes to `main` in a PR.

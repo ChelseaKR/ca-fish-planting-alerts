@@ -178,11 +178,31 @@ def _rows(bodies: list[FetchedBody]) -> list[dict[str, str]]:
 
 
 def parse(bodies: list[FetchedBody]) -> ParsedFeed:
+    rows = _rows(bodies)
+    first = bodies[0]
+    return parse_rows(
+        rows,
+        fetched_at=first.fetched_at,
+        content_sha256=combined_sha256(bodies),
+        last_modified=first.last_modified,
+    )
+
+
+def parse_rows(
+    rows: list[dict[str, str]],
+    *,
+    fetched_at: dt.datetime,
+    content_sha256: str,
+    last_modified: str | None,
+) -> ParsedFeed:
+    """TWRA's rows, one dict per row keyed by ``COLUMNS`` with stripped
+    strings, read into records. The JSON the page loads and the CSV the page
+    offers for download (``cfpa.import_tn_csv``) have the same columns and
+    the same values, so both come here and mean the same thing."""
     waters: dict[str, WaterMeta] = {}
     records: dict[tuple[str, str, str, str], ParsedRecord] = {}
     skipped = 0
     bad: list[str] = []
-    rows = _rows(bodies)
     for row in rows:
         county, location, species = row["COUNTY"], row["LOCATION"], row["SPECIES"]
         if not county or not location or not species:
@@ -226,13 +246,12 @@ def parse(bodies: list[FetchedBody]) -> ParsedFeed:
             f"not a Sunday (more than {cap}); TWRA says they are all Sundays, so "
             f"the feed may have changed. First: {bad[0]}"
         )
-    first = bodies[0]
     return ParsedFeed(
         waters=waters,
         records=sorted(records.values(), key=lambda r: r.key()),
-        fetched_at=first.fetched_at,
-        content_sha256=combined_sha256(bodies),
-        last_modified=first.last_modified,
+        fetched_at=fetched_at,
+        content_sha256=content_sha256,
+        last_modified=last_modified,
         skipped=skipped,
         skipped_notes=tuple(f"skipped {b}" for b in bad),
     )

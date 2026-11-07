@@ -1,5 +1,6 @@
 package com.chelseakr.cafishplanting.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
@@ -43,9 +47,12 @@ import com.chelseakr.cafishplanting.AppEnvironment
 import com.chelseakr.cafishplanting.AppState
 import com.chelseakr.cafishplanting.Haptics
 import com.chelseakr.cafishplanting.core.RefreshOutcome
+import com.chelseakr.cafishplanting.core.StateChoice
+import com.chelseakr.cafishplanting.core.StateOption
 import com.chelseakr.cafishplanting.core.WaterSearch
 import com.chelseakr.cafishplanting.rememberHaptics
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 /** Swipe down, or the toolbar's Refresh, to check now past the throttle. A success tap, or a warning when it failed. */
 suspend fun refreshWithFeedback(env: AppEnvironment, haptics: Haptics) {
@@ -98,6 +105,17 @@ fun BrowseList(env: AppEnvironment, state: AppState, selected: String?, onOpen: 
             EmptyState(Icons.Filled.Search, "Can't load the stocking schedule", "No stocking schedule is available yet.", Modifier.padding(padding))
             return@Scaffold
         }
+        if (code == null) {
+            // No state picked yet (DECISIONS 0053): the states, not any one state's waters.
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { scope.launch { refreshWithFeedback(env, haptics) } },
+                modifier = Modifier.padding(padding).fillMaxSize(),
+            ) {
+                ChooseAState(StateChoice.options(snapshot, Instant.now()), onPick = env::setBrowseState)
+            }
+            return@Scaffold
+        }
         val thisWeek = snapshot.thisWeekWaterIDs
         val stateInfo = snapshot.state(code)
         val stateWaters = snapshot.watersInState(code)
@@ -129,7 +147,16 @@ fun BrowseList(env: AppEnvironment, state: AppState, selected: String?, onOpen: 
                         )
                         if (manyStates) {
                             Spacer(Modifier.height(8.dp))
-                            StatePicker(snapshot.states.map { it.code to it.name }, code, onSelect = env::setBrowseState)
+                            // A paused state says so in the menu too, never as current.
+                            val now = Instant.now()
+                            StatePicker(
+                                snapshot.states.map { info ->
+                                    val option = StateChoice.option(info, now)
+                                    info.code to if (option.isPaused) "${info.name} (updates paused)" else info.name
+                                },
+                                code,
+                                onSelect = env::setBrowseState,
+                            )
                         }
                         if (regions.isNotEmpty()) {
                             Spacer(Modifier.height(8.dp))
@@ -184,6 +211,24 @@ fun BrowseList(env: AppEnvironment, state: AppState, selected: String?, onOpen: 
                         )
                         HorizontalDivider(Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
                     }
+                }
+            }
+        }
+    }
+}
+
+/** Browse before a state is picked: the snapshot's states, none chosen for the person. */
+@Composable
+private fun ChooseAState(options: List<StateOption>, onPick: (String) -> Unit) {
+    LazyColumn(Modifier.fillMaxSize()) {
+        item {
+            Column(Modifier.padding(16.dp).then(ReadableWidth), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(StateChoice.BROWSE_TITLE, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { heading() })
+                if (options.isEmpty()) {
+                    Text(StateChoice.NONE_LISTED, style = MaterialTheme.typography.bodyMedium)
+                } else {
+                    Text(StateChoice.BROWSE_BODY, style = MaterialTheme.typography.bodyMedium, color = secondaryText)
+                    StateChoiceList(options, selected = null, onPick = onPick)
                 }
             }
         }

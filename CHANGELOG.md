@@ -13,6 +13,16 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Android: About has a "Write to the developer" row that opens your email
+  app addressed to chelsea@chelseakr.com, with the app version in the
+  subject (DECISIONS 0057). Alerts keep their one button, "Mute this water".
+
+- Android: the introduction asks which state you fish, from the snapshot's
+  list, with none chosen (DECISIONS 0053). Skipping opens Browse on the list
+  of states instead of California. A state whose updates have stopped says
+  "Updates paused since <date>" there, on the States sheet and in Browse's
+  state menu. iOS is unchanged until the App Review Board answers.
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the
@@ -302,6 +312,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Site: a state water page whose latest check failed no longer says
+  "Nothing later is on TWRA's schedule right now" when the last good read
+  has no later date. It says nothing later was listed when the file was last
+  read, on that date, and that the agency may have listed later dates since.
+  The meta description drops "nothing later listed" the same way. Tennessee's
+  checks have failed since 2026-10-15 while TWRA's file, checked 2026-11-07,
+  lists 2027 dates for waters such as Doe River.
 - Tennessee reads TWRA's 2027 schedule. "TBD 12/2027" in the STOCKING WEEK
   column is a month ("December 2027"), never a week. A "week of" date that
   isn't a Sunday (four in the 2026-11-05 file) is skipped, never moved to a

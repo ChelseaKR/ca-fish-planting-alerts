@@ -1373,6 +1373,38 @@ focused on california." She approved the nine recommendations in the
   (`docs/PLAY-LISTING.md`) are reworded national. `docs/APP-STORE-LISTING.md`
   gets only a "frozen during the appeal" note.
 
+## 0053 — Android asks which state on first run; no California default (2026-11-05)
+
+Plan N6 from the 2026-11-05 national plan, decision 9, option A: ask on
+first run with no location, and if the person skips, show the list of
+states. Chelsea hasn't picked an option for decision 9 yet; this builds the
+recommended one.
+
+- **What.** The introduction's "Find your waters" page lists the states in
+  the snapshot, none chosen, and saves a pick as it is made. Skipping, or
+  any launch with no pick, opens Browse on that same list instead of any one
+  state's waters. A pick the snapshot no longer carries counts as no pick,
+  never as California.
+- **Only from v2.** The list is the v2 snapshot's `states`, in its order.
+  Nothing in the app types a list of states. A v1 file (California alone,
+  from before states) offers none and says the data doesn't list its
+  states yet.
+- **Paused, never current.** Each row says what the agency publishes and
+  "Read <date>", from `checks.last_success_at`. A state whose latest check
+  failed and whose last good read is more than 7 days old says "Updates
+  paused since <date>" with a warning mark, the site's rule from 0051. The
+  same words show on the States sheet and in Browse's state menu. With the
+  bundled data, Tennessee shows "Updates paused since Oct 15, 2026".
+- **Existing installs.** `browse-state.json` written before this keeps its
+  pick. An install that never picked (it saw California by default) now
+  sees the list once and taps a state.
+- **No location.** The picker doesn't ask for or use location, so the Play
+  Data safety form and the iOS privacy label are unchanged (option C would
+  have changed both).
+- **iOS waits.** iOS is unchanged here. Its default (`AppEnvironment.swift`
+  `state = "CA"`) and onboarding change after the App Review Board answers,
+  in their own PR, with the same rules and words as `StateChoice.kt`.
+
 ## 0055 — Pennsylvania, Virginia and Maryland are built and tested behind flags that are off (2026-11-05)
 
 (0046 to 0053 are on branches or main and 0054 is the water-page lane's, so
@@ -1409,3 +1441,47 @@ is recorded as `unknown`.
 - **Turning one on** is the owner's edit: set its flag and add its
   `pipeline/data/states/<xx>.json` to the publish workflow's commit step, then
   follow 0034 (a live read before `FETCHED_STATES`).
+
+## 0057 — Android About gets "Write to the developer"; alerts keep their one button (2026-11-06)
+
+From the 2026-11-05 app parity audit (Trout Truck items 2 and 3; Chelsea
+chose all recommended).
+
+- **What.** About has a "Questions and corrections" section with one row,
+  "Write to the developer". It opens the email app with a `mailto:` to
+  chelsea@chelseakr.com (the address `/support/` shows) and a subject of
+  "Trout Truck <version> for Android". The footnote shows the address, so it
+  still works on a device with no email app. When the build carries no
+  version, the subject leaves it out rather than showing a placeholder.
+- **Nothing new is sent.** The app sends no email itself and makes no new
+  network request. The Data safety answers are unchanged.
+- **Notification actions: none added.** The audit said alerts had no action
+  button. They already have one: "Mute this water" (`MuteReceiver`, since
+  the first Android build), and tapping the alert opens the water. An extra
+  "Open water" button would repeat the tap, so it isn't added.
+- **iOS waits.** The same row comes to iOS after the App Review Board
+  answers, in its own PR, with the same words (`FeedbackMail.swift`).
+
+## 0060 — StoreKit tests fail fast instead of hanging (2026-11-06)
+
+- **Problem.** `PurchaseManagerTests` hangs on `main`, not just on some
+  feature branches. On the iOS 26.5 simulator (Xcode 26.6) the
+  `SKTestSession` isn't connected (Apple bug 163377768, `ios/README.md`), so
+  StoreKit answers from the real App Store sandbox. Only California's
+  product loads, the first `purchase()` waits on a sign-in no one answers,
+  and the run never ends. Measured three times on `main` at 3df4d6c: each
+  run stuck on the first test and was killed at 15 minutes.
+- **What.** Test code only; the app's `PurchaseManager` is unchanged. The
+  tests wait for all 5 products in `Configuration.storekit` and stop in
+  about 8 seconds, saying how many loaded, when any are missing. Every
+  `purchase()` and `restorePurchases()` call in the tests has a 30-second
+  deadline, so a call that hangs once the products do load still fails the
+  test. Checked by loosening the product check by hand: the stuck purchase
+  failed at 51 seconds instead of hanging.
+- **Result on this simulator.** The class finishes red in about 105
+  seconds (13 failures, 3 passes, three runs). That is the known Apple bug,
+  not a regression. The tests still can't pass until a simulator runtime
+  or device with Apple's fix is used.
+- **Not done.** Turning on test timeouts in the shared scheme
+  (`testTimeoutsEnabled`) had no effect from `xcodebuild` in a trial run,
+  so it isn't included. The README's command-line flags are the backstop.

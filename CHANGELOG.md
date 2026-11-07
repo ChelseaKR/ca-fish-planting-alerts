@@ -13,6 +13,10 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- iOS: About has the same "Write to the developer" row as Android
+  (DECISIONS 0058), with the app version in the subject. It ships after the
+  App Review Board answers.
+
 - Android: About has a "Write to the developer" row that opens your email
   app addressed to chelsea@chelseakr.com, with the app version in the
   subject (DECISIONS 0057). Alerts keep their one button, "Mute this water".

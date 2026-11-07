@@ -1426,6 +1426,30 @@ chose all recommended).
 - **iOS waits.** The same row comes to iOS after the App Review Board
   answers, in its own PR, with the same words (`FeedbackMail.swift`).
 
+## 0058 — iOS About gets "Write to the developer"; alerts keep their one button (2026-11-06)
+
+The iOS half of 0057. Built while the 1.0.0 appeal is open; it merges only
+after the App Review Board answers, so the build Apple is reviewing stays
+the one it has.
+
+- **What.** About has a "Questions and corrections" section with one row,
+  "Write to the developer", a `mailto:` to chelsea@chelseakr.com with the
+  subject "Trout Truck <version> for iOS" (`FeedbackMail.swift`). The
+  version comes from the app's Info.plist; when it's missing, the subject
+  leaves it out. The footnote shows the address and can be selected, so it
+  still works with no email app set up. The words match Android's, and
+  `FeedbackMailTests` checks that.
+- **Nothing App Store–visible.** No App Store text, screenshot, privacy
+  label or icon changes. The app keeps the icon's green while the appeal is
+  open; the site's newer teal and gold isn't used here. `mailto:` names no
+  host, so the host allowlist is unchanged.
+- **Notification actions: none added.** The alert category already has
+  "Mute this water" on iPhone and Apple Watch (`NotificationScheduler`,
+  `WatchNotificationResponder`), and a tap opens the water.
+- **Not in this change.** The first-run state picker (0053's iOS half) and
+  the species filter (#40) stay in their own PRs. The new look waits for
+  Chelsea's call after the verdict.
+
 ## 0060 — StoreKit tests fail fast instead of hanging (2026-11-06)
 
 - **Problem.** `PurchaseManagerTests` hangs on `main`, not just on some

@@ -341,6 +341,68 @@ def test_tennessee_water_page_reports_the_failed_check_with_its_time(tmp_path: P
     assert "Next scheduled: week of 2026-10-25" in text
 
 
+def _description(html: str) -> str:
+    m = re.search(r'<meta name="description" content="([^"]*)"', html)
+    assert m, "no meta description"
+    return m.group(1)
+
+
+DOE = "tn/water/doe-river-carter-county/index.html"
+
+
+def test_a_stale_water_with_no_later_date_never_says_nothing_later_is_listed(
+    tmp_path: Path,
+):
+    """Doe River's last date in the 2026-10-15 read is the week of 2026-10-04.
+    TWRA's real file (checked 2026-11-07) lists twelve 2027 dates for it, so
+    while the check fails, "nothing later right now" would be a false absence.
+    The page and its meta description say what the last read held instead."""
+    out, _ = _tn_site(tmp_path, GENERATED)
+    html = (out / DOE).read_text("utf-8")
+    text = _text(html)
+    assert "Most recently scheduled: week of 2026-10-04" in text
+    assert "Next scheduled" not in text
+    assert "right now" not in text
+    assert (
+        "Nothing later was on TWRA's schedule when it was last read, on 2026-10-15."
+        in text
+    )
+    assert "may have listed later dates" in text
+    desc = _description(html)
+    assert "nothing later listed" not in desc
+    assert "as of 2026-10-15; checks since then failed." in desc
+    assert not BANNED_WORDS.search(desc)
+
+
+def test_a_healthy_water_with_no_later_date_still_says_nothing_later(
+    tmp_path: Path,
+):
+    """The control: the same history with its latest check marked good keeps
+    the "right now" sentence, so the test above is about the flag."""
+    history = StateHistory.load(COMMITTED_TN, "TN")
+    good = dataclasses.replace(
+        history,
+        checks=dataclasses.replace(
+            history.checks,
+            last_attempt_ok=True,
+            last_attempt_at=history.checks.last_success_at,
+            last_error=None,
+        ),
+    )
+    assert good.checks.last_attempt_ok is True  # the doctoring landed
+    v1 = _v1(tmp_path)
+    v2 = snapshot_v2.build_snapshot_v2(
+        v1, [(SOURCES["TN"], good)], generated_at=GENERATED
+    )
+    out = tmp_path / "tn-ok"
+    site.build_site(v1, out, base_url=BASE, snapshot_v2=v2)
+    html = (out / DOE).read_text("utf-8")
+    text = _text(html)
+    assert "Nothing later is on TWRA's schedule right now." in text
+    assert "when it was last read" not in text
+    assert "nothing later listed" in _description(html)
+
+
 def test_tennessee_upcoming_window_starts_today_not_at_the_last_good_read(
     tmp_path: Path,
 ):

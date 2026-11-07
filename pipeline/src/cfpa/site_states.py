@@ -652,9 +652,19 @@ def _render_water(
     title = fit_title(
         [f"{head} ({place})", f"{head} ({short})"], ctx.site_name, ctx.title_max
     )
+    # A failed latest check: the last good read's lack of a later date is not
+    # the agency's current schedule, so never say "nothing later listed".
+    attempt_failed = not state["checks"]["last_attempt_ok"]
+    fetched_date = state["checks"]["last_success_at"][:10]
     if schedule:
         if w["next_period"]:
             status = f"next {wd['verb']} {when_label(w['next_period'])}."
+        elif attempt_failed:
+            status = (
+                f"last {wd['verb']} {when_label(w['last_period'])}"
+                if w["last_period"]
+                else "no date"
+            ) + f" as of {fetched_date}; checks since then failed."
         elif w["last_period"]:
             status = f"last {wd['verb']} {when_label(w['last_period'])}; nothing later listed."
         elif w["months_note"]:
@@ -747,7 +757,8 @@ def _render_water(
         next_label=when_label(w["next_period"]) if w["next_period"] else "",
         last_label=when_label(w["last_period"]) if w["last_period"] else "",
         fetched_label=_fmt_dt(state["checks"]["last_success_at"]),
-        attempt_failed=not state["checks"]["last_attempt_ok"],
+        fetched_date=fetched_date,
+        attempt_failed=attempt_failed,
         attempt_label=_fmt_dt(state["checks"]["last_attempt_at"]),
     )
     ctx.write_page(ctx.out_dir, w["site_path"].strip("/"), html, ctx.written)

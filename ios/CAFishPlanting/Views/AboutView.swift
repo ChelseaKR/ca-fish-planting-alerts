@@ -74,7 +74,7 @@ struct AboutView: View {
                     .foregroundStyle(.secondaryText)
                     .textSelection(.enabled)
             } header: {
-                SectionHeader(FeedbackMail.sectionHeader)
+                SectionHeader("\(FeedbackMail.sectionHeader)")
             }
 
             Section {

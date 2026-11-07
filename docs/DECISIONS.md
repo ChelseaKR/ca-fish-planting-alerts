@@ -1449,3 +1449,27 @@ the one it has.
 - **Not in this change.** The first-run state picker (0053's iOS half) and
   the species filter (#40) stay in their own PRs. The new look waits for
   Chelsea's call after the verdict.
+
+## 0060 — StoreKit tests fail fast instead of hanging (2026-11-06)
+
+- **Problem.** `PurchaseManagerTests` hangs on `main`, not just on some
+  feature branches. On the iOS 26.5 simulator (Xcode 26.6) the
+  `SKTestSession` isn't connected (Apple bug 163377768, `ios/README.md`), so
+  StoreKit answers from the real App Store sandbox. Only California's
+  product loads, the first `purchase()` waits on a sign-in no one answers,
+  and the run never ends. Measured three times on `main` at 3df4d6c: each
+  run stuck on the first test and was killed at 15 minutes.
+- **What.** Test code only; the app's `PurchaseManager` is unchanged. The
+  tests wait for all 5 products in `Configuration.storekit` and stop in
+  about 8 seconds, saying how many loaded, when any are missing. Every
+  `purchase()` and `restorePurchases()` call in the tests has a 30-second
+  deadline, so a call that hangs once the products do load still fails the
+  test. Checked by loosening the product check by hand: the stuck purchase
+  failed at 51 seconds instead of hanging.
+- **Result on this simulator.** The class finishes red in about 105
+  seconds (13 failures, 3 passes, three runs). That is the known Apple bug,
+  not a regression. The tests still can't pass until a simulator runtime
+  or device with Apple's fix is used.
+- **Not done.** Turning on test timeouts in the shared scheme
+  (`testTimeoutsEnabled`) had no effect from `xcodebuild` in a trial run,
+  so it isn't included. The README's command-line flags are the backstop.

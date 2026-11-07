@@ -884,6 +884,9 @@ def _render_water(
                 name=title,
                 base_url=ctx.base_url,
                 about={"@id": f"{page_url}#water"},
+                # The state's last good read, so a paused state keeps its
+                # old date and never looks fresh (DECISIONS 0059).
+                date_modified=state["checks"]["last_success_at"],
             ),
             ctx.ld_breadcrumb(page_url, trail),
             water_node,
@@ -918,6 +921,7 @@ def _render_water(
         next_label=when_label(w["next_period"]) if w["next_period"] else "",
         last_label=when_label(w["last_period"]) if w["last_period"] else "",
         fetched_label=fetched_label,
+        fetched_at=state["checks"]["last_success_at"],
         attempt_failed=not state["checks"]["last_attempt_ok"],
         attempt_label=_fmt_dt(state["checks"]["last_attempt_at"]),
     )

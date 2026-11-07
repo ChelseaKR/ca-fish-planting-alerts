@@ -142,6 +142,18 @@ def render(
     lines.append(
         f"- County feeds: {base_url}/feeds/county/<county>.atom, one per county page"
     )
+    # State hubs and their water-page URL pattern (DECISIONS 0059). Only the
+    # states in this build's snapshot are named: each one has pages on the
+    # site, so no state is listed that a reader could not open.
+    others = [s for s in states if s["code"] != "CA"]
+    if others:
+        lines += ["", "## State pages", ""]
+        for s in others:
+            seg = s["code"].lower()
+            lines.append(
+                f"- [{s['name']}]({base_url}/{seg}/): every {s['name']} water with a page; "
+                f"one page per water under /{seg}/water/<name>/"
+            )
     if states:
         lines += ["", "## Sources and open data", ""]
         for s in states:

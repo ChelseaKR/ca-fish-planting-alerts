@@ -1387,8 +1387,12 @@ def _ld_page(
     name: str,
     base_url: str,
     about: dict[str, Any],
+    date_modified: str = "",
 ) -> dict[str, Any]:
-    return {
+    """A page node. ``date_modified`` is the data's last good read (an ISO
+    UTC timestamp from the snapshot, DECISIONS 0059), never the build time;
+    empty means the key is left out rather than guessed."""
+    node: dict[str, Any] = {
         "@type": page_type,
         "@id": page_url,
         "url": page_url,
@@ -1397,6 +1401,9 @@ def _ld_page(
         "breadcrumb": {"@id": f"{page_url}#breadcrumb"},
         "about": about,
     }
+    if date_modified:
+        node["dateModified"] = date_modified
+    return node
 
 
 def _ld_app(base_url: str, listing_url: str) -> dict[str, Any]:
@@ -1852,6 +1859,9 @@ class _PageContext:
     source_week_label: str
     source_fetched_label: str
     source_checked_on: str = ""
+    # The snapshot's last good read of CDFW, as an ISO UTC timestamp. Feeds
+    # the water page's dateModified and <time datetime> (DECISIONS 0059).
+    source_fetched_at: str = ""
     waters_by_region: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     coords: dict[str, list[Any]] = field(default_factory=dict)
     recorded_since: str = ""
@@ -1976,6 +1986,7 @@ def _render_water_page(
                 name=title,
                 base_url=base_url,
                 about={"@id": f"{page_url}#water"},
+                date_modified=ctx.source_fetched_at,
             ),
             _ld_breadcrumb(page_url, trail),
             _ld_water(w, page_url=page_url, point=point),
@@ -1993,6 +2004,7 @@ def _render_water_page(
         water_months=_water_months(w, recorded_since=recorded_since),
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
+        source_fetched_at=ctx.source_fetched_at,
         recorded_since_label=f"week of {recorded_since}" if recorded_since else "",
         # Facts for _water_status.html.jinja. water_status["meta_phrase"] is a
         # truthful sentence a description may use; nothing here sets one.
@@ -3353,6 +3365,7 @@ def build_site(
         source_week_label=source_week_label,
         source_fetched_label=source_fetched_label,
         source_checked_on=snapshot["source"]["fetched_at"][:10],
+        source_fetched_at=snapshot["source"]["fetched_at"],
         waters_by_region=waters_by_region,
         coords=coords,
         recorded_since=recorded_since,

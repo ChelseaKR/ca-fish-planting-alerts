@@ -1448,3 +1448,24 @@ and several Tennessee pages were engaged landings in GA4's last 28 days.
 - **Unchanged.** URLs, titles, H1s and meta descriptions (checked on the
   pinned fixtures: 1,445 state water pages, 0 differences), the lede, the
   history table and the gear block.
+
+## 0059 — Water pages carry machine-readable data dates (2026-11-06)
+
+Chelsea's AI-visibility decision C (2026-11-06): ChatGPT already sends
+visitors to water pages, and none of them had a machine date. Ships with
+#148 and #150 on or after 2026-11-30.
+
+- **dateModified.** Every California and state water page's WebPage node
+  carries `dateModified`, the snapshot's last good read for that source:
+  CDFW's `source.fetched_at` for California, the state's
+  `checks.last_success_at` otherwise. Never the build time. No date means no
+  key, not a guess.
+- **`<time datetime>`.** The "last checked" (California) and "last read"
+  (states) line wraps the same date in `<time>`. The visible text is
+  unchanged.
+- **Paused states.** A paused state keeps its last good read in both, so it
+  never looks fresh. Tested with a negative control.
+- **llms.txt.** A "State pages" section lists each non-California state in
+  the build's snapshot (each has pages) with its hub URL and the
+  `/<state>/water/<name>/` pattern. No state is named that the build lacks.
+- **Unchanged.** Titles, H1s, meta descriptions and URLs.

@@ -220,7 +220,9 @@ def test_water_page_says_when_the_schedule_was_last_checked(tmp_path: Path):
     out = _build_site(tmp_path)
     for d in (out / "water").iterdir():
         html = (d / "index.html").read_text(encoding="utf-8")
-        assert "schedule was last checked 2026-09-13 12:00 UTC" in html
+        # The date sits in a <time> (DECISIONS 0059); read the visible text.
+        visible = re.sub(r"</?time[^>]*>", "", html)
+        assert "schedule was last checked 2026-09-13 12:00 UTC" in visible
         assert (
             "current\n  week was the week of 2026-09-13" in html
             or "week was the week of 2026-09-13" in html

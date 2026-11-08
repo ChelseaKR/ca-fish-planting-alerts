@@ -1488,3 +1488,24 @@ From the 2026-11-07 visitor-to-alert review
 - **Not in this change.** Tennessee, Massachusetts, Michigan and New York
   water pages have no calendar feed at all, and county and home pages have
   no subscribe action. Those need their own feeds and their own decision.
+## 0063 — A Massachusetts file that Hub marks stale is a failed check (2026-11-07)
+
+From the 2026-11-07 freshness audit of every live state.
+
+- **What we found.** ArcGIS Hub answers MassWildlife's download with
+  `"cacheStatus": "stale"`. Its file was built 2026-10-13 02:35 UTC and has
+  150 rows, the last dated 2026-10-09. Hub's metadata for the same layer
+  says 155 records, last edited 2026-10-13 17:06 UTC. Every run since then
+  read the old file and called the check good, so the Massachusetts pages
+  said "That is what the agency's own data says, not a failed read."
+- **The rule.** When Hub says Completed with `cacheStatus` "stale", the
+  reader stops before the file and reports a failed check. The last good
+  data is kept, and the state and water pages say the check failed, as they
+  already do for any failed check. "ready" or no `cacheStatus` reads as
+  before.
+- **Not changed.** The route stays Hub only (0034). The layer's own host,
+  services1.arcgis.com, still answers its robots.txt with 403 and is never
+  read. Nothing asks Hub to rebuild the file.
+- **Known gap.** The run of 2026-11-07 13:22 UTC already recorded a good
+  check, so "last read" shows that time, not 2026-10-13. The pages also show
+  "last changed the file Tue, 13 Oct 2026", which is the true age.

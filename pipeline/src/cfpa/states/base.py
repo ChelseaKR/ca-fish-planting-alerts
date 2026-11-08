@@ -290,6 +290,13 @@ class StateSource:
     # snapshot (``cfpa.states.store.merge``). False for a report that ages
     # rows off, where a missing row means nothing.
     whole_file: bool = False
+    # The freshness watchdog's allowance for this state (``cfpa.freshness``,
+    # DECISIONS 0065): how many days old the last SUCCESSFUL read may be
+    # before the publish run's freshness job goes red. None means the
+    # watchdog's default (7). A source read on a longer cycle declares its
+    # own here; it is about the read working, never about how new the
+    # agency's records are.
+    max_read_age_days: int | None = None
 
     @property
     def removal_inference(self) -> bool:

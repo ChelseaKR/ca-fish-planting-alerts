@@ -316,12 +316,54 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
 
+  freshness:
+    # The freshness watchdog (DECISIONS 0065). tn.gov refused the runner
+    # from 2026-10-15, and for 23 days every run here finished green: a
+    # state that fails keeps its last good data and prints one warning
+    # (DECISIONS 0025), and publish-health.yml's issue (#104) drew comments
+    # nobody read. This job reads the history files the build job committed
+    # a moment ago and goes red when any live state's last SUCCESSFUL read
+    # is older than its allowance (pipeline/src/cfpa/freshness.py: 7 days
+    # unless the state's module declares its own; a manual import counts
+    # from its download time; a state behind an off flag is not checked).
+    # Its own job on purpose: the data commit and the deploy never wait on
+    # it, so a stuck state cannot stop the other states from publishing,
+    # and its red is the publish run's red on main, which is what gets
+    # seen. It opens no issue: alert-on-failure below watches build and
+    # deploy only. The summary names each state, its last good read and
+    # the age.
+    needs: build
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          # main as it is now, with the data commit the build job just
+          # pushed; github.sha would be the tip from before this run.
+          ref: main
+          persist-credentials: false
+
+      - name: install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: install dependencies
+        working-directory: pipeline
+        run: uv sync --locked
+
+      - name: every live state's last good read is young enough
+        run: make freshness
+
   alert-on-failure:
     # The scheduled run failed on 2026-09-15, 09-16 and 09-17, and nothing
     # reported it until someone went looking. A failed or timed-out run now
     # opens one tracking issue, or comments on it if it is already open, so
     # a stale site produces a notification. A timeout is included because
     # GitHub reports a job that hits timeout-minutes as cancelled, not failed.
+    # Not the freshness job: a stuck state is a red job, not an issue
+    # (DECISIONS 0065).
     needs: [build, deploy]
     if: failure() || cancelled()
     runs-on: ubuntu-latest

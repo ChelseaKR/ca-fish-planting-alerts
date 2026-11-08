@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: a California water page has a calendar box right after the status
+  badge, with one button for Apple Calendar and one for Google Calendar,
+  which is the way in on Android phones (DECISIONS 0062). Before, the only
+  subscribe link was an inline webcal:// link more than a phone screen down,
+  which Android does not open without an extra app. The privacy page says
+  how the Google Calendar link works.
+
 - Tennessee can be loaded from TWRA's downloadable CSV by hand,
   `make import-tn-csv CSV=...`, while tn.gov refuses the automated read
   (DECISIONS 0061). The header must match TWRA's columns exactly. Pages then
@@ -317,6 +324,11 @@ This repository was republished with a new history on 2026-09-18
   is still refused before any page is built.
 
 ### Fixed
+
+- Pipeline: Massachusetts no longer calls a stale file a good check
+  (DECISIONS 0063). ArcGIS Hub marks its copy of MassWildlife's layer
+  stale; the copy was built 2026-10-13 (150 rows; the layer has 155). The check now fails,
+  the last good data is kept, and the pages say the check failed.
 
 - Site: a state water page whose latest check failed no longer says
   "Nothing later is on TWRA's schedule right now" when the last good read

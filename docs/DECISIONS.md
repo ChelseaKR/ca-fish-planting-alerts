@@ -1481,3 +1481,64 @@ TWRA that Trout Truck won't get around tn.gov's security settings.
   automated wording.
 - **Data lands by pull request.** The publish job is the only direct writer
   of `pipeline/data/`, so an imported `tn.json` goes to `main` in a PR.
+
+
+## 0062 — The calendar box moves up to the status badge and adds Google Calendar (2026-11-07)
+
+From the 2026-11-07 visitor-to-alert review
+(`_agent-tools/growth/tt-visitor-to-alert-2026-11-07.md`, outside this repo).
+
+- **Why.** In GA4's 28 days to 2026-11-07, every key event (4
+  `calendar_subscribe_click`, 1 `gear_click`) came from an iOS visitor on a
+  California water page. Android had 13 engaged sessions and no key event.
+  On a phone-width render of the live site the subscribe link sat 1.2 to 1.6
+  screens down, as one inline sentence after the lede, and its only
+  subscribe link was `webcal://`, which Android does not open unless an
+  extra app has claimed it (Google Calendar for Android does not).
+- **What.** A California water page shows a calendar box right after the
+  status badge, inside the status block and before its facts. It has two
+  full-width buttons, each named for its calendar: "Apple Calendar (iPhone,
+  iPad, Mac): subscribe" (`webcal://`, as before) and "Google Calendar (any
+  phone or computer): add it"
+  (`https://calendar.google.com/calendar/r?cid=<the webcal address>`, which
+  adds the same feed as a subscription). Below them: the feed's https
+  address for any other calendar app, the one-time `.ics` download, and the
+  app line as before.
+- **Plain about what it is.** The box says the calendar checks for changes
+  on its own and that Google can take up to a day to show one. It does not
+  call a calendar event an alert or a notification; the app line keeps that
+  word for the app, which still reads "on its way" while APP_STORE_LIVE is
+  off.
+- **Measurement.** All three links keep `calendar_subscribe_click`, with
+  `link_type` `webcal`, `google` or `ics`. The Google link's host is
+  `calendar.google.com`; the privacy page names that host and says the feed
+  address goes to Google when the visitor presses it. A click is a tap, not a
+  confirmed subscription.
+- **No "Android" in the copy.** The site names Android only on the privacy
+  page until the app is on Google Play (`test_copy_never_mentions_android`),
+  so the Google button says "any phone or computer". The support page's
+  calendar answer is unchanged; it is also the FAQ structured data.
+- **Not in this change.** Tennessee, Massachusetts, Michigan and New York
+  water pages have no calendar feed at all, and county and home pages have
+  no subscribe action. Those need their own feeds and their own decision.
+## 0063 — A Massachusetts file that Hub marks stale is a failed check (2026-11-07)
+
+From the 2026-11-07 freshness audit of every live state.
+
+- **What we found.** ArcGIS Hub answers MassWildlife's download with
+  `"cacheStatus": "stale"`. Its file was built 2026-10-13 02:35 UTC and has
+  150 rows, the last dated 2026-10-09. Hub's metadata for the same layer
+  says 155 records, last edited 2026-10-13 17:06 UTC. Every run since then
+  read the old file and called the check good, so the Massachusetts pages
+  said "That is what the agency's own data says, not a failed read."
+- **The rule.** When Hub says Completed with `cacheStatus` "stale", the
+  reader stops before the file and reports a failed check. The last good
+  data is kept, and the state and water pages say the check failed, as they
+  already do for any failed check. "ready" or no `cacheStatus` reads as
+  before.
+- **Not changed.** The route stays Hub only (0034). The layer's own host,
+  services1.arcgis.com, still answers its robots.txt with 403 and is never
+  read. Nothing asks Hub to rebuild the file.
+- **Known gap.** The run of 2026-11-07 13:22 UTC already recorded a good
+  check, so "last read" shows that time, not 2026-10-13. The pages also show
+  "last changed the file Tue, 13 Oct 2026", which is the true age.

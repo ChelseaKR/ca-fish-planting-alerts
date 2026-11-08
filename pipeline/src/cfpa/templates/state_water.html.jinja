@@ -11,6 +11,17 @@
 
   {% endif %}
 </p>
+{% if calendar_feed %}
+{#- The same calendar box as a California water page (DECISIONS 0062), with
+    this agency's name and its date shapes (DECISIONS 0064): a day or a week,
+    never a month with no day set. -#}
+{% set calendar_agency = state.agency.short_name %}
+{% set calendar_each = "each day or week" %}
+{% set calendar_what = "new dates" %}
+{% set calendar_new = "on a new date" %}
+{% set calendar_placement = "state_water" %}
+{% include "_calendar_subscribe.html.jinja" %}
+{% endif %}
 {% if state.recency_note %}
 <p><strong>{{ state.recency_note }}</strong></p>
 {% endif %}

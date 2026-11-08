@@ -32,6 +32,15 @@ This repository was republished with a new history on 2026-09-18
   feed and no read time. The pages and robots.txt are unchanged. GA4 shows
   AI assistants (all chatgpt.com) as the site's largest engaged channel.
 
+- Site: a Tennessee water page has the same calendar box as a California
+  one and a calendar feed of its own, `/tn/water/<slug>/feed.ics`
+  (DECISIONS 0064). A TWRA day is a one-day all-day event, a "week of"
+  Sunday is a seven-day event, and a "TBD <month>" is never an event, only
+  words in the calendar's description. Every event credits TWRA, says the
+  date is scheduled and not confirmed, gives the data's source and date,
+  and links the water page. Massachusetts, Michigan and New York pages are
+  unchanged; the decision says what each would need.
+
 - Site: a California water page has a calendar box right after the status
   badge, with one button for Apple Calendar and one for Google Calendar,
   which is the way in on Android phones (DECISIONS 0062). Before, the only

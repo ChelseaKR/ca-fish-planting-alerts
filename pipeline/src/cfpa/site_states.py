@@ -35,7 +35,7 @@ from zoneinfo import ZoneInfo
 
 import jinja2
 
-from . import state_coverage
+from . import ics, state_coverage
 from .states import SOURCES
 from .thin import is_thin
 from .water_kind import WaterKind, water_kind
@@ -783,6 +783,9 @@ def _render_water(
         head=head,
         place=place,
         schedule=schedule,
+        # The calendar box (DECISIONS 0062) and its feed, for a schedule
+        # state's water (DECISIONS 0064); the feed is written below.
+        calendar_feed=ics.has_feed(state),
         w_kind=wd["kind"],
         w_verb=wd["verb"],
         plants=plants,
@@ -807,4 +810,27 @@ def _render_water(
         **fresh,
     )
     ctx.write_page(ctx.out_dir, w["site_path"].strip("/"), html, ctx.written)
+    _write_feed(ctx, state, w, page_url, species)
     return page_url, lastmod, thin
+
+
+def _write_feed(
+    ctx: StatesContext,
+    state: dict[str, Any],
+    w: dict[str, Any],
+    page_url: str,
+    species: str,
+) -> None:
+    """The water's calendar feed (DECISIONS 0064), for a schedule state. Next
+    to the page, as California's is, so the box's relative "feed.ics" and
+    webcal links resolve the same way on both."""
+    if not ics.has_feed(state):
+        return
+    ics_path = ctx.out_dir / w["site_path"].strip("/") / "feed.ics"
+    ics_path.write_text(
+        ics.build_schedule_ics(
+            water=w, state=state, page_url=page_url, species=species
+        ),
+        encoding="utf-8",
+    )
+    ctx.written.append(ics_path)

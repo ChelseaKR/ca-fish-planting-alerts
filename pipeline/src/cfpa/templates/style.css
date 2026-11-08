@@ -378,6 +378,14 @@ dd .tt-badge { margin-right: var(--space-2); }
 .calendar-subscribe__button:visited { color: var(--status-now-fg); }
 .calendar-subscribe__button:hover { text-decoration: underline; }
 .calendar-subscribe__url { overflow-wrap: anywhere; }
+/* The web push control (DECISIONS 0069), the box's third option, drawn as
+   the calendar buttons are but as a real <button>: it changes a setting in
+   this browser rather than going anywhere. */
+.push-subscribe { border-top: 1px solid var(--border); padding-top: var(--space-3); margin-bottom: var(--space-3); }
+.push-subscribe p { margin: 0 0 var(--space-2); }
+.push-subscribe__button { width: 100%; border: none; font: inherit; text-align: left; cursor: pointer; }
+.push-subscribe__button:hover { text-decoration: underline; }
+.push-subscribe__status:empty { display: none; }
 .gear-label {
   display: inline-block;
   margin: 0 0 var(--space-2);

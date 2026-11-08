@@ -1,0 +1,17 @@
+{
+  "name": "trout-truck-web-push",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Trout Truck's web push service (DECISIONS 0069): one Lambda behind a function URL that stores one water's subscription per browser and sends the pipeline's schedule-change messages.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "web-push": "3.6.7"
+  }
+}

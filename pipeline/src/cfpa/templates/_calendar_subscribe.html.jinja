@@ -46,6 +46,12 @@
     <li><a class="calendar-subscribe__button" href="{{ webcal_url }}" data-ga-event="calendar_subscribe_click" data-ga-placement="{{ cal_placement }}" data-ga-type="webcal">Apple Calendar (iPhone, iPad, Mac): subscribe</a></li>
     <li><a class="calendar-subscribe__button" href="{{ google_url }}" rel="noopener noreferrer" data-ga-event="calendar_subscribe_click" data-ga-placement="{{ cal_placement }}" data-ga-type="google">Google Calendar (any phone or computer): add it</a></li>
   </ul>
+  {#- The third way in, web push (DECISIONS 0069), inside this same box so it
+      never competes with the calendar buttons for the first screen. Only
+      when the build has a push config and the page names its water. -#}
+  {% if push and push_water_id %}
+  {% include "_push_subscribe.html.jinja" %}
+  {% endif %}
   <p class="muted">
     Google Calendar opens in your browser; once added, the calendar shows in
     Google Calendar on your phone too, and Google can take up to a day to show

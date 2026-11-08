@@ -784,8 +784,11 @@ def _render_water(
         place=place,
         schedule=schedule,
         # The calendar box (DECISIONS 0062) and its feed, for a schedule
-        # state's water (DECISIONS 0064); the feed is written below.
+        # state's water (DECISIONS 0064); the feed is written below. The box
+        # also holds the web push control (DECISIONS 0069) when the build has
+        # a push config, under this water's id.
         calendar_feed=ics.has_feed(state),
+        push_water_id=w["id"],
         w_kind=wd["kind"],
         w_verb=wd["verb"],
         plants=plants,

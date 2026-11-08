@@ -1542,3 +1542,92 @@ From the 2026-11-07 freshness audit of every live state.
 - **Known gap.** The run of 2026-11-07 13:22 UTC already recorded a good
   check, so "last read" shows that time, not 2026-10-13. The pages also show
   "last changed the file Tue, 13 Oct 2026", which is the true age.
+
+## 0064 — Calendar feeds on Tennessee water pages, honest about TWRA's three date shapes (2026-11-07)
+
+From the 2026-11-07 visitor-to-alert review
+(`_agent-tools/growth/tt-visitor-to-alert-2026-11-07.md`, outside this
+repo): the other live states' water pages had 22 engaged sessions in 28 days
+and nothing to press. Tennessee now has real future dates (0061, #159, #160:
+689 rows in TWRA's 2027 file), so it goes first.
+
+- **The same box.** A Tennessee water page shows the calendar box of 0062,
+  the same partial after its lede: the Apple Calendar button (`webcal://`),
+  the Google Calendar button (`calendar.google.com/calendar/r?cid=`), the
+  feed's https address and the one-time `.ics`, each with
+  `calendar_subscribe_click` and `link_type` `webcal`, `google` or `ics`.
+  The partial takes the agency's name and its date words as variables that
+  default to California's, so a California page renders byte for byte as
+  before (checked by a build of both). `placement` is `state_water`, as the
+  gear block on these pages already reports, so a report can tell the two
+  page families apart. The privacy page's sentence about the Google link
+  already covers it.
+- **The feed, at `/tn/water/<slug>/feed.ics`.** Built by `cfpa.ics` from the
+  v2 snapshot, with California's header: the same PRODID, `REFRESH-INTERVAL`
+  and `X-PUBLISHED-TTL` of PT12H, and the same escaping. Only `listed`
+  records become events; a date TWRA took off its schedule does not.
+  - A **day** is one all-day event on that day, "<water> stocking scheduled
+    (TWRA)".
+  - A **week** ("week of" a Sunday) is one all-day event spanning TWRA's
+    seven days, "Week of <Sunday>: <water> stocking scheduled (TWRA)". No
+    day inside it is singled out; the description repeats TWRA's rule that
+    the stocking falls within five days after that Sunday.
+  - A **"TBD <month>"** is **no event**. TWRA set no day or week, and a
+    month-long block or a guessed day would render that absence as a date.
+    It is words instead: "TBD in December 2027 per TWRA: no day or week set
+    yet" in the calendar's description and in the nearest dated event's.
+  - **Month letters** ("M, A, M, J, J, A, S") are never events; the
+    calendar's description says TWRA lists the water that way and that the
+    letters are not dates. A water with letters only has a feed with no
+    event and still shows the box, so a subscriber hears when TWRA sets a
+    day.
+  - Two species on one date are one event that names both. UIDs are
+    `<water id>-<start>-<day|week>@ca-fish-planting-alerts.invalid`, pinned
+    by test like California's.
+- **Every event says what it is.** The description credits the Tennessee
+  Wildlife Resources Agency, says the date is scheduled and not confirmed
+  (TWRA's own caveat), says where the data came from at the pages' precision
+  (0061: "from TWRA's published schedule file, downloaded <date>" after a
+  hand load, else "read <date>"), says Trout Truck is independent, and ends
+  with the water page's address, which is also the event's `URL`. No line a
+  person reads calls an event an alert or a notification, or says "stocked"
+  or "planted".
+- **The rule is the state's semantics, not its code.** A `schedule` state
+  other than California gets the box and the feed. Today that is Tennessee
+  alone; Oregon, built behind an off flag (0032), would get one on the day
+  it is turned on, with its Monday-to-Friday weeks as five-day events, since
+  the event takes the agency's own period.
+- **Massachusetts, Michigan and New York wait**, each for its own reason:
+  - Massachusetts and Michigan publish **reports of stockings that
+    happened**. Every date is in the past, so there is nothing to put on a
+    calendar ahead of time; a feed of past days would read as a schedule and
+    is not one. They would need a forward signal that does not exist in the
+    data: at most a feed that adds a day after the agency reports it, which
+    is a notice, not a calendar, and is better served by the app's alerts.
+    That needs its own decision about what a past-only calendar means.
+  - New York publishes a **once-a-year plan in its own words** ("April -
+    third week", "Spring"), which the pipeline keeps as `approximate` with a
+    bounding start and end. An event needs a start and an end a calendar can
+    draw; drawing the bounds would show a precision NYS DEC did not give
+    (0034's rule). It would need a rule for how an approximate period is
+    drawn, if at all, and words that say the span is the site's reading of
+    the plan, not the plan.
+- **Not shared yet.** `cfpa.ics` carries its own copies of the escaping,
+  folding and refresh interval that `site.build_water_ics` has, held equal
+  by test, so the open California water-page pull requests (#146, #148)
+  merge clean; `site.py` switches to the shared helpers after they land.
+  The shared fold also keeps a continuation line within 75 octets (its
+  leading space counted) and never splits a multi-byte character, which
+  `site._ics_fold` does not; California's lines are short, so no feed of
+  hers has hit either.
+- **Overlaps.** #150 (0056) rewrites `_render_water` in `site_states.py`
+  and the top of the state water template; this change adds a kwarg and a
+  feed write in the same function, and the box after the lede, which lands
+  below 0056's answer line. #160 changes only `pipeline/data/states/tn.json`;
+  the feeds are built from whatever that file holds, so no code here depends
+  on it.
+- **Measurement.** 28 days after deploy: `calendar_subscribe_click` with
+  `placement` `state_water` against engaged Tennessee water landings (22 in
+  the 28 days before, with nothing to press), and the share of Google taps,
+  once `link_type` and `placement` are GA4 custom dimensions (owner step in
+  the review).

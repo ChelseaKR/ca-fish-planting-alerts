@@ -14,7 +14,9 @@ touched; neither is ``www.mass.gov`` (403, and "fair use" terms).
 
 1. ``GET /api/download/v1/items/<id>/csv?redirect=false&layers=0``. Hub
    answers 202 ``{"status": "Pending"}`` while it builds the file, or 200
-   ``{"status": "Completed", "resultUrl": ...}``.
+   ``{"status": "Completed", "resultUrl": ...}``. A Completed answer with
+   ``"cacheStatus": "stale"`` means Hub's file is older than the layer; that
+   is a failed check and the file is not read (DECISIONS 0063).
 2. On 202, wait the host's Crawl-delay (61 s) and ask again, at most
    ``MAX_POLLS`` times in all.
 3. ``GET`` the ``resultUrl`` exactly as returned, after checking that its host
@@ -181,6 +183,17 @@ def _status(body: FetchedBody) -> dict[str, object]:
 def _result_url(status: dict[str, object]) -> str | None:
     if status.get("status") != "Completed":
         return None
+    # Hub's own flag that its file is older than the layer (DECISIONS 0063).
+    # On 2026-11-07 Hub answered "stale" for a file built 2026-10-13 02:35 UTC
+    # (150 rows) while the layer said 155 records, last edited 2026-10-13
+    # 17:06 UTC. Reading that file would show old data as current, so it is
+    # a failed check: the last good data is kept and the pages say so.
+    if status.get("cacheStatus") == "stale":
+        raise StateFetchError(
+            "Hub marked its copy of MassWildlife's layer stale (cacheStatus "
+            "'stale'): MassWildlife changed the layer after Hub built the file, "
+            "so the file is not current; not read"
+        )
     url = status.get("resultUrl")
     if not isinstance(url, str):
         raise StateFormatError("Hub said Completed but gave no resultUrl")

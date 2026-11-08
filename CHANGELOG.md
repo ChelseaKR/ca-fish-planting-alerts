@@ -329,6 +329,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Pipeline: Massachusetts no longer calls a stale file a good check
+  (DECISIONS 0063). ArcGIS Hub marks its copy of MassWildlife's layer
+  stale; the copy was built 2026-10-13 (150 rows; the layer has 155). The check now fails,
+  the last good data is kept, and the pages say the check failed.
+
 - Site: a state water page whose latest check failed no longer says
   "Nothing later is on TWRA's schedule right now" when the last good read
   has no later date. It says nothing later was listed when the file was last

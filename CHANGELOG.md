@@ -13,6 +13,16 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Publish: a freshness watchdog job (DECISIONS 0065). After the data commit,
+  `make freshness` reads each live state's committed history and the job
+  goes red when a state's last successful read is older than 7 days (a
+  state module may declare its own allowance; a manual import counts from
+  its download time; a state behind an off flag is not checked). The job
+  summary names the state, its last good read and the age. The data commit
+  and the deploy never wait on it, and it opens no issue. Before, a state
+  whose feed was refused was one warning in a green run: Tennessee's was,
+  for 23 days.
+
 - Site: a California water page has a calendar box right after the status
   badge, with one button for Apple Calendar and one for Google Calendar,
   which is the way in on Android phones (DECISIONS 0062). Before, the only

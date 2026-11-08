@@ -1521,6 +1521,7 @@ From the 2026-11-07 visitor-to-alert review
 - **Not in this change.** Tennessee, Massachusetts, Michigan and New York
   water pages have no calendar feed at all, and county and home pages have
   no subscribe action. Those need their own feeds and their own decision.
+
 ## 0063 — A Massachusetts file that Hub marks stale is a failed check (2026-11-07)
 
 From the 2026-11-07 freshness audit of every live state.
@@ -1542,3 +1543,70 @@ From the 2026-11-07 freshness audit of every live state.
 - **Known gap.** The run of 2026-11-07 13:22 UTC already recorded a good
   check, so "last read" shows that time, not 2026-10-13. The pages also show
   "last changed the file Tue, 13 Oct 2026", which is the true age.
+
+
+## 0065 — A stuck state is a red job on main, not a warning and not an issue (2026-11-07)
+
+From the 2026-11-07 freshness audit
+(`_agent-tools/growth/freshness-audit-2026-11-07.md`, outside this repo).
+
+- **Problem.** tn.gov began refusing the runner's robots.txt request on
+  2026-10-15. For 23 days every publish run kept Tennessee's last good
+  data, printed one `::warning` and finished green, by design (0025: a
+  failing state stops nothing). The daily health check
+  (`publish-health.yml`, since 10-21) did see it: it opened #104 on 10-22
+  and commented on it every day since, sixteen times, and its own run was
+  green every day too, because an unhealthy reading becomes an issue
+  comment, not a failed job. Nobody read the issue. Massachusetts was a
+  second silent case of another kind: Hub served a file it had itself
+  marked stale and the reader counted it a good read; that is fixed at the
+  reader (0063), and this check cannot see it.
+- **Decision.** The publish workflow gets a third job, `freshness`, after
+  the build job. It reads the history files the build just committed
+  (`pipeline/src/cfpa/freshness.py`, `make freshness`) and fails when any
+  live state's last SUCCESSFUL read is older than its allowance. The job's
+  red is the publish run's red on main, which is the signal that gets seen.
+  It opens no issue, and agents must not open one for it.
+- **Its own job, not a step in the build.** A failing step in `build` would
+  stop the data commit and the deploy, so one stuck agency would freeze
+  California and every other state. The `freshness` job `needs: build`,
+  runs whenever the build was not cancelled, and nothing waits on it:
+  `deploy` needs `build` alone, and `alert-on-failure` watches `build` and
+  `deploy` alone. It checks out `main` as it is at that moment, so it reads
+  the files the build pushed, not the tip from before the run. About one
+  billed minute per run on a public repository, so none.
+- **What it measures.** The age of `checks.last_success_at`, never the
+  newest record: Michigan's DNR files a stocking days after it happens, and
+  New York's plan is one spring publication; neither says anything about
+  whether the read still works. Default allowance 7 days, which is fourteen
+  refused reads at two runs a day; a state module may declare its own
+  (`StateSource.max_read_age_days`), and none does today. A manual import
+  (0061, `checks.manual_file`) is a good read as of its `downloaded_at`,
+  read from the file's own JSON so it holds whether or not the import's
+  code has landed; the later of the automated and the manual read counts.
+  A state behind an off flag (Oregon, 0032) is not live and is not checked;
+  naming one on the command line while its flag is off is an error, not a
+  pass. Older than the allowance is stuck; equal is not.
+- **Absence is a failure.** A missing history file, a file for the wrong
+  state, no `checks`, no good read on record, a time that will not parse, a
+  time with no zone, or a time more than an hour later than the job's clock
+  each fail with a line that says which. Zero states to check is a usage
+  error, because it would pass by checking nothing.
+- **Output.** One line per state, the same words in the run log, in the job
+  summary's table (state, last good read and how, age in days, allowance,
+  result) and in the `::error` annotation on a stuck state. Today's:
+  `TN (Tennessee): STUCK: last good read 2026-10-15 13:31Z (automated),
+  23.4 days ago, allowed 7 days; older than allowed`; Michigan,
+  Massachusetts and New York fresh at 0.4 days.
+- **Not part of `make verify`.** The watchdog measures the agencies' feeds,
+  not this code; in `verify` a stuck feed would block every merge, a gate
+  that measures the world. `publish-health.yml` stays as it is: it reads
+  the live site and also covers a run that never happened or never
+  deployed, which this job cannot see. Its issue is not the signal.
+- **What to expect.** Tennessee stays red here until 0061's import lands
+  (its download time becomes the last good read) or tn.gov answers the
+  runner again. Massachusetts has failed its Hub check since the 2026-11-08
+  01:18 run (0063); its last good read is still the false one from
+  2026-11-07 13:22, so it goes red here about 2026-11-14 unless Hub
+  rebuilds its file first. That false read is the known gap: this check
+  cannot see a read that was wrong when it was made.

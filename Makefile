@@ -22,10 +22,10 @@ SEMGREP_VERSION := 1.166.0
 # subdirectory, so nothing lands inside the checkout.
 TMP := $(shell mktemp -d 2>/dev/null || mktemp -d -t cfpa)
 
-.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight import-tn-csv freshness
+.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight import-tn-csv freshness pushlambda pushinfra
 
 # Stage order per CI-CD-STANDARD §1: format, lint, type, test, security.
-verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
+verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight pushlambda
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --summary $(TMP)/greenlight/status
 
 # CQ-09: `uv lock --check` first. `--frozen` installs from uv.lock without
@@ -133,6 +133,22 @@ appstore:
 greenlight:
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --self-test
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --status-file $(TMP)/greenlight/status
+
+# The web push service's own tests (DECISIONS 0069, infra/web-push/lambda):
+# node's built-in runner against the handler with an in-memory store and a
+# stand-in sender, so they need no npm install and no AWS. node is already a
+# requirement of the test stage (the GA4 tag runs under it).
+pushlambda:
+	node --test infra/web-push/lambda/handler.test.mjs infra/web-push/lambda/validate.test.mjs
+
+# The web push Terraform (infra/web-push) parses and is internally
+# consistent. Not part of `verify`: it needs terraform and a provider
+# download. It never plans or applies anything: -backend=false reads no
+# state and touches no account.
+pushinfra:
+	terraform -chdir=infra/web-push init -backend=false -input=false -no-color
+	terraform -chdir=infra/web-push validate -no-color
+	terraform -chdir=infra/web-push fmt -check -recursive
 
 # The freshness watchdog (DECISIONS 0065): every live state's last
 # successful read, from the committed pipeline/data/states/<code>.json, must

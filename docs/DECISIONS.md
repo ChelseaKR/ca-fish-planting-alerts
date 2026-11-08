@@ -1700,3 +1700,155 @@ From the 2026-11-07 freshness audit
   rebuilds its file first. That false read is the known gap: this check
   cannot see a read that was wrong when it was made.
 
+
+## 0069 — A free web push test: one water per browser, on California and Tennessee water pages, for 60 days (2026-11-08)
+
+From the 2026-11-08 idea lane
+(`_agent-tools/growth/idea3-web-push-alerts-2026-11-08.md`, outside this
+repo), its Top 1. Chelsea's explicit yes on 2026-11-08 overrides, for this
+test only, the roadmap's "no server, no push" line (roadmap §10, and 0001's
+"not server push"): the website gets a push subscription store and a sender.
+The apps are unchanged: still local notifications, no APNs, no device token,
+"Data Not Collected". No paid tier is in this change; the paid step is a
+later decision, gated on the read below.
+
+- **What.** The calendar box of a California or Tennessee water page (0062,
+  0064: the pages with a calendar feed) has a third option under its two
+  calendar buttons: "Or get a notification in this browser when CDFW adds,
+  moves or drops a date for Shadow Cliff Lake. One water per browser; free;
+  no account or email address." and a button, **"Alert me about this
+  water"**. Allowing it subscribes the browser to web push for that one
+  water. Massachusetts, Michigan and New York pages get nothing, for the
+  reasons 0064 gives: nothing forward to say.
+- **Where, and why there.** Inside the existing calendar box, after the
+  Apple and Google buttons and before the fine print, not as a box of its
+  own. 0062 moved the calendar box to the status badge so the way to hear
+  about the next week is on a phone's first screen; a second box there would
+  split that screen and compete with the calendar, which is the path that
+  works on every device without a permission prompt. Third in the box, it
+  is seen by the people who read the box and never above the calendar. The
+  button reuses the calendar buttons' style; it is a real `<button>`, since
+  it changes a setting in this browser and goes nowhere.
+- **When a message goes.** After each publish, `cfpa.push` compares the
+  snapshot that was live (fetched before the deploy replaces it) with the
+  one just built, water by water, on exactly the records the water's
+  calendar feed carries: `listed` plants with a `day` or `week` period,
+  this week or later. A new one, a dropped one or a moved one is one message
+  per water; a TBD month, a month letter, a withdrawn record, a past week's
+  correction, a water new to or gone from the snapshot (0017), and a cold
+  start with no previous snapshot are never a message. Push services hold a
+  message three days for an offline browser (TTL), then drop it: a week-old
+  "scheduled" would read wrong.
+- **What a message says.** The pages' own words, never more. New: "Shadow
+  Cliff Lake: scheduled, week of Nov 15" / "CDFW lists Shadow Cliff Lake for
+  planting the week of Sunday, November 15, 2026. Scheduled, not confirmed:
+  CDFW's plans can change." Dropped: "Shadow Cliff Lake: schedule changed" /
+  "CDFW took the week of ... off its planting schedule. CDFW's plans can
+  change." Moved: "CDFW moved Shadow Cliff Lake from the week of ... to the
+  week of ...". Tennessee names TWRA's species and carries TWRA's two
+  sentences from the feed (the five-day rule for a week-of date; "any
+  stocking could be postponed or cancelled"). Never "stocked", never
+  "planted on", never a superlative, and the message never calls itself an
+  alert or a guarantee (`test_push_events.py`). It links the water page
+  with `utm_source=web-push&utm_medium=push`.
+- **The service.** The site stays static. One Lambda behind a function URL,
+  one DynamoDB table and four SSM parameters, in Trout Truck's own AWS
+  member account (trouttruck, 266294231534), written as Terraform under
+  `infra/web-push` with the `allowed_account_ids` guard Lot Code Log's
+  waitlist uses. Not applied by an agent: the owner steps are in
+  `infra/web-push/README.md`. A row per browser, keyed by the SHA-256 of
+  the endpoint, holds the water, the endpoint, its two keys, created_at,
+  last_sent_at (absent until a first send) and expires_at; one row holds
+  the totals. The publish workflow's send step calls the service with a
+  bearer token; the service fans each message out to that water's
+  subscribers with the `web-push` library Family Greenhouse uses, deletes
+  an endpoint that answers 404 or 410, and refreshes expires_at on a
+  success, so DynamoDB's TTL drops a browser nothing could reach for about
+  13 months. The endpoint host must be a browser push service's (ported
+  from Family Greenhouse's `pushEndpoint.ts`); a message's link must be a
+  page of this site, checked by the service and again by the worker.
+- **One water per browser** is the table's key: a second water from the
+  same browser replaces the first (the page says so before the tap and
+  counts it as a switch). A browser that rotates its subscription renews
+  under the old endpoint's water (`pushsubscriptionchange`).
+- **iPhone and iPad.** In a Safari tab there is no Push API; a site must be
+  added to the Home Screen first (iOS 16.4 and later), and before iOS 26 it
+  opens as a web app only with a manifest that says `display: standalone`.
+  So: the build gets a `manifest.webmanifest` (name, display, scope; no
+  start_url, so the page a person adds is the page that opens; nothing
+  more, no icon yet) linked from every head; the page script shows the
+  two-step instruction instead of a button on an iPhone or iPad that is
+  not a web app, and the button inside the web app. 71% of engaged sessions
+  are iOS (the lane's measurement), so how many finish that step is the
+  number this test exists to learn.
+- **Honesty and privacy.** The privacy page gains "Web push notifications":
+  the service's address, what is stored (the endpoint, the two keys, the
+  water, the two timestamps), where (the site's own AWS account, in the
+  United States), that the request carries an IP address the service does
+  not keep (its logs hold a route, a status and counts), what a message
+  is, how to stop (the "Stop these notifications" control on the page, or
+  the browser's own setting; a dead endpoint is deleted on its next
+  failure), the 13-month expiry, and that the button press is a GA4
+  `calendar_subscribe_click` of `link_type` `push`. The page never says
+  "no tracking". With no push config, the privacy page is as before.
+- **Named for the secret scan.** The public key sits in every water page and
+  the worker, and the publish job runs `gitleaks dir site` before it deploys.
+  An attribute or variable with "key" or "api" in its name ("vapid" counts),
+  next to that value, is a finding and fails the run, so they are
+  `data-push-public` and `SERVER_PUBLIC` (`test_site_push.py` scans a build,
+  with a control that the old name fails).
+- **Off by default, byte for byte.** `PUSH_API_URL` and
+  `PUSH_VAPID_PUBLIC_KEY`, both public, both repository variables, turn it
+  on together; one without the other refuses the run like a malformed GA4
+  id. Unset, the build writes no script, no worker, no manifest and no
+  control. Turning the test off is deleting the two variables.
+- **Measurement.** GA4: `calendar_subscribe_click` with `link_type` `push`
+  (a tap, not a subscription; the button has no host, so `link_host` is left
+  out rather than sent empty). The service's totals: subscribes, switches,
+  renewals, unsubscribes, send runs, sends, failures, dead endpoints
+  removed, and the live subscription count; `tools/web-push/counts.sh`
+  prints them. Visits from a message land with `utm_medium=push`.
+- **The 60-day read**, on the day the control has been live 60 days: (1)
+  live subscriptions (the count, not the sign-ups); (2) subscribes per 100
+  engaged sessions = subscribes / GA4 engaged sessions on California and
+  Tennessee water pages over the same 60 days x 100; (3) whether any iOS
+  completion happened at all (`live_apple`, the subscriptions on
+  `web.push.apple.com`; a Mac's Safari counts there too, so it is a ceiling). **Kill rule:** under 25 live
+  subscriptions, or under 1 subscribe per 100 engaged sessions, at day 60
+  means the control, the worker, the manifest and the privacy section go
+  (delete the two variables, then remove the code and `terraform destroy`).
+  **Pass** is 25 or more live and 1% or more; only then is a paid step
+  (the lane's 7.1: one $9.99/yr plan on a Payment Link, first water free)
+  put to Chelsea as its own decision. If a paid step ever follows, under 10
+  paid in its first 90 days stops selling and keeps the free water.
+- **Known limits.** A message is sent once: if the send step fails, that
+  run's changes are not retried, and the step's error is the only sign (the
+  deploy never waits on it). The function URL has no rate limit, so a script
+  could inflate the subscribe count with made-up endpoint paths; a live count
+  that looks wrong should be checked against GA4's taps before it passes the
+  kill rule. A failed send to one browser is counted, not retried.
+- **The app's story.** 0009's reason for the paid unlock was that a website
+  cannot push to a phone. With this control on, it can, for one water, after
+  a Home Screen install. The lane rates that neutral for 4.3(a) and a small
+  negative for 4.2 while the appeal is open. Nothing here turns it on: when
+  to set the two variables is Chelsea's call.
+- **Not in this change.** No paid tier. No push for Massachusetts, Michigan
+  or New York. No notification icon or Home Screen icon (the design
+  identity work, #151, owns the mark). No support-page FAQ entry. No change
+  to the apps or to the App Store copy, which is frozen during the appeal.
+  No server-side knowledge of which waters exist: a subscription to an id
+  that never changes simply never fires. No second water per browser.
+- **Overlaps with the open date-gated pull requests.** `base.html.jinja`
+  (#144 edits the header, #151 adds a favicon line; this adds a manifest
+  line near the top of head), `privacy.html.jinja` (#144 and #146 edit
+  other paragraphs; this adds one self-contained section and two guarded
+  clauses), `_ga4.html.jinja` (#146 restructures the same click handler
+  into a `params` object as this does, and adds a third event; the merge
+  will need a hand), `style.css` (#148, #151; this appends to the calendar
+  section), `site.py` (#144, #146, #148; this adds a parameter, a context
+  key and one function), `site_states.py` (#150 rewrites `_render_water`;
+  this adds one kwarg to it), `water.html.jinja` and
+  `_water_status.html.jinja` are untouched here. The new files
+  (`cfpa/push.py`, `_push_subscribe.html.jinja`, `push.js`,
+  `push-worker.js.jinja`, `manifest.webmanifest.jinja`, `infra/web-push`,
+  `tools/web-push`) overlap nothing.

@@ -34,7 +34,10 @@
       disclosed affiliate links to Amazon, described in the privacy policy.</li>
   <li>In the EEA, the UK and Switzerland, analytics cookies are denied by
       default, so Google Analytics sets no cookie there.</li>
-  <li>No account, no email address, no sign-up, anywhere on this site.</li>
+  <li>No account, no email address, no sign-up, anywhere on this site{% if push %}, apart from
+      the optional web push notification for one water
+      (<a href="{{ root }}privacy/#push">privacy policy</a>), which asks for
+      neither{% endif %}.</li>
   <li>Calendar subscriptions (.ics) are plain files with no analytics; your
       calendar app fetches them directly from this site on whatever schedule
       it chooses. This site does not know who has subscribed.</li>
@@ -52,14 +55,23 @@
 <p>This is a plain static site. Specifically:</p>
 <ul>
   <li>No cookies are set by this site.</li>
-  <li>There is no analytics, tracking or third-party script. The one script
+  <li>There is no analytics, tracking or third-party script. {% if push %}The scripts
+      are the home page's &ldquo;Sort by closest to me&rdquo; button and a water
+      page's web push control, and neither does anything until you press it (see
+      <a href="{{ root }}privacy/#location">Your location</a> and
+      <a href="{{ root }}privacy/#push">Web push notifications</a>).{% else %}The one script
       is the home page's &ldquo;Sort by closest to me&rdquo; button, which does
       nothing until you press it (see
-      <a href="{{ root }}privacy/#location">Your location</a>).</li>
+      <a href="{{ root }}privacy/#location">Your location</a>).{% endif %}</li>
   <li>No request made by a page on this site contacts any server other than
-      the one serving the page itself. Nothing you do here leaves your
-      browser.</li>
-  <li>No account, no email address, no sign-up, anywhere on this site.</li>
+      the one serving the page itself{% if push %}, except the web push control's
+      call to this site's notification service when you press it. Nothing else
+      you do here leaves your browser.{% else %}. Nothing you do here leaves your
+      browser.{% endif %}</li>
+  <li>No account, no email address, no sign-up, anywhere on this site{% if push %}, apart from
+      the optional web push notification for one water
+      (<a href="{{ root }}privacy/#push">privacy policy</a>), which asks for
+      neither{% endif %}.</li>
   <li>Calendar subscriptions (.ics) are plain files; your calendar app
       fetches them directly from this site on whatever schedule it chooses.
       This site does not know who has subscribed.</li>

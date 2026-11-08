@@ -21,3 +21,13 @@ tools/site-checks/node_modules/
 
 # Pinned third-party scanners built by `make greenlight` (scripts/check_greenlight.py).
 /build/
+
+# infra/web-push (DECISIONS 0069): the Lambda's npm install (package-lock.json
+# IS committed), Terraform's provider cache, its local state (never committed:
+# it names the account and the table) and the zip it builds.
+infra/web-push/lambda/node_modules/
+infra/web-push/.terraform/
+infra/web-push/*.tfstate
+infra/web-push/*.tfstate.*
+infra/web-push/*.tfvars
+infra/web-push/*.zip

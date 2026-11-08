@@ -1488,6 +1488,7 @@ From the 2026-11-07 visitor-to-alert review
 - **Not in this change.** Tennessee, Massachusetts, Michigan and New York
   water pages have no calendar feed at all, and county and home pages have
   no subscribe action. Those need their own feeds and their own decision.
+
 ## 0063 — A Massachusetts file that Hub marks stale is a failed check (2026-11-07)
 
 From the 2026-11-07 freshness audit of every live state.
@@ -1571,5 +1572,8 @@ From the 2026-11-07 freshness audit
   deployed, which this job cannot see. Its issue is not the signal.
 - **What to expect.** Tennessee stays red here until 0061's import lands
   (its download time becomes the last good read) or tn.gov answers the
-  runner again. Massachusetts begins failing its Hub check once 0063 lands
-  and goes red here about seven days later unless Hub rebuilds its file.
+  runner again. Massachusetts has failed its Hub check since the 2026-11-08
+  01:18 run (0063); its last good read is still the false one from
+  2026-11-07 13:22, so it goes red here about 2026-11-14 unless Hub
+  rebuilds its file first. That false read is the known gap: this check
+  cannot see a read that was wrong when it was made.

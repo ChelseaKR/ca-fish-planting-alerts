@@ -96,8 +96,53 @@ class StateRecord:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
+class ManualFile:
+    """The agency file a person downloaded and loaded by hand
+    (``cfpa.import_tn_csv``, DECISIONS 0061), when the newest data came from
+    one. ``downloaded_at`` is also ``Checks.last_success_at``."""
+
+    source: str  # what the file is, for example "TWRA's downloadable CSV"
+    source_url: str  # the agency page it was downloaded from
+    file_name: str
+    sha256: str
+    rows: int
+    downloaded_at: dt.datetime
+    imported_at: dt.datetime
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "source": self.source,
+            "source_url": self.source_url,
+            "file_name": self.file_name,
+            "sha256": self.sha256,
+            "rows": self.rows,
+            "downloaded_at": _iso_z(self.downloaded_at),
+            "imported_at": _iso_z(self.imported_at),
+        }
+
+    @classmethod
+    def from_json(cls, d: dict[str, Any]) -> ManualFile:
+        return cls(
+            source=d["source"],
+            source_url=d["source_url"],
+            file_name=d["file_name"],
+            sha256=d["sha256"],
+            rows=int(d["rows"]),
+            downloaded_at=_parse_dt(d["downloaded_at"]),
+            imported_at=_parse_dt(d["imported_at"]),
+        )
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
 class Checks:
-    """How the last attempts went. Not data; written on failure too."""
+    """How the last attempts went. Not data; written on failure too.
+
+    ``last_attempt_*`` and ``last_error`` are always the pipeline's own
+    automated reads. ``last_success_at`` is the newest good data, which a
+    manual import (``manual_file``) can supply: a failed automated read keeps
+    both, so it never relabels the imported data, and the next good
+    automated read clears ``manual_file``.
+    """
 
     last_attempt_at: dt.datetime | None = None
     last_success_at: dt.datetime | None = None
@@ -106,6 +151,12 @@ class Checks:
     content_sha256: str | None = None
     last_modified: str | None = None
     etag: str | None = None
+    manual_file: ManualFile | None = None
+
+    @property
+    def read_method(self) -> str:
+        """How the newest good data was read: "manual" or "automated"."""
+        return "manual" if self.manual_file is not None else "automated"
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -120,6 +171,11 @@ class Checks:
             "content_sha256": self.content_sha256,
             "last_modified": self.last_modified,
             **({"etag": self.etag} if self.etag else {}),
+            **(
+                {"read_method": "manual", "manual_file": self.manual_file.to_json()}
+                if self.manual_file is not None
+                else {}
+            ),
         }
 
     @classmethod
@@ -136,6 +192,9 @@ class Checks:
             content_sha256=d.get("content_sha256"),
             last_modified=d.get("last_modified"),
             etag=d.get("etag"),
+            manual_file=ManualFile.from_json(d["manual_file"])
+            if d.get("manual_file")
+            else None,
         )
 
 
@@ -386,13 +445,19 @@ def withdraw_unseen(history: StateHistory, source: StateSource) -> StateHistory:
 
 def record_unchanged(history: StateHistory, *, checked_at: dt.datetime) -> StateHistory:
     """The server said the file has not changed (304): the data on file is
-    current as of now. Nothing but the checks changes."""
+    current as of now. Nothing but the checks changes.
+
+    After a manual import the validators are cleared, so a 304 should not
+    happen; if one does, it describes the file the validators came from, not
+    the imported one, so the import's date is kept as the data's date."""
     return dataclasses.replace(
         history,
         checks=dataclasses.replace(
             history.checks,
             last_attempt_at=checked_at,
-            last_success_at=checked_at,
+            last_success_at=checked_at
+            if history.checks.manual_file is None
+            else history.checks.last_success_at,
             last_attempt_ok=True,
             last_error=None,
         ),

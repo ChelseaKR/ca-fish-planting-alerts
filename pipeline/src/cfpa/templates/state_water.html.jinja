@@ -4,7 +4,7 @@
 <h1>{{ head }} ({{ place }})</h1>
 <p class="lede">
   {% if schedule %}
-  {{ water.name }} is on the {{ state.agency.name }}'s stocking {{ w_kind }}.{% if next_label %} Next {{ w_verb }}: {{ next_label }}.{% endif %}{% if last_label %} Most recently {{ w_verb }}: {{ last_label }}.{% endif %}{% if not next_label %}{% if attempt_failed %} Nothing later was on {{ state.agency.short_name }}'s {{ w_kind }} when it was last read, on {{ fetched_date }}. The checks since then failed, so {{ state.agency.short_name }} may have listed later dates that this page does not have.{% else %} Nothing later is on {{ state.agency.short_name }}'s {{ w_kind }} right now. That means no date is listed, not that there are no fish.{% endif %}{% endif %}
+  {{ water.name }} is on the {{ state.agency.name }}'s stocking {{ w_kind }}.{% if next_label %} Next {{ w_verb }}: {{ next_label }}.{% endif %}{% if last_label %} Most recently {{ w_verb }}: {{ last_label }}.{% endif %}{% if not next_label %}{% if manual %} Nothing later was on {{ state.agency.short_name }}'s published {{ w_kind }} file, downloaded {{ fetched_date }}. {{ state.agency.short_name }} may have listed later dates since then.{% elif attempt_failed %} Nothing later was on {{ state.agency.short_name }}'s {{ w_kind }} when it was last read, on {{ fetched_date }}. The checks since then failed, so {{ state.agency.short_name }} may have listed later dates that this page does not have.{% else %} Nothing later is on {{ state.agency.short_name }}'s {{ w_kind }} right now. That means no date is listed, not that there are no fish.{% endif %}{% endif %}
 
   {% else %}
   {{ water.name }} is in the {{ state.agency.name }}'s stocking report.{% if last_label %} The newest stocking on record: {{ last_label }}.{% endif %}
@@ -15,7 +15,7 @@
 <p><strong>{{ state.recency_note }}</strong></p>
 {% endif %}
 <p class="muted">
-  {{ state.agency.short_name }}'s data was last read {{ fetched_label }}.{% if attempt_failed %} <strong>The check on {{ attempt_label }} failed, so this is the data from the last good read.</strong>{% endif %}
+  {% if manual %}{{ manual_sentence }}{% else %}{{ state.agency.short_name }}'s data was last read {{ fetched_label }}.{% endif %}{% if attempt_failed %} <strong>The check on {{ attempt_label }} failed, so this is the data from the last good read.</strong>{% endif %}
 
   {% if schedule %}Every date is {{ state.agency.short_name }}'s plan, not a confirmed stocking, shown at the precision {{ state.agency.short_name }} gives it{% if w_kind == "plan" %}, in {{ state.agency.short_name }}'s own words{% endif %}.{% endif %}
 </p>

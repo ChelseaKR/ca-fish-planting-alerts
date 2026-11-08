@@ -18,7 +18,7 @@
 </p>
 {% endif %}
 <p class="muted">
-  {{ state.agency.short_name }}'s data was last read {{ fetched_label }}{% if state.source.last_modified %}; {{ state.agency.short_name }} last changed the file {{ state.source.last_modified }}{% endif %}.{% if attempt_failed %} <strong>The check on {{ attempt_label }} failed, so this is the data from the last good read.</strong>{% endif %}{% if range_label %} The dates in it run from {{ range_label }}.{% endif %}
+  {% if manual %}{{ manual_sentence }}{% else %}{{ state.agency.short_name }}'s data was last read {{ fetched_label }}{% if state.source.last_modified %}; {{ state.agency.short_name }} last changed the file {{ state.source.last_modified }}{% endif %}.{% endif %}{% if attempt_failed %} <strong>The check on {{ attempt_label }} failed, so this is the data from the last good read.</strong>{% endif %}{% if range_label %} The dates in it run from {{ range_label }}.{% endif %}
 
 </p>
 {% if state.recency_note %}
@@ -39,7 +39,9 @@
   </tbody>
 </table>
 {% else %}
-{% if attempt_failed %}
+{% if manual %}
+<p>{% if schedule %}No {{ state.name }} water has a day or week for the {{ state.current_week.label }} in {{ state.agency.short_name }}'s {{ w_kind }} file downloaded {{ fetched_date }}.{% else %}{{ state.agency.short_name }}'s file downloaded {{ fetched_date }} has no stocking dated the {{ state.current_week.label }}.{% endif %} {{ state.agency.short_name }} may have changed it since then.</p>
+{% elif attempt_failed %}
 <p>{% if schedule %}No {{ state.name }} water has a day or week for the {{ state.current_week.label }} in the file last read {{ fetched_label }}.{% else %}The file last read {{ fetched_label }} has no stocking dated the {{ state.current_week.label }}.{% endif %} The latest check failed, so {{ state.agency.short_name }}'s current {{ "schedule" if schedule else "report" }} could not be read and may list this week.</p>
 {% else %}
 <p>{% if schedule %}No {{ state.name }} water has a day or week on {{ state.agency.short_name }}'s {{ w_kind }} for the {{ state.current_week.label }}.{% else %}{{ state.agency.short_name }}'s data has no stocking dated the {{ state.current_week.label }}.{% endif %} That is what the agency's own data says, not a failed read.</p>
@@ -64,7 +66,9 @@
   </tbody>
 </table>
 {% else %}
-{% if attempt_failed %}
+{% if manual %}
+<p>{% if schedule %}{{ state.agency.short_name }}'s {{ w_kind }} file downloaded {{ fetched_date }} has nothing else in the next {{ upcoming_days }} days.{% else %}{{ state.agency.short_name }}'s file downloaded {{ fetched_date }} has no stocking in the last {{ recent_days }} days.{% endif %} {{ state.agency.short_name }} may have changed it since then.</p>
+{% elif attempt_failed %}
 <p>{% if schedule %}The file last read {{ fetched_label }} has nothing else in the next {{ upcoming_days }} days.{% else %}The file last read {{ fetched_label }} has no stocking in the last {{ recent_days }} days.{% endif %} The latest check failed, so this may be out of date.</p>
 {% else %}
 <p>{% if schedule %}Nothing else is on the {{ w_kind }} in the next {{ upcoming_days }} days.{% else %}No stocking is on record in the last {{ recent_days }} days.{% endif %}</p>

@@ -20,6 +20,12 @@ This repository was republished with a new history on 2026-09-18
   which Android does not open without an extra app. The privacy page says
   how the Google Calendar link works.
 
+- Tennessee can be loaded from TWRA's downloadable CSV by hand,
+  `make import-tn-csv CSV=...`, while tn.gov refuses the automated read
+  (DECISIONS 0061). The header must match TWRA's columns exactly. Pages then
+  say the data is from TWRA's published schedule file and its download
+  date, and a later failed automated check doesn't relabel it.
+
 - Android: About has a "Write to the developer" row that opens your email
   app addressed to chelsea@chelseakr.com, with the app version in the
   subject (DECISIONS 0057). Alerts keep their one button, "Mute this water".

@@ -22,7 +22,7 @@ SEMGREP_VERSION := 1.166.0
 # subdirectory, so nothing lands inside the checkout.
 TMP := $(shell mktemp -d 2>/dev/null || mktemp -d -t cfpa)
 
-.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
+.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight import-tn-csv
 
 # Stage order per CI-CD-STANDARD §1: format, lint, type, test, security.
 verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
@@ -46,6 +46,15 @@ lint:
 typecheck:
 	cd $(PIPELINE) && $(UV_RUN) mypy --strict src
 	cd $(PIPELINE) && $(UV_RUN) mypy --strict ../scripts
+
+# Tennessee by hand (DECISIONS 0061): load TWRA's downloadable CSV into
+# pipeline/data/states/tn.json while tn.gov refuses the automated read.
+#   make import-tn-csv CSV="$HOME/Downloads/Trout Fishing and Stockings in Tennessee.csv"
+# DOWNLOADED_AT=2026-11-07 (or 2026-11-07T11:23-08:00) overrides the file's
+# modification time as the download time.
+import-tn-csv:
+	test -n "$(CSV)"
+	$(UV_RUN) --project $(PIPELINE) python -I -m cfpa.import_tn_csv "$(CSV)" --states-dir $(PIPELINE)/data/states $(if $(DOWNLOADED_AT),--downloaded-at "$(DOWNLOADED_AT)")
 
 # Branch coverage floor lives in pipeline/pyproject.toml ([tool.coverage.report]).
 test:

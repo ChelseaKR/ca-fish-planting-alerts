@@ -22,7 +22,7 @@ SEMGREP_VERSION := 1.166.0
 # subdirectory, so nothing lands inside the checkout.
 TMP := $(shell mktemp -d 2>/dev/null || mktemp -d -t cfpa)
 
-.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
+.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight freshness
 
 # Stage order per CI-CD-STANDARD §1: format, lint, type, test, security.
 verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
@@ -124,3 +124,12 @@ appstore:
 greenlight:
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --self-test
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --status-file $(TMP)/greenlight/status
+
+# The freshness watchdog (DECISIONS 0065): every live state's last
+# successful read, from the committed pipeline/data/states/<code>.json, must
+# be younger than its allowance (7 days unless the state's module says
+# otherwise). Not part of `verify`: it measures the agencies' feeds, not this
+# code, and a stuck feed must never block a merge. publish.yml runs it as
+# its own job after the data commit, so a stuck state is a red job on main.
+freshness:
+	cd $(PIPELINE) && $(UV_RUN) python -m cfpa.freshness

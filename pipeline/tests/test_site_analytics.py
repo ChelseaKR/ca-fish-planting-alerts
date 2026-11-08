@@ -251,12 +251,48 @@ def test_no_analytics_detector_is_not_vacuous(no_id_pages, id_pages):
 
 def test_no_id_copy_still_says_the_site_collects_nothing(no_id_pages):
     privacy = _text(no_id_pages["privacy/index.html"])
-    assert "no analytics, no advertising, no tracking" in privacy
+    assert "no analytics, no advertising and no third-party script" in privacy
     assert "no cookies are set." in privacy
     # The script that exists is named, not denied (DECISIONS 0024).
     assert "no javascript runs" not in privacy
     assert "the one script is the home page" in privacy
     assert "literally nothing is collected" in _text(no_id_pages["about/index.html"])
+
+
+# ---- "no tracking" is never said for this product, with or without the tag
+
+# The claim alone or inside a list: "no tracking", "no analytics, tracking or
+# third-party script", "neither app has analytics, tracking, advertising".
+_CLAIMS_NO_TRACKING = re.compile(r"\b(?:no|neither)\b[^.]*\btracking\b")
+
+
+@pytest.mark.parametrize("fixture_name", ["no_id_pages", "id_pages"])
+@pytest.mark.parametrize("page", ["privacy/index.html", "about/index.html"])
+def test_no_page_says_no_tracking(
+    request: pytest.FixtureRequest, fixture_name: str, page: str
+):
+    text = _text(request.getfixturevalue(fixture_name)[page])
+    assert "no tracking" not in text
+    assert _CLAIMS_NO_TRACKING.search(text) is None
+
+
+@pytest.mark.parametrize("fixture_name", ["no_id_pages", "id_pages"])
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "No tracking.",
+        "No account, no analytics, no\n  tracking.",
+        "There is no analytics, tracking or third-party script.",
+        "Neither app has analytics, tracking, advertising or crash reporting.",
+    ],
+)
+def test_no_tracking_detector_is_not_vacuous(
+    request: pytest.FixtureRequest, fixture_name: str, claim: str
+):
+    original = request.getfixturevalue(fixture_name)["privacy/index.html"]
+    sabotaged = original.replace("</h1>", f"</h1><p>{claim}</p>", 1)
+    assert sabotaged != original  # the sabotage landed
+    assert _CLAIMS_NO_TRACKING.search(_text(sabotaged)) is not None
 
 
 # ---- with an ID: the tag on every page, behind the guard
@@ -296,7 +332,7 @@ def test_id_build_copy_describes_ga4_and_keeps_the_app_at_data_not_collected(id_
         "the eea, the uk and switzerland",
         "google signals and ad personalization are turned off",
         "14 months",
-        "collect no data: no analytics, no tracking, no advertising and no account",
+        "collect no data: no analytics, no advertising and no account",
         "app store privacy label: data not collected",
     ):
         assert phrase in privacy, phrase

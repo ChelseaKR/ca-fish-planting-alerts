@@ -6,10 +6,11 @@ test, then to production. Steps marked **Owner** need Chelsea's Google
 account, ID, device or legal attestation; no agent can do them. The app
 itself is described in `android/README.md` and `docs/DECISIONS.md` 0022.
 
-The store listing text, Data safety answers, content rating answers and the
-tester plan are drafted outside the repository, in the Android listing pack
-the owner was handed with this change. Nothing here posts, submits or
-changes a Play account.
+The store listing text, the Data safety answers and the content rating
+answers are in `docs/PLAY-LISTING.md`, derived from the code. The tester
+plan and the owner's dated click-path checklist live outside the repository
+(`_agent-tools/growth/tt-android-release-checklist-2026-11-08.md` in the
+portfolio). Nothing here posts, submits or changes a Play account.
 
 ## What the repository does for you
 
@@ -43,8 +44,29 @@ account may be asked for "a valid government ID and a credit card, both
 under your legal name." A new personal account must also verify access to an
 Android device through the Play Console mobile app.
 
-The account was created after November 13, 2023, so the closed-test rule in
-step 9 applies.
+The account's type (personal or organization) and creation date are not
+recorded anywhere in this repository or in the portfolio's notes. Read them
+in Play Console under Developer account, About you ("Account type (read
+only)"). What depends on the answer:
+
+- **Personal, created after November 13, 2023:** the closed-test rule in
+  step 9 applies. Google displays "your legal name, your country (as per
+  your legal address), and developer email address on Google Play", and "If
+  you decide to monetize on Google Play then Google will display your full
+  address"
+  ([Required information](https://support.google.com/googleplay/android-developer/answer/13628312),
+  read 2026-11-07).
+- **Organization:** needs a D-U-N-S number, and Google displays "your legal
+  name, legal address, developer email address, and developer phone number
+  on Google Play" (same page) whether or not the app sells anything. That
+  would change the reasoning in 0044, which rests on the address staying
+  private while nothing is sold. Google's closed-test page names only
+  personal accounts.
+
+Google's [account types page](https://support.google.com/googleplay/android-developer/answer/10840893)
+says "Personal and organization accounts have access to the same
+functionality" and "You will be able to change your account type if your
+circumstances change."
 
 ### 2. Nothing to sell: no payments profile step
 
@@ -154,11 +176,12 @@ purchase, a price or a Restore purchases button, an alert can be received
 added and lists favorites from more than one state.
 
 Internal testing is separate from the closed test. Google's Data safety page
-says apps on internal testing tracks are exempt from the form; plan to
-finish the form before the closed test. Complete the app setup tasks in the Play Console dashboard
-now: store listing (text in `docs/PLAY-LISTING.md`), Data safety, content rating, target audience, ads
-declaration, app access (no login), government apps declaration (the app is
-independent; cite CDFW as the data source).
+says apps active only on internal testing tracks "do not need to complete
+the Data safety form"; closed, open and production tracks do. Complete the
+app setup tasks in the Play Console dashboard now, all from
+`docs/PLAY-LISTING.md`: the store listing (sections 1 and 2), store
+settings (3), graphics (4), the App content declarations and content rating
+(5), and Data safety (6).
 
 ### 8. Owner: promote to Closed testing
 
@@ -188,8 +211,12 @@ opted-in testers so a few dropouts do not reset the plan. Google then
 reviews the application: "Review usually takes seven days or less, but can
 occasionally take longer."
 
-Google's page, as read on 2026-10-20, says 12; older guidance said 20. Read
-the page again on the day you apply.
+Google's page said 12 testers and 14 days on 2026-10-20, 2026-11-03 and
+2026-11-07; older guidance said 20. Its FAQ adds that "the 14 days must be
+consecutive to count toward the minimum requirement of 12 continuous
+opted-in testers", and that "Testers who opt in, test for fewer than 14
+days, and then opt out do not count toward the requirement." Read the page
+again on the day you apply.
 
 ### 10. Owner: apply for production access
 
@@ -207,12 +234,15 @@ the remaining declarations, and send it for review.
 
 Bump `ANDROID_VERSION_CODE` (the workflow input), keep the version name in
 step with `CHANGELOG.md`, refresh the bundled snapshot, run the workflow and
-upload the new bundle to the track. `targetSdk` is 36 today; Google's target
-API page
-(https://developer.android.com/google/play/requirements/target-sdk) says that
-starting August 31, 2026 new apps and updates must target Android 16 (API
-level 36) or higher. Plan a bump to the next level before the next August
-deadline.
+upload the new bundle to the track. `targetSdk` is 36 today (checked in the
+merged manifest of a debug build on 2026-11-07). Google's target API page
+(https://developer.android.com/google/play/requirements/target-sdk, read
+2026-11-07) says "Starting August 31 2026: New apps and app updates must
+target Android 16 (API level 36) or higher to be submitted to Google Play",
+and the extension it offered ran "to November 1, 2026", which has passed.
+So the first upload meets the rule with no change. Google raises the level
+once a year with an August 31 deadline; read the page before each release
+and plan the bump to the next level in the spring.
 
 ## Local build
 
@@ -228,12 +258,30 @@ From `android/` with JDK 21 and the Android SDK (`ANDROID_HOME`):
 ## Known gaps to close before production
 
 - The privacy page (`https://trouttruck.com/privacy/`) covers the Android
-  app (checked live 2026-10-24: "Covers this website and the Trout Truck
-  apps for iPhone and Android"). Re-check it just before the Data safety
-  form is submitted.
+  app (checked live 2026-11-07, "Last updated 2026-11-04": "Covers this
+  website and the Trout Truck apps for iPhone and Android"; it says the
+  Android app is free with no purchases and names Google Play In-App Review
+  as its one Google library). Re-check it just before the Data safety form
+  is submitted.
 - The app fetches its snapshot from `chelseakr.github.io`
   (`SnapshotEndpoint.URL`). The site has moved to `trouttruck.com`, and the
   old address still serves the file; keep it serving until a later Android
   release changes the URL.
-- Screenshots, the 512 px icon and the 1024 x 500 feature graphic do not
-  exist yet.
+- The 512 px icon and the 1024 x 500 feature graphic (made 2026-10-29) and
+  eight 1080 x 1920 phone screenshots (captured 2026-11-04 from the free
+  debug build on an emulator) exist outside the repository; paths and
+  caveats are in `docs/PLAY-LISTING.md` section 4. The repository has no
+  script that generates Android screenshots (only iOS has one), so a
+  refresh is a manual emulator session.
+- The bundled snapshot (`android/app/src/main/assets/snapshot.json`) was
+  generated 2026-10-29T13:24Z. Re-run `android/scripts/sync-bundled-snapshot.sh`
+  in a reviewed change before the release build.
+- The four `ANDROID_UPLOAD_*` repository secrets were not set as of
+  2026-11-07 (`gh secret list` showed only `DOMAIN_SITE_DEPLOY_KEY`), so the
+  release workflow would stop at its first step.
+- Permissions in the merged manifest (debug build, 2026-11-07): `INTERNET`,
+  `POST_NOTIFICATIONS`, and from WorkManager `ACCESS_NETWORK_STATE`,
+  `FOREGROUND_SERVICE`, `RECEIVE_BOOT_COMPLETED` and `WAKE_LOCK`, plus
+  AndroidX's own `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. No `AD_ID` and
+  no location permission. If Play Console asks about any of them, that is
+  the list.

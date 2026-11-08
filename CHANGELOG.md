@@ -23,6 +23,15 @@ This repository was republished with a new history on 2026-09-18
   whose feed was refused was one warning in a green run: Tennessee's was,
   for 23 days.
 
+- Site: /llms.txt now lists the other states' hub pages with each agency's
+  last read time and whether the latest check failed, every California
+  county page with its Atom feed, the calendar-feed address pattern, the
+  time California's schedule was read in this build, and a short note on how
+  to read a page's status words. Before, an assistant reading the file found
+  the sources and the Atom feeds but no state or county page, no calendar
+  feed and no read time. The pages and robots.txt are unchanged. GA4 shows
+  AI assistants (all chatgpt.com) as the site's largest engaged channel.
+
 - Site: a Tennessee water page has the same calendar box as a California
   one and a calendar feed of its own, `/tn/water/<slug>/feed.ics`
   (DECISIONS 0064). A TWRA day is a one-day all-day event, a "week of"

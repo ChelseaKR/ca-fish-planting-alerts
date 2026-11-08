@@ -27,6 +27,7 @@ from . import history as history_mod
 from . import legacy as legacy_mod
 from . import locations as locations_mod
 from . import parse as parse_mod
+from . import push as push_mod
 from . import site as site_mod
 from . import snapshot as snapshot_mod
 from . import snapshot_v2 as snapshot_v2_mod
@@ -163,6 +164,7 @@ def run(
     v2_schema_path: Path = DEFAULT_V2_SCHEMA_PATH,
     locations_path: Path | None = DEFAULT_LOCATIONS_PATH,
     source_log_path: Path | None = None,
+    push: push_mod.PushConfig | None = None,
 ) -> dict[str, Any]:
     """Execute one full run. Returns the built snapshot dict. Raises on any
     of: fetch failure, stale page, wrong Time Period view, parse error,
@@ -191,6 +193,10 @@ def run(
     is never committed): this run's content hash is added to the log and the
     days it has gone unchanged are reported. It only warns, never refuses, and
     None (the default) leaves the log alone.
+
+    ``push`` (``cfpa.push.push_config_or_none``, DECISIONS 0069) adds the web
+    push control to the schedule states' water pages and the files it needs;
+    None (the default) builds the site without any of it.
     """
     cname = site_mod.custom_domain(base_url)
     if legacy_site_out is not None and (cname is None or not write_site):
@@ -345,6 +351,7 @@ def run(
             # The /gear/ holiday section's date (DECISIONS 0043). None in
             # production: build_site then uses this run's generated_at.
             build_date=run_today,
+            push=push,
         )
         if legacy_site_out is not None:
             legacy_mod.build_legacy_site(
@@ -452,6 +459,19 @@ def main(argv: list[str] | None = None) -> int:
         help="contact address shown on the support and privacy pages (empty = unset)",
     )
     parser.add_argument(
+        "--push-api-url",
+        default=None,
+        help="the web push service's URL (the PUSH_API_URL repository variable, "
+        "DECISIONS 0069); set together with --push-vapid-public-key, or both "
+        "empty = no web push control on any page",
+    )
+    parser.add_argument(
+        "--push-vapid-public-key",
+        default=None,
+        help="the VAPID public key browsers subscribe with (the "
+        "PUSH_VAPID_PUBLIC_KEY repository variable); public by design",
+    )
+    parser.add_argument(
         "--no-site",
         action="store_true",
         help="skip site generation (schema/history only)",
@@ -482,6 +502,11 @@ def main(argv: list[str] | None = None) -> int:
         # The APP_STORE_LIVE switch, checked the same way: a value that is
         # neither true nor false refuses the run instead of being guessed.
         app_store_live = site_mod.app_store_live_or_false(args.app_store_live)
+        # The web push settings (DECISIONS 0069), checked the same way: a
+        # button that could not subscribe anyone must never be built.
+        push = push_mod.push_config_or_none(
+            args.push_api_url, args.push_vapid_public_key
+        )
     except ValueError as exc:
         print(f"cfpa: run refused -- nothing published: {exc}", file=sys.stderr)
         return 1
@@ -519,6 +544,7 @@ def main(argv: list[str] | None = None) -> int:
             states_fixtures=args.states_fixtures,
             v2_schema_path=args.v2_schema,
             source_log_path=args.source_log,
+            push=push,
         )
     except (
         fetch_mod.FetchError,

@@ -13,6 +13,23 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: a free web push test (DECISIONS 0069). The calendar box of every
+  California and Tennessee water page gets a third option, "Alert me about
+  this water", which subscribes that browser to one water. After each
+  publish, `cfpa.push` compares the live snapshot with the new one on the
+  same records the calendar feed carries (listed days and weeks, this week
+  or later) and sends one message per changed water, in the pages' words:
+  "scheduled, not confirmed", the agency named, a link to the water page;
+  a TBD month, a past week, a cold start and a water CDFW no longer lists
+  never send. The store and sender are Terraform under `infra/web-push`
+  (Trout Truck's own AWS account, not applied here); the privacy page gains
+  a section; an iPhone in a Safari tab gets the Home Screen two-step
+  instruction instead of a button, with the manifest that needs. Off, and
+  byte for byte as before, until the `PUSH_API_URL` and
+  `PUSH_VAPID_PUBLIC_KEY` variables are set. The 60-day read and the kill
+  rule are in 0069. `make pushlambda` (in `verify`) tests the service;
+  `make pushinfra` validates the Terraform.
+
 - Publish: a freshness watchdog job (DECISIONS 0065). After the data commit,
   `make freshness` reads each live state's committed history and the job
   goes red when a state's last successful read is older than 7 days (a

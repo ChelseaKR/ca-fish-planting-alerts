@@ -10,9 +10,32 @@ source is a schedule.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 SPEC_URL = "https://llmstxt.org/"
+
+# How an assistant should read a page: the words the pages use, in the
+# pages' own sense. Every clause here is true of the templates (the status
+# badge, "Last on the schedule", the "as of" line and the failed-check
+# sentence); none is a claim about fish.
+READING_NOTES = (
+    'How to read a page: every date is written YYYY-MM-DD, and a "week of" '
+    'date is the Sunday that begins the agency\'s week. "None scheduled yet" '
+    "means the agency's schedule had nothing for that water as of the check "
+    "time printed on the page; it is not a statement about whether fish are "
+    'present. "Last on the schedule" is the most recent week the agency '
+    "listed the water. A page whose latest check failed says so in its first "
+    'paragraph and shows the data from the last good read. Quote the "as of" '
+    "time with any status."
+)
+
+# What a state's source kind is called in the States section.
+_HUB_KIND = {
+    "schedule": "stocking schedule (planned dates the agency can change)",
+    "report": "stocking report (stockings already made)",
+    "plan": "seasonal stocking plan, in the agency's own words",
+}
 
 # What a state's source is, in the order the file lists it. "schedule" is a
 # planned plant for a week or day; "report" is a stocking that already
@@ -83,6 +106,29 @@ def _meaning(kinds: dict[str, list[str]]) -> str:
     )
 
 
+def _hub_line(h: dict[str, Any]) -> str:
+    """One state hub: what the agency publishes, how many water pages, the URL
+    pattern, and the data's age in the same words as the hub page. A failed
+    latest check is said here too, so a reader of this file alone cannot
+    take stale data for current."""
+    seg = h["url"].rstrip("/").rsplit("/", 1)[-1]
+    waters = f"{h['water_count']} water page" + ("" if h["water_count"] == 1 else "s")
+    text = (
+        f"- [{h['name']}]({h['url']}): {h['agency_name']} ({h['agency_short']}) "
+        f"{_HUB_KIND[h['semantics']]}; {waters} under /{seg}/water/<name>/."
+    )
+    if h["manual"]:
+        text += f" {h['manual_sentence']}"
+    else:
+        text += f" {h['agency_short']}'s data was last read {h['fetched_label']}."
+        if h["attempt_failed"]:
+            text += (
+                f" The check on {h['attempt_label']} failed, so the pages show "
+                "the data from the last good read."
+            )
+    return text
+
+
 def render(
     *,
     site_name: str,
@@ -91,9 +137,21 @@ def render(
     states: list[dict[str, Any]],
     region_feeds: list[tuple[str, str]],
     week_label: str,
+    fetched_label: str | None = None,
+    state_hubs: Sequence[dict[str, Any]] = (),
+    county_hubs: Sequence[dict[str, Any]] = (),
+    ics_pattern: str | None = None,
 ) -> str:
     """``states`` are site._open_data_states() entries (empty when the build
-    has no v2 snapshot); ``region_feeds`` are (display name, feed URL)."""
+    has no v2 snapshot); ``region_feeds`` are (display name, feed URL).
+
+    ``fetched_label`` is when California's schedule was read, as the pages
+    print it. ``state_hubs`` are the other states' hub pages (name, url,
+    agency_name, agency_short, semantics, water_count, and the freshness
+    words from site_states._freshness). ``county_hubs`` are California's
+    county pages (name, url, count, feed_url). ``ics_pattern`` is the
+    address pattern of a California water's calendar feed. Each list holds
+    only what this build wrote."""
     kinds = _names_by_kind(states)
     lines = [
         f"# {site_name}",
@@ -116,6 +174,23 @@ def render(
         "",
         "Some water pages carry disclosed affiliate links for fishing gear. They are "
         "labeled on the page and are never in the feeds.",
+        "",
+        READING_NOTES,
+        *(
+            [
+                "",
+                f"Data in this build: California's schedule was read {fetched_label}. "
+                'Every page prints the read time its status is "as of"; that is '
+                "the data's age, not the time the page was fetched."
+                + (
+                    " The other states' read times are in the States section below."
+                    if state_hubs
+                    else ""
+                ),
+            ]
+            if fetched_label
+            else []
+        ),
         "",
         f"This file follows the llms.txt format described at {SPEC_URL}.",
         "",
@@ -142,6 +217,28 @@ def render(
     lines.append(
         f"- County feeds: {base_url}/feeds/county/<county>.atom, one per county page"
     )
+    if ics_pattern:
+        lines += [
+            "",
+            "## Calendar feeds (iCalendar)",
+            "",
+            f"- Every California water page has a calendar feed at {ics_pattern} "
+            "(the same address works as webcal://): one all-day event for each "
+            "week the agency scheduled the water, spanning the agency's week, "
+            'worded "scheduled". Calendar apps refresh it about every 12 hours. '
+            "The address is printed on each water page.",
+        ]
+    if state_hubs:
+        lines += ["", "## States", ""]
+        lines += [_hub_line(h) for h in state_hubs]
+    if county_hubs:
+        lines += ["", "## California counties", ""]
+        for c in county_hubs:
+            waters = f"{c['count']} water" + ("" if c["count"] == 1 else "s")
+            lines.append(
+                f"- [{c['name']}]({c['url']}): {waters} on the record; "
+                f"Atom feed {c['feed_url']}"
+            )
     if states:
         lines += ["", "## Sources and open data", ""]
         for s in states:

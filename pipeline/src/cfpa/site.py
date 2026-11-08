@@ -3530,6 +3530,34 @@ def build_site(
         if snapshot_v2 is not None
         else []
     )
+    # The other states' hubs, with the same freshness words their pages use
+    # (site_states._freshness), and California's county pages with their
+    # feeds, so an assistant reading this file alone finds the right page
+    # and the data's age. California has no hub of its own: Home is it.
+    v2_states = [] if snapshot_v2 is None else list(snapshot_v2["states"])
+    v2_waters = [] if snapshot_v2 is None else list(snapshot_v2["waters"])
+    state_hubs = [
+        {
+            "name": st["name"],
+            "url": f"{base_url}/{st['code'].lower()}/",
+            "agency_name": st["agency"]["name"],
+            "agency_short": st["agency"]["short_name"],
+            "semantics": st["semantics"],
+            "water_count": sum(1 for w in v2_waters if w["state"] == st["code"]),
+            **site_states._freshness(st),
+        }
+        for st in v2_states
+        if st["code"] != "CA"
+    ]
+    county_hubs = [
+        {
+            "name": f"{c} County",
+            "url": f"{base_url}/county/{county_slug(c)}/",
+            "count": len(waters_by_county[c]),
+            "feed_url": f"{base_url}/{feeds.feed_path('county', county_slug(c))}",
+        }
+        for c in county_names
+    ]
     llms_path = out_dir / "llms.txt"
     llms_path.write_text(
         llms.render(
@@ -3545,6 +3573,10 @@ def build_site(
                 for r in region_links
             ],
             week_label=source_week_label,
+            fetched_label=source_fetched_label,
+            state_hubs=state_hubs,
+            county_hubs=county_hubs,
+            ics_pattern=f"{base_url}/water/<name>/feed.ics",
         ),
         encoding="utf-8",
     )

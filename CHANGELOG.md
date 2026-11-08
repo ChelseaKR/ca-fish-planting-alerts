@@ -23,6 +23,15 @@ This repository was republished with a new history on 2026-09-18
   whose feed was refused was one warning in a green run: Tennessee's was,
   for 23 days.
 
+- Site: /llms.txt now lists the other states' hub pages with each agency's
+  last read time and whether the latest check failed, every California
+  county page with its Atom feed, the calendar-feed address pattern, the
+  time California's schedule was read in this build, and a short note on how
+  to read a page's status words. Before, an assistant reading the file found
+  the sources and the Atom feeds but no state or county page, no calendar
+  feed and no read time. The pages and robots.txt are unchanged. GA4 shows
+  AI assistants (all chatgpt.com) as the site's largest engaged channel.
+
 - Site: a California water page has a calendar box right after the status
   badge, with one button for Apple Calendar and one for Google Calendar,
   which is the way in on Android phones (DECISIONS 0062). Before, the only

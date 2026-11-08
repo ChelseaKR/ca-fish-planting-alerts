@@ -173,6 +173,10 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Site: the privacy and about pages and the privacy page's search description
+  no longer say "no tracking", alone or in a list, with analytics or web push
+  on or off. A test holds this in every build. The wording matches PR #144. The privacy page's "Last updated" date is now 2026-11-08.
+
 - Apps: national wording (DECISIONS 0049). The introduction (now version 2)
   opens with trout stocking schedules from state wildlife agencies instead of
   California's schedule, and its last page is "Never more precise than the

@@ -2957,7 +2957,7 @@ def _privacy_description(*, ads_enabled: bool, analytics: bool) -> str:
         )
     return (
         f"What the {SITE_NAME} trout planting site and iOS app collect: "
-        "nothing. No account, no analytics, no tracking."
+        "nothing. No account and no analytics."
     )
 
 

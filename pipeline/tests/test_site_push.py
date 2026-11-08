@@ -260,8 +260,8 @@ def test_the_privacy_page_says_what_is_stored_where_and_how_to_stop(on: Path):
         assert phrase in text, phrase
     assert "Last updated 2026-11-08" in text
     assert "which asks for neither" in text
-    # The section this change adds never says "no tracking" (the apps' lede
-    # on this page still does; #144 owns that line and removes the phrase).
+    # The section this change adds never says "no tracking", and neither does
+    # the rest of the page (test_site_analytics holds every build).
     assert "no tracking" not in _push_section(html).lower()
     assert "no tracking" not in _website_section(html).lower()
 
@@ -285,7 +285,7 @@ def test_the_privacy_page_without_push_is_as_before(off: Path):
     html = (off / "privacy" / "index.html").read_text("utf-8")
     text = _visible(html)
     assert 'id="push"' not in html
-    assert "Last updated 2026-11-04" in text
+    assert "Last updated 2026-11-08" in text
     assert "no sign-up, anywhere on this site." in text
     assert "no tracking" not in _website_section(html).lower()
 

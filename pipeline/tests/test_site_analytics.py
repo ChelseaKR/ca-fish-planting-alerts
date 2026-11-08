@@ -13,6 +13,7 @@ otherwise read as a pass.
 
 from __future__ import annotations
 
+import base64
 import datetime as dt
 import json
 import os
@@ -24,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from cfpa import cli, site
+from cfpa import cli, push, site
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
@@ -32,6 +33,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPO_ROOT / "schema" / "snapshot.v1.json"
 BASE_URL = "https://example.invalid/ca-fish-planting-alerts"
 TEST_ID = "G-TEST12345"
+PUSH_API = "https://abc.lambda-url.us-east-1.on.aws"
+PUSH_KEY = base64.urlsafe_b64encode(b"\x04" + b"\x07" * 64).decode().rstrip("=")
 
 GPC_GUARD = "if (n.globalPrivacyControl === true) return;"
 DNT_GUARD = 'if (dnt === "1" || dnt === "yes") return;'
@@ -63,7 +66,9 @@ FALSE_WITH_ANALYTICS = (
 )
 
 
-def _build(root: Path, ga4_measurement_id: str | None) -> Path:
+def _build(
+    root: Path, ga4_measurement_id: str | None, *, push_on: bool = False
+) -> Path:
     out = root / "site"
     cli.run(
         fixture_path=str(FRESH),
@@ -75,6 +80,11 @@ def _build(root: Path, ga4_measurement_id: str | None) -> Path:
         fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.UTC),
         run_today=dt.date(2026, 9, 13),
         ga4_measurement_id=ga4_measurement_id,
+        push=(
+            push.PushConfig(api_url=PUSH_API, vapid_public_key=PUSH_KEY)
+            if push_on
+            else None
+        ),
     )
     return out
 
@@ -251,12 +261,67 @@ def test_no_analytics_detector_is_not_vacuous(no_id_pages, id_pages):
 
 def test_no_id_copy_still_says_the_site_collects_nothing(no_id_pages):
     privacy = _text(no_id_pages["privacy/index.html"])
-    assert "no analytics, no advertising, no tracking" in privacy
+    # store-listing-truth TT-8: "tracking" is never claimed absent.
+    assert "no analytics, no advertising and no third-party script" in privacy
+    assert "no tracking" not in privacy
     assert "no cookies are set." in privacy
     # The script that exists is named, not denied (DECISIONS 0024).
     assert "no javascript runs" not in privacy
     assert "the one script is the home page" in privacy
     assert "literally nothing is collected" in _text(no_id_pages["about/index.html"])
+
+
+# ---- "no tracking" is never said for this product, with or without the tag
+
+# The claim alone or inside a list: "no tracking", "no analytics, tracking or
+# third-party script", "neither app has analytics, tracking, advertising".
+_CLAIMS_NO_TRACKING = re.compile(r"\b(?:no|neither)\b[^.]*\btracking\b")
+
+
+@pytest.fixture(scope="module")
+def push_no_id_pages(tmp_path_factory: pytest.TempPathFactory) -> dict[str, str]:
+    return _pages(_build(tmp_path_factory.mktemp("push-no-id"), None, push_on=True))
+
+
+@pytest.fixture(scope="module")
+def push_id_pages(tmp_path_factory: pytest.TempPathFactory) -> dict[str, str]:
+    return _pages(_build(tmp_path_factory.mktemp("push-id"), TEST_ID, push_on=True))
+
+
+@pytest.mark.parametrize(
+    "fixture_name", ["no_id_pages", "id_pages", "push_no_id_pages", "push_id_pages"]
+)
+@pytest.mark.parametrize("page", ["privacy/index.html", "about/index.html"])
+def test_no_page_says_no_tracking(
+    request: pytest.FixtureRequest, fixture_name: str, page: str
+):
+    pages = request.getfixturevalue(fixture_name)
+    # A push build that did not render the push copy would check nothing new.
+    assert ('id="push"' in pages["privacy/index.html"]) == fixture_name.startswith(
+        "push_"
+    )
+    text = _text(pages[page])
+    assert "no tracking" not in text
+    assert _CLAIMS_NO_TRACKING.search(text) is None
+
+
+@pytest.mark.parametrize("fixture_name", ["no_id_pages", "id_pages"])
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "No tracking.",
+        "No account, no analytics, no\n  tracking.",
+        "There is no analytics, tracking or third-party script.",
+        "Neither app has analytics, tracking, advertising or crash reporting.",
+    ],
+)
+def test_no_tracking_detector_is_not_vacuous(
+    request: pytest.FixtureRequest, fixture_name: str, claim: str
+):
+    original = request.getfixturevalue(fixture_name)["privacy/index.html"]
+    sabotaged = original.replace("</h1>", f"</h1><p>{claim}</p>", 1)
+    assert sabotaged != original  # the sabotage landed
+    assert _CLAIMS_NO_TRACKING.search(_text(sabotaged)) is not None
 
 
 # ---- with an ID: the tag on every page, behind the guard
@@ -296,7 +361,7 @@ def test_id_build_copy_describes_ga4_and_keeps_the_app_at_data_not_collected(id_
         "the eea, the uk and switzerland",
         "google signals and ad personalization are turned off",
         "14 months",
-        "collect no data: no analytics, no tracking, no advertising and no account",
+        "collect no data: no analytics, no advertising and no account",
         "app store privacy label: data not collected",
     ):
         assert phrase in privacy, phrase

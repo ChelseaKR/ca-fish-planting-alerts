@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: county, region, species and state pages put their data date in
+  their structured data as `dateModified`, the same date as the page's
+  sitemap `lastmod` (the day its data last changed, never the build date).
+  Answer engines such as ChatGPT, which sends the site most of its engaged
+  visits, read both. California water pages get the same one line after
+  the water-convert branch (0054) merges. Pages with no data date (about,
+  gear, privacy) still carry none.
 - Site: a free web push test (DECISIONS 0069). The calendar box of every
   California and Tennessee water page gets a third option, "Alert me about
   this water", which subscribes that browser to one water. After each

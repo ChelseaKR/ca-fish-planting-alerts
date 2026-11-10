@@ -316,7 +316,9 @@ def test_states_page_title_description_and_sitemap(built: Path) -> None:
     pages = _pages(built)
     text = pages["states/index.html"]
     title = _search(r"<title>(.*?)</title>", text).group(1)
-    assert title == "Trout stocking schedule for all 50 states | Trout Truck"
+    assert title == "Trout stocking schedules: CA and TN | Trout Truck"
+    assert "50 states" not in title
+    assert "50 states" not in text.split("</title>")[0]
     others = [
         n
         for n, t in pages.items()

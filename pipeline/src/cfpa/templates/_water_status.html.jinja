@@ -2,7 +2,9 @@
    source_fetched_label, canonical_url, app_store_url, root.
    Every date is a recorded week from CDFW's schedule; nothing is estimated.
    This week and next are never over, and CDFW posts most of a week's waters
-   after it begins, so a missing entry there says "yet" and when we checked. #}
+   after it begins, so a missing entry there says "yet" and when we checked.
+   The calendar box follows the badge (DECISIONS 0062), so the way to hear
+   about the next week is on a phone's first screen, next to the status. #}
 {% from "_status_badge.html.jinja" import status_badge %}
 <section class="water-status" aria-labelledby="water-status-heading">
   <h2 id="water-status-heading">Where {{ water.name }} stands on CDFW's schedule</h2>
@@ -20,22 +22,7 @@
     <strong>Not on CDFW's schedule in the weeks we have recorded since {{ water_status.since_text }}.</strong>
     {%- endif -%}
   </p>
-  <p class="water-subscribe">
-    {#- Right under the status block, inside the first phone screen
-        (DECISIONS 0054); it sat below the lede and the county lists. Needs
-        canonical_url, app_store_url and root.
-        webcal:// makes a phone or desktop calendar subscribe and keep polling
-        the feed; an https .ics link only imports today's copy. -#}
-    {% set webcal_url = "webcal://" ~ canonical_url.split("://", 1)[1] ~ "feed.ics" %}
-    <a href="{{ webcal_url }}" data-ga-event="calendar_subscribe_click" data-ga-placement="water" data-ga-type="webcal"><strong>Subscribe to {{ water.name }}'s planting calendar</strong></a>
-    (your calendar app keeps it up to date) or
-    <a href="feed.ics" data-ga-event="calendar_subscribe_click" data-ga-placement="water" data-ga-type="ics">download a one-time copy (.ics)</a>, which does not update
-    {% if app_store_url %}
-    &middot; <a href="{{ app_store_url }}" data-app-store-placement="water" data-app-store-kind="link">get the iOS app</a> for a notification when {{ water.name }} appears in a new week.
-    {% else %}
-    &middot; an iOS app with a notification when {{ water.name }} appears in a new week is on its way (<a href="{{ root }}about/#app">how it will work</a>).
-    {% endif %}
-  </p>
+  {% include "_calendar_subscribe.html.jinja" %}
   <dl>
     <dt>Last on the schedule</dt>
     <dd>{{ water_status.last_sentence }}</dd>

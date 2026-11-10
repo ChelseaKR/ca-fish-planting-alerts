@@ -1,0 +1,64 @@
+{#- The web push control (DECISIONS 0069), the third option in the calendar
+    box of a schedule state's water page. Rendered only when the build has a
+    push config (site.build_site ``push``) and the page names its water
+    (``push_water_id``), so a build without push is byte for byte what it was.
+    Needs: water, root, site_name, push, push_water_id, cal_agency,
+    cal_placement (from _calendar_subscribe.html.jinja).
+
+    Hidden until assets/push.js runs: with no JavaScript there is no push,
+    and a button that could do nothing would be a false promise. The script
+    shows exactly one of the views below. On an iPhone or iPad in a Safari
+    tab there is no Push API at all; the site must first be added to the Home
+    Screen (iOS 16.4 and later), so that case gets the two-step instruction
+    instead of a button that fails.
+
+    The subscribe button carries the calendar box's own GA4 event with
+    link_type "push" (_ga4.html.jinja), so one report counts the four ways
+    in. A tap is a tap: the server's own counts say how many subscriptions
+    were made (tools/web-push/counts.sh). -#}
+<div class="push-subscribe"
+     data-push-api="{{ push.api_url }}"
+     data-push-public="{{ push.vapid_public_key }}"
+     data-push-water="{{ push_water_id }}"
+     data-push-water-name="{{ water.name }}"
+     data-push-worker="{{ root }}push-worker.js"
+     data-push-scope="{{ root }}"
+     hidden>
+  <p class="push-subscribe__intro">
+    Or get a notification in this browser when {{ cal_agency }} adds, moves or
+    drops a date for {{ water.name }}. One water per browser; free; no account
+    or email address.
+  </p>
+  <div data-push-view="idle" hidden>
+    <p class="push-subscribe__other" data-push-other hidden>This browser is set
+      to hear about <span data-push-other-name></span>. One water per browser
+      for now: pressing the button switches it to {{ water.name }}.</p>
+    <button type="button" class="calendar-subscribe__button push-subscribe__button" data-push-action="subscribe" data-ga-event="calendar_subscribe_click" data-ga-placement="{{ cal_placement }}" data-ga-type="push">Alert me about this water</button>
+  </div>
+  <p data-push-view="busy" hidden>Setting it up&hellip;</p>
+  <p data-push-view="on" hidden>
+    This browser gets a notification when {{ cal_agency }} changes
+    {{ water.name }}'s schedule: scheduled, not confirmed, with a link back
+    here.
+    <button type="button" class="link-button" data-push-action="unsubscribe">Stop these notifications</button>
+  </p>
+  <p data-push-view="ios" hidden>
+    On an iPhone or iPad, Safari sends notifications from a site added to your
+    Home Screen, not from a tab. Two steps: tap Share, then &ldquo;Add to Home
+    Screen&rdquo;. Open {{ site_name }} from that icon and press
+    &ldquo;Alert me about this water&rdquo; there.
+  </p>
+  <p data-push-view="blocked" hidden>
+    Notifications for this site are blocked in your browser&rsquo;s settings.
+    Allow them there, then reload this page.
+  </p>
+  <p data-push-view="unsupported" hidden>
+    This browser cannot receive web push notifications. The calendar options
+    above work everywhere.
+  </p>
+  <p class="push-subscribe__status" data-push-status role="status" aria-live="polite"></p>
+  <p class="muted push-subscribe__fine">
+    What is stored and how to stop it: <a href="{{ root }}privacy/#push">privacy</a>.
+  </p>
+</div>
+<script src="{{ root }}assets/push.js" defer></script>

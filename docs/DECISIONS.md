@@ -1373,6 +1373,38 @@ focused on california." She approved the nine recommendations in the
   (`docs/PLAY-LISTING.md`) are reworded national. `docs/APP-STORE-LISTING.md`
   gets only a "frozen during the appeal" note.
 
+## 0053 — Android asks which state on first run; no California default (2026-11-05)
+
+Plan N6 from the 2026-11-05 national plan, decision 9, option A: ask on
+first run with no location, and if the person skips, show the list of
+states. Chelsea hasn't picked an option for decision 9 yet; this builds the
+recommended one.
+
+- **What.** The introduction's "Find your waters" page lists the states in
+  the snapshot, none chosen, and saves a pick as it is made. Skipping, or
+  any launch with no pick, opens Browse on that same list instead of any one
+  state's waters. A pick the snapshot no longer carries counts as no pick,
+  never as California.
+- **Only from v2.** The list is the v2 snapshot's `states`, in its order.
+  Nothing in the app types a list of states. A v1 file (California alone,
+  from before states) offers none and says the data doesn't list its
+  states yet.
+- **Paused, never current.** Each row says what the agency publishes and
+  "Read <date>", from `checks.last_success_at`. A state whose latest check
+  failed and whose last good read is more than 7 days old says "Updates
+  paused since <date>" with a warning mark, the site's rule from 0051. The
+  same words show on the States sheet and in Browse's state menu. With the
+  bundled data, Tennessee shows "Updates paused since Oct 15, 2026".
+- **Existing installs.** `browse-state.json` written before this keeps its
+  pick. An install that never picked (it saw California by default) now
+  sees the list once and taps a state.
+- **No location.** The picker doesn't ask for or use location, so the Play
+  Data safety form and the iOS privacy label are unchanged (option C would
+  have changed both).
+- **iOS waits.** iOS is unchanged here. Its default (`AppEnvironment.swift`
+  `state = "CA"`) and onboarding change after the App Review Board answers,
+  in their own PR, with the same rules and words as `StateChoice.kt`.
+
 ## 0054 — Water pages answer the visit in the first screen (2026-11-05)
 
 Measured 2026-11-05, read-only (GA4 property "Trout Truck", 28 days; Search
@@ -1407,3 +1439,450 @@ nothing current, below the county lists.
 - **Unchanged.** URLs, titles, H1s and meta descriptions (the 10-30 title
   test is still being measured), the state (`/tn/water/` etc.) template, and
   the gear block.
+
+## 0057 — Android About gets "Write to the developer"; alerts keep their one button (2026-11-06)
+
+From the 2026-11-05 app parity audit (Trout Truck items 2 and 3; Chelsea
+chose all recommended).
+
+- **What.** About has a "Questions and corrections" section with one row,
+  "Write to the developer". It opens the email app with a `mailto:` to
+  chelsea@chelseakr.com (the address `/support/` shows) and a subject of
+  "Trout Truck <version> for Android". The footnote shows the address, so it
+  still works on a device with no email app. When the build carries no
+  version, the subject leaves it out rather than showing a placeholder.
+- **Nothing new is sent.** The app sends no email itself and makes no new
+  network request. The Data safety answers are unchanged.
+- **Notification actions: none added.** The audit said alerts had no action
+  button. They already have one: "Mute this water" (`MuteReceiver`, since
+  the first Android build), and tapping the alert opens the water. An extra
+  "Open water" button would repeat the tap, so it isn't added.
+- **iOS waits.** The same row comes to iOS after the App Review Board
+  answers, in its own PR, with the same words (`FeedbackMail.swift`).
+
+## 0060 — StoreKit tests fail fast instead of hanging (2026-11-06)
+
+- **Problem.** `PurchaseManagerTests` hangs on `main`, not just on some
+  feature branches. On the iOS 26.5 simulator (Xcode 26.6) the
+  `SKTestSession` isn't connected (Apple bug 163377768, `ios/README.md`), so
+  StoreKit answers from the real App Store sandbox. Only California's
+  product loads, the first `purchase()` waits on a sign-in no one answers,
+  and the run never ends. Measured three times on `main` at 3df4d6c: each
+  run stuck on the first test and was killed at 15 minutes.
+- **What.** Test code only; the app's `PurchaseManager` is unchanged. The
+  tests wait for all 5 products in `Configuration.storekit` and stop in
+  about 8 seconds, saying how many loaded, when any are missing. Every
+  `purchase()` and `restorePurchases()` call in the tests has a 30-second
+  deadline, so a call that hangs once the products do load still fails the
+  test. Checked by loosening the product check by hand: the stuck purchase
+  failed at 51 seconds instead of hanging.
+- **Result on this simulator.** The class finishes red in about 105
+  seconds (13 failures, 3 passes, three runs). That is the known Apple bug,
+  not a regression. The tests still can't pass until a simulator runtime
+  or device with Apple's fix is used.
+- **Not done.** Turning on test timeouts in the shared scheme
+  (`testTimeoutsEnabled`) had no effect from `xcodebuild` in a trial run,
+  so it isn't included. The README's command-line flags are the backstop.
+
+
+## 0061 — Tennessee: load TWRA's published download by hand while the automated read is refused (2026-11-07)
+
+tn.gov has answered the pipeline's requests with HTTP 403 since 2026-10-15
+(issue #97), so Tennessee's pages froze at that read. TWRA's communications
+manager pointed Chelsea to the page's own download formats, and Chelsea told
+TWRA that Trout Truck won't get around tn.gov's security settings.
+
+- **No workaround of tn.gov's filter.** The automated fetch, its honest
+  User-Agent and the strict robots.txt rule (0025) are unchanged. Nothing
+  fetches tn.gov from a laptop, and nothing needs a laptop on daily.
+- **Manual import of TWRA's published CSV.** Now and then Chelsea downloads
+  the CSV from TWRA's page in a browser and runs `make import-tn-csv`
+  (`cfpa.import_tn_csv`). Its eight columns and values are the ones the JSON
+  reader reads, so the rows go through the reader's own `tn.parse_rows`: TBD
+  months, week-of Sundays, verbatim month letters, skipped non-Sunday weeks
+  and TWRA's spellings ("Caroll"). Any header drift is refused, as is an
+  older or repeated file.
+- **Provenance.** `tn.json` records the file (`checks.manual_file`: source
+  "TWRA's downloadable CSV", page URL, file name, SHA-256, row count,
+  download and import times); `last_success_at` is the download time. The
+  snapshot's `source.read_method` is `manual`. Pages say "This data is from
+  TWRA's published schedule file, downloaded <date>", and a water with no
+  later date says nothing later was in that file, never "right now".
+- **The daily read keeps failing honestly.** `checks.last_attempt_*` stay
+  the automated read's own. A failed run changes only those and never
+  relabels or replaces the imported data; the run log still warns. The first
+  good automated read clears `manual_file`, and the pages go back to the
+  automated wording.
+- **Data lands by pull request.** The publish job is the only direct writer
+  of `pipeline/data/`, so an imported `tn.json` goes to `main` in a PR.
+
+
+## 0062 — The calendar box moves up to the status badge and adds Google Calendar (2026-11-07)
+
+From the 2026-11-07 visitor-to-alert review
+(`_agent-tools/growth/tt-visitor-to-alert-2026-11-07.md`, outside this repo).
+
+- **Why.** In GA4's 28 days to 2026-11-07, every key event (4
+  `calendar_subscribe_click`, 1 `gear_click`) came from an iOS visitor on a
+  California water page. Android had 13 engaged sessions and no key event.
+  On a phone-width render of the live site the subscribe link sat 1.2 to 1.6
+  screens down, as one inline sentence after the lede, and its only
+  subscribe link was `webcal://`, which Android does not open unless an
+  extra app has claimed it (Google Calendar for Android does not).
+- **What.** A California water page shows a calendar box right after the
+  status badge, inside the status block and before its facts. It has two
+  full-width buttons, each named for its calendar: "Apple Calendar (iPhone,
+  iPad, Mac): subscribe" (`webcal://`, as before) and "Google Calendar (any
+  phone or computer): add it"
+  (`https://calendar.google.com/calendar/r?cid=<the webcal address>`, which
+  adds the same feed as a subscription). Below them: the feed's https
+  address for any other calendar app, the one-time `.ics` download, and the
+  app line as before.
+- **Plain about what it is.** The box says the calendar checks for changes
+  on its own and that Google can take up to a day to show one. It does not
+  call a calendar event an alert or a notification; the app line keeps that
+  word for the app, which still reads "on its way" while APP_STORE_LIVE is
+  off.
+- **Measurement.** All three links keep `calendar_subscribe_click`, with
+  `link_type` `webcal`, `google` or `ics`. The Google link's host is
+  `calendar.google.com`; the privacy page names that host and says the feed
+  address goes to Google when the visitor presses it. A click is a tap, not a
+  confirmed subscription.
+- **No "Android" in the copy.** The site names Android only on the privacy
+  page until the app is on Google Play (`test_copy_never_mentions_android`),
+  so the Google button says "any phone or computer". The support page's
+  calendar answer is unchanged; it is also the FAQ structured data.
+- **Not in this change.** Tennessee, Massachusetts, Michigan and New York
+  water pages have no calendar feed at all, and county and home pages have
+  no subscribe action. Those need their own feeds and their own decision.
+
+## 0063 — A Massachusetts file that Hub marks stale is a failed check (2026-11-07)
+
+From the 2026-11-07 freshness audit of every live state.
+
+- **What we found.** ArcGIS Hub answers MassWildlife's download with
+  `"cacheStatus": "stale"`. Its file was built 2026-10-13 02:35 UTC and has
+  150 rows, the last dated 2026-10-09. Hub's metadata for the same layer
+  says 155 records, last edited 2026-10-13 17:06 UTC. Every run since then
+  read the old file and called the check good, so the Massachusetts pages
+  said "That is what the agency's own data says, not a failed read."
+- **The rule.** When Hub says Completed with `cacheStatus` "stale", the
+  reader stops before the file and reports a failed check. The last good
+  data is kept, and the state and water pages say the check failed, as they
+  already do for any failed check. "ready" or no `cacheStatus` reads as
+  before.
+- **Not changed.** The route stays Hub only (0034). The layer's own host,
+  services1.arcgis.com, still answers its robots.txt with 403 and is never
+  read. Nothing asks Hub to rebuild the file.
+- **Known gap.** The run of 2026-11-07 13:22 UTC already recorded a good
+  check, so "last read" shows that time, not 2026-10-13. The pages also show
+  "last changed the file Tue, 13 Oct 2026", which is the true age.
+
+
+## 0064 — Calendar feeds on Tennessee water pages, honest about TWRA's three date shapes (2026-11-07)
+
+From the 2026-11-07 visitor-to-alert review
+(`_agent-tools/growth/tt-visitor-to-alert-2026-11-07.md`, outside this
+repo): the other live states' water pages had 22 engaged sessions in 28 days
+and nothing to press. Tennessee now has real future dates (0061, #159, #160:
+689 rows in TWRA's 2027 file), so it goes first.
+
+- **The same box.** A Tennessee water page shows the calendar box of 0062,
+  the same partial after its lede: the Apple Calendar button (`webcal://`),
+  the Google Calendar button (`calendar.google.com/calendar/r?cid=`), the
+  feed's https address and the one-time `.ics`, each with
+  `calendar_subscribe_click` and `link_type` `webcal`, `google` or `ics`.
+  The partial takes the agency's name and its date words as variables that
+  default to California's, so a California page renders byte for byte as
+  before (checked by a build of both). `placement` is `state_water`, as the
+  gear block on these pages already reports, so a report can tell the two
+  page families apart. The privacy page's sentence about the Google link
+  already covers it.
+- **The feed, at `/tn/water/<slug>/feed.ics`.** Built by `cfpa.ics` from the
+  v2 snapshot, with California's header: the same PRODID, `REFRESH-INTERVAL`
+  and `X-PUBLISHED-TTL` of PT12H, and the same escaping. Only `listed`
+  records become events; a date TWRA took off its schedule does not.
+  - A **day** is one all-day event on that day, "<water> stocking scheduled
+    (TWRA)".
+  - A **week** ("week of" a Sunday) is one all-day event spanning TWRA's
+    seven days, "Week of <Sunday>: <water> stocking scheduled (TWRA)". No
+    day inside it is singled out; the description repeats TWRA's rule that
+    the stocking falls within five days after that Sunday.
+  - A **"TBD <month>"** is **no event**. TWRA set no day or week, and a
+    month-long block or a guessed day would render that absence as a date.
+    It is words instead: "TBD in December 2027 per TWRA: no day or week set
+    yet" in the calendar's description and in the nearest dated event's.
+  - **Month letters** ("M, A, M, J, J, A, S") are never events; the
+    calendar's description says TWRA lists the water that way and that the
+    letters are not dates. A water with letters only has a feed with no
+    event and still shows the box, so a subscriber hears when TWRA sets a
+    day.
+  - Two species on one date are one event that names both. UIDs are
+    `<water id>-<start>-<day|week>@ca-fish-planting-alerts.invalid`, pinned
+    by test like California's.
+- **Every event says what it is.** The description credits the Tennessee
+  Wildlife Resources Agency, says the date is scheduled and not confirmed
+  (TWRA's own caveat), says where the data came from at the pages' precision
+  (0061: "from TWRA's published schedule file, downloaded <date>" after a
+  hand load, else "read <date>"), says Trout Truck is independent, and ends
+  with the water page's address, which is also the event's `URL`. No line a
+  person reads calls an event an alert or a notification, or says "stocked"
+  or "planted".
+- **The rule is the state's semantics, not its code.** A `schedule` state
+  other than California gets the box and the feed. Today that is Tennessee
+  alone; Oregon, built behind an off flag (0032), would get one on the day
+  it is turned on, with its Monday-to-Friday weeks as five-day events, since
+  the event takes the agency's own period.
+- **Massachusetts, Michigan and New York wait**, each for its own reason:
+  - Massachusetts and Michigan publish **reports of stockings that
+    happened**. Every date is in the past, so there is nothing to put on a
+    calendar ahead of time; a feed of past days would read as a schedule and
+    is not one. They would need a forward signal that does not exist in the
+    data: at most a feed that adds a day after the agency reports it, which
+    is a notice, not a calendar, and is better served by the app's alerts.
+    That needs its own decision about what a past-only calendar means.
+  - New York publishes a **once-a-year plan in its own words** ("April -
+    third week", "Spring"), which the pipeline keeps as `approximate` with a
+    bounding start and end. An event needs a start and an end a calendar can
+    draw; drawing the bounds would show a precision NYS DEC did not give
+    (0034's rule). It would need a rule for how an approximate period is
+    drawn, if at all, and words that say the span is the site's reading of
+    the plan, not the plan.
+- **Not shared yet.** `cfpa.ics` carries its own copies of the escaping,
+  folding and refresh interval that `site.build_water_ics` has, held equal
+  by test, so the open California water-page pull requests (#146, #148)
+  merge clean; `site.py` switches to the shared helpers after they land.
+  The shared fold also keeps a continuation line within 75 octets (its
+  leading space counted) and never splits a multi-byte character, which
+  `site._ics_fold` does not; California's lines are short, so no feed of
+  hers has hit either.
+- **Overlaps.** #150 (0056) rewrites `_render_water` in `site_states.py`
+  and the top of the state water template; this change adds a kwarg and a
+  feed write in the same function, and the box after the lede, which lands
+  below 0056's answer line. #160 changes only `pipeline/data/states/tn.json`;
+  the feeds are built from whatever that file holds, so no code here depends
+  on it.
+- **Measurement.** 28 days after deploy: `calendar_subscribe_click` with
+  `placement` `state_water` against engaged Tennessee water landings (22 in
+  the 28 days before, with nothing to press), and the share of Google taps,
+  once `link_type` and `placement` are GA4 custom dimensions (owner step in
+  the review).
+
+## 0065 — A stuck state is a red job on main, not a warning and not an issue (2026-11-07)
+
+From the 2026-11-07 freshness audit
+(`_agent-tools/growth/freshness-audit-2026-11-07.md`, outside this repo).
+
+- **Problem.** tn.gov began refusing the runner's robots.txt request on
+  2026-10-15. For 23 days every publish run kept Tennessee's last good
+  data, printed one `::warning` and finished green, by design (0025: a
+  failing state stops nothing). The daily health check
+  (`publish-health.yml`, since 10-21) did see it: it opened #104 on 10-22
+  and commented on it every day since, sixteen times, and its own run was
+  green every day too, because an unhealthy reading becomes an issue
+  comment, not a failed job. Nobody read the issue. Massachusetts was a
+  second silent case of another kind: Hub served a file it had itself
+  marked stale and the reader counted it a good read; that is fixed at the
+  reader (0063), and this check cannot see it.
+- **Decision.** The publish workflow gets a third job, `freshness`, after
+  the build job. It reads the history files the build just committed
+  (`pipeline/src/cfpa/freshness.py`, `make freshness`) and fails when any
+  live state's last SUCCESSFUL read is older than its allowance. The job's
+  red is the publish run's red on main, which is the signal that gets seen.
+  It opens no issue, and agents must not open one for it.
+- **Its own job, not a step in the build.** A failing step in `build` would
+  stop the data commit and the deploy, so one stuck agency would freeze
+  California and every other state. The `freshness` job `needs: build`,
+  runs whenever the build was not cancelled, and nothing waits on it:
+  `deploy` needs `build` alone, and `alert-on-failure` watches `build` and
+  `deploy` alone. It checks out `main` as it is at that moment, so it reads
+  the files the build pushed, not the tip from before the run. About one
+  billed minute per run on a public repository, so none.
+- **What it measures.** The age of `checks.last_success_at`, never the
+  newest record: Michigan's DNR files a stocking days after it happens, and
+  New York's plan is one spring publication; neither says anything about
+  whether the read still works. Default allowance 7 days, which is fourteen
+  refused reads at two runs a day; a state module may declare its own
+  (`StateSource.max_read_age_days`), and none does today. A manual import
+  (0061, `checks.manual_file`) is a good read as of its `downloaded_at`,
+  read from the file's own JSON so it holds whether or not the import's
+  code has landed; the later of the automated and the manual read counts.
+  A state behind an off flag (Oregon, 0032) is not live and is not checked;
+  naming one on the command line while its flag is off is an error, not a
+  pass. Older than the allowance is stuck; equal is not.
+- **Absence is a failure.** A missing history file, a file for the wrong
+  state, no `checks`, no good read on record, a time that will not parse, a
+  time with no zone, or a time more than an hour later than the job's clock
+  each fail with a line that says which. Zero states to check is a usage
+  error, because it would pass by checking nothing.
+- **Output.** One line per state, the same words in the run log, in the job
+  summary's table (state, last good read and how, age in days, allowance,
+  result) and in the `::error` annotation on a stuck state. Today's:
+  `TN (Tennessee): STUCK: last good read 2026-10-15 13:31Z (automated),
+  23.4 days ago, allowed 7 days; older than allowed`; Michigan,
+  Massachusetts and New York fresh at 0.4 days.
+- **Not part of `make verify`.** The watchdog measures the agencies' feeds,
+  not this code; in `verify` a stuck feed would block every merge, a gate
+  that measures the world. `publish-health.yml` stays as it is: it reads
+  the live site and also covers a run that never happened or never
+  deployed, which this job cannot see. Its issue is not the signal.
+- **What to expect.** Tennessee stays red here until 0061's import lands
+  (its download time becomes the last good read) or tn.gov answers the
+  runner again. Massachusetts has failed its Hub check since the 2026-11-08
+  01:18 run (0063); its last good read is still the false one from
+  2026-11-07 13:22, so it goes red here about 2026-11-14 unless Hub
+  rebuilds its file first. That false read is the known gap: this check
+  cannot see a read that was wrong when it was made.
+
+
+## 0069 — A free web push test: one water per browser, on California and Tennessee water pages, for 60 days (2026-11-08)
+
+From the 2026-11-08 idea lane
+(`_agent-tools/growth/idea3-web-push-alerts-2026-11-08.md`, outside this
+repo), its Top 1. Chelsea's explicit yes on 2026-11-08 overrides, for this
+test only, the roadmap's "no server, no push" line (roadmap §10, and 0001's
+"not server push"): the website gets a push subscription store and a sender.
+The apps are unchanged: still local notifications, no APNs, no device token,
+"Data Not Collected". No paid tier is in this change; the paid step is a
+later decision, gated on the read below.
+
+- **What.** The calendar box of a California or Tennessee water page (0062,
+  0064: the pages with a calendar feed) has a third option under its two
+  calendar buttons: "Or get a notification in this browser when CDFW adds,
+  moves or drops a date for Shadow Cliff Lake. One water per browser; free;
+  no account or email address." and a button, **"Alert me about this
+  water"**. Allowing it subscribes the browser to web push for that one
+  water. Massachusetts, Michigan and New York pages get nothing, for the
+  reasons 0064 gives: nothing forward to say.
+- **Where, and why there.** Inside the existing calendar box, after the
+  Apple and Google buttons and before the fine print, not as a box of its
+  own. 0062 moved the calendar box to the status badge so the way to hear
+  about the next week is on a phone's first screen; a second box there would
+  split that screen and compete with the calendar, which is the path that
+  works on every device without a permission prompt. Third in the box, it
+  is seen by the people who read the box and never above the calendar. The
+  button reuses the calendar buttons' style; it is a real `<button>`, since
+  it changes a setting in this browser and goes nowhere.
+- **When a message goes.** After each publish, `cfpa.push` compares the
+  snapshot that was live (fetched before the deploy replaces it) with the
+  one just built, water by water, on exactly the records the water's
+  calendar feed carries: `listed` plants with a `day` or `week` period,
+  this week or later. A new one, a dropped one or a moved one is one message
+  per water; a TBD month, a month letter, a withdrawn record, a past week's
+  correction, a water new to or gone from the snapshot (0017), and a cold
+  start with no previous snapshot are never a message. Push services hold a
+  message three days for an offline browser (TTL), then drop it: a week-old
+  "scheduled" would read wrong.
+- **What a message says.** The pages' own words, never more. New: "Shadow
+  Cliff Lake: scheduled, week of Nov 15" / "CDFW lists Shadow Cliff Lake for
+  planting the week of Sunday, November 15, 2026. Scheduled, not confirmed:
+  CDFW's plans can change." Dropped: "Shadow Cliff Lake: schedule changed" /
+  "CDFW took the week of ... off its planting schedule. CDFW's plans can
+  change." Moved: "CDFW moved Shadow Cliff Lake from the week of ... to the
+  week of ...". Tennessee names TWRA's species and carries TWRA's two
+  sentences from the feed (the five-day rule for a week-of date; "any
+  stocking could be postponed or cancelled"). Never "stocked", never
+  "planted on", never a superlative, and the message never calls itself an
+  alert or a guarantee (`test_push_events.py`). It links the water page
+  with `utm_source=web-push&utm_medium=push`.
+- **The service.** The site stays static. One Lambda behind a function URL,
+  one DynamoDB table and four SSM parameters, in Trout Truck's own AWS
+  member account (trouttruck, 266294231534), written as Terraform under
+  `infra/web-push` with the `allowed_account_ids` guard Lot Code Log's
+  waitlist uses. Not applied by an agent: the owner steps are in
+  `infra/web-push/README.md`. A row per browser, keyed by the SHA-256 of
+  the endpoint, holds the water, the endpoint, its two keys, created_at,
+  last_sent_at (absent until a first send) and expires_at; one row holds
+  the totals. The publish workflow's send step calls the service with a
+  bearer token; the service fans each message out to that water's
+  subscribers with the `web-push` library Family Greenhouse uses, deletes
+  an endpoint that answers 404 or 410, and refreshes expires_at on a
+  success, so DynamoDB's TTL drops a browser nothing could reach for about
+  13 months. The endpoint host must be a browser push service's (ported
+  from Family Greenhouse's `pushEndpoint.ts`); a message's link must be a
+  page of this site, checked by the service and again by the worker.
+- **One water per browser** is the table's key: a second water from the
+  same browser replaces the first (the page says so before the tap and
+  counts it as a switch). A browser that rotates its subscription renews
+  under the old endpoint's water (`pushsubscriptionchange`).
+- **iPhone and iPad.** In a Safari tab there is no Push API; a site must be
+  added to the Home Screen first (iOS 16.4 and later), and before iOS 26 it
+  opens as a web app only with a manifest that says `display: standalone`.
+  So: the build gets a `manifest.webmanifest` (name, display, scope; no
+  start_url, so the page a person adds is the page that opens; nothing
+  more, no icon yet) linked from every head; the page script shows the
+  two-step instruction instead of a button on an iPhone or iPad that is
+  not a web app, and the button inside the web app. 71% of engaged sessions
+  are iOS (the lane's measurement), so how many finish that step is the
+  number this test exists to learn.
+- **Honesty and privacy.** The privacy page gains "Web push notifications":
+  the service's address, what is stored (the endpoint, the two keys, the
+  water, the two timestamps), where (the site's own AWS account, in the
+  United States), that the request carries an IP address the service does
+  not keep (its logs hold a route, a status and counts), what a message
+  is, how to stop (the "Stop these notifications" control on the page, or
+  the browser's own setting; a dead endpoint is deleted on its next
+  failure), the 13-month expiry, and that the button press is a GA4
+  `calendar_subscribe_click` of `link_type` `push`. The page never says
+  "no tracking". With no push config, the privacy page is as before.
+- **Named for the secret scan.** The public key sits in every water page and
+  the worker, and the publish job runs `gitleaks dir site` before it deploys.
+  An attribute or variable with "key" or "api" in its name ("vapid" counts),
+  next to that value, is a finding and fails the run, so they are
+  `data-push-public` and `SERVER_PUBLIC` (`test_site_push.py` scans a build,
+  with a control that the old name fails).
+- **Off by default, byte for byte.** `PUSH_API_URL` and
+  `PUSH_VAPID_PUBLIC_KEY`, both public, both repository variables, turn it
+  on together; one without the other refuses the run like a malformed GA4
+  id. Unset, the build writes no script, no worker, no manifest and no
+  control. Turning the test off is deleting the two variables.
+- **Measurement.** GA4: `calendar_subscribe_click` with `link_type` `push`
+  (a tap, not a subscription; the button has no host, so `link_host` is left
+  out rather than sent empty). The service's totals: subscribes, switches,
+  renewals, unsubscribes, send runs, sends, failures, dead endpoints
+  removed, and the live subscription count; `tools/web-push/counts.sh`
+  prints them. Visits from a message land with `utm_medium=push`.
+- **The 60-day read**, on the day the control has been live 60 days: (1)
+  live subscriptions (the count, not the sign-ups); (2) subscribes per 100
+  engaged sessions = subscribes / GA4 engaged sessions on California and
+  Tennessee water pages over the same 60 days x 100; (3) whether any iOS
+  completion happened at all (`live_apple`, the subscriptions on
+  `web.push.apple.com`; a Mac's Safari counts there too, so it is a ceiling). **Kill rule:** under 25 live
+  subscriptions, or under 1 subscribe per 100 engaged sessions, at day 60
+  means the control, the worker, the manifest and the privacy section go
+  (delete the two variables, then remove the code and `terraform destroy`).
+  **Pass** is 25 or more live and 1% or more; only then is a paid step
+  (the lane's 7.1: one $9.99/yr plan on a Payment Link, first water free)
+  put to Chelsea as its own decision. If a paid step ever follows, under 10
+  paid in its first 90 days stops selling and keeps the free water.
+- **Known limits.** A message is sent once: if the send step fails, that
+  run's changes are not retried, and the step's error is the only sign (the
+  deploy never waits on it). The function URL has no rate limit, so a script
+  could inflate the subscribe count with made-up endpoint paths; a live count
+  that looks wrong should be checked against GA4's taps before it passes the
+  kill rule. A failed send to one browser is counted, not retried.
+- **The app's story.** 0009's reason for the paid unlock was that a website
+  cannot push to a phone. With this control on, it can, for one water, after
+  a Home Screen install. The lane rates that neutral for 4.3(a) and a small
+  negative for 4.2 while the appeal is open. Nothing here turns it on: when
+  to set the two variables is Chelsea's call.
+- **Not in this change.** No paid tier. No push for Massachusetts, Michigan
+  or New York. No notification icon or Home Screen icon (the design
+  identity work, #151, owns the mark). No support-page FAQ entry. No change
+  to the apps or to the App Store copy, which is frozen during the appeal.
+  No server-side knowledge of which waters exist: a subscription to an id
+  that never changes simply never fires. No second water per browser.
+- **Overlaps with the open date-gated pull requests.** `base.html.jinja`
+  (#144 edits the header, #151 adds a favicon line; this adds a manifest
+  line near the top of head), `privacy.html.jinja` (#144 and #146 edit
+  other paragraphs; this adds one self-contained section and two guarded
+  clauses), `_ga4.html.jinja` (#146 restructures the same click handler
+  into a `params` object as this does, and adds a third event; the merge
+  will need a hand), `style.css` (#148, #151; this appends to the calendar
+  section), `site.py` (#144, #146, #148; this adds a parameter, a context
+  key and one function), `site_states.py` (#150 rewrites `_render_water`;
+  this adds one kwarg to it), `water.html.jinja` and
+  `_water_status.html.jinja` are untouched here. The new files
+  (`cfpa/push.py`, `_push_subscribe.html.jinja`, `push.js`,
+  `push-worker.js.jinja`, `manifest.webmanifest.jinja`, `infra/web-push`,
+  `tools/web-push`) overlap nothing.

@@ -81,27 +81,32 @@
     allow_google_signals: false,
     allow_ad_personalization_signals: false
   });
-  // Clicks on a gear link (the outside search links on a water page) and on a
-  // calendar feed (.ics) link. Same tag, same rules: this code sits below the
-  // GPC, Do Not Track and footer opt-out returns, and it checks ga-disable at
-  // click time, so a same-page opt-out also stops it. The two event names
-  // above are the whole list. Each carries three labels the page itself sets
-  // (data-ga-placement, data-ga-type) or the browser derives (the link's host
-  // name): where on the site, what kind of link, and which host. Never the
-  // full URL, so the affiliate tag and any query never leave the page, and
-  // nothing about the visitor.
+  // Clicks on a gear link (the outside search links on a water page), on a
+  // calendar feed (.ics) link, and on the calendar box's web push button
+  // (DECISIONS 0069, link_type "push"). Same tag, same rules: this code sits
+  // below the GPC, Do Not Track and footer opt-out returns, and it checks
+  // ga-disable at click time, so a same-page opt-out also stops it. The two
+  // event names below are the whole list. Each carries three labels the page
+  // itself sets (data-ga-placement, data-ga-type) or the browser derives
+  // (the link's host name): where on the site, what kind of link, and which
+  // host. Never the full URL, so the affiliate tag and any query never leave
+  // the page, and nothing about the visitor.
   var linkEvents = { gear_click: 1, calendar_subscribe_click: 1 };
   d.addEventListener("click", function (e) {
     var t = e.target;
-    var a = t && t.closest ? t.closest("a[data-ga-event]") : null;
+    var a = t && t.closest ? t.closest("[data-ga-event]") : null;
     if (!a || w["ga-disable-" + id]) return;
     var name = a.getAttribute("data-ga-event");
     if (!linkEvents.hasOwnProperty(name)) return;
-    gtag("event", name, {
+    var params = {
       placement: a.getAttribute("data-ga-placement") || "unknown",
       link_type: a.getAttribute("data-ga-type") || "link",
       link_host: a.hostname || ""
-    });
+    };
+    // A button (the push control) is not a link and has no host; the field
+    // is left out rather than sent as an empty value.
+    if (!a.hostname) delete params.link_host;
+    gtag("event", name, params);
   });
 {% if app_store_live %}
   // A click on any App Store badge or install link (site.py

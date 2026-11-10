@@ -35,7 +35,7 @@ from zoneinfo import ZoneInfo
 
 import jinja2
 
-from . import state_coverage
+from . import ics, state_coverage
 from .states import SOURCES
 from .thin import is_thin
 from .water_kind import WaterKind, water_kind
@@ -511,6 +511,44 @@ def _render_index(
     return page_url, lastmod
 
 
+def _freshness(state: dict[str, Any]) -> dict[str, Any]:
+    """How a state page words its data's age.
+
+    ``manual``: the newest data is the agency's published file, downloaded
+    and loaded by hand (DECISIONS 0061). Its pages give that file and its
+    download date, and never say "checks failed" about it: the failing
+    automated read did not produce it. ``attempt_failed`` is then False, and
+    ``automatic_failing`` says whether the automated read is still failing.
+    """
+    manual = state["source"].get("read_method") == "manual"
+    failed = not state["checks"]["last_attempt_ok"]
+    short = state["agency"]["short_name"]
+    sentence = ""
+    if manual:
+        kind = "report" if state["semantics"] == "report" else words(state)["kind"]
+        sentence = (
+            f"This data is from {short}'s published {kind} file, "
+            f"downloaded {state['as_of']}."
+        )
+        if failed:
+            sentence += (
+                f" The site's automatic daily read of {short}'s website is not "
+                "working right now, so the file was loaded by hand."
+            )
+    return {
+        "manual_sentence": sentence,
+        "manual": manual,
+        "automatic_failing": manual and failed,
+        "attempt_failed": failed and not manual,
+        # The civil date, in the state's time zone, of the newest good data.
+        "fetched_date": state["as_of"]
+        if manual
+        else state["checks"]["last_success_at"][:10],
+        "fetched_label": _fmt_dt(state["checks"]["last_success_at"]),
+        "attempt_label": _fmt_dt(state["checks"]["last_attempt_at"]),
+    }
+
+
 def _render_hub(
     ctx: StatesContext,
     state: dict[str, Any],
@@ -581,9 +619,7 @@ def _render_hub(
         upcoming_days=UPCOMING_DAYS,
         recent_days=RECENT_DAYS,
         water_groups=water_groups,
-        fetched_label=_fmt_dt(state["checks"]["last_success_at"]),
-        attempt_failed=not state["checks"]["last_attempt_ok"],
-        attempt_label=_fmt_dt(state["checks"]["last_attempt_at"]),
+        **_freshness(state),
         range_label=_date_range_label(waters),
         has_months=any(w["months_note"] for w in waters),
         has_counts=any(p["count"] is not None for w in waters for p in w["plants"]),
@@ -652,9 +688,31 @@ def _render_water(
     title = fit_title(
         [f"{head} ({place})", f"{head} ({short})"], ctx.site_name, ctx.title_max
     )
+    # A failed latest check: the last good read's lack of a later date is not
+    # the agency's current schedule, so never say "nothing later listed".
+    fresh = _freshness(state)
+    attempt_failed = fresh["attempt_failed"]
+    fetched_date = fresh["fetched_date"]
     if schedule:
         if w["next_period"]:
             status = f"next {wd['verb']} {when_label(w['next_period'])}."
+        elif fresh["manual"]:
+            # A downloaded file is one day's schedule: never "nothing later
+            # listed" as if it were today's.
+            status = (
+                f"last {wd['verb']} {when_label(w['last_period'])}"
+                if w["last_period"]
+                else "no date"
+            ) + (
+                f" in {state['agency']['short_name']}'s {wd['kind']} file "
+                f"downloaded {fetched_date}."
+            )
+        elif attempt_failed:
+            status = (
+                f"last {wd['verb']} {when_label(w['last_period'])}"
+                if w["last_period"]
+                else "no date"
+            ) + f" as of {fetched_date}; checks since then failed."
         elif w["last_period"]:
             status = f"last {wd['verb']} {when_label(w['last_period'])}; nothing later listed."
         elif w["months_note"]:
@@ -725,6 +783,12 @@ def _render_water(
         head=head,
         place=place,
         schedule=schedule,
+        # The calendar box (DECISIONS 0062) and its feed, for a schedule
+        # state's water (DECISIONS 0064); the feed is written below. The box
+        # also holds the web push control (DECISIONS 0069) when the build has
+        # a push config, under this water's id.
+        calendar_feed=ics.has_feed(state),
+        push_water_id=w["id"],
         w_kind=wd["kind"],
         w_verb=wd["verb"],
         plants=plants,
@@ -746,9 +810,30 @@ def _render_water(
         ),
         next_label=when_label(w["next_period"]) if w["next_period"] else "",
         last_label=when_label(w["last_period"]) if w["last_period"] else "",
-        fetched_label=_fmt_dt(state["checks"]["last_success_at"]),
-        attempt_failed=not state["checks"]["last_attempt_ok"],
-        attempt_label=_fmt_dt(state["checks"]["last_attempt_at"]),
+        **fresh,
     )
     ctx.write_page(ctx.out_dir, w["site_path"].strip("/"), html, ctx.written)
+    _write_feed(ctx, state, w, page_url, species)
     return page_url, lastmod, thin
+
+
+def _write_feed(
+    ctx: StatesContext,
+    state: dict[str, Any],
+    w: dict[str, Any],
+    page_url: str,
+    species: str,
+) -> None:
+    """The water's calendar feed (DECISIONS 0064), for a schedule state. Next
+    to the page, as California's is, so the box's relative "feed.ics" and
+    webcal links resolve the same way on both."""
+    if not ics.has_feed(state):
+        return
+    ics_path = ctx.out_dir / w["site_path"].strip("/") / "feed.ics"
+    ics_path.write_text(
+        ics.build_schedule_ics(
+            water=w, state=state, page_url=page_url, species=species
+        ),
+        encoding="utf-8",
+    )
+    ctx.written.append(ics_path)

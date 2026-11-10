@@ -11,7 +11,7 @@
   {% endif %}
   {# correction 1 (apps coverage): lede begins #}
   The {{ site_name }} apps for iPhone (with widgets) and for
-  Android collect no data: no analytics, no tracking, no advertising and no
+  Android collect no data: no analytics, no advertising and no
   account. Neither app includes analytics, advertising or crash-reporting code.
   The Android app is free, sells nothing and does include one library from
   Google, described under <a href="#app">The apps</a>.
@@ -20,17 +20,17 @@
 {% else %}
 <p class="lede">
   Neither the {{ site_name }} website nor its apps for iPhone and Android collect
-  personal data. There is no account, no analytics, no advertising, no
-  tracking, and no third-party script on the website.
+  personal data. There is no account, no analytics, no advertising and no
+  third-party script on the website.
 </p>
 {% endif %}
 <p>
   The website's water pages and its &ldquo;What to bring&rdquo; page do carry
-  plain links to Amazon.com that earn the owner a commission; they are links, not ads, scripts or trackers. See
+  plain links to Amazon.com that earn the owner a commission; they are plain links, not ads or scripts. See
   <a href="#affiliate">Gear links</a>.
 </p>
 {# correction 1 (apps coverage): scope line #}
-<p class="muted">Last updated 2026-11-04. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
+<p class="muted">Last updated {% if push %}2026-11-08{% else %}2026-11-08{% endif %}. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
 
 <h2 id="site">The website</h2>
 {% if ga4_measurement_id %}
@@ -91,8 +91,15 @@
       add-on</a> for Google Analytics.</li>
   <li>Calendar feeds (.ics) and Atom feeds (.atom) are plain files with no
       analytics; your calendar or feed app downloads them directly. This site
-      does not know who has subscribed.</li>
-  <li>No account, no email address, no sign-up, anywhere on this site.</li>
+      does not know who has subscribed. If you press a water page&rsquo;s Google Calendar link, your browser
+      opens calendar.google.com with that water&rsquo;s feed address, and
+      Google then fetches the feed for your calendar under
+      <a href="https://policies.google.com/privacy">Google's privacy
+      policy</a>.</li>
+  <li>No account, no email address, no sign-up, anywhere on this site{% if push %},
+      apart from the optional web push notification for one water described
+      under <a href="#push">Web push notifications</a>, which asks for
+      neither{% endif %}.</li>
   <li>The site is hosted on GitHub Pages. Like any web host, GitHub receives
       standard request information (IP address, the page requested, time,
       browser type) to serve pages &mdash; see GitHub's
@@ -103,12 +110,12 @@
 <p id="link-clicks">
   <strong>Link click events.</strong> When you click a gear link on a
   water page or on the &ldquo;What to bring&rdquo; page (or on a county
-  page, the county list or the home page), or the calendar feed
-  (.ics) link on a water page, Google Analytics records that the click
+  page, the county list or the home page), or one of the calendar links
+  on a water page (Apple Calendar, Google Calendar or the .ics file), Google Analytics records that the click
   happened, which kind of page it was on (such as a water page, a county
   page or the home page), the kind of
-  link (an Amazon search or a calendar feed), and the link&rsquo;s host name
-  (www.amazon.com, or this site&rsquo;s own address). It does not record the
+  link (an Amazon search or which calendar link), and the link&rsquo;s host name
+  (www.amazon.com, calendar.google.com, or this site&rsquo;s own address). It does not record the
   full link, so the affiliate tag and the search terms are not part of these
   events. The same rules apply as above: nothing is recorded if your browser
   sends Global Privacy Control or Do Not Track, or if you opted out. These
@@ -119,20 +126,79 @@
 {# END seo/click-events paragraph #}
 {% else %}
 <ul>
-  <li>Every page is a plain static file. No cookies are set. The one script is
+  <li>Every page is a plain static file. No cookies are set. {% if push %}The scripts are
+      the home page&rsquo;s &ldquo;Sort by closest to me&rdquo; button and a water
+      page&rsquo;s web push control, and neither does anything until you press
+      it; see <a href="#location">Your location and map links</a> and
+      <a href="#push">Web push notifications</a>.{% else %}The one script is
       the home page&rsquo;s &ldquo;Sort by closest to me&rdquo; button, which
       does nothing until you press it; see
-      <a href="#location">Your location and map links</a>.</li>
-  <li>No page makes a request to any server other than the one serving it.</li>
+      <a href="#location">Your location and map links</a>.{% endif %}</li>
+  <li>No page makes a request to any server other than the one serving it{% if push %},
+      except the request this site makes to its own notification service when
+      you press &ldquo;Alert me about this water&rdquo; (see
+      <a href="#push">Web push notifications</a>){% endif %}.</li>
   <li>Calendar feeds (.ics) and Atom feeds (.atom) are plain files; your
       calendar or feed app downloads them directly. This site does not know
-      who has subscribed.</li>
+      who has subscribed. If you press a water page&rsquo;s Google Calendar link, your browser
+      opens calendar.google.com with that water&rsquo;s feed address, and
+      Google then fetches the feed for your calendar under
+      <a href="https://policies.google.com/privacy">Google's privacy
+      policy</a>.</li>
   <li>The site is hosted on GitHub Pages. Like any web host, GitHub receives
       standard request information (IP address, the page requested, time,
       browser type) to serve pages &mdash; see GitHub's
       <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">privacy
       statement</a>. This site adds no collection on top of that.</li>
 </ul>
+{% endif %}
+
+{% if push %}
+{# BEGIN web push section (DECISIONS 0069): keep this block self-contained #}
+<h2 id="push">Web push notifications</h2>
+<p>
+  A California or Tennessee water page has an &ldquo;Alert me about this
+  water&rdquo; button in its calendar box. Nothing described here happens
+  unless you press it and then allow notifications in your browser&rsquo;s own
+  prompt. One water per browser.
+</p>
+<ul>
+  <li><strong>What is stored.</strong> When you allow it, your browser creates
+      a push subscription, and this site keeps it in the site&rsquo;s own
+      Amazon Web Services account, in the United States: the
+      subscription&rsquo;s address (a URL your browser&rsquo;s push service
+      issues: Apple&rsquo;s, Google&rsquo;s or Mozilla&rsquo;s), its two
+      encryption keys, the water you chose, when you subscribed and when the
+      last notification was sent to it. Nothing else: no account, no name, no
+      email address.</li>
+  <li><strong>The request.</strong> Pressing the button sends that
+      subscription to <code>{{ push.api_url }}</code>. Like any web request
+      it carries your IP address; the service does not keep it, and its logs
+      hold counts and status codes, never addresses.</li>
+  <li><strong>What a notification is.</strong> After each schedule check, if
+      the agency added, moved or dropped a date for your water, one message
+      goes to your browser through your push service, encrypted so that only
+      your browser can read it. It names the water and the date, says the
+      date is scheduled and not confirmed and whose schedule it is, and links
+      back to the water page. That link carries
+      <code>utm_source=web-push</code> and <code>utm_medium=push</code>
+      {%- if ga4_measurement_id %}, so Google Analytics can count visits that came
+      from a notification, under the same opt-outs as above{% else %}; this site
+      has no analytics, so nothing reads them{% endif %}.</li>
+  <li><strong>Stopping.</strong> The &ldquo;Stop these notifications&rdquo;
+      control on the same water page deletes the stored subscription. Turning
+      notifications for this site off in your browser, or removing the Home
+      Screen web app on an iPhone or iPad, makes the address stop working, and
+      the stored copy is deleted the next time a message to it fails. A
+      subscription that has had nothing sent to it for about 13 months is
+      deleted on its own.</li>
+  <li><strong>Counting.</strong> The service keeps totals, nothing per
+      person: how many subscriptions were made and stopped, and how many
+      messages were sent and failed.{% if ga4_measurement_id %} The button press itself is counted by
+      Google Analytics as a calendar-subscribe click of type &ldquo;push&rdquo;,
+      under the opt-outs described above.{% endif %}</li>
+</ul>
+{# END web push section #}
 {% endif %}
 
 <h2 id="location">Your location and map links</h2>
@@ -166,7 +232,7 @@
 <ul>
   <li>The links are on the website, never in the iOS app.</li>
   <li>They are ordinary links. Nothing loads from Amazon when a page opens,
-      and this site adds no script, pixel or tracking for them.</li>
+      and this site adds no script or pixel for them.</li>
   <li>Once you click, Amazon&rsquo;s own site and privacy notice apply, and
       Amazon uses the link&rsquo;s tag to credit this site.{% if ga4_measurement_id %}
       The analytics described above can count a click on any link to another
@@ -181,7 +247,7 @@
 <h2 id="app">The apps</h2>
 <ul>
   {# correction 1 (apps coverage): items begin #}
-  <li><strong>No analytics:</strong> neither app has analytics, tracking,
+  <li><strong>No analytics:</strong> neither app has analytics,
       advertising or crash reporting.{% if ga4_measurement_id %} The website's
       Google Analytics does not run inside the apps.{% endif %}</li>
   <li><strong>iPhone and widgets:</strong> the iPhone app and its widgets use

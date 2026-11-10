@@ -348,6 +348,44 @@ dd .tt-badge { margin-right: var(--space-2); }
 .tt-card__body p { margin: 0 0 var(--space-2); }
 .tt-card__body p:last-child, .gear p:last-child { margin-bottom: 0; }
 .gear h2 { margin-bottom: var(--space-2); }
+
+/* Calendar subscribe box on a water page (DECISIONS 0062): the same card
+   ground as the gear block, with two full-width tap targets, one per
+   calendar, so a phone visitor sees which one is theirs. The buttons use the
+   status-now colors, which already pass contrast in both schemes. */
+.calendar-subscribe {
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-3) 0 var(--space-4);
+}
+.calendar-subscribe h3 { margin: 0 0 var(--space-2); }
+.calendar-subscribe p { margin: 0 0 var(--space-3); }
+.calendar-subscribe p:last-child { margin-bottom: 0; }
+.calendar-subscribe__links { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: var(--space-2); }
+.calendar-subscribe__button {
+  display: block;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--status-now-bg);
+  color: var(--status-now-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+.calendar-subscribe__button:visited { color: var(--status-now-fg); }
+.calendar-subscribe__button:hover { text-decoration: underline; }
+.calendar-subscribe__url { overflow-wrap: anywhere; }
+/* The web push control (DECISIONS 0069), the box's third option, drawn as
+   the calendar buttons are but as a real <button>: it changes a setting in
+   this browser rather than going anywhere. */
+.push-subscribe { border-top: 1px solid var(--border); padding-top: var(--space-3); margin-bottom: var(--space-3); }
+.push-subscribe p { margin: 0 0 var(--space-2); }
+.push-subscribe__button { width: 100%; border: none; font: inherit; text-align: left; cursor: pointer; }
+.push-subscribe__button:hover { text-decoration: underline; }
+.push-subscribe__status:empty { display: none; }
 .gear-label {
   display: inline-block;
   margin: 0 0 var(--space-2);

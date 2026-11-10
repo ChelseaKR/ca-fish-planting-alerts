@@ -36,8 +36,10 @@ import com.chelseakr.cafishplanting.BuildConfig
 import com.chelseakr.cafishplanting.PurchaseBackend
 import com.chelseakr.cafishplanting.PurchaseUi
 import com.chelseakr.cafishplanting.core.FreeLaunch
+import com.chelseakr.cafishplanting.core.StateChoice
 import com.chelseakr.cafishplanting.core.StateInfo
 import com.chelseakr.cafishplanting.core.StateProducts
+import java.time.Instant
 
 /**
  * The States screen (DECISIONS 0025), the twin of `StatesView.swift`: every
@@ -108,6 +110,10 @@ private fun StateCard(info: StateInfo, unlocked: Boolean, sells: Boolean, price:
                     style = MaterialTheme.typography.bodySmall,
                     color = secondaryText,
                 )
+                // A paused state says so here too (DECISIONS 0053), never as current.
+                StateChoice.pausedSince(info, Instant.now())?.let { since ->
+                    Text("Updates paused since ${StateChoice.dayLabel(since)}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                }
                 if (info.code == "CA" && sells) {
                     Text("California full access is the original one-time purchase.", style = MaterialTheme.typography.bodySmall, color = secondaryText)
                 }

@@ -8,6 +8,7 @@ import datetime as dt
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -277,3 +278,198 @@ def test_the_cadence_sentence_does_not_assume_two_sources():
     assert "plan source" not in three
     with pytest.raises(ValueError):
         llms.render(states=[state("XX", "Nowhere", "forecast")], **kwargs)
+
+
+# ---- the hubs, feeds and read times an assistant needs (2026-11-08) --------
+
+
+def test_every_county_page_written_is_listed_with_its_feed(two_sites):
+    site, _ = two_sites
+    doc = parse_llms((site / "llms.txt").read_text(encoding="utf-8"))
+    listed = dict(doc["sections"]["California counties"])
+    written = {
+        f"{BASE_URL}/county/{p.parent.name}/"
+        for p in (site / "county").glob("*/index.html")
+    }
+    assert written  # the build wrote county pages, or this proves nothing
+    assert set(listed.values()) == written
+    # Each line's Atom feed is a file the build wrote, and it is the feed of
+    # that county, not another's.
+    for line in (site / "llms.txt").read_text(encoding="utf-8").split("\n"):
+        m = re.match(
+            rf"^- \[(.+)\]\({re.escape(BASE_URL)}/county/([^/]+)/\): \d+ waters? on the record; "
+            rf"Atom feed {re.escape(BASE_URL)}/(feeds/county/([^ ]+)\.atom)$",
+            line,
+        )
+        if m:
+            assert m.group(2) == m.group(4), line
+            assert (site / m.group(3)).is_file(), line
+    # The negative control: a county the build did not write is caught.
+    assert f"{BASE_URL}/county/nowhere/" not in written
+
+
+def test_calendar_feed_pattern_names_a_feed_the_build_wrote(two_sites):
+    site, _ = two_sites
+    text = (site / "llms.txt").read_text(encoding="utf-8")
+    doc = parse_llms(text)
+    assert "Calendar feeds (iCalendar)" in doc["sections"]
+    pattern = f"{BASE_URL}/water/<name>/feed.ics"
+    assert pattern in text
+    slugs = [p.parent.name for p in (site / "water").glob("*/feed.ics")]
+    assert slugs  # the build wrote calendar feeds
+    real = pattern.replace("<name>", slugs[0])
+    assert (site / real[len(BASE_URL) + 1 :]).is_file()
+    # Negative control: the same pattern with a different file name points
+    # at nothing, so the check is not vacuous.
+    wrong = pattern.replace("<name>", slugs[0]).replace("feed.ics", "calendar.ics")
+    assert not (site / wrong[len(BASE_URL) + 1 :]).is_file()
+    assert "webcal://" in text and '"scheduled"' in text
+    assert (
+        "stocked" not in text.split("## Calendar feeds (iCalendar)")[1].split("##")[0]
+    )
+
+
+def test_the_build_states_when_californias_schedule_was_read(two_sites):
+    site, _ = two_sites
+    doc = parse_llms((site / "llms.txt").read_text(encoding="utf-8"))
+    # FETCHED is the fixture's read time; the pages print it the same way.
+    assert "California's schedule was read 2026-09-17 23:00 UTC" in doc["loose"]
+    assert "not the time the page was fetched" in doc["loose"]
+    assert llms.READING_NOTES in doc["loose"]
+    # The reading notes never promise fish.
+    assert "not a statement about whether fish are present" in llms.READING_NOTES
+    assert "stocked" not in llms.READING_NOTES
+
+
+def test_without_a_fetched_label_no_read_time_sentence_is_invented():
+    text = llms.render(
+        site_name="Trout Truck",
+        base_url=BASE_URL,
+        attribution_text="Data: X.",
+        states=[],
+        region_feeds=[],
+        week_label="week of 2026-09-13",
+    )
+    assert "was read" not in text
+    assert "## States" not in text
+    assert "## California counties" not in text
+    assert "## Calendar feeds" not in text
+
+
+def test_states_section_lists_each_other_state_hub_with_its_read_time(
+    multi_state_site,
+):
+    site, v2 = multi_state_site
+    text = (site / "llms.txt").read_text(encoding="utf-8")
+    doc = parse_llms(text)
+    others = [s for s in v2["states"] if s["code"] != "CA"]
+    assert len(others) >= 2  # or the section proves little
+    listed = dict(doc["sections"]["States"])
+    assert listed == {s["name"]: f"{BASE_URL}/{s['code'].lower()}/" for s in others}
+    for s in others:
+        line = next(ln for ln in text.split("\n") if ln.startswith(f"- [{s['name']}]"))
+        assert (site / s["code"].lower() / "index.html").is_file()
+        assert f"/{s['code'].lower()}/water/<name>/" in line
+        n = sum(1 for w in v2["waters"] if w["state"] == s["code"])
+        assert f"{n} water page" in line
+        # The read time is the snapshot's, in the pages' format.
+        stamp = s["checks"]["last_success_at"]
+        label = dt.datetime.fromisoformat(stamp.replace("Z", "+00:00")).strftime(
+            "%Y-%m-%d %H:%M UTC"
+        )
+        if s["source"].get("read_method") == "manual":
+            assert "downloaded" in line
+        else:
+            assert f"last read {label}" in line
+        if s["checks"]["last_attempt_ok"]:
+            assert "failed" not in line
+    # California has no hub page; Home is its hub.
+    assert "California" not in listed
+
+
+def _hub(**over: Any) -> dict[str, Any]:
+    base = {
+        "name": "Tennessee",
+        "url": f"{BASE_URL}/tn/",
+        "agency_name": "Tennessee Wildlife Resources Agency",
+        "agency_short": "TWRA",
+        "semantics": "schedule",
+        "water_count": 3,
+        "manual": False,
+        "manual_sentence": "",
+        "automatic_failing": False,
+        "attempt_failed": False,
+        "fetched_date": "2026-10-15",
+        "fetched_label": "2026-10-15 13:31 UTC",
+        "attempt_label": "2026-11-08 01:18 UTC",
+    }
+    base.update(over)
+    return base
+
+
+def _render_hubs(*hubs: dict[str, Any]) -> str:
+    return llms.render(
+        site_name="Trout Truck",
+        base_url=BASE_URL,
+        attribution_text="Data: X.",
+        states=[],
+        region_feeds=[],
+        week_label="week of 2026-11-01",
+        state_hubs=list(hubs),
+    )
+
+
+def test_a_failed_latest_check_is_said_on_the_hub_line():
+    ok = _render_hubs(_hub())
+    failed = _render_hubs(_hub(attempt_failed=True))
+    assert "TWRA's data was last read 2026-10-15 13:31 UTC." in ok
+    assert "failed" not in ok.split("## States")[1]
+    assert (
+        "The check on 2026-11-08 01:18 UTC failed, so the pages show the data "
+        "from the last good read." in failed
+    )
+    # Negative control: the two renders differ only by that sentence.
+    assert (
+        failed.replace(
+            " The check on 2026-11-08 01:18 UTC failed, so the pages show the data "
+            "from the last good read.",
+            "",
+        )
+        == ok
+    )
+
+
+def test_a_manual_load_uses_the_pages_own_sentence_and_never_says_failed():
+    sentence = (
+        "This data is from TWRA's published schedule file, downloaded 2026-11-07."
+    )
+    text = _render_hubs(
+        _hub(manual=True, manual_sentence=sentence, attempt_failed=False)
+    )
+    assert sentence in text
+    assert "last read" not in text.split("## States")[1]
+    assert "failed" not in text.split("## States")[1]
+
+
+def test_each_source_kind_is_named_in_its_own_words_and_never_stocked_for_a_schedule():
+    text = _render_hubs(
+        _hub(semantics="schedule"),
+        _hub(
+            name="Michigan",
+            url=f"{BASE_URL}/mi/",
+            agency_short="DNR",
+            semantics="report",
+        ),
+        _hub(
+            name="New York", url=f"{BASE_URL}/ny/", agency_short="DEC", semantics="plan"
+        ),
+    )
+    section = text.split("## States")[1]
+    tn, mi, ny = (ln for ln in section.split("\n") if ln.startswith("- ["))
+    assert "stocking schedule (planned dates the agency can change)" in tn
+    assert "stocked" not in tn and "confirmed" not in tn
+    assert "stocking report (stockings already made)" in mi
+    assert "seasonal stocking plan, in the agency's own words" in ny
+    assert "1 water page " not in tn and "3 water pages" in tn
+    with pytest.raises(KeyError):
+        _render_hubs(_hub(semantics="forecast"))

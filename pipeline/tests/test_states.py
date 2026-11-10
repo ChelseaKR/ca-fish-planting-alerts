@@ -501,6 +501,54 @@ def test_ma_reads_hub_politely_and_never_the_403_host():
     assert len(ma.parse(bodies).records) == 150
 
 
+MA_RESULT = (
+    "https://hub.arcgis.com/api/v3/datasets/e27aa5ec1ef74659aac1ef12b39510f1_0"
+    "/downloads/data?format=csv&spatialRefId=2249&where=1%3D1"
+)
+
+
+@respx.mock
+def test_ma_refuses_a_file_hub_marks_stale_and_never_reads_it():
+    # Hub's answer on 2026-11-07: its file was built before MassWildlife's
+    # last edit to the layer (DECISIONS 0063).
+    respx.get("https://hub.arcgis.com/robots.txt").respond(
+        200, text=HUB_ROBOTS, headers={"content-type": "text/plain"}
+    )
+    respx.get(url__startswith=ma.DOWNLOAD_URL).respond(
+        200,
+        json={
+            "message": "Download is available at the result url.",
+            "status": "Completed",
+            "cacheStatus": "stale",
+            "resultUrl": MA_RESULT,
+        },
+    )
+    csv_route = respx.get(url__startswith=MA_RESULT.split("?")[0]).respond(
+        200, text=_text("ma.csv")
+    )
+    with httpx.Client() as client, pytest.raises(StateFetchError, match="stale"):
+        ma.fetch(client, UA, no_sleep)
+    assert not csv_route.called
+
+
+@respx.mock
+def test_ma_control_a_file_hub_marks_ready_is_read():
+    respx.get("https://hub.arcgis.com/robots.txt").respond(
+        200, text=HUB_ROBOTS, headers={"content-type": "text/plain"}
+    )
+    respx.get(url__startswith=ma.DOWNLOAD_URL).respond(
+        200,
+        json={"status": "Completed", "cacheStatus": "ready", "resultUrl": MA_RESULT},
+    )
+    csv_route = respx.get(url__startswith=MA_RESULT.split("?")[0]).respond(
+        200, text=_text("ma.csv")
+    )
+    with httpx.Client() as client:
+        bodies = ma.fetch(client, UA, no_sleep)
+    assert csv_route.called
+    assert len(ma.parse(bodies).records) == 150
+
+
 @respx.mock
 def test_ma_refuses_a_result_url_on_another_host():
     respx.get("https://hub.arcgis.com/robots.txt").respond(

@@ -22,10 +22,10 @@ SEMGREP_VERSION := 1.166.0
 # subdirectory, so nothing lands inside the checkout.
 TMP := $(shell mktemp -d 2>/dev/null || mktemp -d -t cfpa)
 
-.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
+.PHONY: verify sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight import-tn-csv freshness pushlambda pushinfra
 
 # Stage order per CI-CD-STANDARD §1: format, lint, type, test, security.
-verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight
+verify: sync format lint typecheck test smoke build audit sast secrets hygiene appstore greenlight pushlambda
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --summary $(TMP)/greenlight/status
 
 # CQ-09: `uv lock --check` first. `--frozen` installs from uv.lock without
@@ -46,6 +46,15 @@ lint:
 typecheck:
 	cd $(PIPELINE) && $(UV_RUN) mypy --strict src
 	cd $(PIPELINE) && $(UV_RUN) mypy --strict ../scripts
+
+# Tennessee by hand (DECISIONS 0061): load TWRA's downloadable CSV into
+# pipeline/data/states/tn.json while tn.gov refuses the automated read.
+#   make import-tn-csv CSV="$HOME/Downloads/Trout Fishing and Stockings in Tennessee.csv"
+# DOWNLOADED_AT=2026-11-07 (or 2026-11-07T11:23-08:00) overrides the file's
+# modification time as the download time.
+import-tn-csv:
+	test -n "$(CSV)"
+	$(UV_RUN) --project $(PIPELINE) python -I -m cfpa.import_tn_csv "$(CSV)" --states-dir $(PIPELINE)/data/states $(if $(DOWNLOADED_AT),--downloaded-at "$(DOWNLOADED_AT)")
 
 # Branch coverage floor lives in pipeline/pyproject.toml ([tool.coverage.report]).
 test:
@@ -124,3 +133,28 @@ appstore:
 greenlight:
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --self-test
 	cd $(PIPELINE) && $(UV_RUN) python ../scripts/check_greenlight.py --status-file $(TMP)/greenlight/status
+
+# The web push service's own tests (DECISIONS 0069, infra/web-push/lambda):
+# node's built-in runner against the handler with an in-memory store and a
+# stand-in sender, so they need no npm install and no AWS. node is already a
+# requirement of the test stage (the GA4 tag runs under it).
+pushlambda:
+	node --test infra/web-push/lambda/handler.test.mjs infra/web-push/lambda/validate.test.mjs
+
+# The web push Terraform (infra/web-push) parses and is internally
+# consistent. Not part of `verify`: it needs terraform and a provider
+# download. It never plans or applies anything: -backend=false reads no
+# state and touches no account.
+pushinfra:
+	terraform -chdir=infra/web-push init -backend=false -input=false -no-color
+	terraform -chdir=infra/web-push validate -no-color
+	terraform -chdir=infra/web-push fmt -check -recursive
+
+# The freshness watchdog (DECISIONS 0065): every live state's last
+# successful read, from the committed pipeline/data/states/<code>.json, must
+# be younger than its allowance (7 days unless the state's module says
+# otherwise). Not part of `verify`: it measures the agencies' feeds, not this
+# code, and a stuck feed must never block a merge. publish.yml runs it as
+# its own job after the data commit, so a stuck state is a red job on main.
+freshness:
+	cd $(PIPELINE) && $(UV_RUN) python -m cfpa.freshness

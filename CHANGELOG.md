@@ -20,6 +20,74 @@ This repository was republished with a new history on 2026-09-18
   same-county water link says where that water stands, with this week's
   waters first. URLs, titles and H1s are unchanged.
 
+- Site: a free web push test (DECISIONS 0069). The calendar box of every
+  California and Tennessee water page gets a third option, "Alert me about
+  this water", which subscribes that browser to one water. After each
+  publish, `cfpa.push` compares the live snapshot with the new one on the
+  same records the calendar feed carries (listed days and weeks, this week
+  or later) and sends one message per changed water, in the pages' words:
+  "scheduled, not confirmed", the agency named, a link to the water page;
+  a TBD month, a past week, a cold start and a water CDFW no longer lists
+  never send. The store and sender are Terraform under `infra/web-push`
+  (Trout Truck's own AWS account, not applied here); the privacy page gains
+  a section; an iPhone in a Safari tab gets the Home Screen two-step
+  instruction instead of a button, with the manifest that needs. Off, and
+  byte for byte as before, until the `PUSH_API_URL` and
+  `PUSH_VAPID_PUBLIC_KEY` variables are set. The 60-day read and the kill
+  rule are in 0069. `make pushlambda` (in `verify`) tests the service;
+  `make pushinfra` validates the Terraform.
+
+- Publish: a freshness watchdog job (DECISIONS 0065). After the data commit,
+  `make freshness` reads each live state's committed history and the job
+  goes red when a state's last successful read is older than 7 days (a
+  state module may declare its own allowance; a manual import counts from
+  its download time; a state behind an off flag is not checked). The job
+  summary names the state, its last good read and the age. The data commit
+  and the deploy never wait on it, and it opens no issue. Before, a state
+  whose feed was refused was one warning in a green run: Tennessee's was,
+  for 23 days.
+
+- Site: /llms.txt now lists the other states' hub pages with each agency's
+  last read time and whether the latest check failed, every California
+  county page with its Atom feed, the calendar-feed address pattern, the
+  time California's schedule was read in this build, and a short note on how
+  to read a page's status words. Before, an assistant reading the file found
+  the sources and the Atom feeds but no state or county page, no calendar
+  feed and no read time. The pages and robots.txt are unchanged. GA4 shows
+  AI assistants (all chatgpt.com) as the site's largest engaged channel.
+
+- Site: a Tennessee water page has the same calendar box as a California
+  one and a calendar feed of its own, `/tn/water/<slug>/feed.ics`
+  (DECISIONS 0064). A TWRA day is a one-day all-day event, a "week of"
+  Sunday is a seven-day event, and a "TBD <month>" is never an event, only
+  words in the calendar's description. Every event credits TWRA, says the
+  date is scheduled and not confirmed, gives the data's source and date,
+  and links the water page. Massachusetts, Michigan and New York pages are
+  unchanged; the decision says what each would need.
+
+- Site: a California water page has a calendar box right after the status
+  badge, with one button for Apple Calendar and one for Google Calendar,
+  which is the way in on Android phones (DECISIONS 0062). Before, the only
+  subscribe link was an inline webcal:// link more than a phone screen down,
+  which Android does not open without an extra app. The privacy page says
+  how the Google Calendar link works.
+
+- Tennessee can be loaded from TWRA's downloadable CSV by hand,
+  `make import-tn-csv CSV=...`, while tn.gov refuses the automated read
+  (DECISIONS 0061). The header must match TWRA's columns exactly. Pages then
+  say the data is from TWRA's published schedule file and its download
+  date, and a later failed automated check doesn't relabel it.
+
+- Android: About has a "Write to the developer" row that opens your email
+  app addressed to chelsea@chelseakr.com, with the app version in the
+  subject (DECISIONS 0057). Alerts keep their one button, "Mute this water".
+
+- Android: the introduction asks which state you fish, from the snapshot's
+  list, with none chosen (DECISIONS 0053). Skipping opens Browse on the list
+  of states instead of California. A state whose updates have stopped says
+  "Updates paused since <date>" there, on the States sheet and in Browse's
+  state menu. iOS is unchanged until the App Review Board answers.
+
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says
   river or creek offers spinners and spoons and waders; any other keeps the
@@ -111,6 +179,10 @@ This repository was republished with a new history on 2026-09-18
   secret is involved; the key file served at the site root is public by design.
 
 ### Changed
+
+- Site: the privacy and about pages and the privacy page's search description
+  no longer say "no tracking", alone or in a list, with analytics or web push
+  on or off. A test holds this in every build. The wording matches PR #144. The privacy page's "Last updated" date is now 2026-11-08.
 
 - Apps: national wording (DECISIONS 0049). The introduction (now version 2)
   opens with trout stocking schedules from state wildlife agencies instead of
@@ -309,6 +381,18 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Pipeline: Massachusetts no longer calls a stale file a good check
+  (DECISIONS 0063). ArcGIS Hub marks its copy of MassWildlife's layer
+  stale; the copy was built 2026-10-13 (150 rows; the layer has 155). The check now fails,
+  the last good data is kept, and the pages say the check failed.
+
+- Site: a state water page whose latest check failed no longer says
+  "Nothing later is on TWRA's schedule right now" when the last good read
+  has no later date. It says nothing later was listed when the file was last
+  read, on that date, and that the agency may have listed later dates since.
+  The meta description drops "nothing later listed" the same way. Tennessee's
+  checks have failed since 2026-10-15 while TWRA's file, checked 2026-11-07,
+  lists 2027 dates for waters such as Doe River.
 - Tennessee reads TWRA's 2027 schedule. "TBD 12/2027" in the STOCKING WEEK
   column is a month ("December 2027"), never a week. A "week of" date that
   isn't a Sunday (four in the 2026-11-05 file) is skipped, never moved to a

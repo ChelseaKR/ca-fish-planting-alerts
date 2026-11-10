@@ -1,0 +1,68 @@
+{#- Calendar subscribe box on a water page (DECISIONS 0062; on a schedule
+    state's water page too, DECISIONS 0064).
+    Needs: water, canonical_url, app_store_url, root.
+    Optional, each defaulting to California's words so a California page
+    renders byte for byte as before: calendar_agency ("CDFW"), calendar_each
+    ("each week"; Tennessee: "each day or week"), calendar_what ("new weeks";
+    Tennessee: "new dates"), calendar_new ("in a new week"; Tennessee: "on a
+    new date") and calendar_placement ("water"; a state page: "state_water",
+    as its gear block reports).
+
+    It sits inside the status block, right after the badge, so on a phone it
+    is on the first screen, next to the facts it subscribes to. Before 0062
+    it was one inline sentence about 1.2 to 1.6 phone screens down, and its
+    only subscribe link was webcal://, which Android does not open without
+    an extra app.
+
+    Three ways in, each labeled by the calendar it works with. The visible
+    copy names no phone platform other than Apple's: until the Android app is
+    on Google Play, the privacy page is the only page that names Android
+    (test_site_app_store.py).
+    - webcal:// for iPhone, iPad and Mac (Apple Calendar subscribes and keeps
+      polling; an https .ics link would only import today's copy);
+    - Google Calendar's add-by-URL link, the way in on Android phones, which
+      opens calendar.google.com and adds the same feed as a subscription;
+    - the plain https .ics file as a one-time copy, plus its address for any
+      other calendar app.
+    Each link carries calendar_subscribe_click with its own data-ga-type, so
+    the report can tell the three apart. The event is a tap, not a confirmed
+    subscription: nothing here can see whether a calendar added the feed. -#}
+{% set feed_https = canonical_url ~ "feed.ics" %}
+{% set webcal_url = "webcal://" ~ canonical_url.split("://", 1)[1] ~ "feed.ics" %}
+{% set google_url = "https://calendar.google.com/calendar/r?cid=" ~ (webcal_url|urlencode|replace("/", "%2F")) %}
+{% set cal_agency = calendar_agency|default("CDFW") %}
+{% set cal_each = calendar_each|default("each week") %}
+{% set cal_what = calendar_what|default("new weeks") %}
+{% set cal_new = calendar_new|default("in a new week") %}
+{% set cal_placement = calendar_placement|default("water") %}
+<div class="calendar-subscribe" role="group" aria-labelledby="calendar-heading">
+  <h3 id="calendar-heading">Get {{ water.name }}'s {{ cal_what }} in your calendar</h3>
+  <p>
+    Subscribe once: {{ cal_each }} {{ cal_agency }} schedules {{ water.name }} shows up in your
+    calendar, which checks for changes on its own. Free; Trout Truck needs no
+    account or email address.
+  </p>
+  <ul class="calendar-subscribe__links">
+    <li><a class="calendar-subscribe__button" href="{{ webcal_url }}" data-ga-event="calendar_subscribe_click" data-ga-placement="{{ cal_placement }}" data-ga-type="webcal">Apple Calendar (iPhone, iPad, Mac): subscribe</a></li>
+    <li><a class="calendar-subscribe__button" href="{{ google_url }}" rel="noopener noreferrer" data-ga-event="calendar_subscribe_click" data-ga-placement="{{ cal_placement }}" data-ga-type="google">Google Calendar (any phone or computer): add it</a></li>
+  </ul>
+  {#- The third way in, web push (DECISIONS 0069), inside this same box so it
+      never competes with the calendar buttons for the first screen. Only
+      when the build has a push config and the page names its water. -#}
+  {% if push and push_water_id %}
+  {% include "_push_subscribe.html.jinja" %}
+  {% endif %}
+  <p class="muted">
+    Google Calendar opens in your browser; once added, the calendar shows in
+    Google Calendar on your phone too, and Google can take up to a day to show
+    a change. Other
+    calendar apps: subscribe to
+    <span class="calendar-subscribe__url">{{ feed_https }}</span>, or
+    <a href="feed.ics" data-ga-event="calendar_subscribe_click" data-ga-placement="{{ cal_placement }}" data-ga-type="ics">download a one-time copy (.ics)</a>, which does not update.
+    {% if app_store_url %}
+    For a notification when {{ water.name }} appears {{ cal_new }}, <a href="{{ app_store_url }}" data-app-store-placement="water" data-app-store-kind="link">get the iOS app</a>.
+    {% else %}
+    An iOS app with a notification when {{ water.name }} appears {{ cal_new }} is on its way (<a href="{{ root }}about/#app">how it will work</a>).
+    {% endif %}
+  </p>
+</div>

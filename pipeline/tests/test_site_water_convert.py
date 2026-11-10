@@ -147,7 +147,7 @@ def test_subscribe_comes_before_the_lede_and_the_history(built) -> None:
         sub = html.index('data-ga-type="webcal"')
         assert sub < html.index('<p class="lede">'), w["slug"]
         assert sub < html.index("<h2>Planting history</h2>"), w["slug"]
-        assert html.count('data-ga-event="calendar_subscribe_click"') == 2
+        assert html.count('data-ga-event="calendar_subscribe_click"') == 3
 
 
 def test_past_water_says_nothing_current_and_its_last_week(built) -> None:

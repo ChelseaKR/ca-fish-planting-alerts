@@ -36,6 +36,7 @@ import jinja2
 
 from . import ads as ads_mod
 from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
+from . import push as push_mod
 from .snapshot import week_of
 from .thin import is_thin
 from .water_kind import WaterKind, water_kind
@@ -2002,6 +2003,9 @@ def _render_water_page(
             checked_on=ctx.source_checked_on,
             recorded_since=recorded_since,
         ),
+        # The id the web push control subscribes to (DECISIONS 0069): the
+        # v2 water id, which the push diff keys on.
+        push_water_id=w["id"],
     )
     _write_page(ctx.out_dir, f"water/{w['slug']}", html, ctx.written)
 
@@ -2922,6 +2926,49 @@ def _write_assets(
         written.append(badge_path)
 
 
+def _write_push_files(
+    env: jinja2.Environment,
+    out_dir: Path,
+    written: list[Path],
+    *,
+    push: push_mod.PushConfig | None,
+    base_url: str,
+) -> None:
+    """The three files web push needs (DECISIONS 0069), written only when it
+    is configured (None writes nothing): the page script under assets/, the service worker at the
+    site root (a worker's scope is its own directory, and GitHub Pages cannot
+    widen it with a header, so the root is the one place it can cover every
+    water page), and the web app manifest the iPhone needs to open the site
+    as a web app from the Home Screen. The worker and the manifest are
+    rendered: the worker carries the service's address and the public key,
+    the manifest the site's path on its host."""
+    if push is None:
+        return
+    js_path = out_dir / "assets" / push_mod.PUSH_JS_FILE
+    js_path.parent.mkdir(parents=True, exist_ok=True)
+    js_path.write_text(
+        (TEMPLATES_DIR / push_mod.PUSH_JS_FILE).read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    written.append(js_path)
+    worker_path = out_dir / push_mod.WORKER_FILE
+    worker_path.write_text(
+        env.get_template(f"{push_mod.WORKER_FILE}.jinja").render(
+            api_url=push.api_url, vapid_public_key=push.vapid_public_key
+        ),
+        encoding="utf-8",
+    )
+    written.append(worker_path)
+    manifest_path = out_dir / push_mod.MANIFEST_FILE
+    manifest_path.write_text(
+        env.get_template(f"{push_mod.MANIFEST_FILE}.jinja").render(
+            site_name=SITE_NAME, scope=urlsplit(base_url).path.rstrip("/") + "/"
+        ),
+        encoding="utf-8",
+    )
+    written.append(manifest_path)
+
+
 def _share_card_kinds(
     snapshot: dict[str, Any], snapshot_v2: dict[str, Any] | None
 ) -> list[str]:
@@ -2952,7 +2999,7 @@ def _privacy_description(*, ads_enabled: bool, analytics: bool) -> str:
         )
     return (
         f"What the {SITE_NAME} trout planting site and iOS app collect: "
-        "nothing. No account, no analytics, no tracking."
+        "nothing. No account and no analytics."
     )
 
 
@@ -2972,8 +3019,16 @@ def build_site(
     ads: ads_mod.AdsConfig | None = None,
     usgs_lake_names: dict[int, str] | None = None,
     build_date: dt.date | None = None,
+    push: push_mod.PushConfig | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
+
+    ``push`` (``push.push_config_or_none``, passed by ``cli.run`` from the
+    PUSH_API_URL and PUSH_VAPID_PUBLIC_KEY variables; DECISIONS 0069) adds
+    the web push control to the calendar box of every California and
+    Tennessee water page, the service worker and manifest it needs, and the
+    privacy page's section on it. None, the default, builds exactly what it
+    built before.
 
     ``build_date`` decides the date-gated parts of a page, today the /gear/
     holiday section (DECISIONS 0043). None means the UTC date of the
@@ -3067,6 +3122,10 @@ def build_site(
         # describe a state the build is not in.
         "ga4_measurement_id": ga4_measurement_id,
         "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
+        # Web push (DECISIONS 0069): the box's third option on a water page,
+        # the manifest link in every head, and the privacy section. None
+        # renders none of them.
+        "push": push.to_template() if push else None,
         **ads_common,
     }
     # The header's "Other states" link, only when v2 has another state, so a
@@ -3092,6 +3151,7 @@ def build_site(
     # ---- assets/
     coords = water_coords(snapshot_v2)
     _write_assets(out_dir, written, app_store_live=app_store_live, coords=coords)
+    _write_push_files(env, out_dir, written, push=push, base_url=base_url)
     ads_mod.write_files(out_dir, written, ads, minify=minify_css)
     share_cards.write_cards(
         out_dir,
@@ -3572,6 +3632,34 @@ def build_site(
         if snapshot_v2 is not None
         else []
     )
+    # The other states' hubs, with the same freshness words their pages use
+    # (site_states._freshness), and California's county pages with their
+    # feeds, so an assistant reading this file alone finds the right page
+    # and the data's age. California has no hub of its own: Home is it.
+    v2_states = [] if snapshot_v2 is None else list(snapshot_v2["states"])
+    v2_waters = [] if snapshot_v2 is None else list(snapshot_v2["waters"])
+    state_hubs = [
+        {
+            "name": st["name"],
+            "url": f"{base_url}/{st['code'].lower()}/",
+            "agency_name": st["agency"]["name"],
+            "agency_short": st["agency"]["short_name"],
+            "semantics": st["semantics"],
+            "water_count": sum(1 for w in v2_waters if w["state"] == st["code"]),
+            **site_states._freshness(st),
+        }
+        for st in v2_states
+        if st["code"] != "CA"
+    ]
+    county_hubs = [
+        {
+            "name": f"{c} County",
+            "url": f"{base_url}/county/{county_slug(c)}/",
+            "count": len(waters_by_county[c]),
+            "feed_url": f"{base_url}/{feeds.feed_path('county', county_slug(c))}",
+        }
+        for c in county_names
+    ]
     llms_path = out_dir / "llms.txt"
     llms_path.write_text(
         llms.render(
@@ -3587,6 +3675,10 @@ def build_site(
                 for r in region_links
             ],
             week_label=source_week_label,
+            fetched_label=source_fetched_label,
+            state_hubs=state_hubs,
+            county_hubs=county_hubs,
+            ics_pattern=f"{base_url}/water/<name>/feed.ics",
         ),
         encoding="utf-8",
     )

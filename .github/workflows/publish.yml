@@ -133,12 +133,18 @@ jobs:
         # Store badge and links the app's US listing (site.py
         # APP_STORE_CANONICAL_URL) unless APP_STORE_URL names another; off
         # leaves all of that out, and any other value fails the run.
+        # PUSH_API_URL and PUSH_VAPID_PUBLIC_KEY together (DECISIONS 0069,
+        # infra/web-push/README.md) put the web push control on the schedule
+        # states' water pages; both unset leaves every page as it was, and
+        # one without the other fails the run. Both values are public.
         # Passed through env, not interpolated into the script.
         env:
           SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
           APP_STORE_URL: ${{ vars.APP_STORE_URL }}
           APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}
           SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
+          PUSH_API_URL: ${{ vars.PUSH_API_URL }}
+          PUSH_VAPID_PUBLIC_KEY: ${{ vars.PUSH_VAPID_PUBLIC_KEY }}
         run: |
           uv run cfpa --site-out ../site \
             --base-url "$SITE_BASE_URL" \
@@ -146,6 +152,8 @@ jobs:
             --app-store-url "$APP_STORE_URL" \
             --app-store-live "$APP_STORE_LIVE" \
             --support-email "$SUPPORT_EMAIL" \
+            --push-api-url "$PUSH_API_URL" \
+            --push-vapid-public-key "$PUSH_VAPID_PUBLIC_KEY" \
             --source-log "$RUNNER_TEMP/source-log/source_log.json"
 
       - name: keep the source log for the next run (advisory)
@@ -200,6 +208,27 @@ jobs:
             --site-dir ../site --base-url "${SITE_BASE_URL%/}" \
             --kind sitemap --file sitemap.xml --missing-is-empty \
             --out "$RUNNER_TEMP/indexnow-urls.json"
+
+      - name: pick the schedule changes to tell web push subscribers (custom domain only)
+        # Web push (DECISIONS 0069). Runs BEFORE the push below replaces the
+        # live site, because the live snapshot/v2.json is what this build is
+        # compared with: one message per water whose listed, dated,
+        # this-week-or-later schedule changed (cfpa.push, the same records
+        # the water's calendar feed carries). Selection only; nothing is sent
+        # here. A live snapshot that cannot be read means nothing is sent
+        # this run, and a problem is a notice, never a failed run.
+        if: vars.SITE_BASE_URL != '' && vars.PUSH_API_URL != ''
+        continue-on-error: true
+        working-directory: pipeline
+        env:
+          SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
+        run: |
+          set -euo pipefail
+          uv run python -m cfpa.push diff \
+            --before-url "${SITE_BASE_URL%/}/snapshot/v2.json" \
+            --after ../site/snapshot/v2.json \
+            --base-url "${SITE_BASE_URL%/}" \
+            --out "$RUNNER_TEMP/push-events.json"
 
       - name: push the domain site to its Pages repository (custom domain only)
         # DECISIONS 0019, option B. This repository's own Pages site never
@@ -294,6 +323,30 @@ jobs:
           set -euo pipefail
           uv run python -m cfpa.indexnow submit --list "$RUNNER_TEMP/indexnow-urls.json"
 
+      - name: send the schedule changes to web push subscribers (custom domain only)
+        # After the domain has been verified to serve this run's snapshot, so
+        # the page a message links to already shows the change. The events
+        # file is the one picked above; with none, the service is not called.
+        # The service (infra/web-push, in Trout Truck's own AWS account) fans
+        # each message out to that water's subscribers and drops endpoints
+        # that answer 404 or 410. A failed send marks this step and nothing
+        # else: the deploy does not depend on it. The token is a secret that
+        # travels in a header the service never logs.
+        if: vars.SITE_BASE_URL != '' && vars.PUSH_API_URL != ''
+        continue-on-error: true
+        working-directory: pipeline
+        env:
+          PUSH_API_URL: ${{ vars.PUSH_API_URL }}
+          PUSH_SENDER_TOKEN: ${{ secrets.PUSH_SENDER_TOKEN }}
+        run: |
+          set -euo pipefail
+          events="$RUNNER_TEMP/push-events.json"
+          if [ ! -f "$events" ]; then
+            echo "::warning title=Web push::no events file from the selection step; nothing sent"
+            exit 0
+          fi
+          uv run python -m cfpa.push send --events "$events" --api-url "$PUSH_API_URL"
+
       - name: upload site as a Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
@@ -316,12 +369,54 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
 
+  freshness:
+    # The freshness watchdog (DECISIONS 0065). tn.gov refused the runner
+    # from 2026-10-15, and for 23 days every run here finished green: a
+    # state that fails keeps its last good data and prints one warning
+    # (DECISIONS 0025), and publish-health.yml's issue (#104) drew comments
+    # nobody read. This job reads the history files the build job committed
+    # a moment ago and goes red when any live state's last SUCCESSFUL read
+    # is older than its allowance (pipeline/src/cfpa/freshness.py: 7 days
+    # unless the state's module declares its own; a manual import counts
+    # from its download time; a state behind an off flag is not checked).
+    # Its own job on purpose: the data commit and the deploy never wait on
+    # it, so a stuck state cannot stop the other states from publishing,
+    # and its red is the publish run's red on main, which is what gets
+    # seen. It opens no issue: alert-on-failure below watches build and
+    # deploy only. The summary names each state, its last good read and
+    # the age.
+    needs: build
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          # main as it is now, with the data commit the build job just
+          # pushed; github.sha would be the tip from before this run.
+          ref: main
+          persist-credentials: false
+
+      - name: install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: install dependencies
+        working-directory: pipeline
+        run: uv sync --locked
+
+      - name: every live state's last good read is young enough
+        run: make freshness
+
   alert-on-failure:
     # The scheduled run failed on 2026-09-15, 09-16 and 09-17, and nothing
     # reported it until someone went looking. A failed or timed-out run now
     # opens one tracking issue, or comments on it if it is already open, so
     # a stale site produces a notification. A timeout is included because
     # GitHub reports a job that hits timeout-minutes as cancelled, not failed.
+    # Not the freshness job: a stuck state is a red job, not an issue
+    # (DECISIONS 0065).
     needs: [build, deploy]
     if: failure() || cancelled()
     runs-on: ubuntu-latest

@@ -147,10 +147,11 @@ The app can't reach testers until these are done in Play Console.
    public snapshot (v2, or v1 when v2 isn't there). Favorites, mutes and
    the alert baseline stay on the device and are excluded from cloud backup
    (`app/src/main/res/xml/backup_rules.xml` and
-   `data_extraction_rules.xml`).
-5. Store listing, content rating and target audience, using the iOS
-   listing's copy with "home screen" in place of "Home Screen and Lock
-   Screen", and with no purchase or price: on Android alerts and the
-   widget are free (0044).
+   `data_extraction_rules.xml`). The form answers, with the Play In-App
+   Review library's own data note, are in `docs/PLAY-LISTING.md` section 6.
+5. Store listing, content rating and target audience: paste-ready text and
+   answers are in `docs/PLAY-LISTING.md`. The copy says "home screen" where
+   iOS says "Home Screen and Lock Screen", and has no purchase or price: on
+   Android alerts and the widget are free (0044).
 6. Upload a signed release bundle to the internal testing track and add
    testers.

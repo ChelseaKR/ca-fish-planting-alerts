@@ -180,6 +180,9 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Site: the `/states/` page title no longer says "all 50 states"; it lists
+  the states the site carries. README states how Tennessee is loaded
+  (hand import of the 2026-11-07 CSV, DECISIONS 0061).
 - Site: the privacy and about pages and the privacy page's search description
   no longer say "no tracking", alone or in a list, with analytics or web push
   on or off. A test holds this in every build. The wording matches PR #144. The privacy page's "Last updated" date is now 2026-11-08.

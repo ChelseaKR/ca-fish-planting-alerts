@@ -5,8 +5,10 @@ wildlife agency publishes about trout stocking, at the agency's own precision
 (a week, a day, a report after the fact, or a plan in the agency's words), and
 keeps each water's history after the agency's own page moves on. In November
 2026 it carries California, Massachusetts, Michigan, New York and Tennessee.
-Tennessee's source has not been read successfully since 2026-10-15, so its
-pages show that date and nothing newer. The live list is whatever
+Tennessee is loaded by hand from a CSV downloaded 2026-11-07, because the
+automated read of its source has been refused since 2026-10-15 (the agency's
+robots.txt fails) and is off-limits. The agency, TWRA, has not answered the
+request to allow it. The live list is whatever
 `snapshot/v2.json` carries; this paragraph is a dated description of it, not
 a promise of coverage.
 

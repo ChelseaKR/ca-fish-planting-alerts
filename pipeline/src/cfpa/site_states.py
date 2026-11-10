@@ -479,7 +479,9 @@ def _render_index(
         }
         for s in states
     ]
-    title = f"Trout stocking schedule for all 50 states | {ctx.site_name}"
+    codes = [s["code"] for s in states]
+    listed = f"{', '.join(codes[:-1])} and {codes[-1]}" if len(codes) > 1 else codes[0]
+    title = f"Trout stocking schedules: {listed} | {ctx.site_name}"
     live = {s["code"]: row["href"] for s, row in zip(states, rows, strict=True)}
     entries = state_coverage.coverage(live)
     live_names = [e["name"] for e in entries if e["status"] == "live"]

@@ -1351,8 +1351,13 @@ def _ld_page(
     name: str,
     base_url: str,
     about: dict[str, Any],
+    date_modified: str | None = None,
 ) -> dict[str, Any]:
-    return {
+    """``date_modified`` is the page's sitemap lastmod (the day its data last
+    changed, never the build date), so a search engine or an AI assistant
+    reading either one gets the same date. Left out when the caller has no
+    data date: absence is never a placeholder value."""
+    node: dict[str, Any] = {
         "@type": page_type,
         "@id": page_url,
         "url": page_url,
@@ -1361,6 +1366,9 @@ def _ld_page(
         "breadcrumb": {"@id": f"{page_url}#breadcrumb"},
         "about": about,
     }
+    if date_modified:
+        node["dateModified"] = date_modified
+    return node
 
 
 def _ld_app(base_url: str, listing_url: str) -> dict[str, Any]:
@@ -2142,6 +2150,7 @@ def _render_county_page(
     region_name: str,
     region_link: dict[str, str] | None = None,
     region_counties: list[dict[str, str]] | None = None,
+    lastmod: str | None = None,
 ) -> str:
     """Write one county's page. Returns its URL.
 
@@ -2243,6 +2252,7 @@ def _render_county_page(
                 name=title,
                 base_url=ctx.base_url,
                 about=_ld_county(county),
+                date_modified=lastmod,
             ),
             _ld_breadcrumb(page_url, trail),
         ),
@@ -2308,6 +2318,7 @@ def _render_counties_index(
     regions: list[dict[str, Any]],
     species: str,
     county_count: int,
+    lastmod: str | None = None,
 ) -> str:
     """Write /county/. Returns its URL."""
     page_url = f"{ctx.base_url}/county/"
@@ -2332,6 +2343,7 @@ def _render_counties_index(
                 name=title,
                 base_url=ctx.base_url,
                 about={"@type": "State", "name": "California"},
+                date_modified=lastmod,
             ),
             _ld_breadcrumb(page_url, trail),
         ),
@@ -2353,6 +2365,7 @@ def _render_region_page(
     all_regions: list[dict[str, Any]],
     waters: list[dict[str, Any]],
     counties: list[dict[str, Any]],
+    lastmod: str | None = None,
 ) -> str:
     """Write one CDFW region's page (/region/<slug>/). Returns its URL.
 
@@ -2410,6 +2423,7 @@ def _render_region_page(
                 name=title,
                 base_url=ctx.base_url,
                 about={"@type": "State", "name": "California"},
+                date_modified=lastmod,
             ),
             _ld_breadcrumb(page_url, trail),
         ),
@@ -2503,6 +2517,11 @@ def _render_species_page(
     next_regions = _species_rows(snapshot, species["name"], next_week["start"])
     n_this = sum(len(r["rows"]) for r in this_regions)
     n_next = sum(len(r["rows"]) for r in next_regions)
+    lastmod = max(
+        _water_data_lastmod(w, source_week_start=this_start)
+        for w in snapshot["waters"]
+        if any(p["species"] == species["name"] for p in w["plants"])
+    )
     # Every water with a listed plant of this species on record, when the
     # list is short enough to be a page rather than the whole site again.
     # Longer lists stay on the county pages.
@@ -2557,6 +2576,7 @@ def _render_species_page(
                 name=title,
                 base_url=ctx.base_url,
                 about={"@type": "State", "name": "California"},
+                date_modified=lastmod,
             ),
             _ld_breadcrumb(page_url, trail),
         ),
@@ -2576,11 +2596,6 @@ def _render_species_page(
         ],
     )
     _write_page(ctx.out_dir, f"species/{species['slug']}", html, ctx.written)
-    lastmod = max(
-        _water_data_lastmod(w, source_week_start=this_start)
-        for w in snapshot["waters"]
-        if any(p["species"] == species["name"] for p in w["plants"])
-    )
     return page_url, lastmod
 
 
@@ -2718,14 +2733,16 @@ def _render_region_pages(
     lastmods: dict[str, str] = {}
     for r in region_links:
         waters = [w for w in snapshot["waters"] if w["region"] == r["code"]]
+        lastmod = max(data_lastmods[w["id"]] for w in waters)
         url = _render_region_page(
             ctx,
             r,
             all_regions=region_links,
             waters=waters,
             counties=counties_by_region[r["code"]],
+            lastmod=lastmod,
         )
-        lastmods[url] = max(data_lastmods[w["id"]] for w in waters)
+        lastmods[url] = lastmod
     return lastmods
 
 
@@ -3411,6 +3428,15 @@ def build_site(
             if code
             else []
         )
+        # The winter section changes at the rollover that makes a new
+        # winter the latest complete one (latest_complete_winter).
+        lastmod = max(
+            [
+                *(data_lastmods[w["id"]] for w in members),
+                *(county_first_seen[o["name"]] for o in region_counties),
+                *([winter_season["shown_from"]] if winter_season else []),
+            ]
+        )
         page_url = _render_county_page(
             ctx,
             c,
@@ -3418,22 +3444,16 @@ def build_site(
             region_name=region_name_by_code.get(code, ""),
             region_link=region_link_by_code.get(code),
             region_counties=region_counties,
+            lastmod=lastmod,
         )
-        # The winter section changes at the rollover that makes a new
-        # winter the latest complete one (latest_complete_winter).
-        county_lastmods[page_url] = max(
-            [
-                *(data_lastmods[w["id"]] for w in members),
-                *(county_first_seen[o["name"]] for o in region_counties),
-                *([winter_season["shown_from"]] if winter_season else []),
-            ]
-        )
+        county_lastmods[page_url] = lastmod
         counties_by_region.setdefault(region_by_county.get(c, ""), []).append(
             {**county_link[c], "count": len(members)}
         )
 
     # ---- counties index: every county page, grouped by CDFW region, with
     # its number of waters. Changes when a water first appears.
+    counties_index_lastmod = max(first_seen.values(), default=source_week_start)
     counties_index_url = _render_counties_index(
         ctx,
         regions=[
@@ -3448,8 +3468,8 @@ def build_site(
         ],
         species=site_species,
         county_count=len(county_names),
+        lastmod=counties_index_lastmod,
     )
-    counties_index_lastmod = max(first_seen.values(), default=source_week_start)
     gear_url = _render_gear_page(ctx, build_date)
 
     # ---- region pages: one per CDFW region with a county page. The

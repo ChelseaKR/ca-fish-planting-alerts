@@ -59,12 +59,20 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    # Measured on CI at 9.5 to 12.6 minutes for passing runs (2026-10-23);
-    # main hit the old 15-minute limit and was cancelled four times that
-    # day, with pytest near the end. 25 leaves room for a cold uv cache,
-    # the semgrep install, the ruleset download and the one-off Go build
-    # of the greenlight scanner.
-    timeout-minutes: 25
+    # Measured on CI, 2026-11-10: `make verify` is pytest plus about 20
+    # seconds of other stages, and the hosted runners come in two speeds
+    # about 1.85x apart (every test file, and mypy before them, ran 1.85x
+    # slower on the slow hosts). 1363 tests took 13:51 on a fast host, so
+    # the same tree finishes in 12 to 14 minutes or in 20 to 26. The
+    # 25-minute limit cut three pushes to main in a row (runs 42536930530,
+    # 42739900666, which had reached the last test file, and 42897392082)
+    # and PR #170's first attempt, all at 25:00 with pytest still running,
+    # while the same commits passed on fast hosts in 14. 40 holds the slow
+    # mode with headroom; `make test` prints its 15 slowest tests so the
+    # next reader can see where the time goes without timing a cancelled
+    # run's log by hand. History: 9.5 to 12.6 minutes on 2026-10-23, when
+    # the old 15-minute limit cut main four times in a day.
+    timeout-minutes: 40
     permissions:
       contents: read
     steps:

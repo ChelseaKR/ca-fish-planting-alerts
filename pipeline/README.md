@@ -114,8 +114,11 @@ The download time defaults to the file's modification time; pass
 `DOWNLOADED_AT=2026-11-07` (noon Central) or
 `DOWNLOADED_AT=2026-11-07T11:23-08:00` to set it. The import refuses, and
 writes nothing, when the header is not TWRA's eight columns exactly, a row
-is short or long, the file parses to fewer than 100 records, the file is
-not newer than the data on file, or the same file is already loaded. It
+is short or long, the file parses to fewer than 100 records, or the file is
+not newer than the data on file. The same file downloaded again later is a
+re-confirmation (a quiet week at TWRA is not stale data): the records stay
+as they are, the download date moves, and the output says "same data as
+the <date> file; window renewed" instead of counts. It
 writes `data/states/tn.json` with the file's provenance in
 `checks.manual_file`, and the pages then say the data is "from TWRA's
 published schedule file, downloaded <date>". The daily run keeps trying

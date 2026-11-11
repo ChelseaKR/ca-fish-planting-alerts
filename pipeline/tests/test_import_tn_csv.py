@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pytest
 
-from cfpa import import_tn_csv, site, snapshot_v2
+from cfpa import freshness, import_tn_csv, site, snapshot_v2
 from cfpa.import_tn_csv import ImportRefused, import_csv, read_rows
 from cfpa.states import SOURCES, tn
 from cfpa.states.base import FetchedBody
@@ -35,6 +35,9 @@ DOWNLOADED = dt.datetime(2026, 11, 7, 19, 23, 44, tzinfo=dt.UTC)  # 11:23 PT
 IMPORTED = dt.datetime(2026, 11, 7, 20, 0, tzinfo=dt.UTC)
 # The next morning's scheduled run, which tn.gov still refuses.
 NEXT_RUN = dt.datetime(2026, 11, 8, 13, 21, tzinfo=dt.UTC)
+# The next week's download and import (0061 addendum 2026-11-10).
+REDOWNLOADED = dt.datetime(2026, 11, 13, 17, 0, tzinfo=dt.UTC)  # 09:00 PT
+REIMPORTED = dt.datetime(2026, 11, 13, 17, 30, tzinfo=dt.UTC)
 DOE = "tn/water/doe-river-carter-county/index.html"
 # In the 2026-10-21 history, not in the sample: its last date is past, so
 # the imported file has nothing later for it.
@@ -232,7 +235,68 @@ def test_a_later_good_automated_read_clears_the_manual_label(tmp_path: Path):
     assert merged.checks.last_success_at == NEXT_RUN
 
 
-def test_an_older_or_repeated_file_is_refused(tmp_path: Path):
+def test_the_same_file_downloaded_later_is_a_reconfirmation(tmp_path: Path):
+    """A quiet week at TWRA is not stale data (0061 addendum 2026-11-10):
+    the same bytes downloaded a week later keep every record as it is and
+    move the download time, which is what the freshness window reads."""
+    states = _states_dir(tmp_path)
+    first = _import(states)
+    result = import_csv(
+        SAMPLE,
+        states_dir=states,
+        downloaded_at=REDOWNLOADED,
+        now=REIMPORTED,
+        min_rows=5,
+    )
+    assert result.reconfirmed
+    assert result.message == (
+        "same data as the 2026-11-07 file; window renewed; downloaded 2026-11-13"
+    )
+    result.history.save(result.path)
+    again = StateHistory.load(states / "tn.json", "TN")
+    # The same records, statuses, counts and first sightings. The rows seen
+    # again carry the new sighting time; everything else keeps its own.
+    rows = read_rows(SAMPLE.read_bytes())
+    seen = {
+        r.key()
+        for r in tn.parse_rows(
+            rows, fetched_at=REDOWNLOADED, content_sha256="0" * 64, last_modified=None
+        ).records
+    }
+    for before, after in zip(first.records, again.records, strict=True):
+        assert after.key() == before.key()
+        assert (after.status, after.count) == (before.status, before.count)
+        assert after.first_observed_at == before.first_observed_at
+        expected = REDOWNLOADED if after.key() in seen else before.last_observed_at
+        assert after.last_observed_at == expected
+    assert again.waters == first.waters
+    c, c0 = again.checks, first.checks
+    assert c.manual_file is not None and c0.manual_file is not None
+    assert c.manual_file.sha256 == c0.manual_file.sha256
+    assert c.manual_file.rows == c0.manual_file.rows
+    assert c.manual_file.downloaded_at == REDOWNLOADED
+    assert c.manual_file.imported_at == REIMPORTED
+    assert c.last_success_at == REDOWNLOADED
+    # The automated read's own fields are still its own.
+    assert c.last_attempt_at == c0.last_attempt_at
+    assert c.last_attempt_ok is False
+    # What the freshness watchdog reads (DECISIONS 0065) is the new download,
+    # from the saved JSON as the publish run reads it.
+    saved = json.loads((states / "tn.json").read_text("utf-8"))
+    assert freshness.last_good_read(saved["checks"]) == (REDOWNLOADED, "manual")
+    # And the snapshot's date, which the pages print, is the new download's.
+    v2 = snapshot_v2.build_snapshot_v2(
+        _v1(tmp_path), [(SOURCES["TN"], again)], generated_at=REIMPORTED
+    )
+    state = next(s for s in v2["states"] if s["code"] == "TN")
+    assert state["source"]["read_method"] == "manual"
+    assert state["as_of"] == "2026-11-13"
+
+
+def test_negative_control_an_older_file_is_still_refused(tmp_path: Path):
+    """The re-confirmation never runs backward: a file downloaded at or
+    before the data on file is refused as before, the same bytes or not,
+    and nothing is written."""
     states = _states_dir(tmp_path)
     with pytest.raises(ImportRefused, match="not after"):
         import_csv(
@@ -243,14 +307,53 @@ def test_an_older_or_repeated_file_is_refused(tmp_path: Path):
             min_rows=5,
         )
     _import(states)
-    with pytest.raises(ImportRefused, match="already loaded"):
-        import_csv(
-            SAMPLE,
-            states_dir=states,
-            downloaded_at=DOWNLOADED + dt.timedelta(days=1),
-            now=IMPORTED + dt.timedelta(days=1),
-            min_rows=5,
-        )
+    original = (states / "tn.json").read_bytes()
+    # The same download run twice (same modification time), and an older
+    # copy of the same bytes.
+    for when in (DOWNLOADED, DOWNLOADED - dt.timedelta(hours=1)):
+        with pytest.raises(ImportRefused, match="not after"):
+            import_csv(
+                SAMPLE,
+                states_dir=states,
+                downloaded_at=when,
+                now=REIMPORTED,
+                min_rows=5,
+            )
+    assert (states / "tn.json").read_bytes() == original
+
+
+def test_control_a_file_with_new_rows_still_imports_as_an_update(tmp_path: Path):
+    """The control for the re-confirmation: one new row in the next week's
+    file, and it is an update with counts, not a re-confirmation."""
+    states = _states_dir(tmp_path)
+    _import(states)
+    changed = tmp_path / "Trout Fishing and Stockings in Tennessee.csv"
+    new_row = (
+        '"1","Caroll","McKenzie City Park","Winter","2/10/2027","","","Rainbow Trout"'
+    )
+    changed.write_bytes(
+        SAMPLE.read_bytes().rstrip(b"\n") + b"\n" + new_row.encode("utf-8") + b"\n"
+    )
+    result = import_csv(
+        changed,
+        states_dir=states,
+        downloaded_at=REDOWNLOADED,
+        now=REIMPORTED,
+        min_rows=5,
+    )
+    assert not result.reconfirmed
+    assert result.message.startswith("13 rows, 12 records, 6 waters")
+    assert "downloaded 2026-11-13" in result.message
+    assert "same data" not in result.message
+    assert "window renewed" not in result.message
+    listed = {r.key(): r for r in result.history.records if r.status == "listed"}
+    added = listed[
+        ("tn-caroll-mckenzie-city-park", "2027-02-10", "day", "Rainbow Trout")
+    ]
+    assert added.first_observed_at == REDOWNLOADED
+    assert result.history.checks.manual_file is not None
+    assert result.history.checks.manual_file.rows == 13
+    assert result.history.checks.manual_file.downloaded_at == REDOWNLOADED
 
 
 def test_a_download_time_in_the_future_is_refused(tmp_path: Path):
@@ -345,11 +448,32 @@ def test_cli_success_path(tmp_path: Path, capsys, monkeypatch):
     )
     assert code == 0
     out = capsys.readouterr().out
-    assert "12 rows, 11 records, 6 waters, " in out
+    assert "import-tn-csv: TN updated: 12 rows, 11 records, 6 waters, " in out
     assert "downloaded 2026-11-07" in out
     saved = json.loads((states / "tn.json").read_text("utf-8"))
     assert saved["checks"]["read_method"] == "manual"
     assert saved["checks"]["manual_file"]["downloaded_at"] == "2026-11-07T19:23:44Z"
+    # Two days on, the same file: the CLI says so, in words, not counts.
+    # (main() uses the real clock, so this download must be in the past.)
+    code = import_tn_csv.main(
+        [
+            str(SAMPLE),
+            "--states-dir",
+            str(states),
+            "--downloaded-at",
+            "2026-11-09T09:00:00-08:00",
+        ]
+    )
+    assert code == 0
+    out = capsys.readouterr().out
+    assert (
+        "import-tn-csv: TN re-confirmed: same data as the 2026-11-07 file; "
+        "window renewed; downloaded 2026-11-09" in out
+    )
+    assert "rows" not in out
+    saved = json.loads((states / "tn.json").read_text("utf-8"))
+    assert saved["checks"]["manual_file"]["downloaded_at"] == "2026-11-09T17:00:00Z"
+    assert saved["checks"]["last_success_at"] == "2026-11-09T17:00:00Z"
 
 
 # ---- what the site says

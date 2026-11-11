@@ -1482,6 +1482,24 @@ TWRA that Trout Truck won't get around tn.gov's security settings.
 - **Data lands by pull request.** The publish job is the only direct writer
   of `pipeline/data/`, so an imported `tn.json` goes to `main` in a PR.
 
+### Addendum 2026-11-10: the same file downloaded again is a re-confirmation, not a repeat
+
+- **Why.** The import refused "a repeated file" by its SHA-256. The
+  download-time check already refuses the same download run twice (same
+  modification time), so the SHA-256 refusal only ever met one case: TWRA's
+  file was byte-identical a week later. A quiet week at TWRA is not stale
+  data, but the refusal left `manual_file.downloaded_at` at the old date,
+  so the freshness watchdog (0065) would go red on day 8 and the site and
+  apps would say "paused" over data that had just been checked against
+  TWRA's own page. The weekly import has to work in every week.
+- **What.** The same bytes with a later download time go through the same
+  merge: every record, status and first sighting stays as it is, the rows
+  seen again get the new sighting time, and `manual_file.downloaded_at`,
+  `imported_at` and `last_success_at` move to the new download, which is
+  what 0065 reads and what the pages print. The output says "same data as
+  the <date> file; window renewed" instead of row counts. A file downloaded
+  at or before the data on file is refused as before, the same bytes or not.
+
 
 ## 0062 — The calendar box moves up to the status badge and adds Google Calendar (2026-11-07)
 

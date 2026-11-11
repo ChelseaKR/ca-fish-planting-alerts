@@ -51,7 +51,10 @@ typecheck:
 # pipeline/data/states/tn.json while tn.gov refuses the automated read.
 #   make import-tn-csv CSV="$HOME/Downloads/Trout Fishing and Stockings in Tennessee.csv"
 # DOWNLOADED_AT=2026-11-07 (or 2026-11-07T11:23-08:00) overrides the file's
-# modification time as the download time.
+# modification time as the download time. Then (0061 addendum 2026-11-10):
+# make lint test; git add pipeline/data/states/tn.json; commit; git push
+# origin HEAD:main. The data file goes straight to main; code still goes
+# through a pull request.
 import-tn-csv:
 	test -n "$(CSV)"
 	$(UV_RUN) --project $(PIPELINE) python -I -m cfpa.import_tn_csv "$(CSV)" --states-dir $(PIPELINE)/data/states $(if $(DOWNLOADED_AT),--downloaded-at "$(DOWNLOADED_AT)")

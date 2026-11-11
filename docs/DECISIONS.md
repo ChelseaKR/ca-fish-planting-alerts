@@ -1500,6 +1500,28 @@ TWRA that Trout Truck won't get around tn.gov's security settings.
   the <date> file; window renewed" instead of row counts. A file downloaded
   at or before the data on file is refused as before, the same bytes or not.
 
+### Addendum 2026-11-10: the weekly data file pushes straight to main
+
+- **Why.** The twice-daily publish run rewrites two `checks` lines in
+  `tn.json`, so a pull request carrying an imported `tn.json` conflicts with
+  main after the next run (checked with `git merge-tree`): the import had to
+  be opened and merged inside one 12-hour window or redone. `main` has no
+  ruleset and no required check, and the publish job already writes its
+  data commits straight to `main`, so the PR added a wait and a conflict
+  window and no gate.
+- **What.** The weekly Tennessee import lands as one data-only commit pushed
+  straight to `main`: `make import-tn-csv CSV=...`, then `make lint test`
+  (the importer's own tests are part of it), `git add
+  pipeline/data/states/tn.json`, commit, `git push origin HEAD:main`. The
+  import is the gate for the file (header, row shape, floor, time order and
+  the reader's own parse); `make lint test` checks before the push that the
+  code on `main` still passes (no test reads the live `tn.json`, on
+  purpose); and CI's `verify` job still runs on the push to `main`. A push
+  that is not a fast-forward is refused by git: pull and run the import
+  again.
+- **When a PR is still the path.** Any change to code, tests, workflows or
+  docs, including this one. Only the data file goes straight to `main`.
+
 
 ## 0062 — The calendar box moves up to the status badge and adds Google Calendar (2026-11-07)
 

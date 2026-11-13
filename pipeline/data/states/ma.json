@@ -2,7 +2,7 @@
   "schema": "cfpa-state-history-v1",
   "state": "MA",
   "checks": {
-    "last_attempt_at": "2026-11-13T01:18:34Z",
+    "last_attempt_at": "2026-11-13T13:21:33Z",
     "last_success_at": "2026-11-07T13:22:11Z",
     "last_attempt_ok": false,
     "last_error": "Hub marked its copy of MassWildlife's layer stale (cacheStatus 'stale'): MassWildlife changed the layer after Hub built the file, so the file is not current; not read",

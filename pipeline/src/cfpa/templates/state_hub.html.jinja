@@ -18,7 +18,7 @@
 </p>
 {% endif %}
 <p class="muted">
-  {% if manual %}{{ manual_sentence }}{% else %}{{ state.agency.short_name }}'s data was last read {{ fetched_label }}{% if state.source.last_modified %}; {{ state.agency.short_name }} last changed the file {{ state.source.last_modified }}{% endif %}.{% endif %}{% if attempt_failed %} <strong>The check on {{ attempt_label }} failed, so this is the data from the last good read.</strong>{% endif %}{% if range_label %} The dates in it run from {{ range_label }}.{% endif %}
+  {% if manual %}{{ manual_sentence }}{% else %}{{ state.agency.short_name }}'s data was last read {{ fetched_label }}{% if state.source.last_modified and not stale_copy_sentence %}; {{ state.agency.short_name }} last changed the file {{ state.source.last_modified }}{% endif %}.{% endif %}{% if stale_copy_sentence %} <strong>{{ stale_copy_sentence }}</strong>{% elif attempt_failed %} <strong>The check on {{ attempt_label }} failed, so this is the data from the last good read.</strong>{% endif %}{% if range_label %} The dates in it run from {{ range_label }}.{% endif %}
 
 </p>
 {% if state.recency_note %}

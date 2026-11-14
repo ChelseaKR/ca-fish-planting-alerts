@@ -65,6 +65,24 @@ class StateFetchError(RuntimeError):
     """The state's data could not be fetched. Its last good data stays."""
 
 
+class StaleCopyError(StateFetchError):
+    """The host flags its own copy of the agency's data as older than the
+    agency's layer, so the copy is not read (DECISIONS 0063). Carries what
+    the host's metadata said about the layer on the same attempt, each None
+    when it could not be read (DECISIONS 0071)."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        source_last_edit_at: dt.datetime | None,
+        source_record_count: int | None,
+    ) -> None:
+        super().__init__(message)
+        self.source_last_edit_at = source_last_edit_at
+        self.source_record_count = source_record_count
+
+
 class RobotsUnreadableError(StateFetchError):
     """The host's robots.txt could not be read, so the host is off-limits."""
 

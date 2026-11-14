@@ -13,6 +13,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Massachusetts (DECISIONS 0071): when ArcGIS Hub flags its copy of
+  MassWildlife's layer stale, the reader also reads Hub's metadata once
+  (after the Crawl-delay), and the failed check keeps the layer's last edit
+  and record count. The freshness job calls the state "waiting", a warning
+  and not a red job, while that edit is older than the allowance too. The
+  MA hub and water pages say why the read fails, in the approved words.
 - Site: each schedule or plan state's hub lists its own winter (DECISIONS
   0070): every water the agency's data dates from November through February,
   with each date at the agency's precision, after "Coming up". Tennessee's

@@ -134,6 +134,43 @@ class ManualFile:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
+class StaleCopy:
+    """The latest attempt failed because the host flagged its own copy of
+    the agency's data stale (Hub, Massachusetts: DECISIONS 0063), and what
+    the host's metadata said about the agency's layer on that attempt
+    (DECISIONS 0071). ``checked_at`` is that attempt's time; a later attempt
+    of any other outcome clears the whole object. ``copy_record_count`` is
+    how many records the last good read had: the copy the site still shows.
+    """
+
+    checked_at: dt.datetime
+    source_last_edit_at: dt.datetime | None
+    source_record_count: int | None
+    copy_record_count: int
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "checked_at": _iso_z(self.checked_at),
+            "source_last_edit_at": _iso_z(self.source_last_edit_at)
+            if self.source_last_edit_at
+            else None,
+            "source_record_count": self.source_record_count,
+            "copy_record_count": self.copy_record_count,
+        }
+
+    @classmethod
+    def from_json(cls, d: dict[str, Any]) -> StaleCopy:
+        edited = d.get("source_last_edit_at")
+        count = d.get("source_record_count")
+        return cls(
+            checked_at=_parse_dt(d["checked_at"]),
+            source_last_edit_at=_parse_dt(edited) if edited else None,
+            source_record_count=int(count) if count is not None else None,
+            copy_record_count=int(d["copy_record_count"]),
+        )
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
 class Checks:
     """How the last attempts went. Not data; written on failure too.
 
@@ -152,6 +189,7 @@ class Checks:
     last_modified: str | None = None
     etag: str | None = None
     manual_file: ManualFile | None = None
+    stale_copy: StaleCopy | None = None
 
     @property
     def read_method(self) -> str:
@@ -176,6 +214,11 @@ class Checks:
                 if self.manual_file is not None
                 else {}
             ),
+            **(
+                {"stale_copy": self.stale_copy.to_json()}
+                if self.stale_copy is not None
+                else {}
+            ),
         }
 
     @classmethod
@@ -194,6 +237,9 @@ class Checks:
             etag=d.get("etag"),
             manual_file=ManualFile.from_json(d["manual_file"])
             if d.get("manual_file")
+            else None,
+            stale_copy=StaleCopy.from_json(d["stale_copy"])
+            if d.get("stale_copy")
             else None,
         )
 
@@ -460,14 +506,31 @@ def record_unchanged(history: StateHistory, *, checked_at: dt.datetime) -> State
             else history.checks.last_success_at,
             last_attempt_ok=True,
             last_error=None,
+            stale_copy=None,
         ),
     )
 
 
+def records_in_last_good_read(history: StateHistory) -> int:
+    """How many records the last good automated read saw: the ones whose
+    ``last_observed_at`` is that read's time."""
+    when = history.checks.last_success_at
+    return sum(1 for r in history.records if r.last_observed_at == when)
+
+
 def record_failure(
-    history: StateHistory, *, attempted_at: dt.datetime, error: str
+    history: StateHistory,
+    *,
+    attempted_at: dt.datetime,
+    error: str,
+    source_last_edit_at: dt.datetime | None = None,
+    source_record_count: int | None = None,
+    stale_copy: bool = False,
 ) -> StateHistory:
-    """The fetch failed or was refused: say so, change no data."""
+    """The fetch failed or was refused: say so, change no data. With
+    ``stale_copy``, the failure was the host's own stale flag, and what its
+    metadata said about the agency's layer is kept with it (DECISIONS 0071);
+    any other failure clears that."""
     return dataclasses.replace(
         history,
         checks=dataclasses.replace(
@@ -475,5 +538,13 @@ def record_failure(
             last_attempt_at=attempted_at,
             last_attempt_ok=False,
             last_error=error[:500],
+            stale_copy=StaleCopy(
+                checked_at=attempted_at,
+                source_last_edit_at=source_last_edit_at,
+                source_record_count=source_record_count,
+                copy_record_count=records_in_last_good_read(history),
+            )
+            if stale_copy
+            else None,
         ),
     )

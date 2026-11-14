@@ -21,13 +21,23 @@ good read as of the time the person downloaded the file; the later of the
 two is the read that counts. A state behind an off flag (Oregon, DECISIONS
 0032) is not live and is not checked.
 
+One exception, a state that is waiting, not stuck (DECISIONS 0071): its
+latest attempt failed on ArcGIS Hub's own stale flag (``checks.stale_copy``,
+Massachusetts, DECISIONS 0063), and Hub's metadata, read on that same
+attempt, says the agency last edited its layer longer ago than the
+allowance. Nothing new is waiting upstream, so a red run would only say
+again what the pages already say. A waiting state is printed, annotated as a
+warning and put in the summary, and does not fail the job. The first run
+after the agency edits again is red; so is a stale flag whose edit date
+could not be read.
+
 Absence is a failure, never a pass: a missing history file, no ``checks``,
 no good read on record, or a time that will not parse each fail the check
 with a line that says which. Every state gets one line, the same words in
 the run log, in the job summary's table and in the ``::error`` annotation
 that carries a stuck state to the run's front page.
 
-Exit status: 0 every live state is fresh; 1 at least one is stuck or could
+Exit status: 0 every live state is fresh or waiting; 1 at least one is stuck or could
 not be read; 2 usage error.
 """
 
@@ -74,10 +84,20 @@ class Reading:
     read_method: str = "none"  # "automated" | "manual" | "none"
     age_days: float | None = None
     problem: str | None = None
+    # Set when the state is waiting (DECISIONS 0071): why, in one clause.
+    # ``problem`` is then None, so the job passes.
+    waiting: str | None = None
 
     @property
     def fresh(self) -> bool:
+        """Passes the job: fresh, or waiting."""
         return self.problem is None
+
+    @property
+    def status(self) -> str:
+        if self.problem is not None:
+            return "STUCK"
+        return "waiting" if self.waiting is not None else "fresh"
 
 
 def _fmt(when: dt.datetime) -> str:
@@ -137,6 +157,47 @@ def _load_checks(path: Path, code: str) -> Mapping[str, Any]:
     return checks
 
 
+def waiting_reason(
+    checks: Mapping[str, Any], source: StateSource, *, now: dt.datetime, limit: int
+) -> tuple[str | None, str | None]:
+    """For a state older than its allowance: (waiting, None) when DECISIONS
+    0071's exception holds, (None, extra words for the stuck line) when the
+    latest failure was Hub's stale flag but the exception does not hold, and
+    (None, None) otherwise. The facts must come from the latest attempt:
+    a failed attempt with ``stale_copy.checked_at`` equal to
+    ``last_attempt_at``."""
+    stale = checks.get("stale_copy")
+    if checks.get("last_attempt_ok") is not False or not isinstance(stale, Mapping):
+        return None, None
+    try:
+        attempt = _parse_when(checks.get("last_attempt_at"), "last_attempt_at")
+        checked = _parse_when(stale.get("checked_at"), "stale_copy.checked_at")
+    except FreshnessInputError:
+        return None, None
+    if checked != attempt:
+        return None, None
+    agency = source.agency_short_name
+    try:
+        edited = _parse_when(
+            stale.get("source_last_edit_at"), "stale_copy.source_last_edit_at"
+        )
+    except FreshnessInputError:
+        return None, (
+            f"Hub's file is stale and {agency}'s last edit to its layer could "
+            "not be read"
+        )
+    edit_age = (now - edited).total_seconds() / SECONDS_PER_DAY
+    if edit_age > limit:
+        return (
+            f"Hub's file is stale, and {agency} has not edited its layer since "
+            f"{_fmt(edited)} ({edit_age:.1f} days ago); red again as soon as it does"
+        ), None
+    return None, (
+        f"Hub's file is stale and {agency} edited its layer {_fmt(edited)}, "
+        f"{max(edit_age, 0.0):.1f} days ago"
+    )
+
+
 def allowance(source: StateSource, default_days: int) -> int:
     """The state module's own allowance, or the default."""
     days = source.max_read_age_days
@@ -161,7 +222,11 @@ def read_state(
     if when - now > CLOCK_SKEW_ALLOWANCE:
         return dataclasses.replace(reading, problem=f"later than now ({_fmt(now)})")
     if age > limit:
-        return dataclasses.replace(reading, problem="older than allowed")
+        waiting, detail = waiting_reason(checks, source, now=now, limit=limit)
+        if waiting is not None:
+            return dataclasses.replace(reading, waiting=waiting)
+        problem = "older than allowed" + (f"; {detail}" if detail else "")
+        return dataclasses.replace(reading, problem=problem)
     return reading
 
 
@@ -181,22 +246,34 @@ def check(
 
 def line(reading: Reading) -> str:
     """One state in one line, the same words everywhere it is reported."""
-    head = f"{reading.code} ({reading.name}): {'fresh' if reading.fresh else 'STUCK'}: "
+    head = f"{reading.code} ({reading.name}): {reading.status}: "
     if reading.last_good_read is None or reading.age_days is None:
         return f"{head}{reading.problem}; allowed {reading.max_age_days} days"
     body = (
         f"last good read {_fmt(reading.last_good_read)} ({reading.read_method}), "
         f"{reading.age_days:.1f} days ago, allowed {reading.max_age_days} days"
     )
+    if reading.waiting is not None:
+        return f"{head}{body}; {reading.waiting}"
     return head + body if reading.fresh else f"{head}{body}; {reading.problem}"
 
 
 def verdict(readings: Sequence[Reading], now: dt.datetime) -> str:
     stuck = sum(1 for r in readings if not r.fresh)
+    waiting = sum(1 for r in readings if r.waiting is not None)
     total = len(readings)
     states = "state" if total == 1 else "states"
+    also = f", {waiting} waiting" if waiting else ""
     if stuck:
-        return f"freshness: {stuck} of {total} live {states} stuck; checked {_fmt(now)}"
+        return (
+            f"freshness: {stuck} of {total} live {states} stuck{also}; "
+            f"checked {_fmt(now)}"
+        )
+    if waiting:
+        return (
+            f"freshness: no live state stuck ({total - waiting} fresh{also}); "
+            f"checked {_fmt(now)}"
+        )
     return f"freshness: all {total} live {states} fresh; checked {_fmt(now)}"
 
 
@@ -210,6 +287,8 @@ def print_report(readings: Sequence[Reading], now: dt.datetime) -> None:
         print(text)
         if annotate and not reading.fresh:
             print(f"::error title={reading.name} is stuck::{text}")
+        elif annotate and reading.waiting is not None:
+            print(f"::warning title={reading.name} is waiting::{text}")
     print(verdict(readings, now))
 
 
@@ -232,13 +311,21 @@ def summary_markdown(readings: Sequence[Reading], now: dt.datetime) -> str:
         "",
         f"{sentence[0].upper()}{sentence[1:]}.",
         "A live state is stuck when its last successful read is older than its "
-        "allowance (DECISIONS 0065).",
+        "allowance (DECISIONS 0065), unless it is waiting: Hub's file is stale "
+        "and the agency has not edited its layer within the allowance either "
+        "(DECISIONS 0071).",
         "",
         "| State | Last good read | Age | Allowed | Result |",
         "|---|---|---|---|---|",
     ]
     for r in readings:
-        result = "fresh" if r.fresh else f"STUCK: {r.problem}"
+        result = (
+            f"STUCK: {r.problem}"
+            if not r.fresh
+            else f"waiting: {r.waiting}"
+            if r.waiting is not None
+            else "fresh"
+        )
         rows.append(
             f"| {r.code} {r.name} | {_cell_when(r)} | {_cell_age(r)} | "
             f"{r.max_age_days} days | {result} |"

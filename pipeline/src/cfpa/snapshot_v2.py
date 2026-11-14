@@ -23,7 +23,7 @@ import jsonschema
 from .locations import location_for
 from .states import SOURCES
 from .states.base import Period, StateSource, week_containing
-from .states.store import StateHistory, StateRecord
+from .states.store import StaleCopy, StateHistory, StateRecord
 
 CA_AGENCY = {
     "name": "California Department of Fish and Wildlife",
@@ -260,6 +260,16 @@ def _state_waters(
     return out
 
 
+def _stale_copy(stale: StaleCopy) -> dict[str, Any]:
+    return {
+        "source_last_edit_at": _iso_z(stale.source_last_edit_at)
+        if stale.source_last_edit_at
+        else None,
+        "source_record_count": stale.source_record_count,
+        "copy_record_count": stale.copy_record_count,
+    }
+
+
 def _state_entry(
     source: StateSource,
     history: StateHistory,
@@ -305,6 +315,13 @@ def _state_entry(
             "last_attempt_at": _iso_z(checks.last_attempt_at or checks.last_success_at),
             "last_success_at": _iso_z(checks.last_success_at),
             "last_attempt_ok": checks.last_attempt_ok,
+            # The latest attempt failed on the host's own stale flag: what
+            # its metadata said about the agency's layer (DECISIONS 0071).
+            **(
+                {"stale_copy": _stale_copy(checks.stale_copy)}
+                if checks.stale_copy is not None and not checks.last_attempt_ok
+                else {}
+            ),
         },
         "attribution": {"text": source.attribution_text, "url": source.attribution_url},
         "disclaimer": source.disclaimer,

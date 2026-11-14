@@ -3625,6 +3625,14 @@ def build_site(
             "semantics": st["semantics"],
             "water_count": sum(1 for w in v2_waters if w["state"] == st["code"]),
             **site_states._freshness(st),
+            # The hub's winter section (DECISIONS 0070), or None.
+            "winter": site_states.winter_schedule(
+                st,
+                [w for w in v2_waters if w["state"] == st["code"]],
+                site_states._build_date(st, snapshot_v2["generated_at"]),
+            )
+            if snapshot_v2 is not None
+            else None,
         }
         for st in v2_states
         if st["code"] != "CA"

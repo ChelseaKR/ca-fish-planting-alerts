@@ -83,6 +83,37 @@
 </p>
 {% endif %}
 
+{# DECISIONS 0070: the winter on this state's own schedule or plan, from
+   the data alone. No section at all when the data lists no water that
+   winter, so an empty file never reads as "no winter stocking". #}
+{% if winter %}
+<h2 id="winter">Winter {{ species }} stocking on {{ state.agency.short_name }}'s {{ w_kind }}: {{ winter.label }}</h2>
+<p>
+  {% if manual %}{{ state.agency.short_name }}'s {{ w_kind }} file downloaded {{ fetched_date }}{% else %}{{ state.agency.short_name }}'s {{ w_kind }}, as last read {{ fetched_label }},{% endif %} lists
+  {{ winter.water_count }} {{ state.name }} {{ "water" if winter.water_count == 1 else "waters" }} for {{ species }} stocking
+  from {{ winter.first_label }} through {{ winter.end_label }}, with
+  {{ winter.date_count }} {{ "listing" if winter.date_count == 1 else "listings" }} in all.
+  {% if w_kind == "plan" %}These are planned periods in {{ state.agency.short_name }}'s own words, not dates and not confirmed stockings.{% else %}These are scheduled dates, not confirmed stockings, and {{ state.agency.short_name }} can change them.{% endif %}{% if manual %} {{ state.agency.short_name }} may have changed its {{ w_kind }} since then.{% elif attempt_failed %} The latest check failed, so {{ state.agency.short_name }}'s current {{ w_kind }} may differ.{% endif %}
+  The official {{ w_kind }} is {{ state.agency.short_name }}'s own page:
+  <a href="{{ state.source.url }}">{{ state.source.name }}</a>.
+</p>
+<p class="muted">
+  Winter here means the calendar months November through February. Each
+  date is shown at the precision {{ state.agency.short_name }} gives it.
+</p>
+<table>
+  <caption class="visually-hidden">{{ state.name }} waters on {{ state.agency.short_name }}'s {{ w_kind }}, {{ winter.label }}</caption>
+  <thead>
+    <tr><th scope="col">Water</th><th scope="col">Where</th><th scope="col">Winter dates</th></tr>
+  </thead>
+  <tbody>
+    {% for r in winter.waters %}
+    <tr><td><a href="water/{{ r.slug }}/">{{ r.name }}</a></td><td>{{ r.place }}</td><td>{{ r.whens|join("; ") }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
 <h2>Every {{ state.name }} water</h2>
 {% for g in water_groups %}
 {% if g.name %}<h3>{{ g.name }}</h3>{% endif %}

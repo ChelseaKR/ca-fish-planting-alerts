@@ -1892,3 +1892,50 @@ later decision, gated on the read below.
   (`cfpa/push.py`, `_push_subscribe.html.jinja`, `push.js`,
   `push-worker.js.jinja`, `manifest.webmanifest.jinja`, `infra/web-push`,
   `tools/web-push`) overlap nothing.
+
+## 0070 — A state hub lists its own winter schedule (2026-11-14)
+
+Proposed from the winter-visitors lane
+(`_agent-tools/growth/tt-winter-visitors-2026-11-14.md`, outside this repo).
+Chelsea approved the copy as written and chose to merge now, on 2026-11-14.
+
+- **Why.** Search Console, `sc-domain:trouttruck.com`, 2026-08-01 to
+  2026-11-12: Tennessee pages had 209 impressions and 17 clicks (8% of
+  impressions to a click), against 894 and 17 on California water pages
+  (2%). `/tn/` itself is the site's second page by impressions (82, position
+  11.5). Winter is Tennessee's season: TWRA's file has dates in every month
+  from November 2026 through March 2027, many at city and park ponds, and
+  local news covered its 2025-26 winter trout stocking program.
+  TWRA's own file, as downloaded 2026-11-07, lists 98 Tennessee waters with
+  205 dates from November 2026 through February 2027. The hub showed 60 days
+  of them and no word "winter".
+- **What.** A schedule or plan state's hub (`/<xx>/`) gets a section,
+  `id="winter"`, after "Coming up" and before the water index: "Winter
+  <species> stocking on <agency>'s <schedule|plan>: November YYYY to February
+  YYYY", one sentence with the counts and the data's age in the page's own
+  freshness words, the caveat the hub already uses ("scheduled dates, not
+  confirmed stockings" or "planned periods in <agency>'s own words"), a link
+  to the agency's page as the official source, and one table: each water with
+  every date it has in those months, at the agency's precision. "Winter" is
+  the calendar months November through February, said on the page, not an
+  agency term (the same months 0040 uses for California).
+- **Which winter.** The one that includes today; from March 1 the next one
+  (`site_states.winter_window`). A page never shows a winter that has ended.
+  The hub's lastmod counts that March 1, so the page does not change while
+  its lastmod says it did not.
+- **No absence read as a value.** With no water in the data for that winter,
+  there is no section, no winter words in the description and no llms.txt
+  line. A report state (Massachusetts, Michigan) gets none: a report holds
+  stockings already made. New York's plan has no winter dates, so it gets
+  none today. California has no hub (0049); its winter is on the home and
+  county pages (0040) and, from 11-30, the water pages (0048).
+- **Description.** With a winter section, the hub's description names it
+  ("this week, winter dates at 98 waters through February 2027, and the
+  stocking history of all 144 waters") when that fits 160 characters with
+  the agency's full name or else its short name; otherwise the old line.
+- **llms.txt.** The state's line adds where the winter section is and its
+  counts, in the hub's words. ChatGPT sends the site more engaged visits than
+  Google (GA4, 28 days to 2026-11-14: 53 against 30).
+- **Fits 0042.** No new page, URL or page family, and no title change. It is
+  a section on an existing page; Chelsea chose to merge it on 2026-11-14,
+  before the 0042 freeze ends, because winter stocking starts this month.

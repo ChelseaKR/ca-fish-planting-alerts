@@ -13,6 +13,13 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: California water pages answer the visit in the first screen
+  (DECISIONS 0054). The status block opens with one sentence saying whether
+  the water is on CDFW's schedule this week, when it is next, or when it was
+  last, and the calendar subscribe action now sits right under it. Each
+  same-county water link says where that water stands, with this week's
+  waters first. URLs, titles and H1s are unchanged.
+
 - Site: county, region, species and state pages put their data date in
   their structured data as `dateModified`, the same date as the page's
   sitemap `lastmod` (the day its data last changed, never the build date).

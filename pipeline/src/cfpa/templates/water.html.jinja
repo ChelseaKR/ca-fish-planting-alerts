@@ -107,9 +107,10 @@
 <section aria-labelledby="others-{{ c.slug }}">
   <h2 id="others-{{ c.slug }}">Other {{ c.name }} County waters on the schedule</h2>
   {% if c.waters %}
+  <p class="muted">Waters on CDFW's schedule this week come first, then the most recently scheduled.</p>
   <ul class="water-index">
     {% for s in c.waters %}
-    <li><a href="{{ root }}water/{{ s.slug }}/">{{ s.name }}</a></li>
+    <li><a href="{{ root }}water/{{ s.slug }}/">{{ s.name }}</a>{% if s.when %}, {{ s.when }}{% endif %}</li>
     {% endfor %}
   </ul>
   <p><a href="{{ root }}county/{{ c.slug }}/">{{ c.name }} County: this week's plants and the latest scheduled week at every water</a></p>

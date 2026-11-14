@@ -1,4 +1,5 @@
-{# Status block at the top of a water page. Needs: water, water_status.
+{# Status block at the top of a water page. Needs: water, water_status,
+   source_fetched_label, canonical_url, app_store_url, root.
    Every date is a recorded week from CDFW's schedule; nothing is estimated.
    This week and next are never over, and CDFW posts most of a week's waters
    after it begins, so a missing entry there says "yet" and when we checked.
@@ -8,6 +9,19 @@
 <section class="water-status" aria-labelledby="water-status-heading">
   <h2 id="water-status-heading">Where {{ water.name }} stands on CDFW's schedule</h2>
   <p>{{ status_badge(water_status.badge) }}</p>
+  {#- The answer people come for, in one sentence, before the details
+      (DECISIONS 0054). A week the record does not have is said in words. -#}
+  <p class="water-answer">
+    {%- if water_status.in_this_week -%}
+    <strong>On CDFW's schedule this week, the week of {{ water_status.this_week }}{% if water_status.next_listed %}, and again the week of {{ water_status.next_listed }}{% endif %}.</strong>
+    {%- elif water_status.next_listed -%}
+    <strong>Next on CDFW's schedule: the week of {{ water_status.next_listed }}.</strong>{% if water_status.last_week %} Before that, it was last on the schedule the week of {{ water_status.last_week }}.{% endif %}
+    {%- elif water_status.last_week -%}
+    <strong>Not on CDFW's schedule for this week or later yet, as of {{ source_fetched_label }}.</strong> It was last on the schedule the week of {{ water_status.last_week }}, {{ water_status.days_ago_text }} before that check.
+    {%- else -%}
+    <strong>Not on CDFW's schedule in the weeks we have recorded since {{ water_status.since_text }}.</strong>
+    {%- endif -%}
+  </p>
   {% include "_calendar_subscribe.html.jinja" %}
   <dl>
     <dt>Last on the schedule</dt>

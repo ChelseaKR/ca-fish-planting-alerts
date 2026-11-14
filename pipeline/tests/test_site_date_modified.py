@@ -6,10 +6,9 @@ structured data; when the two carry a date it must be the same date: the day
 the page's data last changed, never the build date. A page with no data date
 (about, gear, privacy) carries no dateModified at all.
 
-California water pages are not wired yet: their render function is being
-reworked in the water-convert branch (DECISIONS 0054), and they get the same
-one-line change after it merges. The check below covers every page that has
-both a sitemap lastmod and a dateModified, so that change is tested here too.
+California water pages carry it too (wired after the water-convert branch,
+DECISIONS 0054, merged). The check below covers every page that has both a
+sitemap lastmod and a dateModified.
 
 Built from the pinned fixtures (California plus Tennessee).
 """
@@ -168,7 +167,7 @@ def test_negative_control_a_dated_page_outside_the_sitemap_must_be_noindex(
 
 @pytest.mark.parametrize(
     "prefix",
-    ["/county/", "/region/", "/species/", "/tn/water/"],
+    ["/county/", "/region/", "/species/", "/tn/water/", "/water/"],
 )
 def test_each_wired_family_carries_it_on_every_sitemap_page(
     built: Path, prefix: str

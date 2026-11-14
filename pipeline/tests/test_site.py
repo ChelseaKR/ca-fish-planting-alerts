@@ -500,6 +500,8 @@ def _box_follows_status(html: str) -> bool:
     badge_end = html.index("</p>", status) + len("</p>")
     box = html.index('class="calendar-subscribe"')
     gap = html[badge_end:box]
+    # DECISIONS 0054: the one-sentence answer sits between the badge and the box.
+    gap = re.sub(r'\s*<p class="water-answer">.*?</p>', "", gap, count=1, flags=re.S)
     return gap.strip() == "<div" and (
         box
         < html.index("<dl>", box)

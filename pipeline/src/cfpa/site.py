@@ -826,6 +826,14 @@ def _water_status(
             this_week=source_week_start in listed, next_week=next_week in listed
         ),
         "later_week": later[0] if later else "",
+        # The answer line at the top of the block (DECISIONS 0054): the
+        # soonest listed week after this one, and "N days" for the last
+        # past week. Both are "" when the record has no such week, so the
+        # page says so in words instead of showing an empty or zero value.
+        "next_listed": next((d for d in listed if d > source_week_start), ""),
+        "days_ago_text": _plural(days_ago, "day", "days")
+        if days_ago is not None
+        else "",
         "weeks_on_schedule": count,
         "recorded_since": recorded_since,
         "since_text": since,
@@ -1232,25 +1240,54 @@ def _water_lastmod(
     *,
     source_week_start: str,
     siblings: list[dict[str, Any]] | None = None,
-    nothing_current: bool = False,
 ) -> str:
     """The date this water's page last changed in substance, for sitemap.xml:
     its own data (``_water_data_lastmod``), or the day a water sharing one of
     its counties first appeared, because the page links to every such water
-    by name. Siblings are listed by name only, not with their weeks, so a
-    sibling's new listing does not change this page.
+    by name.
 
-    The exception is a water with nothing current: its page also lists the
-    siblings that are scheduled this week or later (``_scheduled_siblings``),
-    so a sibling's own data change, or its rollover, changes this page too."""
+    Every sibling's link also carries its own schedule answer and the list
+    is ordered by it (DECISIONS 0054), so a sibling's data change, or its
+    rollover, changes this page too."""
     dates = [_water_data_lastmod(w, source_week_start=source_week_start)]
     dates += [_water_first_seen(s) for s in siblings or []]
-    if nothing_current:
-        dates += [
-            _water_data_lastmod(s, source_week_start=source_week_start)
-            for s in siblings or []
-        ]
+    dates += [
+        _water_data_lastmod(s, source_week_start=source_week_start)
+        for s in siblings or []
+    ]
     return max(dates)
+
+
+def _sibling_when(ctx: _PageContext, s: dict[str, Any]) -> str:
+    """The schedule answer next to a same-county water's link, from its own
+    view: this week, its next listed week, or its last listed week. "" when
+    it has none of these, and the link then stands alone (never a zero)."""
+    v = ctx.views[s["id"]]
+    if v["this_week"]:
+        return "scheduled this week"
+    if v["next_listed_label"]:
+        return f"next scheduled the {v['next_listed_label']}"
+    if v["last_listed_label"]:
+        return f"last scheduled the {v['last_listed_label']}"
+    return ""
+
+
+def _sibling_order(ctx: _PageContext, s: dict[str, Any]) -> tuple[int, int, str, str]:
+    """Same-county waters on this week's schedule first, then those with a
+    later week listed, then the rest by their most recent listed week,
+    newest first; name breaks ties."""
+    v = ctx.views[s["id"]]
+    latest = v["latest_listed_start"]
+    recency = -dt.date.fromisoformat(latest).toordinal() if latest else 0
+    if v["this_week"]:
+        group = 0
+    elif v["next_listed_label"]:
+        group = 1
+    elif latest:
+        group = 2
+    else:
+        group = 3
+    return (group, recency if group == 2 else 0, s["name"], s["slug"])
 
 
 def _scheduled_siblings(
@@ -1885,13 +1922,19 @@ def _render_water_page(
         for s in ctx.waters_by_county[c]
         if s["id"] != w["id"]
     }
+    # Each sibling carries its own schedule answer and the list leads with
+    # the waters that are on the schedule now (DECISIONS 0054), so a visitor
+    # whose water has nothing this week sees where CDFW is planting in the
+    # same county without opening every page.
     other_waters_by_county = [
         {
             **ctx.county_link[c],
             "waters": [
-                {"slug": s["slug"], "name": s["name"]}
-                for s in sorted(ctx.waters_by_county[c], key=by_name)
-                if s["id"] != w["id"]
+                {"slug": s["slug"], "name": s["name"], "when": _sibling_when(ctx, s)}
+                for s in sorted(
+                    (s for s in ctx.waters_by_county[c] if s["id"] != w["id"]),
+                    key=lambda s: _sibling_order(ctx, s),
+                )
             ],
         }
         for c in w["counties"]
@@ -1927,6 +1970,15 @@ def _render_water_page(
     # Fewer than two dated rows: noindex,follow, no gear block, and out of
     # the sitemap (build_site asks the same function; DECISIONS 0041).
     thin = is_thin(w["plants"], f"/water/{w['slug']}/")
+    # The region links are navigation, not this water's data: they are left
+    # out of the lastmod (docs: a new water in the region can change them
+    # without moving this date, a known under-report). Computed before the
+    # render because the page's dateModified is this same value.
+    lastmod = _water_lastmod(
+        w,
+        source_week_start=ctx.source_week_start,
+        siblings=list(siblings.values()),
+    )
     html = ctx.env.get_template("water.html.jinja").render(
         title=title,
         description=_water_description(view, source_week_label=ctx.source_week_label),
@@ -1942,6 +1994,7 @@ def _render_water_page(
                 name=title,
                 base_url=base_url,
                 about={"@id": f"{page_url}#water"},
+                date_modified=lastmod,
             ),
             _ld_breadcrumb(page_url, trail),
             _ld_water(w, page_url=page_url, point=point),
@@ -1981,15 +2034,7 @@ def _render_water_page(
     )
     ctx.written.append(ics_path)
 
-    # The region links are navigation, not this water's data: they are left
-    # out of the lastmod (docs: a new water in the region can change them
-    # without moving this date, a known under-report).
-    return _water_lastmod(
-        w,
-        source_week_start=ctx.source_week_start,
-        siblings=list(siblings.values()),
-        nothing_current=view["nothing_current"],
-    )
+    return lastmod
 
 
 COUNTY_RECENT_WEEKS = 4

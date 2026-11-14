@@ -1405,6 +1405,40 @@ recommended one.
   `state = "CA"`) and onboarding change after the App Review Board answers,
   in their own PR, with the same rules and words as `StateChoice.kt`.
 
+## 0054 — Water pages answer the visit in the first screen (2026-11-05)
+
+Measured 2026-11-05, read-only (GA4 property "Trout Truck", 28 days; Search
+Console `sc-domain:trouttruck.com`, whose data starts 2026-10-14, to
+2026-11-03): 164 sessions landed on a `/water/` page and 60 of them were
+engaged, about two thirds of the site's 92 engaged landings. Most engaged
+water landings viewed one page (1.0 views per session on la-mirada-lake,
+santa-fe-reservoir, mather-lake). The 28 days had 4
+`calendar_subscribe_click` and 1 `gear_click`, all on water pages. Water
+pages got 30 of the site's 43 Search clicks and 1,020 of its 1,530
+impressions. The subscribe link sat below the lede and, on a water with
+nothing current, below the county lists.
+
+- **One answer line.** The status block opens with one sentence under the
+  badge: on the schedule this week (and the next listed week, if any); next
+  on the schedule the week of X; or not on the schedule for this week or
+  later yet, as of the last check, with the last listed week and how many
+  days before that check it began. A water with no listed week says so in
+  words. Nothing is a zero or a blank.
+- **Subscribe in the first screen.** The calendar subscribe paragraph moves
+  into the status block, right after the answer line. Its links, events and
+  wording are unchanged.
+- **Same-county links say where each water stands.** Each link in "Other
+  X County waters on the schedule" ends with "scheduled this week", "next
+  scheduled the week of X" or "last scheduled the week of X", and the list
+  leads with this week's waters, then later weeks, then the rest by most
+  recent week. A water with none of these keeps a bare link. The section
+  still never says "nearby" (the snapshot has no locations for every water).
+- **Lastmod.** Because every page now shows its siblings' weeks, a
+  sibling's data change or rollover moves the page's sitemap lastmod, not
+  only on a page with nothing current.
+- **Unchanged.** URLs, titles, H1s and meta descriptions (the 10-30 title
+  test is still being measured), the state (`/tn/water/` etc.) template, and
+  the gear block.
 
 ## 0057 — Android About gets "Write to the developer"; alerts keep their one button (2026-11-06)
 

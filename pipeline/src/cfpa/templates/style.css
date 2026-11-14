@@ -454,3 +454,14 @@ dd .tt-badge { margin-right: var(--space-2); }
 .tt-state p + p { margin-top: var(--space-1); }
 .tt-state .tt-badge { margin-right: var(--space-2); }
 .tt-state a { display: inline-block; min-height: var(--tap-min); padding: var(--space-0-5) 0; }
+
+/* Water page: the one-line schedule answer and the calendar subscribe
+   action sit together in the first phone screen (DECISIONS 0054). */
+.water-answer { font-size: 1.05rem; }
+.water-subscribe {
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+.water-subscribe a { display: inline-block; min-height: var(--tap-min); padding: var(--space-0-5) 0; }

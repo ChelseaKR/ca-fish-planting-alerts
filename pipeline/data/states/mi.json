@@ -2,10 +2,10 @@
   "schema": "cfpa-state-history-v1",
   "state": "MI",
   "checks": {
-    "last_attempt_at": "2026-11-14T01:18:53Z",
+    "last_attempt_at": "2026-11-14T13:21:12Z",
     "last_success_at": "2026-11-14T01:18:53Z",
-    "last_attempt_ok": true,
-    "last_error": null,
+    "last_attempt_ok": false,
+    "last_error": "robots.txt at https://michigandnr.com/robots.txt answered HTTP 503; an unreadable robots.txt puts the host off-limits",
     "content_sha256": "8d922462dae2a15f9a360dfe9b9bb7d16e8d94ae13f687ef7d87dc220585288d",
     "last_modified": "Fri, 13 Nov 2026 16:44:36 GMT",
     "etag": "\"6471aa448e73dd1:0\""

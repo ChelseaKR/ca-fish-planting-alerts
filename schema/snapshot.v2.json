@@ -142,7 +142,18 @@
           "properties": {
             "last_attempt_at": { "$ref": "#/$defs/datetime" },
             "last_success_at": { "$ref": "#/$defs/datetime" },
-            "last_attempt_ok": { "type": "boolean", "description": "False: the newest fetch failed and the data shown is from last_success_at." }
+            "last_attempt_ok": { "type": "boolean", "description": "False: the newest fetch failed and the data shown is from last_success_at." },
+            "stale_copy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source_last_edit_at", "source_record_count", "copy_record_count"],
+              "description": "Present only when last_attempt_ok is false because the host flagged its own copy of the agency's data stale (Massachusetts, ArcGIS Hub: docs/DECISIONS.md 0063, 0071). What the host's metadata said about the agency's layer on that attempt; null when it could not be read.",
+              "properties": {
+                "source_last_edit_at": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/datetime" }], "description": "The agency's last edit to its layer." },
+                "source_record_count": { "type": ["integer", "null"], "minimum": 0, "description": "Records in the agency's layer." },
+                "copy_record_count": { "type": "integer", "minimum": 0, "description": "Records in the last good read: the copy the data shown came from." }
+              }
+            }
           }
         },
         "attribution": {

@@ -619,6 +619,40 @@ def _render_index(
     return page_url, lastmod
 
 
+def _civil_day_label(iso_z: str, state: dict[str, Any]) -> str:
+    """ "Tue, 13 Oct 2026": the civil date in the state's time zone."""
+    d = (
+        dt.datetime.fromisoformat(iso_z.replace("Z", "+00:00"))
+        .astimezone(ZoneInfo(SOURCES[state["code"]].time_zone))
+        .date()
+    )
+    return f"{d:%a}, {d.day} {d:%b} {d.year}"
+
+
+def stale_copy_sentence(state: dict[str, Any]) -> str:
+    """Why the latest check failed, when it failed on ArcGIS Hub's own stale
+    flag (Massachusetts, DECISIONS 0063), in the words Chelsea approved on
+    2026-11-14 (DECISIONS 0071). Empty unless every number in it was
+    measured on that attempt and the copy has fewer entries than the
+    agency's layer; otherwise the page keeps the plain failed-check line."""
+    stale = state["checks"].get("stale_copy")
+    if not stale or state["checks"]["last_attempt_ok"]:
+        return ""
+    edited = stale.get("source_last_edit_at")
+    total = stale.get("source_record_count")
+    have = stale.get("copy_record_count")
+    if not edited or total is None or have is None or have >= total:
+        return ""
+    short = state["agency"]["short_name"]
+    return (
+        f"{short} last changed its stocking report on "
+        f"{_civil_day_label(edited, state)}. The copy Trout Truck can read is "
+        f"older than that change and has {have} of the report's {total} "
+        "entries, so some stockings may be missing here. ArcGIS Hub, the "
+        "service it is read through, has not rebuilt that copy since."
+    )
+
+
 def _freshness(state: dict[str, Any]) -> dict[str, Any]:
     """How a state page words its data's age.
 
@@ -645,6 +679,9 @@ def _freshness(state: dict[str, Any]) -> dict[str, Any]:
             )
     return {
         "manual_sentence": sentence,
+        "stale_copy_sentence": stale_copy_sentence(state)
+        if failed and not manual
+        else "",
         "manual": manual,
         "automatic_failing": manual and failed,
         "attempt_failed": failed and not manual,

@@ -24,6 +24,7 @@ from .base import (
     FetchContext,
     FetchedBody,
     NotModified,
+    StaleCopyError,
     StateFetchError,
     StateFormatError,
     StateSource,
@@ -204,6 +205,18 @@ def run_states(
                 else ""
             )
             runs.append(StateRun(source, unchanged, path, "unchanged", message))
+        except StaleCopyError as exc:
+            # The host's own stale flag (DECISIONS 0063): what its metadata
+            # said about the agency's layer is kept with the failure (0071).
+            failed = record_failure(
+                history,
+                attempted_at=now,
+                error=str(exc),
+                source_last_edit_at=exc.source_last_edit_at,
+                source_record_count=exc.source_record_count,
+                stale_copy=True,
+            )
+            runs.append(StateRun(source, failed, path, "failed", str(exc)))
         except (StateFetchError, StateFormatError, StateHistoryError) as exc:
             failed = record_failure(history, attempted_at=now, error=str(exc))
             runs.append(StateRun(source, failed, path, "failed", str(exc)))

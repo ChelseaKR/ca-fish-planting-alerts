@@ -1939,3 +1939,64 @@ Chelsea approved the copy as written and chose to merge now, on 2026-11-14.
 - **Fits 0042.** No new page, URL or page family, and no title change. It is
   a section on an existing page; Chelsea chose to merge it on 2026-11-14,
   before the 0042 freeze ends, because winter stocking starts this month.
+
+
+## 0071 — Massachusetts: say why the read fails, and wait while MassWildlife is idle (2026-11-14)
+
+From the 2026-11-14 Massachusetts read check
+(`_agent-tools/growth/tt-ma-read-2026-11-14.md`, outside this repo).
+Chelsea chose "Mark it 'waiting'" on 2026-11-14 and approved the page
+sentence below as written.
+
+- **What we found.** Live, 2026-11-14 17:30 UTC: Hub still answers
+  `cacheStatus` "stale" for the file it built 2026-10-13 02:35 UTC (150
+  rows). Its metadata for the layer (`/api/v3/datasets/<id>_0`) says 155
+  records, last edited 2026-10-13 17:06 UTC (`modifiedProvenance`
+  "layer.editingInfo.lastEditDate"). It refreshed that metadata at 03:32 UTC
+  the same day but not the file. MassWildlife has not edited the layer in 32
+  days, and the route and the answer's shape are unchanged, so there is
+  nothing for the reader to follow. Since 11-14 the freshness job (0065) has
+  been red on every run, and nothing upstream will change before spring. A red
+  that never clears teaches people to ignore red, so a second stuck state
+  would go unnoticed behind it. Chelsea also tried to get the file rebuilt
+  herself: signed in to a free ArcGIS account, gis.data.mass.gov still
+  said "Can't access this dataset".
+- **The measurement.** Only when Hub answers stale, the reader waits the
+  Crawl-delay (61 s) and reads Hub's metadata once, on the same host,
+  allowed by its robots.txt. The failed check keeps
+  `checks.stale_copy`: that attempt's time, the layer's last edit (only
+  when Hub says the date is the layer's own edit date, to the second), its
+  record count, and how many records the last good read saw. If any of
+  these cannot be read, it is null; nothing is guessed. Any other outcome
+  of a later attempt clears the object. The v2 snapshot carries the facts
+  as optional `checks.stale_copy`.
+- **The freshness rule.** A state whose last good read is older than its
+  allowance is stuck, as before, with one exception: it is **waiting** when
+  its latest attempt failed on Hub's stale flag and the layer's last edit,
+  read on that same attempt, is also older than the allowance. A waiting
+  state gets a line, a `::warning` annotation and a summary row, and does
+  not fail the job. The first run after MassWildlife edits again is red. So
+  is a stale flag whose edit date could not be read, or facts left by an
+  earlier attempt. Today's line: `MA (Massachusetts): waiting: last good
+  read 2026-11-07 13:22Z (automated), 7.2 days ago, allowed 7 days; Hub's
+  file is stale, and MassWildlife has not edited its layer since 2026-10-13
+  17:06Z (32.0 days ago); red again as soon as it does`.
+- **The pages.** While the latest failure is Hub's stale flag, both measured
+  numbers are known, and the copy has fewer entries than the layer, the
+  bold failed-check sentence on the hub and water pages becomes, in
+  Chelsea's approved words: "MassWildlife last changed its stocking report
+  on Tue, 13 Oct 2026. The copy Trout Truck can read is older than that
+  change and has 150 of the report's 155 entries, so some stockings may be
+  missing here. ArcGIS Hub, the service it is read through, has not rebuilt
+  that copy since." In that state the hub drops "; MassWildlife last changed
+  the file {date}", which was Hub's file time, not MassWildlife's. Otherwise
+  the plain failed-check line stays.
+- **Not changed.** The route stays Hub only (0034). services1.arcgis.com
+  and mass.gov are never read, and nothing asks Hub to rebuild through its
+  API. There is no dated or seasonal waiver: the exception rests on a
+  measurement made on every run. Other states, the allowance and llms.txt
+  are unchanged.
+- **What to expect.** After this merges, the first run records the facts,
+  and Massachusetts reads "waiting" until MassWildlife edits the layer
+  again, likely in March. If Hub still has not rebuilt the file then, the
+  job goes red, and that red is real.

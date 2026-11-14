@@ -26,7 +26,7 @@
 <p><strong>{{ state.recency_note }}</strong></p>
 {% endif %}
 <p class="muted">
-  {% if manual %}{{ manual_sentence }}{% else %}{{ state.agency.short_name }}'s data was last read {{ fetched_label }}.{% endif %}{% if attempt_failed %} <strong>The check on {{ attempt_label }} failed, so this is the data from the last good read.</strong>{% endif %}
+  {% if manual %}{{ manual_sentence }}{% else %}{{ state.agency.short_name }}'s data was last read {{ fetched_label }}.{% endif %}{% if stale_copy_sentence %} <strong>{{ stale_copy_sentence }}</strong>{% elif attempt_failed %} <strong>The check on {{ attempt_label }} failed, so this is the data from the last good read.</strong>{% endif %}
 
   {% if schedule %}Every date is {{ state.agency.short_name }}'s plan, not a confirmed stocking, shown at the precision {{ state.agency.short_name }} gives it{% if w_kind == "plan" %}, in {{ state.agency.short_name }}'s own words{% endif %}.{% endif %}
 </p>

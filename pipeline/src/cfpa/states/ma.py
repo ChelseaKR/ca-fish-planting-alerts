@@ -16,14 +16,19 @@ touched; neither is ``www.mass.gov`` (403, and "fair use" terms).
    answers 202 ``{"status": "Pending"}`` while it builds the file, or 200
    ``{"status": "Completed", "resultUrl": ...}``. A Completed answer with
    ``"cacheStatus": "stale"`` means Hub's file is older than the layer; that
-   is a failed check and the file is not read (DECISIONS 0063).
+   is a failed check and the file is not read (DECISIONS 0063). Only then,
+   after the Crawl-delay, one ``GET /api/v3/datasets/<id>_0``: Hub's own
+   metadata for the layer, for MassWildlife's last edit and record count,
+   which the failed check records (DECISIONS 0071). A failure there leaves
+   both unknown and changes nothing else.
 2. On 202, wait the host's Crawl-delay (61 s) and ask again, at most
    ``MAX_POLLS`` times in all.
 3. ``GET`` the ``resultUrl`` exactly as returned, after checking that its host
    is ``hub.arcgis.com`` and that robots.txt allows its path. Redirects are
    never followed.
 
-So a run makes two to three requests, 61 s apart.
+So a run makes two to three requests, 61 s apart (three when Hub's file is
+stale: the status, the metadata, and no CSV).
 
 The CSV (measured 2026-10-12, 150 rows, 2026-09-24 to 2026-10-09):
 ``OBJECTID, Waterbody ("Lake Wyola - Shutesbury"), Town, Species (a code),
@@ -53,6 +58,7 @@ from .base import (
     ParsedFeed,
     ParsedRecord,
     Period,
+    StaleCopyError,
     StateFetchError,
     StateFormatError,
     StateSource,
@@ -69,6 +75,12 @@ ITEM_ID = "e27aa5ec1ef74659aac1ef12b39510f1"
 HUB_HOST = "hub.arcgis.com"
 DOWNLOAD_URL = f"https://{HUB_HOST}/api/download/v1/items/{ITEM_ID}/csv"
 ITEM_URL = f"https://www.arcgis.com/home/item.html?id={ITEM_ID}"
+# Hub's metadata for the layer (layer 0 of the item): its record count and
+# the layer's last edit, which Hub reads from the service itself.
+METADATA_URL = f"https://{HUB_HOST}/api/v3/datasets/{ITEM_ID}_0"
+# Hub says where ``modified`` came from; only the layer's own edit date is
+# MassWildlife's last change (the item's ``modified`` is not).
+LAYER_EDIT_PROVENANCE = "layer.editingInfo.lastEditDate"
 
 # At most this many download-status requests per run, then the CSV itself.
 MAX_POLLS = 2
@@ -180,6 +192,10 @@ def _status(body: FetchedBody) -> dict[str, object]:
     return doc
 
 
+class _HubCacheStale(Exception):
+    """Hub answered Completed with ``cacheStatus`` "stale"."""
+
+
 def _result_url(status: dict[str, object]) -> str | None:
     if status.get("status") != "Completed":
         return None
@@ -189,11 +205,7 @@ def _result_url(status: dict[str, object]) -> str | None:
     # 17:06 UTC. Reading that file would show old data as current, so it is
     # a failed check: the last good data is kept and the pages say so.
     if status.get("cacheStatus") == "stale":
-        raise StateFetchError(
-            "Hub marked its copy of MassWildlife's layer stale (cacheStatus "
-            "'stale'): MassWildlife changed the layer after Hub built the file, "
-            "so the file is not current; not read"
-        )
+        raise _HubCacheStale
     url = status.get("resultUrl")
     if not isinstance(url, str):
         raise StateFormatError("Hub said Completed but gave no resultUrl")
@@ -203,6 +215,74 @@ def _result_url(status: dict[str, object]) -> str | None:
             f"Hub's resultUrl is on {parts.netloc!r}, not {HUB_HOST}; not followed"
         )
     return url
+
+
+def layer_facts(text: str) -> tuple[dt.datetime | None, int | None]:
+    """MassWildlife's last edit to the layer and its record count, from Hub's
+    metadata (``/api/v3/datasets/<id>_0``, measured 2026-11-14:
+    ``data.attributes.modified`` 1791911199165, ``modifiedProvenance``
+    "layer.editingInfo.lastEditDate", ``recordCount`` 155), the edit to the
+    whole second. Each is None
+    when it is missing or not what it should be; never a guess."""
+    try:
+        doc = json.loads(text)
+    except json.JSONDecodeError:
+        return None, None
+    data = doc.get("data") if isinstance(doc, dict) else None
+    attrs = data.get("attributes") if isinstance(data, dict) else None
+    if not isinstance(attrs, dict):
+        return None, None
+    edited: dt.datetime | None = None
+    millis = attrs.get("modified")
+    if (
+        attrs.get("modifiedProvenance") == LAYER_EDIT_PROVENANCE
+        and isinstance(millis, int)
+        and not isinstance(millis, bool)
+        and millis > 0
+    ):
+        # Whole seconds: what the history file keeps.
+        edited = dt.datetime.fromtimestamp(millis // 1000, dt.UTC)
+    count = attrs.get("recordCount")
+    records = (
+        count
+        if isinstance(count, int) and not isinstance(count, bool) and count >= 0
+        else None
+    )
+    return edited, records
+
+
+def _stale_copy_error(
+    client: httpx.Client,
+    user_agent: str,
+    sleep: Callable[[float], None],
+    delay: float,
+) -> StaleCopyError:
+    """The failed check for a stale Hub file, with what Hub's metadata says
+    about MassWildlife's layer: one more request, after the Crawl-delay. If
+    it cannot be read, both facts are unknown (DECISIONS 0071), which the
+    freshness watchdog counts as stuck."""
+    edited: dt.datetime | None = None
+    records: int | None = None
+    try:
+        check_robots_strict(client, METADATA_URL, user_agent)
+        sleep(delay)
+        edited, records = layer_facts(get_text(client, METADATA_URL, user_agent).text)
+    except StateFetchError:
+        pass
+    facts = (
+        "MassWildlife's layer was last edited "
+        + (edited.strftime("%Y-%m-%d %H:%M UTC") if edited else "(unknown)")
+        + ", with "
+        + (str(records) if records is not None else "an unknown number of")
+        + " records, per Hub's metadata"
+    )
+    return StaleCopyError(
+        "Hub marked its copy of MassWildlife's layer stale (cacheStatus "
+        "'stale'): MassWildlife changed the layer after Hub built the file, "
+        f"so the file is not current; not read. {facts}",
+        source_last_edit_at=edited,
+        source_record_count=records,
+    )
 
 
 def fetch(
@@ -225,7 +305,10 @@ def fetch(
                 params={"redirect": "false", "layers": "0"},
             )
         )
-        url = _result_url(status)
+        try:
+            url = _result_url(status)
+        except _HubCacheStale:
+            raise _stale_copy_error(client, user_agent, sleep, delay) from None
         if url is not None:
             break
         if status.get("status") not in ("Pending", "Processing", "InProgress"):

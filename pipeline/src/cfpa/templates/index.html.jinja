@@ -146,6 +146,11 @@
 {% set gear_placement = "home" %}
 {% include "_gear_block.html.jinja" %}
 {% endif %}
+{# DECISIONS 0047: only while the gift guide is built. An internal link, said
+   to lead to affiliate links before anyone follows it. #}
+{% if gift_guide %}
+<p id="gift-guide-link"><a href="{{ root }}gifts/">Gift ideas for a trout angler</a>, a short list of practical items. That page&rsquo;s links are affiliate links to Amazon.</p>
+{% endif %}
 
 {% if week_archive %}
 <h2>Earlier weeks</h2>

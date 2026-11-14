@@ -1893,6 +1893,51 @@ later decision, gated on the read below.
   `push-worker.js.jinja`, `manifest.webmanifest.jinja`, `infra/web-push`,
   `tools/web-push`) overlap nothing.
 
+## 0047 — A gift guide at /gifts/, on by build date from 2026-11-27 (2026-11-05, revised 2026-11-13)
+
+Same Amazon Associates account (`trouttruck-20`) and deadline as 0029: 3
+qualifying sales by about 2027-04-17, and holiday gifting is the likeliest
+window for one. 0042 allows no new page family until 2026-11-27, so the page
+is built only from that day.
+
+- **What.** `/gifts/`, "Gifts for trout anglers": eleven practical,
+  inexpensive items for fishing planted trout at a lake or pond
+  (`GIFT_GUIDE_ITEMS` in `site.py`), each with one sentence in our own words
+  on why it helps on the bank, a CDFW license reminder (no legal advice), and
+  links to `/gear/` and the schedule.
+- **Links.** The 0030 rules exactly: Amazon search links for a category,
+  built by `amazon_search_url()`, `rel="sponsored nofollow noopener"`, the
+  `gear_click` labels with placement `gift_guide`; Amazon's sentence "As an
+  Amazon Associate I earn from qualifying purchases." before the first link
+  and after the last, the "costs you nothing extra" sentence and the CDFW
+  non-endorsement sentence. No product page, image, brand, price or rating;
+  the page says to check the current price before buying.
+- **Switch.** The build date, as for the /gear/ holiday section (0043):
+  a build dated on or after `GIFT_GUIDE_FROM` (2026-11-27) writes the page;
+  an earlier one writes nothing and no page mentions it, and a test fails if
+  any trace appears. No end date: the list is not seasonal. (The 2026-11-05
+  draft used a constant flipped by a second pull request; the date replaces
+  it so nobody has to be at the keyboard on 11-27.) On, four files change: the new page,
+  the home page, the privacy page (which lists where gear links are) and the
+  sitemap.
+- **Home page link.** Once the page is built, the home page's gear block is
+  followed by one sentence: "Gift ideas for a trout angler, a short list of
+  practical items. That page's links are affiliate links to Amazon." It is an
+  internal link; county pages are unchanged. Drop that paragraph in
+  `index.html.jinja` if the home page should stay as it is.
+- **Overlap.** 0043's holiday section on `/gear/` (11-15 to 12-26, five
+  searches) still runs and is unchanged. The two lists share the rod holder,
+  tackle box and fingerless gloves searches.
+- **Tracking.** No new script or event. The click labels go through the
+  existing GA4 tag (0011, 0030), under the same Global Privacy Control, Do
+  Not Track and opt-out guard, and the event records the link's host, not
+  the tag or search terms.
+- **Still the website alone.** No link in the iOS or Android sources, feeds,
+  snapshot or structured data.
+- **Guards.** `tests/test_site_gift_guide.py`, with negative controls, and the
+  allow lists in `tests/test_site_affiliate.py` and
+  `tests/test_site_gear_guide.py` now name `/gifts/`.
+
 ## 0070 — A state hub lists its own winter schedule (2026-11-14)
 
 Proposed from the winter-visitors lane

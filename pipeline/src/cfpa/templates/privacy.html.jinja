@@ -109,7 +109,8 @@
 {# BEGIN seo/click-events paragraph: keep this block self-contained #}
 <p id="link-clicks">
   <strong>Link click events.</strong> When you click a gear link on a
-  water page or on the &ldquo;What to bring&rdquo; page (or on a county
+  water page or on the &ldquo;What to bring&rdquo; page{% if gift_guide %} or the
+  &ldquo;Gifts for trout anglers&rdquo; page{% endif %} (or on a county
   page, the county list or the home page), or one of the calendar links
   on a water page (Apple Calendar, Google Calendar or the .ics file), Google Analytics records that the click
   happened, which kind of page it was on (such as a water page, a county
@@ -221,7 +222,8 @@
   Water pages with at least two dated stockings on record, California county
   pages, the county list and the home page have a short &ldquo;Gear&rdquo;
   list of links that search Amazon.com, and the &ldquo;What to bring&rdquo;
-  page has a longer list of the same kind. They are affiliate links: this site is
+  page has a longer list of the same kind{% if gift_guide %}, as does the
+  &ldquo;Gifts for trout anglers&rdquo; page{% endif %}. They are affiliate links: this site is
   a participant in the Amazon Services LLC Associates Program, so if you buy
   something after following one, the site&rsquo;s owner earns a commission,
   and it costs you nothing extra. {{ amazon_disclosure }}

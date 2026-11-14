@@ -234,7 +234,13 @@ def _outside_problems(out: Path) -> list[str]:
             continue
         rel = path.relative_to(out).parts
         allowed = path.suffix == ".html" and (
-            rel in (("gear", "index.html"), ("index.html",), ("county", "index.html"))
+            rel
+            in (
+                ("gear", "index.html"),
+                ("gifts", "index.html"),
+                ("index.html",),
+                ("county", "index.html"),
+            )
             or (
                 len(rel) == 3
                 and rel[0] in ("water", "county")

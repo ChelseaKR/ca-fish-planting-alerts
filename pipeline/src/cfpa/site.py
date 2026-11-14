@@ -492,6 +492,106 @@ def gear_guide_links(day: dt.date | None = None) -> dict[str, list[dict[str, str
     }
 
 
+# The gift guide at /gifts/ (DECISIONS 0047): ideas for someone who fishes
+# for planted trout, each with a sentence of why it helps at a lake or pond.
+# 0042 allows no new page family until 2026-11-27, so the page is built only
+# when the build date (the day of the daily publish, as for the /gear/
+# holiday section, 0043) is on or after GIFT_GUIDE_FROM. Before that, no
+# page, sitemap entry or link to it exists, and the build is byte for byte
+# what it was without it. build_site's ``gift_guide`` overrides it for tests.
+GIFT_GUIDE_FROM = dt.date(2026, 11, 27)
+GIFT_GUIDE_TITLE = "Gifts for trout anglers"
+GIFT_GUIDE_DESCRIPTION = (
+    "Practical gift ideas for someone who fishes the lakes and ponds on "
+    "California's trout planting schedule, with a short note on why each one "
+    "helps on the bank."
+)
+# Label, Amazon search terms, then our own words for why it helps on a lake or
+# pond on the planting schedule. Category searches, never a product: no
+# brand, price, rating or image, the same rules as /gear/ (0030).
+GIFT_GUIDE_ITEMS: tuple[tuple[str, str, str], ...] = (
+    (
+        "A small tackle box",
+        "small fishing tackle box",
+        "Hooks, split shot and bobbers get lost in a pocket. A small box with "
+        "dividers keeps a morning's tackle sorted and easy to carry to the bank.",
+    ),
+    (
+        "Fishing pliers with a line cutter",
+        "fishing pliers line cutter",
+        "A trout can take a bait hook deep. Pliers make removing it quicker and "
+        "kinder, and the cutter trims line without anyone using their teeth.",
+    ),
+    (
+        "Polarized sunglasses",
+        "polarized fishing sunglasses",
+        "They cut the glare off the water, so a bobber, the bottom and fish near "
+        "shore are easier to see.",
+    ),
+    (
+        "A rod holder for the bank",
+        "bank fishing rod holder",
+        "Bait fishing at a lake is mostly waiting. A holder pushed into the bank "
+        "keeps the rod out of the dirt and the line ready while hands are free.",
+    ),
+    (
+        "A rubber-mesh landing net",
+        "rubber mesh landing net",
+        "A landing net helps bring a fish in without losing it.",
+    ),
+    (
+        "A headlamp",
+        "headlamp",
+        "Many anglers arrive before sunrise, when trout are often active. A "
+        "headlamp leaves both hands free to tie knots and bait a hook in the dark.",
+    ),
+    (
+        "A folding camp chair",
+        "folding camp chair",
+        "Many planting waters are fished from shore. A light chair makes a long "
+        "morning on the bank easier, and it folds into the car.",
+    ),
+    (
+        "A soft cooler bag",
+        "soft cooler bag",
+        "Fish keep better cold. A soft cooler with ice packs is easy to carry "
+        "from the parking lot, and it holds lunch and drinks as well.",
+    ),
+    (
+        "Fingerless fishing gloves",
+        "fingerless fishing gloves",
+        "Winter and spring mornings at a planting water can be cold. Open "
+        "fingertips leave room to tie knots and handle bait.",
+    ),
+    (
+        "Trout dough bait",
+        "trout dough bait",
+        "A jar fits in a stocking. Many anglers fish dough bait under a bobber "
+        "for planted trout where bait is allowed; check the water's rules.",
+    ),
+    (
+        "Trout fishing line, four to six pound",
+        "trout fishing line 4 lb 6 lb monofilament",
+        "Line wears and frays with use. A fresh spool in the light weight common "
+        "for trout is a small gift that gets used.",
+    ),
+)
+
+
+def gift_guide_live_or_default(value: bool | None, build_date: dt.date) -> bool:
+    """``value`` when given, else whether ``build_date`` is on or after
+    ``GIFT_GUIDE_FROM`` (read at call time)."""
+    return build_date >= GIFT_GUIDE_FROM if value is None else value
+
+
+def gift_guide_items() -> list[dict[str, str]]:
+    """The gift guide's entries: label, tagged Amazon search URL and why."""
+    return [
+        {"label": label, "url": amazon_search_url(terms), "why": why}
+        for label, terms, why in GIFT_GUIDE_ITEMS
+    ]
+
+
 # The license the compiled schedule history is offered under, as a URL, for
 # the Dataset structured data on /about/ (docs/adr/0013). Unset on purpose:
 # the CC-BY license in docs/LICENSES-AND-ATTRIBUTION.md belongs to a
@@ -2312,6 +2412,35 @@ def _render_gear_page(ctx: _PageContext, build_date: dt.date) -> str:
     return page_url
 
 
+def _render_gift_page(ctx: _PageContext) -> str:
+    """Write /gifts/, the gift guide (DECISIONS 0047). Returns its URL."""
+    page_url = f"{ctx.base_url}/gifts/"
+    trail = [ctx.home_crumb, ("Gifts for trout anglers", page_url)]
+    html = ctx.env.get_template("gifts.html.jinja").render(
+        title=f"{GIFT_GUIDE_TITLE} | {SITE_NAME}, {SITE_TAGLINE}",
+        description=GIFT_GUIDE_DESCRIPTION,
+        canonical_url=page_url,
+        root="../",
+        **ctx.common,
+        structured_data=_ld_graph(
+            _ld_page(
+                "WebPage",
+                page_url=page_url,
+                name=GIFT_GUIDE_TITLE,
+                base_url=ctx.base_url,
+                about={"@type": "State", "name": "California"},
+            ),
+            _ld_breadcrumb(page_url, trail),
+        ),
+        breadcrumb=_relative_trail(trail, base_url=ctx.base_url, root="../"),
+        gifts=gift_guide_items(),
+        affiliate_rel=AFFILIATE_LINK_REL,
+        cdfw_license_url=CDFW_LICENSE_URL,
+    )
+    _write_page(ctx.out_dir, "gifts", html, ctx.written)
+    return page_url
+
+
 def _render_counties_index(
     ctx: _PageContext,
     *,
@@ -2995,6 +3124,7 @@ def build_site(
     usgs_lake_names: dict[int, str] | None = None,
     build_date: dt.date | None = None,
     push: push_mod.PushConfig | None = None,
+    gift_guide: bool | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
 
@@ -3004,6 +3134,11 @@ def build_site(
     Tennessee water page, the service worker and manifest it needs, and the
     privacy page's section on it. None, the default, builds exactly what it
     built before.
+
+    ``gift_guide`` builds /gifts/ (DECISIONS 0047), its sitemap entry and the
+    home page's link to it. None builds it when ``build_date`` is on or
+    after ``GIFT_GUIDE_FROM`` (2026-11-27); off, the build is exactly what it
+    was without it.
 
     ``build_date`` decides the date-gated parts of a page, today the /gear/
     holiday section (DECISIONS 0043). None means the UTC date of the
@@ -3118,6 +3253,11 @@ def build_site(
         {"name": f"California {sp['word']} stocking schedule", "slug": sp["slug"]}
         for sp in species_pages
     ]
+
+    # The gift guide (DECISIONS 0047): the home page and the privacy page
+    # mention it only when it is built.
+    gift_guide = gift_guide_live_or_default(gift_guide, build_date)
+    common["gift_guide"] = gift_guide
 
     # The past-week pages (DECISIONS 0038); the home page and the county index
     # link to /week/ only when it exists.
@@ -3471,6 +3611,7 @@ def build_site(
         lastmod=counties_index_lastmod,
     )
     gear_url = _render_gear_page(ctx, build_date)
+    gift_url = _render_gift_page(ctx) if gift_guide else None
 
     # ---- region pages: one per CDFW region with a county page. The
     # lastmod is the newest of its waters' own data dates, which already
@@ -3554,12 +3695,14 @@ def build_site(
 
     # ---- sitemap.xml -- lastmod is when a page's substance last changed
     # (see _water_data_lastmod), not the daily build date. The about,
-    # privacy, support, terms and gear pages carry no per-page data date, so no lastmod.
+    # privacy, support, terms, gear and gift pages carry no per-page data date,
+    # so no lastmod.
     sitemap_entries: list[tuple[str, str | None]] = [
         (f"{base_url}/", home_lastmod),
         (counties_index_url, counties_index_lastmod),
         (f"{base_url}/about/", None),
         (gear_url, None),
+        *([(gift_url, None)] if gift_url else []),
         *([(f"{base_url}/data/", data_updated)] if data_updated else []),
         (f"{base_url}/privacy/", None),
         (f"{base_url}/support/", None),

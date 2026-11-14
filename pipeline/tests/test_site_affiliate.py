@@ -1,7 +1,7 @@
 """Amazon Associates gear links (DECISIONS 0029, 0030, 0039, 0040).
 
 The links are on California water and county pages, the home page, the
-/county/ index, the /gear/ guide, and
+/county/ index, the /gear/ guide, the /gifts/ guide while it is on (0047), and
 another state's water pages when that state's terms permit commercial reuse,
 and nowhere else: not in the other pages, not in structured data, feeds or
 the snapshot, and not in the iOS or Android sources. Wherever one appears it
@@ -129,6 +129,11 @@ def _is_gear_page(out: Path, path: Path) -> bool:
     return path.relative_to(out).parts == ("gear", "index.html")
 
 
+def _is_gift_page(out: Path, path: Path) -> bool:
+    """The gift guide (DECISIONS 0047), built from GIFT_GUIDE_FROM (2026-11-27)."""
+    return path.relative_to(out).parts == ("gifts", "index.html")
+
+
 def _is_county_page(out: Path, path: Path) -> bool:
     """A California county page (DECISIONS 0039), not the /county/ index."""
     rel = path.relative_to(out).parts
@@ -173,6 +178,7 @@ def _page_problems(out: Path, path: Path) -> list[str]:
     allowed = (
         _is_water_page(out, path)
         or _is_gear_page(out, path)
+        or _is_gift_page(out, path)
         or _is_county_page(out, path)
         or _is_home_or_county_index(out, path)
         or agency is not None

@@ -19,6 +19,11 @@ This repository was republished with a new history on 2026-09-18
   and record count. The freshness job calls the state "waiting", a warning
   and not a red job, while that edit is older than the allowance too. The
   MA hub and water pages say why the read fails, in the approved words.
+- Site: a "Gifts for trout anglers" page at /gifts/ (DECISIONS 0047), built
+  only by daily publishes dated on or after 2026-11-27, when the 0042 freeze
+  ends. Eleven practical items with a sentence each on
+  why it helps at a lake or pond, Amazon search links under the /gear/ rules,
+  and, once on, a short disclosed link from the home page.
 - Site: each schedule or plan state's hub lists its own winter (DECISIONS
   0070): every water the agency's data dates from November through February,
   with each date at the agency's precision, after "Coming up". Tennessee's

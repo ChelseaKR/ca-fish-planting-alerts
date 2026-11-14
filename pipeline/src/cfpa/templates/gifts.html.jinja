@@ -1,0 +1,53 @@
+{% extends "base.html.jinja" %}
+{# DECISIONS 0047. Built from GIFT_GUIDE_FROM (2026-11-27). The only Amazon
+   links are the list's: search links, tagged, rel-marked, each with the
+   labels the GA4 click handler reads. Same disclosure as /gear/, before the
+   first link and after the last. #}
+{% macro disclosure(anchor_id) %}
+<p class="muted" id="{{ anchor_id }}">
+  The gift links on this page are affiliate links: if you buy something after
+  following one, this site earns a commission, and it costs you nothing extra.
+  {{ amazon_disclosure }}
+  {{ gear_endorsement }}
+  <a href="{{ root }}privacy/#affiliate">More in the privacy policy</a>.
+</p>
+{% endmacro %}
+{% block content %}
+<h1>Gifts for trout anglers</h1>
+<p class="lede">
+  Practical ideas for someone who fishes for planted trout at a California
+  lake or pond. Each one is useful whatever gear they already own,
+  and each comes with a sentence on why it helps on the bank.
+</p>
+<p class="gear-label">Affiliate links</p>
+{{ disclosure("gift-disclosure") }}
+<p>
+  Each link searches Amazon.com for that kind of item. It points to search
+  results, not to any one product, and this page names no brand and gives no
+  prices. Prices change, so check the current price before you buy.
+</p>
+
+<ul>
+  {% for g in gifts %}
+  <li><a href="{{ g.url }}" rel="{{ affiliate_rel }}" data-ga-event="gear_click" data-ga-placement="gift_guide" data-ga-type="amazon_search">{{ g.label }}</a>. {{ g.why }}</li>
+  {% endfor %}
+</ul>
+
+<h2 id="license">A license is not a store item</h2>
+<p>
+  Anglers 16 and older generally need a California fishing license. The
+  Department of Fish and Wildlife explains the types and how to get one on its
+  <a href="{{ cdfw_license_url }}">fishing license page</a>. Check there,
+  because rules and fees change. This is a reminder, not legal advice.
+</p>
+
+<h2 id="more">More for the day at the water</h2>
+<p>
+  <a href="{{ root }}gear/">What to bring</a> is a longer packing list for a
+  day at a planting water. To see where trout are scheduled,
+  <a href="{{ root }}">check this week&rsquo;s schedule</a> or find a water
+  <a href="{{ root }}county/">by county</a>. CDFW&rsquo;s own
+  <a href="{{ attribution_url }}">Fish Planting Schedule</a> is the source.
+</p>
+{{ disclosure("gift-disclosure-end") }}
+{% endblock %}

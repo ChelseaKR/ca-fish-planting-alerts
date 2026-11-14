@@ -1893,11 +1893,11 @@ later decision, gated on the read below.
   `push-worker.js.jinja`, `manifest.webmanifest.jinja`, `infra/web-push`,
   `tools/web-push`) overlap nothing.
 
-## 0070 — A state hub lists its own winter schedule (2026-11-14; proposed)
+## 0070 — A state hub lists its own winter schedule (2026-11-14)
 
 Proposed from the winter-visitors lane
 (`_agent-tools/growth/tt-winter-visitors-2026-11-14.md`, outside this repo).
-Nothing is decided until Chelsea approves the copy.
+Chelsea approved the copy as written and chose to merge now, on 2026-11-14.
 
 - **Why.** Search Console, `sc-domain:trouttruck.com`, 2026-08-01 to
   2026-11-12: Tennessee pages had 209 impressions and 17 clicks (8% of
@@ -1937,5 +1937,5 @@ Nothing is decided until Chelsea approves the copy.
   counts, in the hub's words. ChatGPT sends the site more engaged visits than
   Google (GA4, 28 days to 2026-11-14: 53 against 30).
 - **Fits 0042.** No new page, URL or page family, and no title change. It is
-  a section on an existing page; merge on or after 2026-11-27 unless Chelsea
-  chooses sooner.
+  a section on an existing page; Chelsea chose to merge it on 2026-11-14,
+  before the 0042 freeze ends, because winter stocking starts this month.

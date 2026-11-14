@@ -2,10 +2,10 @@
   "schema": "cfpa-state-history-v1",
   "state": "TN",
   "checks": {
-    "last_attempt_at": "2026-11-14T13:21:12Z",
+    "last_attempt_at": "2026-11-14T17:25:22Z",
     "last_success_at": "2026-11-14T17:05:23Z",
     "last_attempt_ok": false,
-    "last_error": "robots.txt at https://www.tn.gov/robots.txt could not be fetched ([Errno 104] Connection reset by peer); the host is off-limits",
+    "last_error": "robots.txt at https://www.tn.gov/robots.txt answered HTTP 403; an unreadable robots.txt puts the host off-limits",
     "content_sha256": "59498388135c3ab329841b943b9252f79f23a2ed03f16f717690f9cff571cf9e",
     "last_modified": null,
     "read_method": "manual",

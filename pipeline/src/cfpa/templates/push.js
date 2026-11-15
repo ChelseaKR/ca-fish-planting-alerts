@@ -129,11 +129,17 @@
     return navigator.serviceWorker.register(cfg.worker, { scope: cfg.scope }).then(function (reg) {
       if (reg.active) return reg;
       var worker = reg.installing || reg.waiting;
-      return new Promise(function (resolve) {
+      // A worker that fails to install turns "redundant" and never
+      // "activated"; without the reject the box would say "Setting it up"
+      // for good.
+      return new Promise(function (resolve, reject) {
         if (!worker) return resolve(reg);
-        worker.addEventListener("statechange", function () {
+        function settle() {
           if (worker.state === "activated") resolve(reg);
-        });
+          else if (worker.state === "redundant") reject(new Error("this browser did not finish setting up notifications"));
+        }
+        worker.addEventListener("statechange", settle);
+        settle();
       });
     });
   }
@@ -144,6 +150,10 @@
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body)
     });
+  }
+
+  function reason(err) {
+    return err && err.message ? err.message : "unknown error";
   }
 
   function subscribe() {
@@ -177,7 +187,7 @@
       // so no browser is left subscribed to nothing.
       var undo = created ? created.unsubscribe().catch(function () {}) : Promise.resolve();
       return undo.then(function () {
-        render("That did not work: " + (err && err.message ? err.message : "unknown error") + ". The calendar options above still work.");
+        render("That did not work: " + reason(err) + ". The calendar options above still work.");
       });
     });
   }
@@ -200,6 +210,10 @@
             : "Stopped in this browser. The server copy goes when its next delivery fails.");
         });
       });
+    }).catch(function (err) {
+      // Without this a failed lookup (a browser that refuses service
+      // workers here, say) left the box on "Setting it up" for good.
+      render("Stopping did not work: " + reason(err) + ". Try again, or turn off notifications for this site in your browser's settings.");
     });
   }
 

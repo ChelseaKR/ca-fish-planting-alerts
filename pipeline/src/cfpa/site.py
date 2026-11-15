@@ -584,6 +584,22 @@ def gift_guide_live_or_default(value: bool | None, build_date: dt.date) -> bool:
     return build_date >= GIFT_GUIDE_FROM if value is None else value
 
 
+# The California water pages' holiday line to /gifts/ (DECISIONS 0072): one
+# internal link under the gear block, for the 2026 holiday window alone. The
+# build date switches it on and off, both days included, so the daily
+# publish adds it on 2026-11-27 and takes it away on 2026-12-27 with no edit.
+# It never shows unless /gifts/ is built in the same build, so it never
+# points at a missing page. A year is part of each date: it does not come
+# back in 2027 without a new decision.
+WATER_GIFT_LINK_FIRST_DAY = dt.date(2026, 11, 27)
+WATER_GIFT_LINK_LAST_DAY = dt.date(2026, 12, 26)
+
+
+def water_gift_link_shown(day: dt.date, *, gift_guide: bool) -> bool:
+    """Whether a build dated ``day`` shows the water pages' line to /gifts/."""
+    return gift_guide and WATER_GIFT_LINK_FIRST_DAY <= day <= WATER_GIFT_LINK_LAST_DAY
+
+
 def gift_guide_items() -> list[dict[str, str]]:
     """The gift guide's entries: label, tagged Amazon search URL and why."""
     return [
@@ -1927,6 +1943,8 @@ class _PageContext:
     waters_by_region: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     coords: dict[str, list[Any]] = field(default_factory=dict)
     recorded_since: str = ""
+    # The California water pages' holiday line to /gifts/ (DECISIONS 0072).
+    water_gift_link: bool = False
 
     @property
     def home_crumb(self) -> tuple[str, str]:
@@ -2051,6 +2069,10 @@ def _render_water_page(
         water_map=_water_map(point),
         gear_links=[] if thin else gear_links(kind=water_kind(w["name"])),
         affiliate_rel=AFFILIATE_LINK_REL,
+        # The holiday line to /gifts/ under the gear block (DECISIONS 0072).
+        # Like the region links, it is not this water's data, so it is left
+        # out of the lastmod.
+        water_gift_link=ctx.water_gift_link,
         scheduled_elsewhere=scheduled_elsewhere,
         other_waters_by_county=other_waters_by_county,
         region_related=[{"slug": r["slug"], "name": r["name"]} for r in region_related],
@@ -3136,12 +3158,14 @@ def build_site(
     built before.
 
     ``gift_guide`` builds /gifts/ (DECISIONS 0047), its sitemap entry and the
-    home page's link to it. None builds it when ``build_date`` is on or
+    home page's link to it, and lets the California water pages' holiday
+    line link to it (0072). None builds it when ``build_date`` is on or
     after ``GIFT_GUIDE_FROM`` (2026-11-27); off, the build is exactly what it
     was without it.
 
     ``build_date`` decides the date-gated parts of a page, today the /gear/
-    holiday section (DECISIONS 0043). None means the UTC date of the
+    holiday section (DECISIONS 0043) and the water pages' line to /gifts/
+    (0072, 2026-11-27 to 2026-12-26). None means the UTC date of the
     snapshot's ``generated_at``, which is the day of the daily publish.
 
     ``cname`` (``custom_domain(base_url)``, passed by ``cli.run``) writes a
@@ -3531,6 +3555,7 @@ def build_site(
         waters_by_region=waters_by_region,
         coords=coords,
         recorded_since=recorded_since,
+        water_gift_link=water_gift_link_shown(build_date, gift_guide=gift_guide),
     )
 
     # ---- per-water pages + ics

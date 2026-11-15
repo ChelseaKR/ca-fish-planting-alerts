@@ -6,7 +6,9 @@
    data the page shows. The link to /gear/ is left off with
    gear_guide_link = false: that guide is about California waters. The
    "Affiliate links" label and the disclosure come before the links (the
-   design system's GearLinks), so the block never reads as schedule data. #}
+   design system's GearLinks), so the block never reads as schedule data.
+   water_gift_link (California water pages, DECISIONS 0072) adds one line to
+   /gifts/ at the end. #}
 <section class="gear" aria-labelledby="gear-heading">
   <p class="gear-label">Affiliate links</p>
   <h2 id="gear-heading">{{ gear_heading }}</h2>
@@ -28,5 +30,12 @@
   </ul>
   {% if gear_guide_link is not defined or gear_guide_link %}
   <p><a href="{{ root }}gear/">More gear ideas: what to bring for a day at the water</a></p>
+  {% endif %}
+  {# DECISIONS 0072: California water pages alone, 2026-11-27 to 2026-12-26
+     by build date, and only while /gifts/ is built. An internal link like the
+     home page's (0047), said to lead to affiliate links before anyone
+     follows it. #}
+  {% if water_gift_link is defined and water_gift_link and gear_placement == "water" %}
+  <p id="gift-guide-water-link">Shopping for someone who fishes? <a href="{{ root }}gifts/">Gift ideas for a trout angler</a>, a short list of practical items. That page&rsquo;s links are affiliate links to Amazon.</p>
   {% endif %}
 </section>

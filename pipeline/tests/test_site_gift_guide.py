@@ -284,9 +284,13 @@ def test_the_build_date_is_the_one_switch(
     assert _trace_problems(day_before) == []
 
 
-def test_on_changes_only_the_new_page_home_privacy_and_sitemap(
+def test_on_changes_only_the_new_page_home_privacy_sitemap_and_water_line(
     on: Path, off: Path
 ) -> None:
+    """BUILD_DAY is inside the water pages' holiday window (DECISIONS 0072),
+    so the California water pages that carry the gear block change too, by
+    the one line to /gifts/ and nothing else."""
+
     def files(root: Path) -> dict[str, bytes]:
         return {
             str(p.relative_to(root)): p.read_bytes()
@@ -298,7 +302,12 @@ def test_on_changes_only_the_new_page_home_privacy_and_sitemap(
     assert set(b) - set(a) == {"gifts/index.html"}
     assert set(a) <= set(b)
     changed = {k for k in a if a[k] != b[k]}
-    assert changed == {"index.html", "privacy/index.html", "sitemap.xml"}
+    line = re.compile(rb'\s*<p id="gift-guide-water-link">.*?</p>', re.S)
+    water = {k for k in changed if k.startswith("water/")}
+    assert water
+    for k in water:
+        assert line.sub(b"", b[k]) == a[k], k
+    assert changed - water == {"index.html", "privacy/index.html", "sitemap.xml"}
 
 
 # ---- the page, switched on ----

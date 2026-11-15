@@ -13,6 +13,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: California water pages end their gear block with one line to the
+  gift guide (DECISIONS 0072), "Shopping for someone who fishes? Gift ideas
+  for a trout angler, a short list of practical items. That page's links are
+  affiliate links to Amazon.", shown only by builds dated 2026-11-27 through
+  2026-12-26 and only while /gifts/ is built. No other page changes.
 - Massachusetts (DECISIONS 0071): when ArcGIS Hub flags its copy of
   MassWildlife's layer stale, the reader also reads Hub's metadata once
   (after the Crawl-delay), and the failed check keeps the layer's last edit

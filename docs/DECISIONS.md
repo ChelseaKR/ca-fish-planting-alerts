@@ -2045,3 +2045,51 @@ sentence below as written.
   and Massachusetts reads "waiting" until MassWildlife edits the layer
   again, likely in March. If Hub still has not rebuilt the file then, the
   job goes red, and that red is real.
+
+## 0072 — A line to /gifts/ on California water pages, 2026-11-27 to 2026-12-26 (2026-11-15)
+
+Proposed in the Trout Truck money brief of 2026-11-15 (action 3, outside
+this repo); Chelsea approved the wording and the window on 2026-11-15. Same
+Amazon Associates account (`trouttruck-20`) and deadline as 0029.
+
+- **Why.** 0047 links `/gifts/` from the home page alone, but most engaged
+  visitors land on a water page (GA4, 28 days to 2026-11-14: 42 of the 55
+  engaged ChatGPT sessions began on one, 34 of them in California).
+  December is when an Amazon purchase is likeliest, and a purchase within
+  24 hours of a click counts.
+- **What.** Each California water page that carries the gear block (not a
+  thin page, 0041) ends that block with one line, in the approved words:
+  "Shopping for someone who fishes? Gift ideas for a trout angler, a short
+  list of practical items. That page's links are affiliate links to
+  Amazon." "Gift ideas for a trout angler" links to `/gifts/`. It is an
+  internal link, like the home page's (0047): no tag, no sponsored rel and
+  no `gear_click` label, which belong to the Amazon links on `/gifts/`
+  itself, and the sentence says where it leads before anyone follows it.
+  The block's label, disclosure, endorsement sentence, links and position
+  are unchanged (0045's move stays as it is).
+- **When.** The build's date decides, both days included:
+  `WATER_GIFT_LINK_FIRST_DAY` (2026-11-27) to `WATER_GIFT_LINK_LAST_DAY`
+  (2026-12-26), the same switch as 0043 and 0047, so the daily publish adds
+  the line and takes it away with no edit. The dates carry the year: it does
+  not come back in 2027 without a new decision. It never shows in a build
+  without `/gifts/`, so it never points at a missing page.
+- **Where not.** County pages, the home page, `/county/`, `/gear/` and
+  other states' water pages are unchanged; they share the block's template,
+  but only the California water page passes the switch, and the template
+  also checks the `water` placement.
+- **Lastmod.** Like the region links, the line is navigation, not the
+  water's data, so it is left out of the sitemap lastmod and
+  `dateModified`. On 2026-11-27 and 2026-12-27 about 310 pages change
+  without their lastmod moving: a known under-report, chosen over moving
+  every water page's date twice.
+- **Fits 0042.** A line in an existing block, no new page or link surface
+  for Amazon. It merges before 2026-11-27 so the first dated build has it.
+- **Guards.** `tests/test_site_water_gift_link.py` builds the site with
+  Tennessee, Massachusetts and Michigan on, dated the first day, the last
+  day, the day before, the day after and 2027-11-27, and without `/gifts/`;
+  it checks the exact line inside the gear block of every California water
+  page that has one and on no other page, with negative controls (the line
+  on a county page and a Tennessee water page, missing, reworded, and read
+  as outside the window). `tests/test_site_gift_guide.py` (its 2026-11-27
+  build) and `tests/test_site_gear_guide.py` (its 2026-12-01 build against
+  2026-12-27) now expect the water pages to change by that line alone.

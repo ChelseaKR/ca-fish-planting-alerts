@@ -360,7 +360,10 @@ dd .tt-badge { margin-right: var(--space-2); }
   padding: var(--space-4);
   margin: var(--space-3) 0 var(--space-4);
 }
-.calendar-subscribe h3 { margin: 0 0 var(--space-2); }
+.calendar-subscribe h2, .calendar-subscribe h3 { margin: 0 0 var(--space-2); }
+/* On a state water page the box's heading is an h2 (it follows the h1), and
+   it looks like the h3 a California page has under its status h2. */
+.calendar-subscribe h2 { font-size: 1.05rem; border-top: 0; padding-top: 0; }
 .calendar-subscribe p { margin: 0 0 var(--space-3); }
 .calendar-subscribe p:last-child { margin-bottom: 0; }
 .calendar-subscribe__links { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: var(--space-2); }

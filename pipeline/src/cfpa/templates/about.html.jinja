@@ -10,6 +10,12 @@
   &mdash; CDFW's own page shows a rolling window of about a year, and this
   site keeps every week it has recorded after that window moves on.
 </p>
+{% if other_states %}
+<p>
+  Also on {{ site_name }}:
+  {% for s in other_states %}<a href="{{ root }}{{ s.seg }}/">{{ s.name }} trout stocking schedule</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+</p>
+{% endif %}
 <p>
   The name comes from what anglers call the hatchery truck that delivers
   planted trout. The site shows CDFW's published weekly schedule, not where
@@ -160,12 +166,18 @@
 <h2>Accuracy</h2>
 <p>
   CDFW: "all fish plants are subject to change depending on road, water,
-  weather and operational conditions." Every date on this site is a
+  weather and operational conditions." Every {% if other_states %}California {% endif %}date on this site is a
   <strong>week</strong>, never a day &mdash; CDFW does not publish a more
   specific date, on purpose ("to avoid focusing excess fishing activity
   immediately after a plant"). Nothing on this site should be read as
   confirmation that a plant happened.
 </p>
+{% if other_states %}
+<p>
+  Other states' dates are shown at each agency's own precision, which may be
+  a day, a week or the agency's own words; each state's page says which.
+</p>
+{% endif %}
 
 <h2>Source</h2>
 <p>

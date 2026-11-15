@@ -401,6 +401,23 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Site: a Tennessee water page's calendar box heading is an h2, not an h3
+  straight after the h1, so a screen reader's heading list no longer skips
+  a level; it looks as before, and California pages are unchanged. A test
+  checks every page of a multistate build for a skipped level, which axe's
+  WCAG rules do not.
+- Site: the 404 page, served at any missing address, names the other
+  states' `<state>/water/<name>/` addresses and links each state's page,
+  instead of saying only that a water CDFW never scheduled has no page.
+  A California-only build keeps the old wording.
+- Site: the about page no longer says every date on the site is a week:
+  that is California's, and other states' dates are at each agency's own
+  precision. It links the other states' pages too.
+- Site: the web push control no longer stays on "Setting it up..." for good
+  when the browser's notification worker fails to install, or when stopping
+  fails before it reaches the service. It shows the box again with what
+  went wrong. Tested under node with a stand-in browser.
+
 - Pipeline: Massachusetts no longer calls a stale file a good check
   (DECISIONS 0063). ArcGIS Hub marks its copy of MassWildlife's layer
   stale; the copy was built 2026-10-13 (150 rows; the layer has 155). The check now fails,

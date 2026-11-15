@@ -647,3 +647,117 @@ def test_publish_workflow_passes_the_two_variables():
     assert "PUSH_VAPID_PUBLIC_KEY: ${{ vars.PUSH_VAPID_PUBLIC_KEY }}" in wf
     assert '--push-api-url "$PUSH_API_URL"' in wf
     assert '--push-vapid-public-key "$PUSH_VAPID_PUBLIC_KEY"' in wf
+
+
+# ---- the page script's wiring, under node: it never stays on "Setting it up" -----
+
+_WIRING = r"""
+const fs = require("fs");
+const vm = require("vm");
+const [script, casePath] = process.argv.slice(2);
+const code = fs.readFileSync(script, "utf8");
+const c = JSON.parse(fs.readFileSync(casePath, "utf8"));
+const store = {};
+if (c.saved) store["trout-truck:push"] = JSON.stringify(c.saved);
+const el = (attrs) => ({
+  hidden: true,
+  textContent: "",
+  getAttribute: (n) => (attrs[n] === undefined ? null : attrs[n]),
+});
+const views = ["idle", "busy", "on", "ios", "blocked", "unsupported"].map((v) => el({ "data-push-view": v }));
+const status = el({});
+const clicks = [];
+const box = Object.assign(
+  el({
+    "data-push-api": "https://push.example.invalid",
+    "data-push-public": "BAcH",
+    "data-push-water": "cdfw-123",
+    "data-push-water-name": "Shadow Cliff Lake",
+    "data-push-worker": "/push-worker.js",
+    "data-push-scope": "/",
+  }),
+  {
+    querySelector: (sel) => (sel === "[data-push-status]" ? status : null),
+    querySelectorAll: (sel) => (sel === "[data-push-view]" ? views : []),
+    addEventListener: (type, f) => { if (type === "click") clicks.push(f); },
+  }
+);
+const worker = { state: "installing", heard: [], addEventListener(t, f) { this.heard.push(f); } };
+const navigator = {
+  userAgent: "Mozilla/5.0 (X11; Linux x86_64) Chrome/130.0.0.0 Safari/537.36",
+  platform: "Linux x86_64",
+  maxTouchPoints: 0,
+  serviceWorker: {
+    register: () => Promise.resolve({ active: null, installing: worker, waiting: null, pushManager: {} }),
+    getRegistration: () =>
+      c.lookupFails ? Promise.reject(new Error("refused by this browser")) : Promise.resolve(undefined),
+  },
+};
+const Notification = { permission: "default", requestPermission: () => Promise.resolve("granted") };
+const window = {
+  isSecureContext: true,
+  PushManager: function () {},
+  Notification,
+  matchMedia: () => ({ matches: false }),
+  fetch: () => Promise.resolve({ ok: true, status: 200 }),
+  atob: (s) => Buffer.from(s, "base64").toString("binary"),
+  localStorage: {
+    getItem: (k) => (k in store ? store[k] : null),
+    setItem: (k, v) => { store[k] = String(v); },
+    removeItem: (k) => { delete store[k]; },
+  },
+};
+const document = { querySelector: (sel) => (sel === ".push-subscribe" ? box : null) };
+vm.runInContext(code, vm.createContext({ window, document, navigator, Notification }));
+const tick = () => new Promise((r) => setTimeout(r, 20));
+(async () => {
+  await tick();
+  const button = { getAttribute: (n) => (n === "data-push-action" ? c.action : null) };
+  clicks.forEach((f) => f({ target: { closest: () => button } }));
+  await tick();
+  if (c.redundant) {
+    worker.state = "redundant";
+    worker.heard.forEach((f) => f());
+  }
+  await tick();
+  const shown = views.filter((v) => !v.hidden).map((v) => v.getAttribute("data-push-view"));
+  process.stdout.write(JSON.stringify({ shown, status: status.textContent }));
+})();
+"""
+
+
+def _wiring(tmp_path: Path, case: dict[str, Any]) -> dict[str, Any]:
+    runner = tmp_path / "wiring.js"
+    runner.write_text(_WIRING, encoding="utf-8")
+    case_path = tmp_path / "case.json"
+    case_path.write_text(json.dumps(case), encoding="utf-8")
+    result = subprocess.run(
+        [_node(), str(runner), str(site.TEMPLATES_DIR / "push.js"), str(case_path)],
+        capture_output=True, text=True, check=True, timeout=30,
+    )  # fmt: skip
+    parsed: dict[str, Any] = json.loads(result.stdout)
+    return parsed
+
+
+def test_a_worker_that_fails_to_install_ends_the_wait_with_a_message(tmp_path: Path):
+    # The worker goes "redundant", never "activated". Before, the box said
+    # "Setting it up..." for good.
+    got = _wiring(tmp_path, {"action": "subscribe", "redundant": True})
+    assert got["shown"] == ["idle"]
+    assert got["status"] == (
+        "That did not work: this browser did not finish setting up notifications. "
+        "The calendar options above still work."
+    )
+    # The same tap with a worker still installing is still waiting: the
+    # message comes from the failed install, not from a timer.
+    assert _wiring(tmp_path, {"action": "subscribe"})["shown"] == ["busy"]
+
+
+def test_a_stop_that_fails_keeps_the_stop_button_and_says_so(tmp_path: Path):
+    saved = {"water_id": "cdfw-123", "water_name": "Shadow Cliff Lake", "endpoint": "e"}
+    got = _wiring(
+        tmp_path, {"action": "unsubscribe", "saved": saved, "lookupFails": True}
+    )
+    assert got["shown"] == ["on"]
+    assert got["status"].startswith("Stopping did not work: refused by this browser. ")
+    assert "browser's settings" in got["status"]

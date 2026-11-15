@@ -6,7 +6,9 @@
     ("each week"; Tennessee: "each day or week"), calendar_what ("new weeks";
     Tennessee: "new dates"), calendar_new ("in a new week"; Tennessee: "on a
     new date") and calendar_placement ("water"; a state page: "state_water",
-    as its gear block reports).
+    as its gear block reports), and calendar_heading_level (3, under a
+    California page's status h2; a state water page, where the box follows
+    its h1, sets 2 so no heading level is skipped).
 
     It sits inside the status block, right after the badge, so on a phone it
     is on the first screen, next to the facts it subscribes to. Before 0062
@@ -35,8 +37,9 @@
 {% set cal_what = calendar_what|default("new weeks") %}
 {% set cal_new = calendar_new|default("in a new week") %}
 {% set cal_placement = calendar_placement|default("water") %}
+{% set cal_h = "h" ~ calendar_heading_level|default(3) %}
 <div class="calendar-subscribe" role="group" aria-labelledby="calendar-heading">
-  <h3 id="calendar-heading">Get {{ water.name }}'s {{ cal_what }} in your calendar</h3>
+  <{{ cal_h }} id="calendar-heading">Get {{ water.name }}'s {{ cal_what }} in your calendar</{{ cal_h }}>
   <p>
     Subscribe once: {{ cal_each }} {{ cal_agency }} schedules {{ water.name }} shows up in your
     calendar, which checks for changes on its own. Free; Trout Truck needs no

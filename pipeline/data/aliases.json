@@ -146,6 +146,15 @@
       "reviewed": false
     },
     {
+      "cdfw_stock_id": 602,
+      "canonical_name": "McCloud Reservoir",
+      "slug": "mccloud-reservoir",
+      "aliases": [
+        "McCloud Reservoir"
+      ],
+      "reviewed": false
+    },
+    {
       "cdfw_stock_id": 643,
       "canonical_name": "Smith Flat Reservoir",
       "slug": "smith-flat-reservoir",

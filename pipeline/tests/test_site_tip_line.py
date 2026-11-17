@@ -61,10 +61,11 @@ BANNED_WORDS = (
 # ---- the constant and the wording ----------------------------------------------
 
 
-def test_the_placeholder_is_one_well_formed_ko_fi_address():
-    """The real address is a one-line swap of KOFI_URL; whatever replaces
-    the placeholder must still be a plain https Ko-fi page address."""
+def test_the_address_is_one_well_formed_ko_fi_page_and_not_the_placeholder():
+    """KOFI_URL is a plain https Ko-fi page address, and never the
+    placeholder the branch carried before Chelsea sent her page."""
     assert re.fullmatch(r"https://ko-fi\.com/[A-Za-z0-9_]+", tip.KOFI_URL)
+    assert "placeholder" not in tip.KOFI_URL.lower()
 
 
 def test_the_water_page_line_is_on_since_the_board_answered():

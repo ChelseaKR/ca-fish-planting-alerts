@@ -2101,8 +2101,8 @@ decision 1(a), outside this repo) to add a tip line on the water pages and
 in each event of the subscribed calendar feeds, pointing at a personal Ko-fi
 page. The money plan placed it after the 2026-11-27 freeze (0042); on
 2026-11-17 she lifted that for this line (see "0042, lifted for this line
-only" below). **She approved the wording below on 2026-11-17. Nothing
-merges before the real address replaces the placeholder.**
+only" below). **She approved the wording below on 2026-11-17 and sent the
+page's address, `https://ko-fi.com/chelseakr`, the same day.**
 
 - **Why.** Calendar subscribers are the warmest visitors (7 of the 12 key
   events in the 28 days to 2026-11-16), and a subscribed feed keeps showing
@@ -2118,7 +2118,7 @@ merges before the real address replaces the placeholder.**
 - **Calendar events.** Every event in California's feeds
   (`site.build_water_ics`) and Tennessee's (`ics.build_schedule_ics`) ends
   its DESCRIPTION with a new line: "Free calendar from Trout Truck, made by
-  one person. Tips: https://ko-fi.com/<page>". The full https address (her
+  one person. Tips: https://ko-fi.com/chelseakr". The full https address (her
   choice, 2026-11-17) so every calendar app can make it a link. Not the
   calendar's name or
   description, not a summary, and never an event of its own. The value is
@@ -2140,8 +2140,8 @@ merges before the real address replaces the placeholder.**
   the end of two existing templates and one line in the existing feeds. A
   water page's sitemap lastmod and `dateModified` are computed from its
   data, so they do not move.
-- **One constant.** `cfpa.tip.KOFI_URL` holds the address; the real page is
-  a one-line change there. `""` turns the line off on every page and in
+- **One constant.** `cfpa.tip.KOFI_URL` holds the address, and a change of
+  page is a one-line change there. `""` turns the line off on every page and in
   every feed (the removal, should 2027-05-31 call for it).
 - **The water-page switch, and the appeal.** The app's "Full history on the
   site" link opens a water page in Safari, so on 2026-11-17 Chelsea chose to

@@ -12,17 +12,17 @@ It is a plain link. No Ko-fi script, button image, widget or iframe, nothing
 loaded from Ko-fi until a person presses the link, and no ``data-ga-event``,
 so the site's GA4 click listener (``_ga4.html.jinja``) does not report it.
 
-``KOFI_URL`` is the one value to change when the real page exists. Set to
+``KOFI_URL`` is the one value that holds the address. Set to
 ``""``, the line disappears from every page and every feed, whatever
 ``TIP_ON_WATER_PAGES`` says.
 """
 
 from __future__ import annotations
 
-# The placeholder until Chelsea sends her Ko-fi address. (On 2026-11-17 she
-# lifted the 2026-11-27 hold for this line only; DECISIONS 0073.)
-# Swap in the real address here and nowhere else.
-KOFI_URL = "https://ko-fi.com/PLACEHOLDER"
+# Chelsea's Ko-fi page, sent 2026-11-17. (The same day she lifted the
+# 2026-11-27 hold for this line only; DECISIONS 0073.) The address lives
+# here and nowhere else.
+KOFI_URL = "https://ko-fi.com/chelseakr"
 
 # The water-page sentence's switch. Chelsea's rule (2026-11-17): hold it
 # while the App Review Board appeal is open, add it once Apple answers. The

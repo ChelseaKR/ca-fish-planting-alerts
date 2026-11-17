@@ -35,7 +35,18 @@ from urllib.parse import urlencode, urlsplit
 import jinja2
 
 from . import ads as ads_mod
-from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
+from . import (
+    feeds,
+    guides,
+    ics,
+    indexnow,
+    llms,
+    opendata,
+    share_cards,
+    site_states,
+    tip,
+    weeks,
+)
 from . import push as push_mod
 from .snapshot import week_of
 from .thin import is_thin
@@ -660,6 +671,9 @@ def _env() -> jinja2.Environment:
     )
     # A global, not page context, so the imported badge macro can read it.
     env.globals["status_words"] = STATUS_BADGE_WORDS
+    # The Ko-fi line on water pages (DECISIONS 0073), None when it is off.
+    # Read at build time, so a test can switch it with tip.KOFI_URL.
+    env.globals["tip"] = tip.page_context()
     # "{{ county|a_an }} County water": "an Inyo", "a Modoc".
     env.filters["a_an"] = lambda word: f"{indefinite_article(word)} {word}"
     return env
@@ -675,28 +689,11 @@ def _fmt_date_human(iso_date: str) -> str:
     return d.strftime("%B %-d, %Y") if hasattr(d, "strftime") else iso_date
 
 
-def _ics_escape(text: str) -> str:
-    return (
-        text.replace("\\", "\\\\")
-        .replace(",", "\\,")
-        .replace(";", "\\;")
-        .replace("\n", "\\n")
-    )
-
-
-def _ics_fold(line: str) -> str:
-    # RFC 5545 §3.1: fold lines longer than 75 octets, continuation starts
-    # with a single space. Our lines are short in practice; folding is
-    # defensive.
-    b = line.encode("utf-8")
-    if len(b) <= 75:
-        return line
-    out = []
-    while len(b) > 75:
-        out.append(b[:75].decode("utf-8", errors="ignore"))
-        b = b[75:]
-    out.append(b.decode("utf-8", errors="ignore"))
-    return "\r\n ".join(out)
+# RFC 5545 TEXT escaping and line folding are cfpa.ics's (DECISIONS 0073).
+# The local fold this replaced let a continuation line run to 76 octets and
+# could cut a multi-byte character, which the Ko-fi line's longer
+# descriptions would have hit on every event.
+_ics_escape = ics.escape
 
 
 # How often a subscribed calendar should poll a water's feed. The publish
@@ -738,11 +735,14 @@ def build_water_ics(*, water: dict[str, Any], base_url: str, species: str) -> st
             f"DTSTART;VALUE=DATE:{start.strftime('%Y%m%d')}",
             f"DTEND;VALUE=DATE:{end_exclusive.strftime('%Y%m%d')}",
             f"SUMMARY:{_ics_escape(summary)}",
-            f"DESCRIPTION:{_ics_escape('CDFW plants are subject to change. ' + base_url)}",
+            "DESCRIPTION:"
+            + _ics_escape(
+                ics.with_tip("CDFW plants are subject to change. " + base_url)
+            ),
             "END:VEVENT",
         ]
     lines.append("END:VCALENDAR")
-    return "\r\n".join(_ics_fold(line) for line in lines) + "\r\n"
+    return "\r\n".join(ics.fold(line) for line in lines) + "\r\n"
 
 
 def county_slug(county: str) -> str:

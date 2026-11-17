@@ -1,0 +1,79 @@
+"""The Ko-fi tip line (DECISIONS 0073).
+
+One sentence on every water page and one line at the end of every calendar
+event's description, both pointing at Chelsea's personal Ko-fi page.
+Website and calendar feeds only: the iOS and Android apps read
+``snapshot/v1.json`` and ``snapshot/v2.json``, never a page or a feed, and
+nothing here writes to the snapshot. Judged on 2027-05-31: under $20 in tips
+by then, the line comes out.
+
+It is a plain link. No Ko-fi script, button image, widget or iframe, nothing
+loaded from Ko-fi until a person presses the link, and no ``data-ga-event``,
+so the site's GA4 click listener (``_ga4.html.jinja``) does not report it.
+
+``KOFI_URL`` is the one value to change when the real page exists. Set to
+``""``, the line disappears from every page and every feed.
+"""
+
+from __future__ import annotations
+
+# The placeholder until Chelsea opens her Ko-fi page (after 2026-11-27).
+# Swap in the real address here and nowhere else.
+KOFI_URL = "https://ko-fi.com/PLACEHOLDER"
+
+# The water page sentence (draft, for Chelsea's approval). The second half is
+# the link text.
+PAGE_LEAD = "Trout Truck is free and made by one person."
+PAGE_LINK_TEXT = "You can leave a tip on Ko-fi."
+
+# Every link to Ko-fi opens in a new tab, without giving Ko-fi's page a handle
+# on this one.
+LINK_TARGET = "_blank"
+LINK_REL = "noopener"
+
+
+def display_url(url: str) -> str:
+    """The address as a person reads it in a calendar: no scheme, no
+    trailing slash ("ko-fi.com/name")."""
+    for scheme in ("https://", "http://"):
+        if url.startswith(scheme):
+            url = url[len(scheme) :]
+    return url.rstrip("/")
+
+
+def page_context(url: str | None = None) -> dict[str, str] | None:
+    """What the water templates need, or None when the line is off."""
+    url = KOFI_URL if url is None else url
+    if not url:
+        return None
+    return {
+        "url": url,
+        "lead": PAGE_LEAD,
+        "link_text": PAGE_LINK_TEXT,
+        "target": LINK_TARGET,
+        "rel": LINK_REL,
+    }
+
+
+def calendar_line(url: str | None = None) -> str:
+    """The last line of every calendar event's description (draft, for
+    Chelsea's approval), unescaped; ``""`` when the line is off. The caller
+    joins it with a newline and escapes the whole description once."""
+    url = KOFI_URL if url is None else url
+    if not url:
+        return ""
+    return (
+        f"Free calendar from Trout Truck, made by one person. Tips: {display_url(url)}"
+    )
+
+
+__all__ = [
+    "KOFI_URL",
+    "LINK_REL",
+    "LINK_TARGET",
+    "PAGE_LEAD",
+    "PAGE_LINK_TEXT",
+    "calendar_line",
+    "display_url",
+    "page_context",
+]

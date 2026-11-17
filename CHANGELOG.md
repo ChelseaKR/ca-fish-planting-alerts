@@ -200,6 +200,23 @@ This repository was republished with a new history on 2026-09-18
   failed or refused announcement logs a notice and never fails the deploy. No
   secret is involved; the key file served at the site root is public by design.
 
+### Security
+
+- Web push service (DECISIONS 0074): limits on the two routes that take no
+  token. One network gets 20 calls a day (counted under a keyed code of the
+  address that changes daily and expires, never the address); the service
+  takes 100 new subscriptions a day, 100 live on one water and 2,000 in
+  all; over a limit it answers 429 with `Retry-After`. A subscription must
+  hold only the fields a browser gives, with keys of the exact length and
+  encoding and a `p256dh` on the curve; a browser's call is at most 4 KB.
+  One address spelled two ways is one row. A subscription a push service
+  refuses three sends in a row is removed, unless every delivery to that
+  service was refused. A send call stops starting deliveries after 90
+  seconds and reports how many it skipped. The table has a ceiling on its
+  request units a second. The privacy page's push section says what the
+  per-network count keeps. Applying it is an owner step
+  (`infra/web-push/README.md`).
+
 ### Changed
 
 - Site: the `/states/` page title no longer says "all 50 states"; it lists

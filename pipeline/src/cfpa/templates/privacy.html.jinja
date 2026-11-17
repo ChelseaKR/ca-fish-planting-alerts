@@ -30,7 +30,7 @@
   <a href="#affiliate">Gear links</a>.
 </p>
 {# correction 1 (apps coverage): scope line #}
-<p class="muted">Last updated {% if push %}2026-11-08{% else %}2026-11-08{% endif %}. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
+<p class="muted">Last updated {% if push %}2026-11-17{% else %}2026-11-08{% endif %}. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
 
 <h2 id="site">The website</h2>
 {% if ga4_measurement_id %}
@@ -170,12 +170,18 @@
       subscription&rsquo;s address (a URL your browser&rsquo;s push service
       issues: Apple&rsquo;s, Google&rsquo;s or Mozilla&rsquo;s), its two
       encryption keys, the water you chose, when you subscribed and when the
-      last notification was sent to it. Nothing else: no account, no name, no
+      last notification was sent to it, and how many deliveries in a row your
+      push service has refused. Nothing else: no account, no name, no
       email address.</li>
   <li><strong>The request.</strong> Pressing the button sends that
       subscription to <code>{{ push.api_url }}</code>. Like any web request
       it carries your IP address; the service does not keep it, and its logs
       hold counts and status codes, never addresses.</li>
+  <li><strong>Limits.</strong> The service takes a set number of requests a
+      day from one connection, so that no one can fill it up. To count them
+      it turns the address into a scrambled code with a secret key and keeps
+      only that code and the day&rsquo;s count. The code is not the address,
+      it is different every day, and it is deleted within a few days.</li>
   <li><strong>What a notification is.</strong> After each schedule check, if
       the agency added, moved or dropped a date for your water, one message
       goes to your browser through your push service, encrypted so that only
@@ -191,11 +197,12 @@
       notifications for this site off in your browser, or removing the Home
       Screen web app on an iPhone or iPad, makes the address stop working, and
       the stored copy is deleted the next time a message to it fails. A
-      subscription that has had nothing sent to it for about 13 months is
-      deleted on its own.</li>
-  <li><strong>Counting.</strong> The service keeps totals, nothing per
-      person: how many subscriptions were made and stopped, and how many
-      messages were sent and failed.{% if ga4_measurement_id %} The button press itself is counted by
+      subscription your push service keeps refusing is deleted after three
+      refusals in a row. A subscription that has had nothing sent to it for
+      about 13 months is deleted on its own.</li>
+  <li><strong>Counting.</strong> Apart from that day&rsquo;s count, the
+      service keeps totals, nothing per person: how many subscriptions were
+      made and stopped, and how many messages were sent and failed.{% if ga4_measurement_id %} The button press itself is counted by
       Google Analytics as a calendar-subscribe click of type &ldquo;push&rdquo;,
       under the opt-outs described above.{% endif %}</li>
 </ul>

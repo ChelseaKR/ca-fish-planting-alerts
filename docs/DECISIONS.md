@@ -2094,14 +2094,14 @@ Amazon Associates account (`trouttruck-20`) and deadline as 0029.
   build) and `tests/test_site_gear_guide.py` (its 2026-12-01 build against
   2026-12-27) now expect the water pages to change by that line alone.
 
-## 0073 — A Ko-fi tip line on water pages and in calendar events, judged 2027-05-31 (2026-11-16; wording proposed)
+## 0073 — A Ko-fi tip line on water pages and in calendar events, judged 2027-05-31 (owner, 2026-11-16; wording approved 2026-11-17)
 
 Chelsea decided on 2026-11-16 (`_agent-tools/growth/app-money-ideas-2026-11-16.md`,
 decision 1(a), outside this repo) to add a tip line on the water pages and
 in each event of the subscribed calendar feeds, pointing at a personal Ko-fi
-page she opens after the 2026-11-27 freeze (0042). **The wording below is a
-draft awaiting her approval; nothing merges before she approves it and the
-real address replaces the placeholder.**
+page she opens after the 2026-11-27 freeze (0042). **She approved the
+wording below on 2026-11-17. Nothing merges before the real address
+replaces the placeholder.**
 
 - **Why.** Calendar subscribers are the warmest visitors (7 of the 12 key
   events in the 28 days to 2026-11-16), and a subscribed feed keeps showing
@@ -2117,7 +2117,9 @@ real address replaces the placeholder.**
 - **Calendar events.** Every event in California's feeds
   (`site.build_water_ics`) and Tennessee's (`ics.build_schedule_ics`) ends
   its DESCRIPTION with a new line: "Free calendar from Trout Truck, made by
-  one person. Tips: ko-fi.com/<page>". Not the calendar's name or
+  one person. Tips: https://ko-fi.com/<page>". The full https address (her
+  choice, 2026-11-17) so every calendar app can make it a link. Not the
+  calendar's name or
   description, not a summary, and never an event of its own. The value is
   escaped once as RFC 5545 TEXT (the newline as `\n`, the comma as `\,`) and
   folded at 75 octets. California's feed now uses `cfpa.ics`'s `escape` and
@@ -2129,6 +2131,14 @@ real address replaces the placeholder.**
 - **One constant.** `cfpa.tip.KOFI_URL` holds the address; the real page is
   a one-line change there. `""` turns the line off on every page and in
   every feed (the removal, should 2027-05-31 call for it).
+- **The water-page switch, and the appeal.** The app's "Full history on the
+  site" link opens a water page in Safari, so on 2026-11-17 Chelsea chose to
+  hold the water-page sentence while the App Review Board appeal over the
+  $9.99 unlock was open, and to add it once Apple answered. The Board upheld
+  the 4.3(a) rejection the same day (appeal APL642567 closed; the app is not
+  on the App Store), so `cfpa.tip.TIP_ON_WATER_PAGES` is True. The switch
+  stays: False takes the sentence off every water page and leaves the
+  calendar line as it is. Both states are tested.
 - **No new request or tracking.** A plain `<a href>` with
   `target="_blank" rel="noopener"`: no Ko-fi script, button image, widget or
   iframe, nothing loaded from Ko-fi until a person presses it, and no
@@ -2142,17 +2152,18 @@ real address replaces the placeholder.**
   the system browser, outside the app. Nothing here touches the snapshots,
   and a test fails if "ko-fi" appears in either snapshot or anywhere under
   `ios/` or `android/`. The calendar feeds appear in Apple Calendar or
-  Google Calendar, never in Trout Truck's app. While the App Review Board
-  appeal is open, the app and its metadata stay as they are.
+  Google Calendar, never in Trout Truck's app. The app and its metadata are
+  unchanged by this.
 - **Words.** No safety, catching or outcome claim, nothing that ties a tip
   to what the schedule did for someone (no "saves you a trip"), and never
   "no tracking". The test holds the wording to a banned-word list.
 - **Judged 2027-05-31.** Under $20 in tips by then, the line comes out
   (`KOFI_URL = ""`). Not the money plan's 90-day rule, which would end in
   late February, the low season.
-- **Guards.** `tests/test_site_tip_line.py`: the exact line once and last in
-  `<main>` on every water page of a build with Tennessee, Massachusetts and
-  Michigan on, and on no other page; every feed event's description ending
+- **Guards.** `tests/test_site_tip_line.py`: the switch is on; with it on,
+  the exact line once and last in `<main>` on every water page of a build
+  with Tennessee, Massachusetts and Michigan on, and on no other page; with
+  it off, on no page at all while every feed keeps its line; every feed event's description ending
   with the line, read with a strict RFC 5545 reader (octet length, CRLF,
   continuation lines, TEXT escaping, a multi-byte name, a comma and
   semicolon in the address); nothing in the snapshots or the app sources;

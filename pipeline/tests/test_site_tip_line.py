@@ -28,11 +28,11 @@ SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "snapshot.v1.json
 REPO = Path(__file__).resolve().parents[2]
 BASE_URL = "https://example.invalid/ca-fish-planting-alerts"
 
-# The drafts, exactly (for Chelsea's approval; DECISIONS 0073). The address
-# comes from tip.KOFI_URL, so swapping in the real page changes nothing here.
+# The approved words, exactly (Chelsea, 2026-11-17; DECISIONS 0073). The
+# address comes from tip.KOFI_URL, so swapping in the real page changes
+# nothing here. The calendar line carries the full https address.
 CALENDAR_LINE = (
-    "Free calendar from Trout Truck, made by one person. "
-    f"Tips: {tip.display_url(tip.KOFI_URL)}"
+    f"Free calendar from Trout Truck, made by one person. Tips: {tip.KOFI_URL}"
 )
 PAGE_LINE = (
     '<p class="tip-line muted">Trout Truck is free and made by one person. '
@@ -65,10 +65,24 @@ def test_the_placeholder_is_one_well_formed_ko_fi_address():
     """The real address is a one-line swap of KOFI_URL; whatever replaces
     the placeholder must still be a plain https Ko-fi page address."""
     assert re.fullmatch(r"https://ko-fi\.com/[A-Za-z0-9_]+", tip.KOFI_URL)
-    assert tip.display_url(tip.KOFI_URL) == tip.KOFI_URL.removeprefix("https://")
 
 
-def test_the_wording_is_the_draft_and_makes_no_claim():
+def test_the_water_page_line_is_on_since_the_board_answered():
+    """Chelsea, 2026-11-17: hold the water-page line while the appeal is
+    open, add it once Apple answers. The Board answered on 2026-11-17, so it
+    is on. Changing this is a deliberate edit with its DECISIONS note."""
+    assert tip.TIP_ON_WATER_PAGES is True
+    assert tip.page_context() is not None
+    assert tip.calendar_line() == CALENDAR_LINE
+
+
+def test_the_switch_off_leaves_the_calendar_line(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(tip, "TIP_ON_WATER_PAGES", False)
+    assert tip.page_context() is None
+    assert tip.calendar_line() == CALENDAR_LINE
+
+
+def test_the_wording_is_the_approved_wording_and_makes_no_claim():
     assert tip.calendar_line() == CALENDAR_LINE
     assert tip.PAGE_LEAD == "Trout Truck is free and made by one person."
     assert tip.PAGE_LINK_TEXT == "You can leave a tip on Ko-fi."
@@ -77,14 +91,20 @@ def test_the_wording_is_the_draft_and_makes_no_claim():
         assert not [w for w in BANNED_WORDS if w in low], text
 
 
-def test_display_url_drops_the_scheme_and_a_trailing_slash():
-    assert tip.display_url("https://ko-fi.com/abc/") == "ko-fi.com/abc"
-    assert tip.display_url("http://ko-fi.com/abc") == "ko-fi.com/abc"
-    assert tip.display_url("ko-fi.com/abc") == "ko-fi.com/abc"
+def test_the_water_page_context_when_switched_on(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(tip, "TIP_ON_WATER_PAGES", True)
+    assert tip.page_context() == {
+        "url": tip.KOFI_URL,
+        "lead": "Trout Truck is free and made by one person.",
+        "link_text": "You can leave a tip on Ko-fi.",
+        "target": "_blank",
+        "rel": "noopener",
+    }
 
 
 def test_empty_url_turns_the_line_off(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(tip, "KOFI_URL", "")
+    monkeypatch.setattr(tip, "TIP_ON_WATER_PAGES", True)
     assert tip.calendar_line() == ""
     assert tip.page_context() is None
     assert ics.with_tip("x") == "x"
@@ -221,7 +241,7 @@ def test_every_california_event_ends_with_the_line_escaped_and_folded():
         # The newline is the two characters \n and the comma is \, on the wire.
         assert d.endswith(
             "\\nFree calendar from Trout Truck\\, made by one person. "
-            f"Tips: {tip.display_url(tip.KOFI_URL)}"
+            f"Tips: {tip.KOFI_URL}"
         )
         assert _unescape(d) == want
     # The description is long enough to need folding, so the fold is tested.
@@ -263,8 +283,8 @@ def test_a_comma_or_semicolon_in_the_address_is_escaped(
 ):
     monkeypatch.setattr(tip, "KOFI_URL", "https://ko-fi.com/a,b;c\\d")
     for d in _descriptions(_ca_feed()) + _descriptions(_tn_feed()):
-        assert d.endswith("Tips: ko-fi.com/a\\,b\\;c\\\\d")
-        assert _unescape(d).endswith("Tips: ko-fi.com/a,b;c\\d")
+        assert d.endswith("Tips: https://ko-fi.com/a\\,b\\;c\\\\d")
+        assert _unescape(d).endswith("Tips: https://ko-fi.com/a,b;c\\d")
 
 
 def test_off_the_feeds_are_as_before(monkeypatch: pytest.MonkeyPatch):
@@ -325,18 +345,36 @@ def snapshots(tmp_path_factory: pytest.TempPathFactory) -> tuple[Any, Any]:
     return v1, v2
 
 
-def _build(root: Path, snaps: tuple[Any, Any]) -> Path:
+def _build(root: Path, snaps: tuple[Any, Any], *, water_pages: bool) -> Path:
+    """Build the site with ``tip.TIP_ON_WATER_PAGES`` set to ``water_pages``
+    (restored afterwards; module fixtures cannot use monkeypatch)."""
     out = root / "site"
     v1, v2 = snaps
-    site.build_site(
-        v1, out, base_url=BASE_URL, snapshot_v2=v2, build_date=dt.date(2026, 12, 1)
-    )
+    original = tip.TIP_ON_WATER_PAGES
+    tip.TIP_ON_WATER_PAGES = water_pages
+    try:
+        site.build_site(
+            v1,
+            out,
+            base_url=BASE_URL,
+            snapshot_v2=v2,
+            build_date=dt.date(2026, 12, 1),
+        )
+    finally:
+        tip.TIP_ON_WATER_PAGES = original
     return out
 
 
 @pytest.fixture(scope="module")
 def built(tmp_path_factory: pytest.TempPathFactory, snapshots: Any) -> Path:
-    return _build(tmp_path_factory.mktemp("tip-on"), snapshots)
+    """The switch off: the calendar line on, the water-page line off."""
+    return _build(tmp_path_factory.mktemp("tip-default"), snapshots, water_pages=False)
+
+
+@pytest.fixture(scope="module")
+def built_on(tmp_path_factory: pytest.TempPathFactory, snapshots: Any) -> Path:
+    """As shipped since the Board answered (2026-11-17): both on."""
+    return _build(tmp_path_factory.mktemp("tip-on"), snapshots, water_pages=True)
 
 
 def _water_pages(out: Path) -> set[Path]:
@@ -346,13 +384,13 @@ def _water_pages(out: Path) -> set[Path]:
     return pages
 
 
-def _page_problems(out: Path) -> list[str]:
+def _page_problems(out: Path, *, water_pages: bool = True) -> list[str]:
     """On: the exact line once, last in <main>, on every water page, and
     nowhere else. No Ko-fi script, image, frame or analytics label anywhere,
     and nothing in a snapshot."""
-    want = _water_pages(out)
+    want = _water_pages(out) if water_pages else set()
     found: list[str] = []
-    states_seen = {p.relative_to(out).parts[0] for p in want}
+    states_seen = {p.relative_to(out).parts[0] for p in _water_pages(out)}
     if "water" not in states_seen or len(states_seen) < 2:
         found.append(f"water pages of too few states were built: {states_seen}")
     for path in sorted(out.rglob("*")):
@@ -376,7 +414,7 @@ def _page_problems(out: Path) -> list[str]:
             if not main.rstrip().endswith(PAGE_LINE):
                 found.append(f"{rel}: the line is not the end of <main>")
         elif count:
-            found.append(f"{rel}: Ko-fi on a page that is not a water page")
+            found.append(f"{rel}: Ko-fi on a page that should not have it")
         for pattern in (
             r"<script[^>]*ko-fi",
             r"<(img|iframe)[^>]*ko-fi",
@@ -389,35 +427,53 @@ def _page_problems(out: Path) -> list[str]:
     return found
 
 
-def test_every_water_page_and_no_other_page_has_the_line(built: Path):
-    assert _page_problems(built) == []
+def test_switched_off_no_page_has_the_line(built: Path):
+    """TIP_ON_WATER_PAGES False: no page, feeds unchanged (0073)."""
+    assert _page_problems(built, water_pages=False) == []
+    for page in built.rglob("*.html"):
+        assert "tip-line" not in page.read_text(encoding="utf-8"), page
 
 
-def test_every_built_feed_event_ends_with_the_line(built: Path):
-    feeds = sorted(built.rglob("feed.ics"))
+def test_as_shipped_every_water_page_and_no_other_page_has_the_line(
+    built_on: Path,
+):
+    assert _page_problems(built_on) == []
+
+
+@pytest.mark.parametrize("which", ["built", "built_on"])
+def test_every_built_feed_event_ends_with_the_line(
+    which: str, request: pytest.FixtureRequest
+):
+    """The calendar line does not depend on the switch: on in both builds."""
+    out: Path = request.getfixturevalue(which)
+    feeds = sorted(out.rglob("feed.ics"))
     assert any(p.parts[-3] == "water" and p.parts[-4] == "site" for p in feeds)
-    assert any(p.relative_to(built).parts[0] == "tn" for p in feeds)
+    assert any(p.relative_to(out).parts[0] == "tn" for p in feeds)
     for feed in feeds:
         text = feed.read_bytes().decode("utf-8")
         for d in _descriptions(text):
             assert _unescape(d).endswith("\n" + CALENDAR_LINE), feed
 
 
-def test_the_snapshots_the_apps_read_never_carry_it(snapshots: Any, built: Path):
+def test_the_snapshots_the_apps_read_never_carry_it(snapshots: Any, built_on: Path):
     """The apps read snapshot/v1.json and v2.json (written by the pipeline
     run, not the page build); the page build writes no other JSON with it."""
     for snap in snapshots:
         text = json.dumps(snap).lower()
         assert "ko-fi" not in text and "kofi" not in text
-    for path in built.rglob("*.json"):
+    for path in built_on.rglob("*.json"):
         assert "ko-fi" not in path.read_text(encoding="utf-8").lower(), path
 
 
-def test_off_no_page_and_no_feed_has_it(
-    tmp_path: Path, snapshots: Any, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize("water_pages", [False, True])
+def test_no_address_no_page_and_no_feed_has_it(
+    water_pages: bool,
+    tmp_path: Path,
+    snapshots: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ):
     monkeypatch.setattr(tip, "KOFI_URL", "")
-    out = _build(tmp_path, snapshots)
+    out = _build(tmp_path, snapshots, water_pages=water_pages)
     for path in out.rglob("*"):
         if path.is_file() and path.suffix in {".html", ".ics", ".json", ".xml"}:
             text = path.read_bytes().decode("utf-8", errors="ignore").lower()
@@ -426,7 +482,7 @@ def test_off_no_page_and_no_feed_has_it(
 
 
 def test_negative_controls_the_page_check_notices(tmp_path: Path, snapshots: Any):
-    out = _build(tmp_path, snapshots)
+    out = _build(tmp_path, snapshots, water_pages=True)
     assert _page_problems(out) == []
     ca = sorted(out.glob("water/*/index.html"))[0]
     tn = sorted(out.glob("tn/water/*/index.html"))[0]
@@ -444,7 +500,15 @@ def test_negative_controls_the_page_check_notices(tmp_path: Path, snapshots: Any
     problems = "\n".join(_page_problems(out))
     assert str(ca.relative_to(out)) in problems
     assert str(tn.relative_to(out)) in problems
-    assert "index.html: Ko-fi on a page that is not a water page" in problems
+    assert "index.html: Ko-fi on a page that should not have it" in problems
+    # With the switch off, a water page carrying the line is caught too.
+    off = _build(tmp_path / "off", snapshots, water_pages=False)
+    assert _page_problems(off, water_pages=False) == []
+    ca_off = sorted(off.glob("water/*/index.html"))[0]
+    sabotage(ca_off, "</main>", PAGE_LINE + "</main>")
+    assert str(ca_off.relative_to(off)) in "\n".join(
+        _page_problems(off, water_pages=False)
+    )
 
 
 # ---- the apps ------------------------------------------------------------------

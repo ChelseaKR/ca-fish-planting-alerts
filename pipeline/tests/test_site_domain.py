@@ -91,6 +91,9 @@ EXTERNAL_HOSTS = frozenset(
         "wildlife.ca.gov",
         "apps.wildlife.ca.gov",
         "data.ca.gov",
+        # The Ko-fi line at the end of every calendar event (DECISIONS 0073)
+        # carries the full https address.
+        "ko-fi.com",
     }
 )
 
@@ -277,7 +280,8 @@ def test_every_url_the_site_states_about_itself_is_on_the_domain(
     assert len(own) > 100
     for url in own:
         _assert_own(url)
-    # Structured data and feeds link CDFW and schema.org, and nothing else.
+    # Structured data and feeds link CDFW, schema.org and (the feeds' tip
+    # line, 0073) Ko-fi, and nothing else.
     assert external <= EXTERNAL_HOSTS, external - EXTERNAL_HOSTS
     assert f"Sitemap: {DOMAIN_URL}/sitemap.xml" in robots
 

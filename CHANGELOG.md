@@ -13,6 +13,16 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site and calendar feeds: a Ko-fi tip line (DECISIONS 0073). Every water
+  page ends with "Trout Truck is free and made by one person. You can leave
+  a tip on Ko-fi.", the second sentence a plain link, and every event in
+  California's and Tennessee's calendar feeds ends its description with
+  "Free calendar from Trout Truck, made by one person. Tips:" and the full
+  https address. No Ko-fi script, image or widget, no GA4 click label, and
+  nothing in the snapshots the apps read. The owner lifted the 2026-11-27
+  freeze (0042) on 2026-11-17 for this line only. California's feed now
+  escapes and folds its lines with `cfpa.ics`, so no line passes 75 octets
+  or cuts a multi-byte character.
 - Site: California water pages end their gear block with one line to the
   gift guide (DECISIONS 0072), "Shopping for someone who fishes? Gift ideas
   for a trout angler, a short list of practical items. That page's links are

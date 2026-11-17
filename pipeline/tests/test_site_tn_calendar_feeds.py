@@ -20,7 +20,7 @@ from urllib.parse import parse_qs, quote, urlsplit
 import pytest
 from markupsafe import escape as html_escape
 
-from cfpa import cli, ics, site
+from cfpa import cli, ics, site, tip
 
 FIXTURES = Path(__file__).parent / "fixtures"
 STATE_FIXTURES = FIXTURES / "states"
@@ -319,7 +319,8 @@ def test_every_event_credits_twra_links_the_page_and_gives_the_download_date():
         assert "Data: Tennessee Wildlife Resources Agency (TWRA), from TWRA's" in d
         assert "published schedule file, downloaded 2026-11-07" in d
         assert "Trout Truck is independent and is not endorsed by TWRA." in d
-        assert d.endswith(PAGE)
+        # The page's address, then the Ko-fi line on its own line (0073).
+        assert d.endswith(f"{PAGE}\\n{tip.calendar_line()}")
         assert e["URL"] == PAGE
     _no_banned_words(cal, events)
     assert "CDFW" not in text
@@ -382,7 +383,7 @@ def test_the_header_is_californias_header():
 
 def test_folding_keeps_every_line_within_75_octets_and_whole_characters():
     """RFC 5545 §3.1 counts a continuation line's leading space, and a
-    multi-byte character must not be cut in two (site._ics_fold does both;
+    multi-byte character must not be cut in two (California's old local fold did both;
     the shared fold does neither, which the strict reader here enforces)."""
     for long in (
         "DESCRIPTION:" + "word " * 40,
@@ -536,7 +537,9 @@ def test_every_built_tennessee_feed_is_valid_and_matches_its_data(built: Path):
             counts["day" if _span(e) == 1 else "week"] += 1
             assert "stocking scheduled (TWRA)" in e["SUMMARY"]
             assert (e["SUMMARY"].startswith("Week of ")) == (_span(e) == 7)
-            assert _text(e["DESCRIPTION"]).endswith(f"{BASE}{w['site_path']}")
+            assert _text(e["DESCRIPTION"]).endswith(
+                f"{BASE}{w['site_path']}\\n{tip.calendar_line()}"
+            )
         months = [p for p in listed if p["period"]["precision"] == "month"]
         if months:
             tbd_feeds += 1

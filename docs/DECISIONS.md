@@ -2094,6 +2094,93 @@ Amazon Associates account (`trouttruck-20`) and deadline as 0029.
   build) and `tests/test_site_gear_guide.py` (its 2026-12-01 build against
   2026-12-27) now expect the water pages to change by that line alone.
 
+## 0073 — A Ko-fi tip line on water pages and in calendar events, judged 2027-05-31 (owner, 2026-11-16; wording approved 2026-11-17)
+
+Chelsea decided on 2026-11-16 (`_agent-tools/growth/app-money-ideas-2026-11-16.md`,
+decision 1(a), outside this repo) to add a tip line on the water pages and
+in each event of the subscribed calendar feeds, pointing at a personal Ko-fi
+page. The money plan placed it after the 2026-11-27 freeze (0042); on
+2026-11-17 she lifted that for this line (see "0042, lifted for this line
+only" below). **She approved the wording below on 2026-11-17 and sent the
+page's address, `https://ko-fi.com/chelseakr`, the same day.**
+
+- **Why.** Calendar subscribers are the warmest visitors (7 of the 12 key
+  events in the 28 days to 2026-11-16), and a subscribed feed keeps showing
+  in their calendar for months. The money report's range is $0 to about
+  $6.50 a month now, $0 being likely.
+- **Water pages.** Every water page, California's and every other state's
+  (thin pages included: it is not an affiliate link, so 0041 does not
+  apply), ends its main content with one sentence: "Trout Truck is free and
+  made by one person. You can leave a tip on Ko-fi." The second sentence is
+  the link. It sits after "About this water" and the related-water lists,
+  far from the status badge and the calendar box, so it never reads as part
+  of the data. No other page has it.
+- **Calendar events.** Every event in California's feeds
+  (`site.build_water_ics`) and Tennessee's (`ics.build_schedule_ics`) ends
+  its DESCRIPTION with a new line: "Free calendar from Trout Truck, made by
+  one person. Tips: https://ko-fi.com/chelseakr". The full https address (her
+  choice, 2026-11-17) so every calendar app can make it a link. Not the
+  calendar's name or
+  description, not a summary, and never an event of its own. The value is
+  escaped once as RFC 5545 TEXT (the newline as `\n`, the comma as `\,`) and
+  folded at 75 octets. California's feed now uses `cfpa.ics`'s `escape` and
+  `fold`: its own fold let a continuation line run to 76 octets and could cut
+  a multi-byte character, which the longer descriptions would have hit on
+  every event. Unfolded, every other line of California's feed is unchanged;
+  UIDs, DTSTAMPs and the PRODID are untouched, so no calendar duplicates an
+  event.
+- **0042, lifted for this line only (owner, 2026-11-17).** The money plan
+  held every new link until 2026-11-27, the day 0042's freeze ends. On
+  2026-11-17 Chelsea chose "Ko-fi tip link live today". That lifts the hold
+  for the tip line and for nothing else. 0042 stands as written for
+  everything else: no new page family and no large template change before
+  2026-11-27, `/gifts/` (0047) and the water pages' gift line (0072) still
+  start by build date on 2026-11-27, and the open pull requests keep their
+  merge dates. The line adds no page, URL or title: it is one sentence at
+  the end of two existing templates and one line in the existing feeds. A
+  water page's sitemap lastmod and `dateModified` are computed from its
+  data, so they do not move.
+- **One constant.** `cfpa.tip.KOFI_URL` holds the address, and a change of
+  page is a one-line change there. `""` turns the line off on every page and in
+  every feed (the removal, should 2027-05-31 call for it).
+- **The water-page switch, and the appeal.** The app's "Full history on the
+  site" link opens a water page in Safari, so on 2026-11-17 Chelsea chose to
+  hold the water-page sentence while the App Review Board appeal over the
+  $9.99 unlock was open, and to add it once Apple answered. The Board upheld
+  the 4.3(a) rejection the same day (appeal APL642567 closed; the app is not
+  on the App Store), so `cfpa.tip.TIP_ON_WATER_PAGES` is True. The switch
+  stays: False takes the sentence off every water page and leaves the
+  calendar line as it is. Both states are tested.
+- **No new request or tracking.** A plain `<a href>` with
+  `target="_blank" rel="noopener"`: no Ko-fi script, button image, widget or
+  iframe, nothing loaded from Ko-fi until a person presses it, and no
+  `data-ga-event`, so the GA4 click listener does not report it. (Whether
+  GA4's property-level "outbound clicks" enhanced measurement is on was not
+  checked; if it is, it already records any outbound click, this one
+  included.)
+- **Never in the apps.** The iOS app reads `snapshot/v2.json` only, has no
+  web view (0011) and no calendar feed or EventKit code; its one site link,
+  "Full history on the site" on a water's screen, opens the water page in
+  the system browser, outside the app. Nothing here touches the snapshots,
+  and a test fails if "ko-fi" appears in either snapshot or anywhere under
+  `ios/` or `android/`. The calendar feeds appear in Apple Calendar or
+  Google Calendar, never in Trout Truck's app. The app and its metadata are
+  unchanged by this.
+- **Words.** No safety, catching or outcome claim, nothing that ties a tip
+  to what the schedule did for someone (no "saves you a trip"), and never
+  "no tracking". The test holds the wording to a banned-word list.
+- **Judged 2027-05-31.** Under $20 in tips by then, the line comes out
+  (`KOFI_URL = ""`). Not the money plan's 90-day rule, which would end in
+  late February, the low season.
+- **Guards.** `tests/test_site_tip_line.py`: the switch is on; with it on,
+  the exact line once and last in `<main>` on every water page of a build
+  with Tennessee, Massachusetts and Michigan on, and on no other page; with
+  it off, on no page at all while every feed keeps its line; every feed event's description ending
+  with the line, read with a strict RFC 5545 reader (octet length, CRLF,
+  continuation lines, TEXT escaping, a multi-byte name, a comma and
+  semicolon in the address); nothing in the snapshots or the app sources;
+  everything off with `KOFI_URL = ""`; negative controls for each check.
+
 ## 0074 — Limits on the web push service's open routes (2026-11-17)
 
 From the security review of 2026-11-17 (outside this repo). 0069 listed it

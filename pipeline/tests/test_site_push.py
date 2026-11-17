@@ -249,16 +249,25 @@ def test_the_privacy_page_says_what_is_stored_where_and_how_to_stop(on: Path):
         "two encryption keys",
         "the water you chose",
         "when you subscribed and when the last notification was sent",
+        "how many deliveries in a row your push service has refused",
         "no account, no name, no email address",
         "IP address; the service does not keep it",
+        # The limits (DECISIONS 0074): what is counted, under what, how long.
+        "a set number of requests a day from one connection",
+        "a scrambled code with a secret key",
+        "only that code and the day&rsquo;s count",
+        "The code is not the address",
+        "deleted within a few days",
+        "Apart from that day&rsquo;s count, the service keeps totals",
         "Stop these notifications",
         "deleted the next time a message to it fails",
+        "deleted after three refusals in a row",
         "about 13 months",
         "utm_source=web-push",
         "calendar-subscribe click of type &ldquo;push&rdquo;",
     ):
         assert phrase in text, phrase
-    assert "Last updated 2026-11-08" in text
+    assert "Last updated 2026-11-17" in text
     assert "which asks for neither" in text
     # The section this change adds never says "no tracking", and neither does
     # the rest of the page (test_site_analytics holds every build).

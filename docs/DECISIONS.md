@@ -2093,3 +2093,98 @@ Amazon Associates account (`trouttruck-20`) and deadline as 0029.
   as outside the window). `tests/test_site_gift_guide.py` (its 2026-11-27
   build) and `tests/test_site_gear_guide.py` (its 2026-12-01 build against
   2026-12-27) now expect the water pages to change by that line alone.
+
+## 0074 — Limits on the web push service's open routes (2026-11-17)
+
+From the security review of 2026-11-17 (outside this repo). 0069 listed it
+as a known limit: the function URL's `/subscribe` and `/unsubscribe` take no
+token and had no limit of their own. This adds the limits. Numbered after
+0073, which the unmerged tip-line branch holds. Nothing here is applied by
+an agent; the owner's steps are in `infra/web-push/README.md`.
+
+- **Per network, per day.** 20 calls to the two open routes from one
+  network in one UTC day; the next is 429 with `Retry-After` until the day
+  turns. A network is a whole IPv4 address or the /64 of an IPv6 address.
+  A person turning one water on, changing it and turning it off uses three.
+  A call that fails validation is refused before it is counted.
+- **What the count is kept under.** Not the address. The function makes a
+  code with HMAC-SHA-256 from the network and the day, keyed by a value
+  derived from the service's own sender token, and keeps a row named by
+  that code holding the count and an expiry one day out (DynamoDB's TTL
+  removes it within a few days). The code differs each day and cannot be
+  made or checked without the key. 0069's "no IP address kept" stays true,
+  and the privacy page gains a "Limits" item that says exactly this: a
+  count per connection per day, under a scrambled code, deleted within a
+  few days. Its date moves to 2026-11-17 when the push section is on.
+- **Because the code needs the key**, the two open routes now read the
+  service's parameters as the token routes do, and answer 503 when they are
+  missing. Before, an unconfigured service still stored subscriptions it
+  could never send to.
+- **In total.** 100 new subscriptions a day from everyone; 100 live
+  subscriptions on one water; 2,000 live in all. The arithmetic: 0069's
+  test passes at 25 live subscriptions after 60 days, under one new
+  subscription every two days, so the daily figure is about 240 times the
+  passing rate and the total is 80 times the passing count. 100 on a water
+  bounds one message's fan-out: ten at a time with a five-second cap each
+  is at most 50 seconds for a water, inside the 120-second function. A
+  browser changing its water needs room on the new water but is not a new
+  subscription; a renewal (0069) swaps one row for another and needs no
+  room, and when two renewals of one row arrive at once only one of them
+  adds a row. Stopping is never refused by the totals, only by the per-network
+  count.
+- **What a subscription must be.** As 0069, and stricter: only the fields a
+  browser's `toJSON()` gives (`endpoint`, `expirationTime`, `keys` with
+  `p256dh` and `auth`), and only `water_id`, `subscription` and `replaces`
+  in the body; the endpoint at most 1,024 characters, https on a listed
+  push host, default port, no credentials, no fragment, with a path; each
+  key exactly its length in unpadded base64url, in the one spelling an
+  encoder writes; `p256dh` a point on the P-256 curve, since a message
+  cannot be encrypted to anything else. A browser's call is at most 4 KB
+  (was 16 KB), checked before the body is decoded.
+- **One browser, one row, however the address is spelled.** The endpoint is
+  stored and hashed in the URL standard's spelling, so a host in capitals
+  or an explicit `:443` is the same row, and either spelling stops it. An
+  address a browser issued is already in that spelling, so existing rows
+  keep their keys. The same subscription for the same water sent again the
+  same day writes nothing.
+- **Dead subscriptions.** 404 and 410 still delete at once. A 400, 401 or
+  403 now counts as a refusal on the row; three in a row delete it, and a
+  delivery sets the count back to zero. A refusal counts only when the same
+  push service accepted another delivery in the same call: if every
+  delivery to a service is refused, the likelier cause is this service's
+  own keys, and nothing is counted, so a bad key can never empty the table.
+  A 500 or a timeout is never a refusal. The row's count of refusals is
+  one more thing stored per browser, and the privacy page's "What is
+  stored" item now names it.
+- **A send call has a time budget.** `/send` stops starting deliveries 90
+  seconds in and answers with `skipped`, the number of subscriptions it did
+  not reach, instead of running into the function's 120-second timeout and
+  answering nothing. Those subscriptions get no message from that run (0069:
+  a message is sent once); `skipped` is added to the totals `counts.sh`
+  prints.
+- **A ceiling on the table.** `on_demand_throughput` on the table and on
+  `by_water`: 25 write and 100 read request units a second by default
+  (`table_max_write_units`, `table_max_read_units`). Pay-per-request has no
+  ceiling of its own; with one, the table's largest possible month is 25 x
+  86,400 x 31 = about 67 million writes, a fixed and small figure, where
+  before it was whatever arrived. Past the ceiling DynamoDB throttles and
+  the function answers 500. A send to 100 subscribers is about 100 writes
+  over several seconds, under the ceiling.
+- **Not in this change.** No check that a water id exists (0069: the
+  service does not know the waters). No Lambda reserved concurrency (the
+  account's quota cannot reserve any yet; `reserved_concurrency` is still
+  there for when it can). No firewall in front of the function URL, which
+  would cost more a month than the test. `budget_email` stays optional; the
+  README now says to set it. The page's script is unchanged: over a limit
+  it shows its existing "That did not work: the sign-up was refused"
+  line, and the calendar buttons still work.
+- **Guards.** `make pushlambda`: 16 new handler tests and 3 new validation
+  tests, each of which fails on the code before this change (the per-network
+  limit across both routes and its reset at the day's turn; the /64; that no
+  stored row holds the address and that the code changes daily; the daily
+  and live totals; the per-water limit by sign-up and by switch; unknown
+  fields; a key off the curve; two spellings of one address; the repeat that
+  writes nothing; two renewals of one row at once; three refusals; refusals
+  with no delivery to vouch for them; a delivery resetting the count; the time budget). `make pushinfra`
+  validates the Terraform. `test_site_push.py` holds the privacy page's new
+  sentences.

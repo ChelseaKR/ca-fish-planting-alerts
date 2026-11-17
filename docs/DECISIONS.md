@@ -2099,9 +2099,10 @@ Amazon Associates account (`trouttruck-20`) and deadline as 0029.
 Chelsea decided on 2026-11-16 (`_agent-tools/growth/app-money-ideas-2026-11-16.md`,
 decision 1(a), outside this repo) to add a tip line on the water pages and
 in each event of the subscribed calendar feeds, pointing at a personal Ko-fi
-page she opens after the 2026-11-27 freeze (0042). **She approved the
-wording below on 2026-11-17. Nothing merges before the real address
-replaces the placeholder.**
+page. The money plan placed it after the 2026-11-27 freeze (0042); on
+2026-11-17 she lifted that for this line (see "0042, lifted for this line
+only" below). **She approved the wording below on 2026-11-17. Nothing
+merges before the real address replaces the placeholder.**
 
 - **Why.** Calendar subscribers are the warmest visitors (7 of the 12 key
   events in the 28 days to 2026-11-16), and a subscribed feed keeps showing
@@ -2128,6 +2129,17 @@ replaces the placeholder.**
   every event. Unfolded, every other line of California's feed is unchanged;
   UIDs, DTSTAMPs and the PRODID are untouched, so no calendar duplicates an
   event.
+- **0042, lifted for this line only (owner, 2026-11-17).** The money plan
+  held every new link until 2026-11-27, the day 0042's freeze ends. On
+  2026-11-17 Chelsea chose "Ko-fi tip link live today". That lifts the hold
+  for the tip line and for nothing else. 0042 stands as written for
+  everything else: no new page family and no large template change before
+  2026-11-27, `/gifts/` (0047) and the water pages' gift line (0072) still
+  start by build date on 2026-11-27, and the open pull requests keep their
+  merge dates. The line adds no page, URL or title: it is one sentence at
+  the end of two existing templates and one line in the existing feeds. A
+  water page's sitemap lastmod and `dateModified` are computed from its
+  data, so they do not move.
 - **One constant.** `cfpa.tip.KOFI_URL` holds the address; the real page is
   a one-line change there. `""` turns the line off on every page and in
   every feed (the removal, should 2027-05-31 call for it).

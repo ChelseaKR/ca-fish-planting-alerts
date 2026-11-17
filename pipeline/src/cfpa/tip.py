@@ -19,7 +19,8 @@ so the site's GA4 click listener (``_ga4.html.jinja``) does not report it.
 
 from __future__ import annotations
 
-# The placeholder until Chelsea opens her Ko-fi page (after 2026-11-27).
+# The placeholder until Chelsea sends her Ko-fi address. (On 2026-11-17 she
+# lifted the 2026-11-27 hold for this line only; DECISIONS 0073.)
 # Swap in the real address here and nowhere else.
 KOFI_URL = "https://ko-fi.com/PLACEHOLDER"
 

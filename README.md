@@ -13,8 +13,7 @@ The live list is whatever
 `snapshot/v2.json` carries; this paragraph is a dated description of it, not
 a promise of coverage.
 
-A free website, a free Android app, and an iOS app that is free to browse with
-an optional one-time purchase per state. There is no account for any of them.
+A free website with calendar and Atom feeds. There is no account.
 The website uses Google Analytics 4, which does not load when the browser
 sends Global Privacy Control or Do Not Track, or once the visitor presses
 "Opt out of analytics" in the site footer, and has its advertising features

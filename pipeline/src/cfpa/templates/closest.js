@@ -79,6 +79,17 @@
 
   function say(message) { status.textContent = message; }
 
+  // While the browser asks and the file loads the button is busy, not gone.
+  // `disabled` would drop keyboard focus to the top of the page, where it
+  // stayed after the list was built; `aria-disabled` says the same thing to
+  // a screen reader and leaves focus where the visitor put it. A press while
+  // busy does nothing.
+  var busy = false;
+  function setBusy(on) {
+    busy = on;
+    button.setAttribute("aria-disabled", on ? "true" : "false");
+  }
+
   function readRows() {
     var rows = [];
     var trs = doc.querySelectorAll("tr[data-slug]");
@@ -153,11 +164,11 @@
       .catch(function () {
         say("The list of locations could not be loaded, so the list is unchanged.");
       })
-      .then(function () { button.disabled = false; });
+      .then(function () { setBusy(false); });
   }
 
   function onFailure(error) {
-    button.disabled = false;
+    setBusy(false);
     if (error && error.code === 1) {
       say("Your browser did not share your location, so the list is unchanged.");
     } else {
@@ -166,7 +177,8 @@
   }
 
   button.addEventListener("click", function () {
-    button.disabled = true;
+    if (busy) return;
+    setBusy(true);
     say("Waiting for your browser to ask about your location.");
     nav.geolocation.getCurrentPosition(onPosition, onFailure, { timeout: 20000 });
   });

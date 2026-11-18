@@ -307,6 +307,8 @@ ul.water-index li { break-inside: avoid; }
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
 }
+/* Busy (closest.js): dimmed as a disabled button was, but still focusable. */
+.closest button[aria-disabled="true"] { opacity: 0.65; cursor: default; }
 .closest-list { padding-left: 1.5rem; overflow-wrap: anywhere; }
 .closest-list li { margin: 0.25rem 0; }
 

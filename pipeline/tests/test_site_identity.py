@@ -24,6 +24,8 @@ import pytest
 
 from cfpa import cli, site
 
+from .test_icon_png import icons_of
+
 FIXTURES = Path(__file__).parent / "fixtures"
 FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "snapshot.v1.json"
@@ -196,8 +198,10 @@ def test_mark_and_icon_make_no_request_and_add_no_words(built: Path) -> None:
     assert len(pages) > 20
     for page in pages:
         html = page.read_text(encoding="utf-8")
-        icons = re.findall(r'<link rel="icon"[^>]*href="([^"]+)"', html)
-        assert len(icons) == 1, page
-        assert icons[0].startswith("data:image/svg+xml,"), page
+        # Read with a parser (test_icon_png.icons_of). The PNG files a search
+        # engine needs come first; the inline icon is the one, last link.
+        icons = [icon["href"] for icon in icons_of(html)]
+        inline = [href for href in icons if href.startswith("data:image/svg+xml,")]
+        assert len(inline) == 1 and icons[-1] == inline[0], page
         name = re.search(r'<p class="site-name"><a href="[^"]*">([^<]*)</a>', html)
         assert name and name.group(1) == "Trout Truck", page

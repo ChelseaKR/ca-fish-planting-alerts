@@ -229,6 +229,11 @@ APP_STORE_BADGE_FILE = "app-store-badge.svg"
 # preloads them (base.html.jinja), and font-display: swap keeps text visible
 # while they load.
 FONTS_DIR = "fonts"
+# The tab icon as PNG files, each a multiple of 48 px: the sizes Google
+# Search asks for in a site icon. scripts/render_icons.sh renders them from
+# the inline SVG icon in base.html.jinja, which links them after it.
+ICON_PNG_SIZES = (48, 96, 192)
+FAVICON_ICO_FILE = "favicon.ico"
 FONT_FILES: tuple[str, ...] = (
     "atkinson-hyperlegible-next-latin.woff2",
     "bitter-latin.woff2",
@@ -543,6 +548,7 @@ def _env() -> jinja2.Environment:
     )
     # A global, not page context, so the imported badge macro can read it.
     env.globals["status_words"] = STATUS_BADGE_WORDS
+    env.globals["icon_png_sizes"] = ICON_PNG_SIZES
     # "{{ county|a_an }} County water": "an Inyo", "a Modoc".
     env.filters["a_an"] = lambda word: f"{indefinite_article(word)} {word}"
     return env
@@ -2853,6 +2859,15 @@ def _write_assets(
         font_path = fonts_dir / name
         font_path.write_bytes((TEMPLATES_DIR / FONTS_DIR / name).read_bytes())
         written.append(font_path)
+    # The same icon as files a search engine can show beside a result, and
+    # /favicon.ico at the site root for clients that ask for it unprompted.
+    for size in ICON_PNG_SIZES:
+        icon_path = out_dir / "assets" / f"icon-{size}.png"
+        icon_path.write_bytes((TEMPLATES_DIR / icon_path.name).read_bytes())
+        written.append(icon_path)
+    ico_path = out_dir / FAVICON_ICO_FILE
+    ico_path.write_bytes((TEMPLATES_DIR / FAVICON_ICO_FILE).read_bytes())
+    written.append(ico_path)
     if coords:
         js_path = out_dir / "assets" / CLOSEST_JS_FILE
         js_path.write_text(

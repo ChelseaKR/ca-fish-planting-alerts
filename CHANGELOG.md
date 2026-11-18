@@ -21,6 +21,13 @@ This repository was republished with a new history on 2026-09-18
   water page's answer and subscribe box (DECISIONS 0054) sit no lower on a
   phone than before, and `tests/test_site_identity.py` holds every color
   pair to WCAG AA and keeps that block from being hidden or shrunk.
+- Site: the tab icon also ships as PNG files (48, 96 and 192 px), linked
+  from every page ahead of the inline icon, and as `/favicon.ico` at the
+  site root. Google Search shows a site's icon beside a result only from a
+  crawlable PNG-family file at a multiple of 48 px, which an inline SVG is
+  not. `scripts/render_icons.sh` renders the files from the inline icon's
+  own SVG; they are committed and the build copies them. No new mark and no
+  new words. `tests/test_icon_png.py` reads every page with an HTML parser.
 
 - Site: gear that fits the water (DECISIONS 0045). A water page whose name
   says lake, pond or reservoir offers dough bait and bobbers; one that says

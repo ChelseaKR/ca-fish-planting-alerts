@@ -233,8 +233,8 @@ def test_no_url_in_the_domain_build_is_on_github_io(
     assert len(files) > 50
     found = 0
     for rel in files:
-        # The social card and the web fonts: binary, no URLs in them.
-        if str(rel).endswith((".png", ".woff2")):
+        # The social card, the icons and the web fonts: binary, no URLs in them.
+        if str(rel).endswith((".png", ".ico", ".woff2")):
             continue
         text = (out / rel).read_text(encoding="utf-8")
         for url in _URL.findall(text):

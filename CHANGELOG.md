@@ -13,6 +13,15 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Tests: what a search or AI-answer crawler may do with every sitemap page
+  (`pipeline/tests/test_crawler_access.py`). ChatGPT sent 59 of the site's
+  122 engaged visits in the 28 days to 2026-11-17, and the only crawler a
+  test named was Bingbot, at the site root. Now robots.txt must let
+  Bingbot, OAI-SearchBot, ChatGPT-User, GPTBot, PerplexityBot and ClaudeBot
+  fetch every sitemap page (longest rule wins, as the engines read it); no
+  sitemap page may carry noarchive, nocache, nosnippet or max-snippet:0;
+  and every page with no robots noindex must be in the sitemap, the only
+  list IndexNow picks from. No page, robots.txt or sitemap changes.
 - Site and calendar feeds: a Ko-fi tip line (DECISIONS 0073). Every water
   page ends with "Trout Truck is free and made by one person. You can leave
   a tip on Ko-fi.", the second sentence a plain link, and every event in

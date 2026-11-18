@@ -403,7 +403,10 @@ dd .tt-badge { margin-right: var(--space-2); }
 .push-subscribe p { margin: 0 0 var(--space-2); }
 .push-subscribe__button { width: 100%; border: 1px solid transparent; font: inherit; text-align: left; cursor: pointer; }
 .push-subscribe__button:hover { text-decoration: underline; }
-.push-subscribe__status:empty { display: none; }
+/* Empty, the status line takes no room but stays in the page: a live region
+   that is display: none until it has words is one a screen reader may never
+   hear. */
+.push-subscribe__status:empty { margin: 0; }
 .gear-label {
   display: inline-block;
   margin: 0 0 var(--space-2);

@@ -433,6 +433,26 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Site, from the 2026-11-17 accessibility sweep (keyboard, zoom and forced
+  colors in Chromium and WebKit; none of these is something axe, pa11y or
+  Lighthouse measures). No sentence on any page changes.
+  - "Sort by closest to me" keeps keyboard focus after it is pressed. It
+    disabled itself while the browser asked about location, which dropped
+    focus to the top of the page, where it stayed. It now reports busy with
+    `aria-disabled` and ignores a second press while it waits.
+  - Each link in the footer's row keeps a 24px-tall target. On a phone the
+    row wraps to lines 21px apart, so links sat closer together than WCAG
+    2.2 SC 2.5.8 allows.
+  - The two calendar buttons, and the push button, keep an edge when the
+    browser forces colors (Windows High Contrast). Without a border they
+    became bold link text.
+  - "Alert me about this water" (off in the live build): focus follows the
+    press, to "Setting it up" while the browser works and then to the words
+    that say what happened, or back to the button when it can be pressed
+    again. Before, focus fell to the top of the page and a screen reader
+    heard nothing when the alert was set. The empty status line also stays
+    in the page, so what is written to it later is announced.
+
 - Site: a Tennessee water page's calendar box heading is an h2, not an h3
   straight after the h1, so a screen reader's heading list no longer skips
   a level; it looks as before, and California pages are unchanged. A test

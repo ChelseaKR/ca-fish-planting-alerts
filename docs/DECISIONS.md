@@ -2151,8 +2151,8 @@ page's address, `https://ko-fi.com/chelseakr`, the same day.**
   on the App Store), so `cfpa.tip.TIP_ON_WATER_PAGES` is True. The switch
   stays: False takes the sentence off every water page and leaves the
   calendar line as it is. Both states are tested.
-- **No new request or tracking.** A plain `<a href>` with
-  `target="_blank" rel="noopener"`: no Ko-fi script, button image, widget or
+- **No new request or tracking.** A plain `<a href>` (with
+  `target="_blank" rel="noopener"` until the addendum below): no Ko-fi script, button image, widget or
   iframe, nothing loaded from Ko-fi until a person presses it, and no
   `data-ga-event`, so the GA4 click listener does not report it. (Whether
   GA4's property-level "outbound clicks" enhanced measurement is on was not
@@ -2180,6 +2180,29 @@ page's address, `https://ko-fi.com/chelseakr`, the same day.**
   continuation lines, TEXT escaping, a multi-byte name, a comma and
   semicolon in the address); nothing in the snapshots or the app sources;
   everything off with `KOFI_URL = ""`; negative controls for each check.
+
+### Addendum 2026-11-17: the link opens in the same tab
+
+- **What was wrong.** The water-page link opened a new tab and did not say
+  so. It was the only link on the site that did; the map link says "(opens
+  OpenStreetMap)" and opens in the same tab. The 2026-11-17 accessibility
+  sweep recorded it: a screen reader or magnifier user lands on a page
+  whose Back button does nothing, with no word of why.
+- **The choice.** Two fixes were put to the owner: add "(opens in a new
+  tab)" inside the link, or open it in the same tab with no word changed.
+  The same tab was chosen. The approved sentence stands exactly as it was.
+- **What changed.** `target="_blank"` is gone, and so is `rel="noopener"`,
+  which was there only because of the new tab: a same-tab link gives the
+  page it opens no handle on this one. The link is now a bare
+  `<a href>`, and `cfpa.tip` no longer has `LINK_TARGET` or `LINK_REL`.
+- **What did not.** The calendar line is plain text with the full address
+  and was never a link, so every feed is byte for byte what it was. No
+  script, image or `data-ga-event` was added. The switch, the constant and
+  the 2027-05-31 judgment are as written above.
+- **Guards.** `tests/test_site_tip_line.py`: no Ko-fi link on any built
+  page carries `target` or `rel`, with a control that a new-tab link is
+  caught; the exact line is still the last line of `<main>` on every water
+  page and on no other page.
 
 ## 0074 — Limits on the web push service's open routes (2026-11-17)
 

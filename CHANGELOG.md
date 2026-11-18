@@ -229,6 +229,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Site: the Ko-fi tip link at the end of a water page opens in the same tab
+  (DECISIONS 0073, addendum 2026-11-17). It was the only link on the site
+  that opened a new tab, and it did not say so. `target="_blank"` and the
+  `rel="noopener"` that went with it are gone; the sentence is unchanged, and
+  so is the plain-text tip line in the calendar feeds.
 - Site: the `/states/` page title no longer says "all 50 states"; it lists
   the states the site carries. README states how Tennessee is loaded
   (hand import of the 2026-11-07 CSV, DECISIONS 0061).

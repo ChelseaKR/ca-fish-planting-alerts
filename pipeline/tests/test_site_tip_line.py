@@ -34,9 +34,11 @@ BASE_URL = "https://example.invalid/ca-fish-planting-alerts"
 CALENDAR_LINE = (
     f"Free calendar from Trout Truck, made by one person. Tips: {tip.KOFI_URL}"
 )
+# The link is a plain one: it opens in the same tab, like every other link on
+# the site (0073 addendum, 2026-11-17), so it carries no target and no rel.
 PAGE_LINE = (
     '<p class="tip-line muted">Trout Truck is free and made by one person. '
-    f'<a href="{tip.KOFI_URL}" target="_blank" rel="noopener">'
+    f'<a href="{tip.KOFI_URL}">'
     "You can leave a tip on Ko-fi.</a></p>"
 )
 # Never in the tip wording: no safety, catch or outcome claim, no "no
@@ -98,8 +100,6 @@ def test_the_water_page_context_when_switched_on(monkeypatch: pytest.MonkeyPatch
         "url": tip.KOFI_URL,
         "lead": "Trout Truck is free and made by one person.",
         "link_text": "You can leave a tip on Ko-fi.",
-        "target": "_blank",
-        "rel": "noopener",
     }
 
 
@@ -428,6 +428,58 @@ def _page_problems(out: Path, *, water_pages: bool = True) -> list[str]:
     return found
 
 
+_KOFI_LINK = re.compile(r"<a\b[^>]*\bhref=\"https://ko-fi\.com/[^\"]*\"[^>]*>", re.I)
+
+
+def _new_tab_problems(out: Path) -> list[str]:
+    """Every Ko-fi link on every built page that would open a new tab, or
+    that carries a rel left over from when it did."""
+    found: list[str] = []
+    seen = 0
+    for path in sorted(out.rglob("*.html")):
+        for tag in _KOFI_LINK.findall(path.read_text(encoding="utf-8")):
+            seen += 1
+            for attribute in ("target", "rel"):
+                if re.search(rf"\b{attribute}\s*=", tag):
+                    found.append(f"{path.relative_to(out)}: {attribute} on {tag}")
+    if not seen:
+        found.append("no Ko-fi link on any built page, so this checked nothing")
+    return found
+
+
+def test_the_tip_link_opens_in_the_same_tab(built_on: Path):
+    """The 2026-11-17 accessibility sweep's T5: the tip link was the only link
+    on the site that opened a new tab, and it did not say so. A screen
+    reader or magnifier user found the Back button dead with no word of
+    why. The owner chose the same tab over adding words (0073 addendum), so
+    the link carries no `target`, and no `rel="noopener"`, which was there
+    only for the new tab. The words do not change."""
+    assert _new_tab_problems(built_on) == []
+    assert set(tip.page_context() or {}) == {"url", "lead", "link_text"}
+    assert not hasattr(tip, "LINK_TARGET")
+    assert not hasattr(tip, "LINK_REL")
+    template = (Path(site.TEMPLATES_DIR) / "_tip_line.html.jinja").read_text("utf-8")
+    assert "target=" not in template
+    assert "rel=" not in template
+
+
+def test_negative_control_a_new_tab_link_is_caught(tmp_path: Path, snapshots: Any):
+    out = _build(tmp_path, snapshots, water_pages=True)
+    assert _new_tab_problems(out) == []
+    page = sorted(out.glob("water/*/index.html"))[0]
+    text = page.read_text(encoding="utf-8")
+    old = text.replace(
+        f'<a href="{tip.KOFI_URL}">',
+        f'<a href="{tip.KOFI_URL}" target="_blank" rel="noopener">',
+        1,
+    )
+    assert old != text
+    page.write_text(old, encoding="utf-8")
+    problems = _new_tab_problems(out)
+    assert len(problems) == 2
+    assert all(str(page.relative_to(out)) in problem for problem in problems)
+
+
 def test_switched_off_no_page_has_the_line(built: Path):
     """TIP_ON_WATER_PAGES False: no page, feeds unchanged (0073)."""
     assert _page_problems(built, water_pages=False) == []
@@ -496,7 +548,11 @@ def test_negative_controls_the_page_check_notices(tmp_path: Path, snapshots: Any
         path.write_text(changed, encoding="utf-8")
 
     sabotage(ca, PAGE_LINE, "")
-    sabotage(tn, 'rel="noopener"', 'rel="noopener" data-ga-event="tip"')
+    sabotage(
+        tn,
+        f'<a href="{tip.KOFI_URL}">',
+        f'<a href="{tip.KOFI_URL}" data-ga-event="tip">',
+    )
     sabotage(home, "</main>", PAGE_LINE + "</main>")
     problems = "\n".join(_page_problems(out))
     assert str(ca.relative_to(out)) in problems

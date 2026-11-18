@@ -36,10 +36,10 @@ TIP_ON_WATER_PAGES = True
 PAGE_LEAD = "Trout Truck is free and made by one person."
 PAGE_LINK_TEXT = "You can leave a tip on Ko-fi."
 
-# Every link to Ko-fi opens in a new tab, without giving Ko-fi's page a handle
-# on this one.
-LINK_TARGET = "_blank"
-LINK_REL = "noopener"
+# The link is a plain one: it opens in the same tab, like every other link on
+# the site, and Back returns to the water page (0073 addendum, 2026-11-17).
+# Until then it opened a new tab without saying so, with rel="noopener" for
+# that reason alone; both are gone, so there is no target or rel to carry.
 
 
 def page_context(url: str | None = None) -> dict[str, str] | None:
@@ -52,8 +52,6 @@ def page_context(url: str | None = None) -> dict[str, str] | None:
         "url": url,
         "lead": PAGE_LEAD,
         "link_text": PAGE_LINK_TEXT,
-        "target": LINK_TARGET,
-        "rel": LINK_REL,
     }
 
 
@@ -70,8 +68,6 @@ def calendar_line(url: str | None = None) -> str:
 
 __all__ = [
     "KOFI_URL",
-    "LINK_REL",
-    "LINK_TARGET",
     "PAGE_LEAD",
     "PAGE_LINK_TEXT",
     "TIP_ON_WATER_PAGES",

@@ -386,6 +386,10 @@ dd .tt-badge { margin-right: var(--space-2); }
   color: var(--status-now-fg);
   font-weight: 700;
   text-decoration: none;
+  /* Forced colors (Windows High Contrast) drops the fill, and with no border
+     the button became bold link text. A transparent border is drawn in the
+     system's text color there, so the button keeps its edge. */
+  border: 1px solid transparent;
 }
 .calendar-subscribe__button:visited { color: var(--status-now-fg); }
 .calendar-subscribe__button:hover { text-decoration: underline; }
@@ -395,7 +399,7 @@ dd .tt-badge { margin-right: var(--space-2); }
    this browser rather than going anywhere. */
 .push-subscribe { border-top: 1px solid var(--border); padding-top: var(--space-3); margin-bottom: var(--space-3); }
 .push-subscribe p { margin: 0 0 var(--space-2); }
-.push-subscribe__button { width: 100%; border: none; font: inherit; text-align: left; cursor: pointer; }
+.push-subscribe__button { width: 100%; border: 1px solid transparent; font: inherit; text-align: left; cursor: pointer; }
 .push-subscribe__button:hover { text-decoration: underline; }
 .push-subscribe__status:empty { display: none; }
 .gear-label {

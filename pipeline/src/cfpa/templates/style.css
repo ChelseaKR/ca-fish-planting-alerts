@@ -149,6 +149,10 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   left: 1rem;
   top: 1rem;
 }
+/* The skip link's target takes focus (tabindex="-1" in base.html.jinja) so the
+   next Tab starts inside it. It is a region, not a control: no ring around the
+   whole page body. Every link and button inside keeps its own focus ring. */
+#main:focus { outline: none; }
 
 .visually-hidden {
   position: absolute;

@@ -13,6 +13,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Docs: an Accessibility Conformance Report for the website against WCAG
+  2.2 Level A and AA (`docs/a11y/ACR.md`), based on the VPAT 2.5 Rev WCAG
+  edition, with the evidence for each criterion, a third-party content
+  note, and the screen-reader walkthrough still to do (#5). The apps are
+  out of its scope. README and `docs/RESPONSIBLE-TECH-AUDITS.md` link it.
 - Site: California water pages put their sitemap `lastmod` in their
   structured data as `dateModified`, as every other dated page family
   already does. The dates under "Last on the schedule" and after "as of" in
@@ -464,6 +469,14 @@ This repository was republished with a new history on 2026-09-18
   is still refused before any page is built.
 
 ### Fixed
+
+- Site: "Skip to main content" moves keyboard focus into the page (WCAG 2.2
+  SC 2.4.1). In Chrome, Enter on it scrolled to the page body but left focus
+  behind, so the next Tab went to the header's first link and the link
+  skipped nothing. `<main>` can now take focus from the link (it is not a
+  Tab stop) and draws no ring of its own. Every page type, one attribute in
+  the shared layout; no word or visible style changes. Found by the
+  2026-11-19 accessibility conformance audit.
 
 - Site, from the 2026-11-17 accessibility sweep (keyboard, zoom and forced
   colors in Chromium and WebKit; none of these is something axe, pa11y or

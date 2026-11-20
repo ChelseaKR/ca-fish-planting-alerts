@@ -96,7 +96,7 @@ tier are in `docs/ROADMAP.md`.
 | Release & Versioning | Applies — gap tracked in #3 (no release pipeline, tags or deployed-version stamp) |
 | Observability | Applies — gap tracked in #7 (Tier B site, Tier C pipeline and app; no field Core Web Vitals, no JSON log mode) |
 | Performance | Applies — Lighthouse CI budgets and a committed baseline over the built site (`perf/`); k6 N/A: static hosting, no server route of ours |
-| Accessibility | Applies — gap tracked in #5 (automated gates on every page; screen-reader walkthrough, statement and a VoiceOver pass on the app still open) |
+| Accessibility | Applies — website ACR against WCAG 2.2 A and AA in [`docs/a11y/ACR.md`](docs/a11y/ACR.md); gap tracked in #5 (automated gates on every page; screen-reader walkthrough, statement and a VoiceOver pass on the app still open) |
 | Internationalization | Applies — gap tracked in #6 (English-only; declared in `docs/I18N.md`) |
 | AI Evaluation | N/A — no model, prompt or retrieval surface in the pipeline, the site or the app |
 | Documentation | Applies — gap tracked in #2 (CITATION.cff and a security reporting address need owner decisions) |

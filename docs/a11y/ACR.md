@@ -97,7 +97,10 @@ Analytics requests were blocked in every browser run.
    other states' water pages;
    pa11y-ci 5 with the axe runner at WCAG2AA; the 320 CSS px reflow check
    with the site's fonts and with a wide font; Lighthouse accessibility on
-   four representative pages.
+   four representative pages, three runs each. Result on this branch: 136
+   pages checked (of 1,543 built), axe 0 problems, reflow 0 problems in
+   both font passes, pa11y-ci 136 of 136 passed, every Lighthouse
+   assertion (accessibility at least 0.90) passed.
 2. **An extended audit of 29 representative pages, one or more per
    template, in light and dark color schemes** (58 page views): every axe
    result including `minor` and "needs review" items, the measured contrast

@@ -238,6 +238,16 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- CI: `publish-health` fails its run when the live site is unhealthy (ADR
+  0076). It still opens or updates its issue, and still closes it on
+  recovery; until now the run stayed green and the issue (#168) was the
+  only signal. A state is unhealthy when its last good read is older than
+  the freshness job's allowance (7 days, DECISIONS 0065), not after 3 days
+  of failed reads, so Tennessee's weekly hand-loaded file (0061) is not red
+  most days. Massachusetts, waiting on MassWildlife (0071), is listed
+  apart and does not fail the run. Tennessee's runner block (connection
+  reset, only from the runner) and Massachusetts' stale Hub copy are
+  upstream; no reader changed.
 - Site: the Ko-fi tip link at the end of a water page opens in the same tab
   (DECISIONS 0073, addendum 2026-11-17). It was the only link on the site
   that opened a new tab, and it did not say so. `target="_blank"` and the

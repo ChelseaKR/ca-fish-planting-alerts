@@ -91,7 +91,11 @@
     </nav>
   </div>
 </header>
-<main id="main" class="wrap">
+{# tabindex="-1" lets "Skip to main content" move keyboard focus here. Without
+   it, in Chrome the next Tab after the skip link went to the header's first
+   link, so the link skipped nothing for a keyboard user (2026-11-19 ACR,
+   WCAG 2.4.1). It is not a Tab stop. #}
+<main id="main" class="wrap" tabindex="-1">
 {% if breadcrumb %}
 {# Mirrors the BreadcrumbList in the structured data, name for name. #}
 <nav aria-label="Breadcrumb" class="breadcrumb">

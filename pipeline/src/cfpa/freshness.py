@@ -176,7 +176,18 @@ def waiting_reason(
         return None, None
     if checked != attempt:
         return None, None
-    agency = source.agency_short_name
+    return stale_copy_verdict(stale, source.agency_short_name, now=now, limit=limit)
+
+
+def stale_copy_verdict(
+    stale: Mapping[str, Any], agency: str, *, now: dt.datetime, limit: int
+) -> tuple[str | None, str | None]:
+    """The second half of ``waiting_reason``, for facts already known to be
+    the latest attempt's: (waiting, None) when the agency's last edit to its
+    layer is older than the allowance, else (None, extra words for the stuck
+    line). publish-health reads the same facts from the live snapshot, which
+    carries ``stale_copy`` only when the latest attempt failed on Hub's flag
+    (``snapshot_v2``), and judges them here so the two checks agree."""
     try:
         edited = _parse_when(
             stale.get("source_last_edit_at"), "stale_copy.source_last_edit_at"

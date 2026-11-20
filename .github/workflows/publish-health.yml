@@ -7,10 +7,12 @@ name: publish health
 # 2026-10-15). The limits are in scripts/check_publish_health.py, and a
 # state's is the freshness job's own (cfpa.freshness, DECISIONS 0065, 0071).
 # It writes nothing but one issue, with a fixed title: opened on the first
-# unhealthy check, commented daily while unhealthy, commented and closed on
-# the first healthy check. An unhealthy check also fails the run, after the
-# issue step, so the red run is the signal and the issue holds the detail
-# (ADR 0076; until 2026-11-19 the run stayed green and only #168 knew).
+# unhealthy check, commented (and its body updated) only when what the check
+# finds changes, and commented and closed on the first healthy check. An
+# unchanged unhealthy state is left alone. An unhealthy check also fails the
+# run, after the issue step, so the red run is the signal and the issue holds
+# the detail (ADR 0076; until 2026-11-19 the run stayed green, and #168 got
+# the same comment every day).
 #
 # 17:43 UTC is about four hours after the 13:17 publish (publish.yml also
 # runs at 01:17 UTC), off the top of the hour. About one billed minute per run (~30 per month).
@@ -53,7 +55,8 @@ jobs:
           set -u
           status=0
           (cd pipeline && uv run --frozen python ../scripts/check_publish_health.py \
-            --base-url "$SITE_BASE_URL" --out "$RUNNER_TEMP/health-report.md") || status=$?
+            --base-url "$SITE_BASE_URL" --out "$RUNNER_TEMP/health-report.md" \
+            --state-out "$RUNNER_TEMP/health-state") || status=$?
           # 0 healthy, 1 unhealthy; anything else is a broken check and fails the step.
           if [ "$status" -eq 0 ]; then
             echo "healthy=true" >> "$GITHUB_OUTPUT"
@@ -72,8 +75,10 @@ jobs:
           ISSUE_TITLE: "publish: the live site is stale or a state source is failing"
         run: |
           set -euo pipefail
-          existing="$(gh issue list --state open --search "\"${ISSUE_TITLE}\" in:title" \
-            --json number,title | jq -r --arg t "$ISSUE_TITLE" '[.[] | select(.title == $t)][0].number // empty')"
+          # A plain listing, not a search: the search index can miss an open
+          # issue with the same title and make a duplicate (Lake Notice #11, #48).
+          existing="$(gh issue list --state open --limit 500 --json number,title \
+            | jq -r --arg t "$ISSUE_TITLE" '[.[] | select(.title == $t)][0].number // empty')"
           if [ "$HEALTHY" = "true" ]; then
             if [ -n "$existing" ]; then
               printf 'The health check passed. Closing.\n\nRun: %s\n' "$RUN_URL" > "$RUNNER_TEMP/recovered.md"
@@ -82,13 +87,22 @@ jobs:
             fi
             exit 0
           fi
+          current="$(cat "$RUNNER_TEMP/health-state")"
           report="$RUNNER_TEMP/health-report.md"
           printf '\nRun: %s\n' "$RUN_URL" >> "$report"
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --body-file "$report"
-          else
+          if [ -z "$existing" ]; then
             gh issue create --title "$ISSUE_TITLE" --body-file "$report" --label bug
+            exit 0
           fi
+          # The body records the failing finding keys of the last state reported.
+          previous="$(gh issue view "$existing" --json body \
+            --jq '(.body | capture("<!-- publish-health-state: (?<s>[A-Za-z0-9,-]*) -->") | .s) // ""')"
+          if [ "$previous" = "$current" ]; then
+            echo "still unhealthy, unchanged since the last report (${current}); no comment"
+            exit 0
+          fi
+          gh issue edit "$existing" --body-file "$report"
+          gh issue comment "$existing" --body-file "$report"
 
       - name: fail the run while unhealthy
         if: steps.health.outputs.healthy == 'false'

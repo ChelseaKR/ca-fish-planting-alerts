@@ -18,9 +18,17 @@ reading what the site actually serves (``snapshot/v2.json``):
   either) is reported apart and does not make the check unhealthy;
 - the site is not answering, or answers something that is not a snapshot.
 
+Every state's age, and California's week, is measured from when the
+snapshot was built (``generated_at``), not from now: a publish that did not
+deploy is one finding, ``publish-stale``, not one per state as well.
+
 Unhealthy fails the workflow run, after the issue is opened or updated
 (ADR 0076). Until 2026-11-19 it was only an issue comment on a green run,
-and Tennessee and Massachusetts sat in #168 for days.
+and Tennessee and Massachusetts sat in #168 for days. The issue itself stays
+quiet: --state-out always gets the sorted keys of the failing findings
+(empty when healthy), the report ends with them in a hidden marker line, and
+the workflow comments and rewrites the body only when they differ from the
+marker in the open issue's body.
 
 Absence is a finding, never a pass: a missing field, a date that does not
 parse or a fetch that fails each say so and make the check fail.
@@ -71,6 +79,9 @@ STALE_PUBLISH_HOURS = 24
 CA_WEEK_MAX_AGE_DAYS = 9
 
 SECONDS_PER_DAY = 86400.0
+
+# The workflow reads this line back from the open issue's body.
+STATE_MARKER = "<!-- publish-health-state: {} -->"
 
 SNAPSHOT_PATH = "snapshot/v2.json"
 DEFAULT_BASE_URL = "https://chelseakr.github.io/ca-fish-planting-alerts"
@@ -123,6 +134,8 @@ def evaluate(snapshot: object, now: dt.datetime) -> list[Finding]:
     findings: list[Finding] = []
 
     generated = _parse_time(snapshot.get("generated_at"))
+    # Ages are measured from the build; without a readable one, from now.
+    built = now if generated is None else generated
     if generated is None:
         findings.append(
             Finding("generated-missing", "The snapshot has no readable generated_at.")
@@ -154,32 +167,33 @@ def evaluate(snapshot: object, now: dt.datetime) -> list[Finding]:
             continue
         if code == "CA":
             seen_ca = True
-            findings.extend(_check_ca(state, now))
+            findings.extend(_check_ca(state, built))
         else:
-            findings.extend(_check_state(code, state, now))
+            findings.extend(_check_state(code, state, built))
     if not seen_ca:
         findings.append(Finding("ca-missing", "California is not in the snapshot."))
     return findings
 
 
-def _check_ca(state: dict[str, Any], now: dt.datetime) -> list[Finding]:
+def _check_ca(state: dict[str, Any], built: dt.datetime) -> list[Finding]:
     week = state.get("current_week")
     start = _parse_date(week.get("start") if isinstance(week, dict) else None)
     if start is None:
         return [Finding("ca-week-missing", "California has no readable current week.")]
-    age = (now.date() - start).days
+    age = (built.astimezone(dt.UTC).date() - start).days
     if age > CA_WEEK_MAX_AGE_DAYS:
         return [
             Finding(
                 "ca-week-stale",
-                f"California's stated week started {age} days ago "
+                f"California's stated week started {age} days before the "
+                "snapshot was built "
                 f"(limit {CA_WEEK_MAX_AGE_DAYS}).",
             )
         ]
     return []
 
 
-def _check_state(code: str, state: dict[str, Any], now: dt.datetime) -> list[Finding]:
+def _check_state(code: str, state: dict[str, Any], built: dt.datetime) -> list[Finding]:
     checks = state.get("checks")
     if not isinstance(checks, dict) or not isinstance(
         checks.get("last_attempt_ok"), bool
@@ -194,10 +208,13 @@ def _check_state(code: str, state: dict[str, Any], now: dt.datetime) -> list[Fin
         if source is None
         else allowance(source, DEFAULT_MAX_READ_AGE_DAYS)
     )
-    age = (now - success).total_seconds() / SECONDS_PER_DAY
+    age = (built - success).total_seconds() / SECONDS_PER_DAY
     if age <= limit:
         return []
-    read = f"its last good read was {age:.1f} days ago (allowed {limit} days)"
+    read = (
+        f"its last good read was {age:.1f} days before the snapshot was "
+        f"built (allowed {limit} days)"
+    )
     stale = checks.get("stale_copy")
     detail = None
     if (
@@ -206,7 +223,7 @@ def _check_state(code: str, state: dict[str, Any], now: dt.datetime) -> list[Fin
         and isinstance(stale, dict)
     ):
         waiting, detail = stale_copy_verdict(
-            stale, source.agency_short_name, now=now, limit=limit
+            stale, source.agency_short_name, now=built, limit=limit
         )
         if waiting is not None:
             return [
@@ -224,6 +241,13 @@ def _check_state(code: str, state: dict[str, Any], now: dt.datetime) -> list[Fin
             f"{success.date().isoformat()}{tail}.",
         )
     ]
+
+
+def state_key(findings: list[Finding]) -> str:
+    """The sorted, de-duplicated keys of the failing findings: what the issue
+    records. A waiting state is not in it, so it neither opens nor stirs the
+    issue."""
+    return ",".join(sorted({f.key for f in findings if f.fails}))
 
 
 def snapshot_url(base_url: str) -> str:
@@ -292,8 +316,11 @@ def report(findings: list[Finding], url: str, now: dt.datetime) -> str:
         ]
     lines += [
         f"Checked {now.strftime('%Y-%m-%d %H:%MZ')} against {url}.",
-        "The run fails while this is open. "
-        "This issue closes itself on the first healthy check.",
+        "The run fails while this is open. This issue closes itself on the "
+        "first healthy check. It gets a new comment only when what the check "
+        "finds changes, not every day.",
+        "",
+        STATE_MARKER.format(state_key(findings)),
     ]
     return "\n".join(lines) + "\n"
 
@@ -302,6 +329,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--base-url", default="", help="site root; default github.io")
     parser.add_argument("--out", type=Path, required=True, help="report file")
+    parser.add_argument(
+        "--state-out", type=Path, required=True, help="failing finding keys file"
+    )
     args = parser.parse_args(argv)
     try:
         url = snapshot_url(args.base_url)
@@ -310,6 +340,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     now = dt.datetime.now(dt.UTC)
     findings = check(url, now)
+    args.state_out.write_text(state_key(findings) + "\n", encoding="utf-8")
     for f in findings:
         print(f"{'UNHEALTHY' if f.fails else 'waiting'}: {f.text}")
     if not any(f.fails for f in findings):

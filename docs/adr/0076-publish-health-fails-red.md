@@ -49,10 +49,25 @@ Read on 2026-11-19 with the project's own user agent:
   still closes itself on the first healthy check. This covers every
   finding: a stale publish, California's week, the site not answering, and
   a stuck state.
+- **The issue stays quiet.** The red run is the daily signal, so the issue
+  no longer gets the same comment every day (#168 had nine). The report
+  ends with a hidden line, `<!-- publish-health-state: KEYS -->`, holding
+  the sorted keys of the failing findings. The workflow comments and
+  rewrites the body only when those keys differ from the ones in the open
+  issue's body. A waiting state is not in the keys. This is Lake Notice's
+  rule from the same audit.
+- **The open issue is found by listing, not search.** The step now runs
+  `gh issue list --state open --limit 500` and matches the exact title.
+  Lake Notice's search index once missed an open issue and made a
+  duplicate (#11, then #48).
+- **Ages are measured from the build.** A state's last good read, and
+  California's week, are dated against the snapshot's `generated_at`, not
+  the time of the check. A publish that did not deploy is one finding,
+  `publish-stale`, instead of one per state as well.
 - **One limit per state, shared with the freshness job.** A state is stuck
   when the last good read in the live snapshot (`checks.last_success_at`,
-  which for a hand import is the download time) is older than the freshness
-  allowance: `cfpa.freshness.DEFAULT_MAX_READ_AGE_DAYS` (7 days) or the
+  which for a hand import is the download time), measured from the build,
+  is older than the freshness allowance: `cfpa.freshness.DEFAULT_MAX_READ_AGE_DAYS` (7 days) or the
   state module's `max_read_age_days`. Equal is not stuck.
   `STATE_FAIL_DAYS` (3) is gone.
 - **Waiting is judged by the same rule.** `cfpa.freshness.stale_copy_verdict`
@@ -66,14 +81,19 @@ Read on 2026-11-19 with the project's own user agent:
 
 - On the 2026-11-19 snapshot this check is healthy: Tennessee's file is 5
   days old, and Massachusetts is waiting. Its next run closes #168. It goes
-  red the day Tennessee's file passes 7 days, which was 2026-11-21 17:05 UTC
-  for the 2026-11-14 file, or the first run after MassWildlife edits its
-  layer while Hub's copy is still stale.
+  red on the first check whose snapshot was built more than 7 days after
+  Tennessee's file was downloaded (for the 2026-11-14 file, the build of
+  2026-11-22 01:17 UTC), or on the first check after MassWildlife edits
+  its layer while Hub's copy is still stale.
 - `publish-health` and the publish run's `freshness` job now agree on every
   state. `publish-health` still reads what is live, so it also catches a
   deploy that did not land, which the `freshness` job cannot see.
 - A red run reaches Chelsea only if GitHub notifies her about failed
   scheduled runs. The audit did not check that setting.
+- The first unhealthy run after this lands comments once, because #168's
+  body has no marker yet. Unchanged runs after that only go red.
+- A test checks the fields the script reads against `schema/snapshot.v2.json`,
+  so a contract change that renames one fails in `make verify`.
 - To go back to issue-only, remove the last step. To red Massachusetts while
   it waits, drop the waiting branch in `_check_state`. Either is a one-line
   change and changes no data.

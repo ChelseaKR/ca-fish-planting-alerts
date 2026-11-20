@@ -13,6 +13,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: California water pages put their sitemap `lastmod` in their
+  structured data as `dateModified`, as every other dated page family
+  already does. The dates under "Last on the schedule" and after "as of" in
+  the status block are now in `<time datetime>` elements. The words a reader
+  sees are unchanged. Tennessee's pages are unchanged.
 - Tests: what a search or AI-answer crawler may do with every sitemap page
   (`pipeline/tests/test_crawler_access.py`). ChatGPT sent 59 of the site's
   122 engaged visits in the 28 days to 2026-11-17, and the only crawler a

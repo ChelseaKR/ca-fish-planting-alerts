@@ -33,6 +33,7 @@ from typing import Any
 from urllib.parse import urlencode, urlsplit
 
 import jinja2
+from markupsafe import Markup, escape
 
 from . import ads as ads_mod
 from . import (
@@ -676,12 +677,44 @@ def _env() -> jinja2.Environment:
     env.globals["tip"] = tip.page_context()
     # "{{ county|a_an }} County water": "an Inyo", "a Modoc".
     env.filters["a_an"] = lambda word: f"{indefinite_article(word)} {word}"
+    env.filters["time_dates"] = _time_dates
     return env
+
+
+_ISO_DAY = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+
+
+def _time_dates(text: str) -> Markup:
+    """``text``, escaped, with each ISO date in it wrapped in ``<time
+    datetime>`` so a machine can read the date a person reads. The words a
+    reader sees do not change: the element's text is the same date."""
+    out = Markup("")
+    at = 0
+    for m in _ISO_DAY.finditer(text):
+        out += escape(text[at : m.start()])
+        out += _time_tag(m.group(0), m.group(0))
+        at = m.end()
+    return out + escape(text[at:])
+
+
+def _time_tag(datetime_attr: str, label: str) -> Markup:
+    """``label`` in a ``<time datetime>``, or just ``label`` (escaped) when
+    there is no machine value to give."""
+    if not datetime_attr:
+        return escape(label)
+    return Markup('<time datetime="{}">{}</time>').format(datetime_attr, label)
 
 
 def _fmt_dt(iso_z: str) -> str:
     d = dt.datetime.fromisoformat(iso_z.replace("Z", "+00:00"))
     return d.strftime("%Y-%m-%d %H:%M UTC")
+
+
+def _fmt_dt_attr(iso_z: str) -> str:
+    """The ``<time datetime>`` value for the minute ``_fmt_dt`` prints:
+    "2026-11-19T13:23Z" for "2026-11-19 13:23 UTC"."""
+    d = dt.datetime.fromisoformat(iso_z.replace("Z", "+00:00"))
+    return d.astimezone(dt.UTC).strftime("%Y-%m-%dT%H:%MZ")
 
 
 def _fmt_date_human(iso_date: str) -> str:
@@ -1940,6 +1973,8 @@ class _PageContext:
     source_week_label: str
     source_fetched_label: str
     source_checked_on: str = ""
+    # The same moment as source_fetched_label, for <time datetime>.
+    source_fetched_datetime: str = ""
     waters_by_region: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     coords: dict[str, list[Any]] = field(default_factory=dict)
     recorded_since: str = ""
@@ -2045,6 +2080,16 @@ def _render_water_page(
     # Fewer than two dated rows: noindex,follow, no gear block, and out of
     # the sitemap (build_site asks the same function; DECISIONS 0041).
     thin = is_thin(w["plants"], f"/water/{w['slug']}/")
+    # The region links are navigation, not this water's data: they are left
+    # out of the lastmod (docs: a new water in the region can change them
+    # without moving this date, a known under-report). Computed before the
+    # render because the page's dateModified is this same value.
+    lastmod = _water_lastmod(
+        w,
+        source_week_start=ctx.source_week_start,
+        siblings=list(siblings.values()),
+        nothing_current=view["nothing_current"],
+    )
     html = ctx.env.get_template("water.html.jinja").render(
         title=title,
         description=_water_description(view, source_week_label=ctx.source_week_label),
@@ -2060,6 +2105,7 @@ def _render_water_page(
                 name=title,
                 base_url=base_url,
                 about={"@id": f"{page_url}#water"},
+                date_modified=lastmod,
             ),
             _ld_breadcrumb(page_url, trail),
             _ld_water(w, page_url=page_url, point=point),
@@ -2081,6 +2127,9 @@ def _render_water_page(
         water_months=_water_months(w, recorded_since=recorded_since),
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
+        source_fetched_time=_time_tag(
+            ctx.source_fetched_datetime, ctx.source_fetched_label
+        ),
         recorded_since_label=f"week of {recorded_since}" if recorded_since else "",
         # Facts for _water_status.html.jinja. water_status["meta_phrase"] is a
         # truthful sentence a description may use; nothing here sets one.
@@ -2103,15 +2152,7 @@ def _render_water_page(
     )
     ctx.written.append(ics_path)
 
-    # The region links are navigation, not this water's data: they are left
-    # out of the lastmod (docs: a new water in the region can change them
-    # without moving this date, a known under-report).
-    return _water_lastmod(
-        w,
-        source_week_start=ctx.source_week_start,
-        siblings=list(siblings.values()),
-        nothing_current=view["nothing_current"],
-    )
+    return lastmod
 
 
 COUNTY_RECENT_WEEKS = 4
@@ -3552,6 +3593,7 @@ def build_site(
         source_week_label=source_week_label,
         source_fetched_label=source_fetched_label,
         source_checked_on=snapshot["source"]["fetched_at"][:10],
+        source_fetched_datetime=_fmt_dt_attr(snapshot["source"]["fetched_at"]),
         waters_by_region=waters_by_region,
         coords=coords,
         recorded_since=recorded_since,

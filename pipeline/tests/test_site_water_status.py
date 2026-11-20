@@ -67,6 +67,9 @@ def _block(html: str) -> str:
 
 
 def _text(fragment: str) -> str:
+    # <time> is inline and wraps a date inside a sentence, so it adds no
+    # space; any other tag reads as a break.
+    fragment = re.sub(r"</?time\b[^>]*>", "", fragment)
     plain = htmllib.unescape(re.sub(r"<[^>]+>", " ", fragment))
     return re.sub(r"\s+", " ", plain).strip()
 
@@ -407,7 +410,11 @@ def test_control_a_wrong_date_fails_the_dates_test(built, tmp_path: Path) -> Non
     last = max(d for d in _listed(w) if d <= WEEK)
     page = tmp_path / "p.html"
     page.write_text(_page(out, w["slug"]), encoding="utf-8")
-    _sabotage(page, f"The week of {last}, which", "The week of 2020-01-05, which")
+    _sabotage(
+        page,
+        f'The week of <time datetime="{last}">{last}</time>, which',
+        'The week of <time datetime="2020-01-05">2020-01-05</time>, which',
+    )
     assert f"The week of {last}, which began" not in _text(
         _block(page.read_text(encoding="utf-8"))
     )

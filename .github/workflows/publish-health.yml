@@ -2,11 +2,15 @@ name: publish health
 
 # publish.yml opens an issue when a run fails. This workflow covers what that
 # cannot see, by reading what the site serves: a daily run that never ran or
-# never deployed, and a state source that has failed for days while the run
-# stayed green (Tennessee, from 2026-10-15). Thresholds are constants in
-# scripts/check_publish_health.py. It writes nothing but one issue, with a
-# fixed title: opened on the first unhealthy check, commented daily while
-# unhealthy, commented and closed on the first healthy check.
+# never deployed, and a state whose last good read is older than its
+# freshness allowance while the publish run stayed green (Tennessee, from
+# 2026-10-15). The limits are in scripts/check_publish_health.py, and a
+# state's is the freshness job's own (cfpa.freshness, DECISIONS 0065, 0071).
+# It writes nothing but one issue, with a fixed title: opened on the first
+# unhealthy check, commented daily while unhealthy, commented and closed on
+# the first healthy check. An unhealthy check also fails the run, after the
+# issue step, so the red run is the signal and the issue holds the detail
+# (ADR 0076; until 2026-11-19 the run stayed green and only #168 knew).
 #
 # 17:43 UTC is about four hours after the 13:17 publish (publish.yml also
 # runs at 01:17 UTC), off the top of the hour. About one billed minute per run (~30 per month).
@@ -85,3 +89,9 @@ jobs:
           else
             gh issue create --title "$ISSUE_TITLE" --body-file "$report" --label bug
           fi
+
+      - name: fail the run while unhealthy
+        if: steps.health.outputs.healthy == 'false'
+        run: |
+          echo "::error title=publish health::The live site is stale or a state is past its freshness limit. The health issue has the detail."
+          exit 1

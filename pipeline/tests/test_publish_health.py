@@ -9,6 +9,7 @@ before it asserts the check noticed.
 from __future__ import annotations
 
 import copy
+import dataclasses
 import datetime as dt
 import importlib.util
 import json
@@ -18,6 +19,9 @@ from pathlib import Path
 
 import httpx
 import pytest
+
+from cfpa import freshness
+from cfpa.states import registered_sources
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "scripts" / "check_publish_health.py"
@@ -69,10 +73,17 @@ def test_a_healthy_snapshot_has_no_findings():
     assert ph.evaluate(healthy(), NOW) == []
 
 
+def failing_keys(snapshot: object) -> set[str]:
+    return {f.key for f in ph.evaluate(snapshot, NOW) if f.fails}
+
+
 def test_the_thresholds_are_the_documented_constants():
     assert ph.STALE_PUBLISH_HOURS == 24
-    assert ph.STATE_FAIL_DAYS == 3
     assert ph.CA_WEEK_MAX_AGE_DAYS == 9
+    # A state's limit is the freshness watchdog's allowance (DECISIONS 0065),
+    # not a second, shorter number of this check's own.
+    assert not hasattr(ph, "STATE_FAIL_DAYS")
+    assert ph.DEFAULT_MAX_READ_AGE_DAYS == freshness.DEFAULT_MAX_READ_AGE_DAYS == 7
 
 
 def test_publish_age_boundary():
@@ -95,22 +106,166 @@ def test_one_missed_daily_run_is_caught_the_same_day():
     assert keys(snap) == {"publish-stale"}
 
 
-def test_state_failure_boundary_and_the_tennessee_case():
+def test_state_limit_boundary_is_the_freshness_allowance():
+    limit = ph.DEFAULT_MAX_READ_AGE_DAYS
     snap = healthy()
     tn(snap)["checks"] = {
         "last_attempt_ok": False,
-        "last_success_at": _iso(NOW - dt.timedelta(days=ph.STATE_FAIL_DAYS - 1)),
+        "last_success_at": _iso(NOW - dt.timedelta(days=3)),
     }
+    # Three days failing was a finding before; inside the allowance it is not.
+    assert keys(snap) == set()
+    # Equal to the allowance is not stuck; a minute past it is (0065).
+    tn(snap)["checks"]["last_success_at"] = _iso(NOW - dt.timedelta(days=limit))
     assert keys(snap) == set()
     tn(snap)["checks"]["last_success_at"] = _iso(
-        NOW - dt.timedelta(days=ph.STATE_FAIL_DAYS)
+        NOW - dt.timedelta(days=limit, minutes=1)
     )
-    assert keys(snap) == {"TN-failing"}
-    # Tennessee, 2026-10-15 13:31Z to 2026-10-22 17:43Z: failing for 7 days.
+    assert failing_keys(snap) == {"TN-stuck"}
+    # Tennessee, 2026-10-15 13:31Z to 2026-10-22 17:43Z: 7.2 days, stuck.
     tn(snap)["checks"]["last_success_at"] = "2026-10-15T13:31:10Z"
     found = ph.evaluate(snap, NOW)
-    assert [f.key for f in found] == ["TN-failing"]
-    assert "7 days" in found[0].text
+    assert [f.key for f in found] == ["TN-stuck"]
+    assert found[0].fails
+    assert found[0].text == (
+        "TN is stuck: its last good read was 7.2 days ago (allowed 7 days); "
+        "its data is from 2026-10-15."
+    )
+
+
+def test_a_state_past_its_limit_is_stuck_even_when_the_last_attempt_worked():
+    snap = healthy()
+    tn(snap)["checks"]["last_success_at"] = _iso(NOW - dt.timedelta(days=9))
+    assert tn(snap)["checks"]["last_attempt_ok"] is True
+    assert failing_keys(snap) == {"TN-stuck"}
+
+
+def test_a_state_module_s_own_allowance_is_its_limit(monkeypatch):
+    known = registered_sources()
+    shorter = {**known, "TN": dataclasses.replace(known["TN"], max_read_age_days=2)}
+    monkeypatch.setattr(ph, "registered_sources", lambda: shorter)
+    snap = healthy()
+    tn(snap)["checks"] = {
+        "last_attempt_ok": False,
+        "last_success_at": _iso(NOW - dt.timedelta(days=3)),
+    }
+    found = ph.evaluate(snap, NOW)
+    assert [f.key for f in found] == ["TN-stuck"]
+    assert "(allowed 2 days)" in found[0].text
+
+
+def test_a_state_this_code_does_not_know_gets_the_default_allowance():
+    snap = healthy()
+    snap["states"].append(
+        {
+            "code": "ZZ",
+            "checks": {
+                "last_attempt_ok": False,
+                "last_success_at": _iso(NOW - dt.timedelta(days=8)),
+            },
+        }
+    )
+    assert failing_keys(snap) == {"ZZ-stuck"}
+
+
+# ---- Massachusetts: waiting, not stuck (DECISIONS 0071) --------------------
+
+LIVE_NOW = dt.datetime(2026, 11, 19, 17, 47, tzinfo=dt.UTC)
+
+
+def live_2026_11_19() -> dict:
+    """The live snapshot's state checks on 2026-11-19, as the audit read them."""
+    return {
+        "generated_at": "2026-11-19T13:22:40Z",
+        "states": [
+            {"code": "CA", "current_week": {"start": "2026-11-15"}},
+            {
+                "code": "MA",
+                "checks": {
+                    "last_attempt_at": "2026-11-19T13:22:41Z",
+                    "last_success_at": "2026-11-07T13:22:11Z",
+                    "last_attempt_ok": False,
+                    "stale_copy": {
+                        "source_last_edit_at": "2026-10-13T17:06:39Z",
+                        "source_record_count": 155,
+                        "copy_record_count": 150,
+                    },
+                },
+            },
+            {
+                "code": "TN",
+                "checks": {
+                    "last_attempt_at": "2026-11-19T13:22:41Z",
+                    "last_success_at": "2026-11-14T17:05:23Z",
+                    "last_attempt_ok": False,
+                },
+            },
+        ],
+    }
+
+
+def ma(snapshot: dict) -> dict:
+    return snapshot["states"][1]
+
+
+def test_the_live_case_of_2026_11_19():
+    found = ph.evaluate(live_2026_11_19(), LIVE_NOW)
+    # Tennessee's hand-loaded file is 5 days old, inside 7: not a finding.
+    # Massachusetts is past 7 days, but waiting: MassWildlife has not edited
+    # its layer since 2026-10-13, so nothing new is upstream.
+    assert [(f.key, f.fails) for f in found] == [("MA-waiting", False)]
+    assert found[0].text == (
+        "MA is waiting, not stuck: its last good read was 12.2 days ago "
+        "(allowed 7 days), Hub's file is stale, and MassWildlife has not "
+        "edited its layer since 2026-10-13 17:06Z (37.0 days ago); red again "
+        "as soon as it does."
+    )
+
+
+def test_tennessee_goes_red_the_day_its_file_passes_the_allowance():
+    later = LIVE_NOW + dt.timedelta(days=3)
+    found = ph.evaluate(live_2026_11_19(), later)
+    assert [(f.key, f.fails) for f in found] == [
+        ("publish-stale", True),
+        ("MA-waiting", False),
+        ("TN-stuck", True),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("mutate", "detail"),
+    [
+        # MassWildlife edited its layer two days ago: something new is upstream.
+        (
+            lambda c: c["stale_copy"].update(
+                source_last_edit_at="2026-11-17T09:00:00Z"
+            ),
+            "Hub's file is stale and MassWildlife edited its layer "
+            "2026-11-17 09:00Z, 2.4 days ago",
+        ),
+        # The edit date could not be read: never a pass.
+        (
+            lambda c: c["stale_copy"].update(source_last_edit_at=None),
+            "Hub's file is stale and MassWildlife's last edit to its layer "
+            "could not be read",
+        ),
+        (lambda c: c["stale_copy"].update(source_last_edit_at="soon"), "could not"),
+        # The latest failure was not Hub's stale flag.
+        (lambda c: c.pop("stale_copy"), None),
+        (lambda c: c.update(stale_copy="stale"), None),
+        # A good attempt cannot be waiting.
+        (lambda c: c.update(last_attempt_ok=True), None),
+    ],
+)
+def test_waiting_needs_the_stale_flag_and_an_idle_agency(mutate, detail):
+    snap = live_2026_11_19()
+    before = copy.deepcopy(snap)
+    mutate(ma(snap)["checks"])
+    assert snap != before, "the sabotage did not apply"
+    found = [f for f in ph.evaluate(snap, LIVE_NOW) if f.key.startswith("MA-")]
+    assert [(f.key, f.fails) for f in found] == [("MA-stuck", True)]
+    if detail is not None:
+        assert detail in found[0].text
 
 
 def test_a_failing_attempt_with_a_recent_success_is_not_yet_a_finding():
@@ -148,6 +303,10 @@ def test_ca_week_boundary():
             lambda s: s["states"][1]["checks"].update(
                 last_attempt_ok=False, last_success_at=None
             ),
+            "TN-never",
+        ),
+        (
+            lambda s: s["states"][1]["checks"].update(last_success_at="last week"),
             "TN-never",
         ),
     ],
@@ -227,7 +386,16 @@ def test_the_report_holds_only_fixed_text_and_numbers():
     }
     text = ph.report(ph.evaluate(snap, NOW), "https://e.test/s.json", NOW)
     assert "script" not in text and "@everyone" not in text
-    assert "TN has failed to fetch for 7 days" in text
+    assert "TN is stuck: its last good read was 7.2 days ago" in text
+
+
+def test_the_report_lists_a_waiting_state_apart_from_the_findings():
+    snap = live_2026_11_19()
+    later = LIVE_NOW + dt.timedelta(days=3)
+    text = ph.report(ph.evaluate(snap, later), "https://e.test/s.json", later)
+    found, waiting = text.split("Not counted")
+    assert "- TN is stuck" in found and "MA" not in found
+    assert "- MA is waiting, not stuck" in waiting
 
 
 def test_main_exit_codes(tmp_path, monkeypatch):
@@ -235,9 +403,17 @@ def test_main_exit_codes(tmp_path, monkeypatch):
     monkeypatch.setattr(ph, "check", lambda url, now: [])
     assert ph.main(["--out", str(out)]) == 0
     assert not out.exists()
-    monkeypatch.setattr(ph, "check", lambda url, now: [ph.Finding("k", "Something.")])
+    # A waiting state alone is healthy: no report, so no issue and no red.
+    waiting = ph.Finding("MA-waiting", "Waiting.", fails=False)
+    monkeypatch.setattr(ph, "check", lambda url, now: [waiting])
+    assert ph.main(["--out", str(out)]) == 0
+    assert not out.exists()
+    monkeypatch.setattr(
+        ph, "check", lambda url, now: [ph.Finding("k", "Something."), waiting]
+    )
     assert ph.main(["--out", str(out)]) == 1
     assert "Something." in out.read_text(encoding="utf-8")
+    assert "Waiting." in out.read_text(encoding="utf-8")
     assert ph.main(["--base-url", "http://x", "--out", str(out)]) == 2
 
 
@@ -281,7 +457,7 @@ def test_permissions_are_least_privilege():
 def test_no_expression_is_interpolated_into_a_run_script():
     text = _wf()
     bodies = re.findall(r"run: \|\n((?:          .*\n|\n)+)", text)
-    assert len(bodies) == 2
+    assert len(bodies) == 3
     for body in bodies:
         assert "${{" not in body
 
@@ -311,3 +487,31 @@ def test_schedule_runs_after_the_publish_and_is_not_on_the_hour():
     assert publish
     assert (hour, minute) > (int(publish.group(2)), int(publish.group(1)))
     assert minute not in (0, 30)
+
+
+def _steps(text: str) -> list[str]:
+    """The job's steps, each as its YAML block, in order."""
+    return re.split(r"\n      - (?=name: |uses: )", text)[1:]
+
+
+def test_an_unhealthy_check_fails_the_run_after_the_issue_is_updated():
+    # Until 2026-11-19 an unhealthy reading was only an issue comment and the
+    # run stayed green (Tennessee and Massachusetts, #168).
+    steps = _steps(_wf())
+    names = [re.match(r"name: (.*)", s).group(1) for s in steps if s.startswith("name")]
+    issue = names.index("open, update or close the health issue")
+    assert names[issue + 1 :] == ["fail the run while unhealthy"]
+    last = steps[-1]
+    assert "if: steps.health.outputs.healthy == 'false'" in last
+    assert "exit 1" in last
+    # The issue step still runs on every outcome and still closes on recovery.
+    issue_step = steps[-2]
+    assert "if:" not in issue_step.split("run:")[0]
+    assert "gh issue close" in issue_step
+    assert "exit 1" not in issue_step
+
+
+def test_the_red_step_check_catches_a_missing_condition():
+    sabotaged = _wf().replace("if: steps.health.outputs.healthy == 'false'\n", "")
+    assert sabotaged != _wf()
+    assert "if: steps.health.outputs.healthy == 'false'" not in _steps(sabotaged)[-1]

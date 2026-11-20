@@ -153,7 +153,9 @@ def test_water_page_badge_matches_its_status_block(built: Path) -> None:
         state = BADGE_RE.search(block)
         assert state is not None, name
         this_week, next_week = re.findall(
-            r"<dd>(On|Not on) CDFW&#39;s schedule[ .][^<]*</dd>", block
+            # .*? and not [^<]*: the "as of" time is in a <time> element.
+            r"<dd>(On|Not on) CDFW&#39;s schedule[ .].*?</dd>",
+            block,
         )
         want = site.schedule_status(
             this_week=this_week == "On", next_week=next_week == "On"

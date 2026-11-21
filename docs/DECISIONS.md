@@ -1405,6 +1405,42 @@ recommended one.
   `state = "CA"`) and onboarding change after the App Review Board answers,
   in their own PR, with the same rules and words as `StateChoice.kt`.
 
+## 0055 — Pennsylvania, Virginia and Maryland are built and tested behind flags that are off (2026-11-05)
+
+(0046 to 0053 are on branches or main and 0054 is the water-page lane's, so
+this is the next free number.)
+
+Each state has a reader in `pipeline/src/cfpa/states/` (`pennsylvania.py`,
+`virginia.py`, `maryland.py`), built the same way as Oregon (0032). None is
+registered, fetched, published or in the sitemap, and none is in
+`FETCHED_STATES` or `snapshot/v2.json`. They stay off until the agency says
+yes in writing (the permission emails go out 12-15 at the earliest). Every
+page these readers would read is silent on reuse, so under 0004 each licence
+is recorded as `unknown`.
+
+- **The flags.** `CFPA_ENABLE_PENNSYLVANIA`, `CFPA_ENABLE_VIRGINIA` and
+  `CFPA_ENABLE_MARYLAND`, read like `CFPA_ENABLE_OREGON`: `1` is on; unset,
+  empty and `0` are off; anything else refuses the run. `states.FLAGGED`
+  lists the four flagged states; `oregon_enabled` is unchanged.
+- **Off means identical.** A default build with all three registered but not
+  fetched is byte-identical to one without them
+  (`tests/test_states_pa_va_md.py`). `publish.yml` is not changed.
+- **Pennsylvania (PFBC).** fbweb.pa.gov/TroutStocking has no download, so the
+  reader sends the page's own JSON search, one POST per county (67, 5 s
+  apart), through a new `base.post_json_for_text` helper. A day where PFBC
+  gives one; a Monday-start, seven-day week where PFBC gives only "week of".
+  Species are marks; there are no counts. Meeting place and time are not read.
+- **Virginia (DWR).** The monthly schedule page only (the owner's 11-05
+  choice, expansion plan decision 6A), as a `schedule` of days. No species
+  and no counts. An independent city is a place, never a county.
+- **Maryland (DNR).** The `RecentStockings` JSON, as a `report` of days, with
+  DNR's location id as the water's id. A county DNR doesn't give, or that is
+  not a Maryland county, is left out and named in the run log.
+- **Fixtures are invented.** `tests/fixtures/states-invented/` is written by
+  hand in each agency's format; no agency data is committed.
+- **Turning one on** is the owner's edit: set its flag and add its
+  `pipeline/data/states/<xx>.json` to the publish workflow's commit step, then
+  follow 0034 (a live read before `FETCHED_STATES`).
 
 ## 0057 — Android About gets "Write to the developer"; alerts keep their one button (2026-11-06)
 

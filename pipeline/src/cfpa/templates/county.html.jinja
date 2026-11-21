@@ -20,14 +20,12 @@
   for a feed reader. Each entry is scheduled, not confirmed.
 </p>
 {% endif %}
+{% if app_store_url %}
 <p>
-  {% if app_store_url %}
   <a href="{{ app_store_url }}" data-app-store-placement="county" data-app-store-kind="link">Get the iOS app</a>
   to favorite {{ county }} County waters and get a notification when CDFW schedules one for a new week.
-  {% else %}
-  An iOS app that sends a notification when a favorite {{ county }} County water is scheduled for a new week is on its way (<a href="{{ root }}about/#app">how it will work</a>).
-  {% endif %}
 </p>
+{% endif %}
 
 {# The county's first answer (site._county_card). Each water is its own link;
    with nothing scheduled the card says so in words, never "0 waters". #}

@@ -21,10 +21,11 @@ turns on together:
 - the text install links on the home, about and water pages
 - the `MobileApplication` structured data on the home and support pages
 - the `app_store_click` event in Google Analytics
-- the "not in the App Store yet" sentence on the about page goes away
-- the support page's two app questions (alerts, restoring a purchase) change
-  from "not in the App Store yet" wording to the installed-app wording, in
-  both the visible text and the FAQPage data
+- the about page's "Is there an app?" section (no app; follow a water by
+  its calendar) becomes "The iOS app", with its install link
+- the support page's "Can I get an alert when a water is scheduled?" (by
+  calendar) becomes the two installed-app questions (alerts, restoring a
+  purchase), in both the visible text and the FAQPage data
 
 A test (`pipeline/tests/test_launch_switch.py`) builds the site both ways
 and fails if any one of these disagrees with the others.
@@ -68,7 +69,7 @@ emergency off switch (see "If something is wrong").
    - `curl -s https://trouttruck.com/support/ | grep -c 'Download on the App Store'` prints 1
    - `curl -s https://trouttruck.com/ | grep -c MobileApplication` prints 1
    - `curl -s https://trouttruck.com/ | grep -c app_store_click` prints 1
-   - `curl -s https://trouttruck.com/about/ | grep -c 'not in the App Store yet'` prints 0
+   - `curl -s https://trouttruck.com/about/ | grep -c 'Is there an app?'` prints 0
    Then open the home page on your phone and tap the badge. It should open
    the App Store listing.
 5. **Check the click event in Google Analytics.** In Google Analytics, open

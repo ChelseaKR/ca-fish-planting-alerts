@@ -486,7 +486,8 @@ def test_every_tennessee_water_page_shows_the_box_and_has_a_feed(built: Path):
         assert "Apple Calendar (iPhone, iPad, Mac): subscribe" in box
         assert "Google Calendar (any phone or computer): add it" in box
         assert "download a one-time copy (.ics)" in box
-        assert "appears on a new date" in box
+        # no app line since 2026-11-21 (the app is not coming; IA phase 1)
+        assert "on its way" not in box and "iOS app" not in box
         assert "CDFW" not in box
         assert "android" not in html.lower()
         # After the lede, before the history table.
@@ -608,7 +609,8 @@ def test_doe_river_reads_as_weeks(built: Path):
 
 def test_the_california_box_is_unchanged(built: Path):
     """The partial's new variables default to California's words, so a
-    California page reads exactly as DECISIONS 0062 wrote it."""
+    California page reads as DECISIONS 0062 wrote it, less the app line
+    removed on 2026-11-21."""
     snap = json.loads((built / "snapshot" / "v1.json").read_text("utf-8"))
     html = (built / "water" / snap["waters"][0]["slug"] / "index.html").read_text(
         "utf-8"
@@ -618,5 +620,5 @@ def test_the_california_box_is_unchanged(built: Path):
     assert {a["data-ga-placement"] for a in anchors} == {"water"}
     assert "new weeks in your calendar" in html
     assert "Subscribe once: each week CDFW schedules" in html
-    assert "appears in a new week" in html
+    assert "on its way" not in html
     assert "TWRA" not in html

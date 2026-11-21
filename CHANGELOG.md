@@ -470,6 +470,23 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Site: no page promises an iPhone app any more. Apple's rejection was
+  upheld on 2026-11-17 (DECISIONS 0073), so "An iOS app ... is on its way"
+  is gone from the calendar box of every California and Tennessee water
+  page, from every county page and from the home page. The about page's
+  app section is now "Is there an app?" ("No. Trout Truck is a website. To
+  follow a water, subscribe to its calendar on the water's page..."), and
+  the support page asks "Can I get an alert when a water is scheduled?"
+  and answers it with the calendar; its "restoring a purchase" question is
+  removed. The FAQPage structured data changes with it. `cfpa.launch_check`
+  no longer requires the "not in the App Store yet" sentence while the
+  switch is off and now flags it on any page; `APP_STORE_LIVE` itself is
+  unchanged and still turns the app wording back on. No URL, title, H1,
+  description, sitemap lastmod, feed or snapshot changes. A fix to existing
+  pages, which DECISIONS 0042 allows. Guarded by
+  `pipeline/tests/test_site_no_app_promise.py`, which reads every file the
+  build writes with the switch off and on.
+
 - Site: "Skip to main content" moves keyboard focus into the page (WCAG 2.2
   SC 2.4.1). In Chrome, Enter on it scrolled to the page body but left focus
   behind, so the next Tab went to the header's first link and the link

@@ -1561,9 +1561,11 @@ def _ld_faq(page_url: str, items: list[tuple[str, str]]) -> dict[str, Any]:
     }
 
 
-# The two app questions on the support page. The first of each pair is the
-# live wording (the app is on the App Store); the second is what is true
-# before launch, when the app is not on the App Store yet.
+# The app questions on the support page. The two live ones are the words for
+# when the app is on the App Store (the launch switch is on). Until then there
+# is no app to install (Apple's rejection was upheld on 2026-11-17, DECISIONS
+# 0073), so the page asks one question instead and answers it with the
+# calendar.
 _APP_ALERTS_FAQ_LIVE = (
     "Why didn't the app alert me?",
     "Alerts are part of the one-time in-app purchase; favoriting and "
@@ -1575,31 +1577,17 @@ _APP_ALERTS_FAQ_LIVE = (
     "updates weekly, so an alert arrives within the week a water is "
     "added, not the minute it is.",
 )
-_APP_ALERTS_FAQ_NOT_YET = (
-    "How will the app's alerts work?",
-    "The iPhone app is not in the App Store yet, so it sends no alerts "
-    "today. Once it is available: alerts are part of the one-time in-app "
-    "purchase; favoriting and browsing are free. Notifications must be "
-    "allowed for the app (Settings \u2192 Notifications). The app checks for "
-    "a new schedule in the background, and iOS decides when that happens. "
-    "Background App Refresh must be on for the app, Low Power Mode pauses "
-    "it, and swiping the app away can stop it until you open it again. "
-    "CDFW updates weekly, so an alert arrives within the week a water is "
-    "added, not the minute it is.",
-)
 _APP_RESTORE_FAQ_LIVE = (
     "How do I restore my purchase on a new phone?",
     "In the app, open About \u2192 Unlock full access \u2192 Restore "
     "purchases. Use the same Apple Account you bought it with. There "
     "is no account with this app to sign in to.",
 )
-_APP_RESTORE_FAQ_NOT_YET = (
-    "How will restoring a purchase on a new phone work?",
-    "The iPhone app is not in the App Store yet, so there is nothing to "
-    "restore today. Once it is available, open About \u2192 Unlock full "
-    "access \u2192 Restore purchases in the app and use the same Apple "
-    "Account you bought it with. There is no account with this app to "
-    "sign in to.",
+_NO_APP_ALERTS_FAQ = (
+    "Can I get an alert when a water is scheduled?",
+    "Yes, by calendar. On a California or Tennessee water's page, press "
+    "Apple Calendar or Google Calendar. Each new week or date the agency "
+    "schedules then shows up in your calendar. There is no Trout Truck app.",
 )
 
 
@@ -1607,9 +1595,10 @@ def _support_faq(
     source_fetched_label: str, *, app_store_live: bool = False
 ) -> list[tuple[str, str]]:
     """The support page's questions and answers as plain text. Each answer is
-    the visible answer with its links reduced to their text. The last two
-    are about the iPhone app, so they follow the launch switch: until the app
-    is on the App Store they say so (support.html.jinja holds the same words)."""
+    the visible answer with its links reduced to their text. The last ones
+    follow the launch switch: with it on, the two iPhone app questions; with
+    it off, one question answered by the calendar, since there is no app
+    (support.html.jinja holds the same words)."""
     return [
         (
             "Where does the schedule come from?",
@@ -1633,8 +1622,11 @@ def _support_faq(
             "Calendar; in Google Calendar, under Other calendars \u2192 From URL. "
             "Each event spans the whole week CDFW scheduled.",
         ),
-        _APP_ALERTS_FAQ_LIVE if app_store_live else _APP_ALERTS_FAQ_NOT_YET,
-        _APP_RESTORE_FAQ_LIVE if app_store_live else _APP_RESTORE_FAQ_NOT_YET,
+        *(
+            (_APP_ALERTS_FAQ_LIVE, _APP_RESTORE_FAQ_LIVE)
+            if app_store_live
+            else (_NO_APP_ALERTS_FAQ,)
+        ),
     ]
 
 

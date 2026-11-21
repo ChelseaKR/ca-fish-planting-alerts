@@ -321,15 +321,13 @@ def test_county_links_exactly_the_other_counties_of_its_region(built):
 # ---- the app line
 
 
-def test_every_county_page_has_the_app_line_and_no_store_link_before_launch(built):
+def test_no_county_page_promises_an_app_or_links_the_store_before_launch(built):
     out, snap = built
     for county in _by_county(snap):
         page = _page(out, f"county/{site.county_slug(county)}")
-        assert (
-            f"favorite {county} County water is scheduled for a new week is on its way"
-            in page
-        )
-        assert 'href="../../about/#app"' in page
+        assert "on its way" not in page
+        assert "iOS app" not in page
+        assert 'href="../../about/#app"' not in page
         assert "apps.apple.com" not in page
 
 

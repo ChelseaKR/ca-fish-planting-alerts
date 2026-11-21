@@ -248,6 +248,11 @@ This repository was republished with a new history on 2026-09-18
 
 ### Changed
 
+- Site: Google Analytics loads only on trouttruck.com and never in an
+  automated browser (`navigator.webdriver`, as Playwright, Puppeteer and
+  headless Chrome set it), so local builds and scripted checks are not
+  counted as visits, and neither are their link and App Store clicks.
+  Nothing on any page, the opt-out or the privacy policy changes.
 - CI: `publish-health` fails its run when the live site is unhealthy (ADR
   0076). It still opens or updates its issue, and still closes it on
   recovery; until now the run stayed green and the issue (#168) was the

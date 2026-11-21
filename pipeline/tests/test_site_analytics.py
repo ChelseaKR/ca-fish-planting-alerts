@@ -38,6 +38,12 @@ PUSH_KEY = base64.urlsafe_b64encode(b"\x04" + b"\x07" * 64).decode().rstrip("=")
 
 GPC_GUARD = "if (n.globalPrivacyControl === true) return;"
 DNT_GUARD = 'if (dnt === "1" || dnt === "yes") return;'
+# Off the production host (a local or preview build) and in an automated
+# browser (Playwright, Puppeteer, headless Chrome) the tag loads nothing, so
+# neither is counted as a visit (growth/traffic-honesty-2026-11-21).
+HOST_GUARD = 'if (w.location.hostname !== "trouttruck.com") return;'
+WEBDRIVER_GUARD = "if (n.webdriver === true) return;"
+GUARDS = (GPC_GUARD, DNT_GUARD, HOST_GUARD, WEBDRIVER_GUARD)
 
 # The EU 27, the rest of the EEA, the UK and Switzerland.
 EXPECTED_DENIED_REGIONS = {
@@ -173,8 +179,7 @@ def _guard_problems(html: str, measurement_id: str) -> list[str]:
     js = scripts[0]
     problems = []
     for needle in (
-        GPC_GUARD,
-        DNT_GUARD,
+        *GUARDS,
         f'gtag("config", "{measurement_id}"',
         "allow_google_signals: false",
         "allow_ad_personalization_signals: false",
@@ -184,9 +189,9 @@ def _guard_problems(html: str, measurement_id: str) -> list[str]:
             problems.append(f"missing {needle!r}")
     if problems:
         return problems
-    # both guards return before anything is set up or fetched
+    # every guard returns before anything is set up or fetched
     first_effect = min(js.index("dataLayer"), js.index("googletagmanager"))
-    for guard in (GPC_GUARD, DNT_GUARD):
+    for guard in GUARDS:
         if js.index(guard) > first_effect:
             problems.append(f"{guard!r} runs after the tag starts")
     return problems
@@ -339,7 +344,7 @@ def test_guard_checker_catches_a_missing_or_late_guard(id_pages):
     """Negative controls for _guard_problems: drop each guard, then move the
     GPC guard below the dataLayer set-up."""
     original = id_pages["index.html"]
-    for guard in (GPC_GUARD, DNT_GUARD):
+    for guard in GUARDS:
         sabotaged = original.replace(guard, "")
         assert sabotaged != original  # the sabotage landed
         assert _guard_problems(sabotaged, TEST_ID), guard
@@ -402,7 +407,8 @@ const code = fs.readFileSync(process.argv[2], "utf8");
 const c = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
 const appended = [];
 const navigator = Object.assign({}, c.navigator);
-const window = Object.assign({}, c.window);
+// The live site's host unless a case says otherwise.
+const window = Object.assign({ location: { hostname: "trouttruck.com" } }, c.window);
 const document = {
   createElement: (tag) => ({ tagName: tag }),
   head: { appendChild: (el) => { appended.push(el); } },
@@ -510,19 +516,56 @@ def test_tag_does_nothing_under_gpc_or_dnt(tmp_path, id_pages, navigator, window
     assert ran == {"dataLayer": None, "appended": []}
 
 
+OFF_HOSTS = (
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+    "chelseakr.github.io",
+    "example.invalid",
+)
+
+
 @pytest.mark.parametrize(
-    ("guard", "navigator"),
-    [(GPC_GUARD, {"globalPrivacyControl": True}), (DNT_GUARD, {"doNotTrack": "1"})],
+    ("navigator", "window"),
+    [
+        *(({}, {"location": {"hostname": host}}) for host in OFF_HOSTS),
+        # www.trouttruck.com 301s to the apex, so no page is ever served there
+        ({}, {"location": {"hostname": "www.trouttruck.com"}}),
+        ({"webdriver": True}, {}),
+        ({"webdriver": True, "doNotTrack": "0"}, {}),
+    ],
+)
+def test_tag_does_nothing_off_the_live_host_or_under_webdriver(
+    tmp_path, id_pages, navigator, window
+):
+    ran = _run_tag(tmp_path, _tag_js(id_pages), navigator=navigator, window=window)
+    assert ran == {"dataLayer": None, "appended": []}
+
+
+def test_tag_still_loads_on_the_live_host_when_webdriver_is_false(tmp_path, id_pages):
+    ran = _run_tag(tmp_path, _tag_js(id_pages), navigator={"webdriver": False})
+    assert ran["appended"] != []
+    assert ran["dataLayer"] is not None
+
+
+@pytest.mark.parametrize(
+    ("guard", "navigator", "window"),
+    [
+        (GPC_GUARD, {"globalPrivacyControl": True}, {}),
+        (DNT_GUARD, {"doNotTrack": "1"}, {}),
+        (HOST_GUARD, {}, {"location": {"hostname": "localhost"}}),
+        (WEBDRIVER_GUARD, {"webdriver": True}, {}),
+    ],
 )
 def test_executed_guard_check_catches_a_removed_guard(
-    tmp_path, id_pages, guard, navigator
+    tmp_path, id_pages, guard, navigator, window
 ):
     """Negative control: with the guard deleted, the same signal no longer
     stops the tag, and the run above would have seen that."""
     original = _tag_js(id_pages)
     sabotaged = original.replace(guard, "")
     assert sabotaged != original  # the sabotage landed
-    ran = _run_tag(tmp_path, sabotaged, navigator=navigator)
+    ran = _run_tag(tmp_path, sabotaged, navigator=navigator, window=window)
     assert ran["appended"] != []
     assert ran["dataLayer"] is not None
 

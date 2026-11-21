@@ -318,7 +318,8 @@ const [script, casePath] = process.argv.slice(2);
 const code = fs.readFileSync(script, "utf8");
 const c = JSON.parse(fs.readFileSync(casePath, "utf8"));
 const clicks = [];
-const window = {};
+// The live site's host (the tag loads nowhere else).
+const window = { location: { hostname: "trouttruck.com" } };
 const document = {
   createElement: (tag) => ({ tagName: tag }),
   head: { appendChild: () => {} },

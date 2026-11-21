@@ -90,6 +90,7 @@
 </p>
 {% endif %}
 
+{% if app_store_url %}
 <h2 id="app">The iOS app</h2>
 <p>
   A companion iOS app lets you favorite waters and browse the same planting
@@ -101,10 +102,14 @@
   favorited. The schedule updates weekly, so alerts arrive on CDFW's
   schedule, not instantly.
 </p>
-{% if app_store_url %}
 <p><a href="{{ app_store_url }}" data-app-store-placement="about" data-app-store-kind="link">Get the app on the App Store</a>.</p>
 {% else %}
-<p>The app is not in the App Store yet; this page will link to it once it is.</p>
+<h2 id="app">Is there an app?</h2>
+<p>
+  No. Trout Truck is a website. To follow a water, subscribe to its calendar
+  on the water's page: each new week or date the agency schedules shows up in
+  your calendar.
+</p>
 {% endif %}
 <p>Details: <a href="{{ root }}privacy/">privacy policy</a> &middot; <a href="{{ root }}support/">support &amp; FAQ</a>.</p>
 

@@ -2,9 +2,10 @@
 
 ``launch_check.surface_problems`` reads a built site and reports every
 surface (Smart App Banner, badge, install links, MobileApplication JSON-LD,
-GA4 click event, badge file, "not yet" copy) that disagrees with the state it
-expects. These tests build the site both ways, through every route that can
-turn the switch on, and fail if the surfaces are ever half on.
+GA4 click event, badge file; and, in either state, any "not in the App Store
+yet" copy) that disagrees with the state it expects. These tests build the
+site both ways, through every route that can turn the switch on, and fail if
+the surfaces are ever half on.
 
 Every negative control asserts that its sabotage changed the input before it
 asserts that the check caught it.

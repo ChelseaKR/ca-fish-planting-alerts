@@ -442,8 +442,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--app-store-url",
         default=None,
-        help="the app's App Store URL; until one is given the site says the app "
-        "is not in the App Store yet rather than linking to it (empty = unset)",
+        help="the app's App Store URL, linked only while --app-store-live is on; "
+        "with it off the site says there is no app (empty = unset)",
     )
     parser.add_argument(
         "--app-store-live",

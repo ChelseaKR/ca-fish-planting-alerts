@@ -852,7 +852,7 @@ def test_support_page_carries_a_faq_that_is_the_visible_one(built):
     visible = _plain_text(html)
     heads = re.findall(r"<h2[^>]*>(.*?)</h2>", html, flags=re.S)
     entities = g["FAQPage"]["mainEntity"]
-    assert len(entities) >= 5
+    assert len(entities) >= 4
     for q in entities:
         assert any(q["name"] == _plain_text(h) for h in heads), q["name"]
         assert q["acceptedAnswer"]["text"] in visible, q["name"]

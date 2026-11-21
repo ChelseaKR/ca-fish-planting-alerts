@@ -3,11 +3,15 @@
 The launch switch (site.py APP_STORE_LIVE_DEFAULT / the APP_STORE_LIVE
 variable) is one flag, but the site shows it in five places: Safari's Smart
 App Banner tag, Apple's badge, the install links, the MobileApplication
-JSON-LD and the GA4 click event (with the badge file and the "not in the App
-Store yet" sentence as the other two sides). ``surface_problems`` reads a
-built site and returns every place that disagrees with the state it is told
-to expect, so a half-on site is a failing test and a failing preflight
-rather than something a visitor finds.
+JSON-LD and the GA4 click event (with the badge file as one more side).
+``surface_problems`` reads a built site and returns every place that
+disagrees with the state it is told to expect, so a half-on site is a
+failing test and a failing preflight rather than something a visitor finds.
+
+The site used to say the app was "not in the App Store yet" while the
+switch was off, and this check required that sentence. Apple's rejection
+was upheld on 2026-11-17 (DECISIONS 0073), so the off state now says there
+is no app, and the sentence is wrong in either state.
 
 It reads HTML with the standard library's parser, not regular expressions.
 """
@@ -206,12 +210,12 @@ def surface_problems(
         problems += _page_problems(
             name, pages[name], texts[name], live=live, url=url, has_ga=has_ga
         )
-    # The about page says so while the app is not in the store, and only then.
-    about = texts.get("about/index.html", "")
-    if live and NOT_YET in about:
-        problems.append("about/index.html: still says the app is not in the store")
-    if not live and NOT_YET not in about:
-        problems.append("about/index.html: lost its 'not in the App Store yet' copy")
+    # No page says the app is "not in the App Store yet", on or off.
+    problems += [
+        f"{name}: says the app is not in the App Store yet"
+        for name in names
+        if NOT_YET in texts[name]
+    ]
     badge_file = out / "assets" / site.APP_STORE_BADGE_FILE
     if badge_file.exists() != live:
         problems.append(f"badge file exists={badge_file.exists()}, want {live}")

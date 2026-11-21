@@ -9,11 +9,14 @@ assert it took effect before asserting the check notices.
 from __future__ import annotations
 
 import datetime as dt
+import io
+import re
 import struct
 from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
+from PIL import Image, ImageDraw
 
 from cfpa import cli, share_cards, site
 
@@ -244,3 +247,134 @@ def test_a_california_only_build_writes_no_state_card(tmp_path: Path) -> None:
     names = {p.name for p in (root / "site" / "assets" / "share").glob("*.png")}
     assert names == {"county.png", "home.png", "region.png", "species.png", "water.png"}
     assert site.SHARE_CARD_DEFAULT_KIND == "home"
+
+
+# ---- the palette (the site's "raceway" identity) ---------------------------
+
+STYLE_CSS = (
+    Path(__file__).resolve().parents[1] / "src" / "cfpa" / "templates" / "style.css"
+)
+# The old card's green gradient ends, which must not come back.
+OLD_GREENS = ((15, 122, 76), (8, 64, 42))
+
+
+def _light_tokens() -> dict[str, str]:
+    """The custom properties of style.css's first (light) :root block."""
+    css = STYLE_CSS.read_text(encoding="utf-8")
+    block = css[css.index(":root {") : css.index("}", css.index(":root {"))]
+    return {
+        m.group(1): m.group(2).lower()
+        for m in re.finditer(r"--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;", block)
+    }
+
+
+def _pixels(data: bytes) -> Image.Image:
+    return Image.open(io.BytesIO(data)).convert("RGB")
+
+
+def _near(a: tuple[int, ...], b: tuple[int, ...], tol: int = 3) -> bool:
+    return all(abs(x - y) <= tol for x, y in zip(a, b, strict=True))
+
+
+def _palette_problems(data: bytes) -> list[str]:
+    """What a rendered card gets wrong about the palette: the ground, the
+    stripe bands, the mark's gold, and any trace of the old green."""
+    img = _pixels(data)
+    rgb = share_cards._rgb
+    out = []
+    if not _near(img.getpixel((4, 4)), rgb(share_cards.PALETTE["masthead-bg"])):
+        out.append("ground is not masthead-bg")
+    y = share_cards.CARD_HEIGHT - share_cards.STRIPE_HEIGHT
+    for token, height in share_cards.STRIPE:
+        mid = (share_cards.CARD_WIDTH // 2, y + height // 2)
+        if not _near(img.getpixel(mid), rgb(share_cards.PALETTE[token])):
+            out.append(f"stripe band is not {token}")
+        y += height
+    colors = {c for _, c in img.getcolors(maxcolors=1 << 16) or []}
+    gold = rgb(share_cards.PALETTE["trout-gold"])
+    if not any(_near(c, gold) for c in colors):
+        out.append("no trout-gold mark")
+    if any(_near(c, old, tol=6) for c in colors for old in OLD_GREENS):
+        out.append("old green")
+    return out
+
+
+def _contrast(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
+    def lum(c: tuple[int, int, int]) -> float:
+        def ch(v: int) -> float:
+            s = v / 255
+            return s / 12.92 if s <= 0.04045 else ((s + 0.055) / 1.055) ** 2.4
+
+        r, g, b_ = (ch(v) for v in c)
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b_
+
+    hi, lo = sorted((lum(a), lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_the_card_palette_is_the_site_stylesheets_tokens() -> None:
+    tokens = _light_tokens()
+    assert tokens, "no tokens parsed from style.css"
+    for name, value in share_cards.PALETTE.items():
+        assert tokens.get(name) == value.lower(), name
+
+
+def test_control_a_drifted_token_is_caught() -> None:
+    tokens = _light_tokens()
+    drifted = {**share_cards.PALETTE, "masthead-bg": "#08402a"}
+    assert drifted["masthead-bg"] == "#08402a"  # the sabotage applied
+    assert [n for n, v in drifted.items() if tokens.get(n) != v] == ["masthead-bg"]
+
+
+@pytest.mark.parametrize("kind", sorted(share_cards.CARD_KINDS))
+def test_every_card_uses_the_palette_and_not_the_old_green(kind: str) -> None:
+    data = share_cards.render_card(
+        kind, site_name="Trout Truck", checked_on="2026-10-21"
+    )
+    assert _palette_problems(data) == []
+
+
+def test_control_a_card_in_the_old_green_is_caught() -> None:
+    img = _pixels(
+        share_cards.render_card(
+            "home", site_name="Trout Truck", checked_on="2026-10-21"
+        )
+    )
+    ImageDraw.Draw(img).rectangle(
+        (0, 0, share_cards.CARD_WIDTH, share_cards.CARD_HEIGHT), fill=OLD_GREENS[1]
+    )
+    assert img.getpixel((4, 4)) == OLD_GREENS[1]  # the sabotage applied
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    assert _palette_problems(buf.getvalue()) == [
+        "ground is not masthead-bg",
+        "stripe band is not trout-gold",
+        "stripe band is not redband",
+        "stripe band is not flank-silver",
+        "no trout-gold mark",
+        "old green",
+    ]
+
+
+def test_card_text_colors_pass_aa_on_both_ends_of_the_ground() -> None:
+    rgb = share_cards._rgb
+    grounds = (rgb(share_cards.PALETTE["masthead-bg"]), rgb(share_cards.MASTHEAD_DEEP))
+    for token in ("masthead-fg", "trout-gold", "flank-silver"):
+        for ground in grounds:
+            assert _contrast(rgb(share_cards.PALETTE[token]), ground) >= 4.5, token
+
+
+def test_copy_too_long_for_the_card_is_refused() -> None:
+    saved = dict(share_cards.CARD_KINDS)
+    try:
+        share_cards.CARD_KINDS["water"] = share_cards.CardKind(
+            "Scheduled " * 20, "Week-level schedule " * 10
+        )
+        assert share_cards.CARD_KINDS["water"].title.startswith("Scheduled Scheduled")
+        with pytest.raises(ValueError, match="runs into the date line"):
+            share_cards.render_card(
+                "water", site_name="Trout Truck", checked_on="2026-10-21"
+            )
+    finally:
+        share_cards.CARD_KINDS.clear()
+        share_cards.CARD_KINDS.update(saved)

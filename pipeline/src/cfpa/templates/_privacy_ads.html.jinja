@@ -44,8 +44,8 @@
       consent message asks before any ad cookie is set there.</li>
   <li><strong>Where there are never ads:</strong> the home page, the
       &ldquo;What to bring&rdquo; page, the about, privacy, support and data
-      pages, the guides, any email from this site, and the iPhone and Android
-      apps.</li>
+      pages, the guides{% if app_store_live %}, any email from this site, and the iPhone and Android
+      apps{% else %} and any email from this site{% endif %}.</li>
   <li><strong>No ad, no box.</strong> If Google has no ad for a page, or the
       ad is blocked, nothing is shown in its place.</li>
   <li><strong>Google&rsquo;s terms:</strong>

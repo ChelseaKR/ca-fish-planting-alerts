@@ -12,18 +12,31 @@ Built from the pinned fixtures only, with Tennessee, Massachusetts and
 Michigan on. Every file the build writes is read, not only the pages. Each
 negative control asserts that its sabotage changed the input before it
 asserts that the check caught it.
+
+The leftovers (2026-11-21, second pass): with the switch off, no file names
+an app at all. The about page lost "The iOS app has no analytics of any
+kind" and its privacy heading's app clause; the privacy page covers the
+website only, with one date; the support page's privacy question is about
+the site; the terms page, /states/ and every state hub drop their app
+lines; and the about, privacy and support descriptions name the website
+only. These are read in two more builds: one as production builds today
+(analytics on, web push and ads off) and one with analytics, web push and
+ads all on, so every privacy branch is read. With the switch on, the app
+wording is still there.
 """
 
 from __future__ import annotations
 
 import datetime as dt
+import html as html_lib
+import re
 import shutil
 from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
 
-from cfpa import cli, launch_check, site
+from cfpa import ads, cli, launch_check, push, site
 
 FIXTURES = Path(__file__).parent / "fixtures"
 STATE_FIXTURES = FIXTURES / "states"
@@ -52,7 +65,19 @@ SUPPORT_A = (
 )
 
 
-def _build(root: Path, *, app_store_live: bool = False) -> Path:
+GA4_ID = "G-TEST12345"
+PUSH_API = "https://abc.lambda-url.us-east-1.on.aws"
+PUSH_KEY = "B" + "A" * 86
+
+
+def _build(
+    root: Path,
+    *,
+    app_store_live: bool = False,
+    ga4: bool = False,
+    push_on: bool = False,
+    states: tuple[str, ...] = ("TN", "MA", "MI"),
+) -> Path:
     cli.run(
         fixture_path=str(FRESH),
         history_path=root / "history.json",
@@ -63,9 +88,13 @@ def _build(root: Path, *, app_store_live: bool = False) -> Path:
         fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.UTC),
         run_today=dt.date(2026, 9, 13),
         states_dir=root / "states",
-        states_fetch=("TN", "MA", "MI"),
+        states_fetch=states,
         states_fixtures=STATE_FIXTURES,
         app_store_live=app_store_live,
+        ga4_measurement_id=GA4_ID if ga4 else None,
+        push=push.PushConfig(api_url=PUSH_API, vapid_public_key=PUSH_KEY)
+        if push_on
+        else None,
     )
     return root / "site"
 
@@ -78,6 +107,28 @@ def off(tmp_path_factory: pytest.TempPathFactory) -> Path:
 @pytest.fixture(scope="module")
 def on(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return _build(tmp_path_factory.mktemp("no-app-on"), app_store_live=True)
+
+
+@pytest.fixture(scope="module")
+def prod(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """As production builds today: analytics on, web push, ads and the
+    switch off."""
+    return _build(tmp_path_factory.mktemp("no-app-prod"), ga4=True)
+
+
+@pytest.fixture(scope="module")
+def with_ads(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Analytics, web push and ads on, California only, for the privacy
+    page's push and ads branches (both off in production today; ads,
+    docs/adr/0040)."""
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(ads, "ADS_ENABLED", True)
+        mp.setattr(ads, "ADSENSE_PUBLISHER_ID", "ca-pub-1234567890123456")
+        mp.setattr(ads, "ADSENSE_SLOT_ID", "1234567890")
+        mp.setattr(ads, "ADS_EFFECTIVE_DATE", "2026-11-01")
+        return _build(
+            tmp_path_factory.mktemp("no-app-ads"), ga4=True, push_on=True, states=()
+        )
 
 
 def _texts(out: Path) -> dict[str, str]:
@@ -245,3 +296,248 @@ def test_negative_control_a_phrase_broken_across_lines_is_still_caught(
     assert doctored != html
     home.write_text(doctored, encoding="utf-8")
     assert ("index.html", "on its way") in _promises(out)
+
+
+# ---- the leftovers: no file names an app while the switch is off
+
+# Words only app copy would use. Case-insensitive and word bounded, read over
+# raw files (so meta descriptions, ids and JSON-LD count) with scripts
+# dropped and whitespace flattened (so a phrase broken across template lines
+# counts). The owner's rule for every privacy sentence: never "no tracking".
+MENTIONS = {
+    "iPhone": r"\biphone\b",
+    "iOS app": r"\bios app\b",
+    "Android": r"\bandroid\b",
+    "Google Play": r"\bgoogle play\b",
+    "App Store": r"\bapp store\b",
+    "the app": r"\bthe apps?\b",
+    "its app": r"\bits apps?\b",
+    "in-app": r"\bin-app\b",
+    "no tracking": r"\bno tracking\b",
+}
+_MENTION = re.compile("|".join(f"(?:{p})" for p in MENTIONS.values()), re.I)
+# The phone named only to say how a calendar or web push works on it.
+ALLOWED = (
+    "Apple Calendar (iPhone, iPad, Mac)",
+    "on iPhone, in the Calendar app's settings",
+    "an iPhone or iPad",
+)
+# Any <script> element, whatever its attributes, case or end-tag spelling
+# (the same pattern as test_site_analytics.py; CodeQL py/bad-tag-filter).
+_SCRIPT = re.compile(r"<script\b[^>]*>.*?</script\b[^>]*>", re.IGNORECASE | re.DOTALL)
+
+# The approved words (FOR-APPROVAL-app-leftovers.md, recommended column).
+ABOUT_PRIVACY_H2 = '<h2 id="privacy">Privacy: the website counts visits</h2>'
+ABOUT_DESCRIPTION = (
+    "What Trout Truck is, what its website measures (Google Analytics), and "
+    "where its trout planting and stocking data and license terms come from."
+)
+SUPPORT_DESCRIPTION = (
+    "How the trout planting schedule and stocking calendar feeds work, and how "
+    "to follow a water by calendar."
+)
+SUPPORT_PRIVACY_H2 = '<h2 id="privacy">What does this site know about me?</h2>'
+SUPPORT_PRIVACY_GA = (
+    "It uses Google Analytics to count visits, unless your browser sends "
+    "Global Privacy Control or Do Not Track, or you press “Opt out of "
+    "analytics” at the bottom of any page. It has no account. See the "
+    "privacy policy."
+)
+SUPPORT_PRIVACY_BARE = "It has no account and no analytics. See the privacy policy."
+PRIVACY_SCOPE = "Last updated 2026-11-21. Covers this website."
+PRIVACY_LEDE_GA_END = "There is no account."
+PRIVACY_LEDE_BARE = (
+    "The Trout Truck website does not collect personal data. It has no "
+    "account, no analytics, no advertising and no third-party script."
+)
+PRIVACY_CHILDREN_GA = (
+    "The website's analytics are the same for every visitor, children "
+    "included, and never ask for a name, age or contact details."
+)
+PRIVACY_DESCRIPTION = {
+    "off": "What the Trout Truck trout planting site collects: nothing. No "
+    "account and no analytics.",
+    "prod": "What the Trout Truck trout planting site collects: it uses Google "
+    "Analytics to count visits. No account, no ads.",
+    "with_ads": "What the Trout Truck trout planting site collects: it uses "
+    "Google Analytics and shows non-personalized Google ads. No account.",
+}
+ADS_NEVER = (
+    "the about, privacy, support and data pages, the guides and any email "
+    "from this site."
+)
+STATES_LINE = "Browsing and every water's history are free on this site."
+TERMS_DATE = "Last updated 2026-11-21."
+
+
+def _mentions(out: Path) -> list[tuple[str, str]]:
+    """(file, matched words) for every app word in a file the build wrote.
+    Scripts are code, not copy, so .js files and script elements are not read."""
+    found = []
+    for name, text in _texts(out).items():
+        if name.endswith(".js"):
+            continue
+        text = _SCRIPT.sub(" ", html_lib.unescape(text))
+        for phrase in ALLOWED:
+            text = text.replace(phrase, " ")
+        found += [(name, m.group(0)) for m in _MENTION.finditer(text)]
+    return found
+
+
+def _description(out: Path, rel: str) -> str:
+    m = re.search(r'<meta name="description" content="([^"]*)">', _page(out, rel))
+    assert m is not None, rel
+    return html_lib.unescape(m.group(1))
+
+
+@pytest.mark.parametrize("state", ["off", "prod", "with_ads"])
+def test_no_generated_file_names_an_app(state: str, request: pytest.FixtureRequest):
+    out: Path = request.getfixturevalue(state)
+    texts = _texts(out)
+    # the pages the app wording was on were built, so the check is not empty
+    pages = {"about", "privacy", "support", "terms", "states"}
+    assert {f"{p}/index.html" for p in pages} <= set(texts) or state == "with_ads"
+    assert {"about/index.html", "privacy/index.html", "llms.txt"} <= set(texts)
+    assert _mentions(out) == []
+
+
+def test_the_production_build_reads_the_branches_it_should(prod: Path, with_ads: Path):
+    privacy = _page(prod, "privacy")
+    assert "googletagmanager" in privacy and 'id="push"' not in privacy
+    assert "tn/index.html" in _texts(prod)
+    assert 'id="ads"' in _page(with_ads, "privacy")
+    assert 'id="push"' in _page(with_ads, "privacy")
+
+
+@pytest.mark.parametrize("state", ["off", "prod", "with_ads"])
+def test_descriptions_name_the_website_only(state: str, request: pytest.FixtureRequest):
+    out: Path = request.getfixturevalue(state)
+    assert _description(out, "privacy") == PRIVACY_DESCRIPTION[state]
+    assert _description(out, "support") == SUPPORT_DESCRIPTION
+
+
+def test_about_in_the_approved_words(prod: Path, off: Path):
+    html = _page(prod, "about")
+    assert ABOUT_PRIVACY_H2 in html
+    assert _description(prod, "about") == ABOUT_DESCRIPTION
+    assert "What Trout Truck is, what it collects (nothing), and" in _description(
+        off, "about"
+    )
+
+
+def test_support_privacy_question_is_about_the_site(prod: Path, off: Path):
+    assert SUPPORT_PRIVACY_H2 in _page(prod, "support")
+    assert SUPPORT_PRIVACY_GA in _visible(_page(prod, "support"))
+    assert SUPPORT_PRIVACY_H2 in _page(off, "support")
+    assert SUPPORT_PRIVACY_BARE in _visible(_page(off, "support"))
+
+
+@pytest.mark.parametrize("state", ["off", "prod", "with_ads"])
+def test_privacy_covers_the_website_only_with_one_date(
+    state: str, request: pytest.FixtureRequest
+):
+    out: Path = request.getfixturevalue(state)
+    html = _page(out, "privacy")
+    text = _visible(html)
+    assert PRIVACY_SCOPE in text
+    assert 'id="app"' not in html
+    if state == "off":
+        assert PRIVACY_LEDE_BARE in text
+        assert "Nothing is collected from anyone, including children." in text
+    else:
+        lede = re.search(r'<p class="lede">(.*?)</p>', html, re.S)
+        assert lede is not None
+        assert _visible(lede.group(1)).endswith(PRIVACY_LEDE_GA_END)
+        assert PRIVACY_CHILDREN_GA in text
+    if state == "with_ads":
+        assert ADS_NEVER in text
+
+
+def test_states_hubs_and_terms_drop_their_app_lines(off: Path):
+    assert STATES_LINE in _visible(_page(off, "states"))
+    for hub in ("tn", "ma", "mi"):
+        assert "one-time purchase" not in _visible(_page(off, hub)), hub
+    terms = _page(off, "terms")
+    assert TERMS_DATE in _visible(terms)
+    assert 'id="apps"' not in terms
+    assert "Agency names, Amazon, Apple and Google are" in _visible(terms)
+
+
+def test_the_live_switch_still_shows_the_app_sections(on: Path):
+    """Turned on, the privacy, terms, /states/ and hub pages keep their app
+    wording, as the about and support pages do."""
+    assert '<h2 id="app">The apps</h2>' in _page(on, "privacy")
+    assert "apps for iPhone and Android." in _visible(_page(on, "privacy"))
+    assert '<h2 id="apps">The apps</h2>' in _page(on, "terms")
+    assert "In the iOS app" in _visible(_page(on, "states"))
+    assert "In the iOS app" in _visible(_page(on, "tn"))
+    assert "iOS app alerts" in _description(on, "support")
+    assert "What does the app know about me?" in _visible(_page(on, "support"))
+
+
+# ---- negative controls for the leftovers
+
+
+def _sabotage(out: Path, rel: str, old: str, new: str) -> None:
+    f = out / rel
+    html = f.read_text(encoding="utf-8")
+    doctored = html.replace(old, new, 1)
+    assert doctored != html  # the sabotage landed
+    f.write_text(doctored, encoding="utf-8")
+
+
+def test_negative_control_the_old_about_app_sentence_is_caught(
+    prod: Path, tmp_path: Path
+):
+    out = _copy(prod, tmp_path / "site")
+    _sabotage(
+        out,
+        "about/index.html",
+        "privacy policy</a>.",
+        "privacy policy</a>. The iOS app has no analytics of any kind.",
+    )
+    assert _mentions(out) == [("about/index.html", "iOS app")]
+
+
+def test_negative_control_the_old_support_description_is_caught(
+    prod: Path, tmp_path: Path
+):
+    out = _copy(prod, tmp_path / "site")
+    _sabotage(
+        out,
+        "support/index.html",
+        f'content="{SUPPORT_DESCRIPTION}"',
+        'content="How the trout planting schedule, stocking calendar feeds and '
+        'iOS app alerts work, and why an alert may not arrive."',
+    )
+    assert ("support/index.html", "iOS app") in _mentions(out)
+
+
+def test_negative_control_the_old_privacy_scope_and_a_broken_hub_line_are_caught(
+    prod: Path, tmp_path: Path
+):
+    out = _copy(prod, tmp_path / "site")
+    _sabotage(
+        out,
+        "privacy/index.html",
+        "Covers this website.",
+        "Covers this website and the Trout Truck apps for iPhone and\n  Android.",
+    )
+    _sabotage(
+        out,
+        "tn/index.html",
+        "</main>",
+        "<p>In the iOS\n  app, browsing is free.</p></main>",
+    )
+    found = _mentions(out)
+    assert ("privacy/index.html", "iPhone") in found
+    assert ("privacy/index.html", "Android") in found
+    assert ("tn/index.html", "iOS app") in found
+
+
+def test_negative_control_an_allowed_phrase_does_not_hide_a_new_one(
+    prod: Path, tmp_path: Path
+):
+    out = _copy(prod, tmp_path / "site")
+    _sabotage(out, "index.html", "</main>", "<p>No tracking in the app.</p></main>")
+    assert sorted(m for _, m in _mentions(out)) == ["No tracking", "the app"]

@@ -23,7 +23,7 @@
 </p>
 
 {% if ga4_measurement_id %}
-<h2 id="privacy">Privacy: the website counts visits; the app collects nothing</h2>
+<h2 id="privacy">Privacy: the website counts visits{% if app_store_url %}; the app collects nothing{% endif %}</h2>
 <p>This website uses Google Analytics 4 to count visits and see which pages are read. Specifically:</p>
 <ul>
   <li>Google Analytics does not load at all if your browser sends Global
@@ -53,8 +53,8 @@
   (IP address, requested path, timestamp) &mdash; see GitHub's own
   <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">privacy
   statement</a>. The full details are in the
-  <a href="{{ root }}privacy/">privacy policy</a>. The iOS app has no
-  analytics of any kind.
+  <a href="{{ root }}privacy/">privacy policy</a>.{% if app_store_url %} The iOS app has no
+  analytics of any kind.{% endif %}
 </p>
 {% else %}
 <h2 id="privacy">Privacy: literally nothing is collected</h2>

@@ -11,9 +11,10 @@ FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "snapshot.v1.json"
 
 
-def _build_site(tmp_path: Path) -> Path:
+def _build_site(tmp_path: Path, *, app_store_live: bool = False) -> Path:
     out = tmp_path / "site"
     cli.run(
+        app_store_live=app_store_live,
         fixture_path=str(FRESH),
         history_path=tmp_path / "history.json",
         aliases_path=tmp_path / "aliases.json",
@@ -73,7 +74,9 @@ def _apps_problems(text: str) -> list[str]:
 
 
 def test_terms_page_says_only_the_iphone_app_is_sold(tmp_path: Path) -> None:
-    out = _build_site(tmp_path)
+    """With the launch switch on. Off, there is no app and no app section
+    (test_site_no_app_promise.py)."""
+    out = _build_site(tmp_path, app_store_live=True)
     text = _text((out / "terms" / "index.html").read_text(encoding="utf-8"))
     assert _apps_problems(text) == []
     # Negative control: put the old wording back; the sabotage must land

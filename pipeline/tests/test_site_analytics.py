@@ -57,11 +57,11 @@ FALSE_WITH_ANALYTICS = (
     "nothing you do here leaves your browser",
     "adds no collection",
     "does not add any collection",
-    "neither the trout truck website nor",
+    "the trout truck website does not collect personal data",
     "no page makes a request to any server other than",
     "no request made by a page on this site contacts",
     "what it collects (nothing)",
-    "site and ios app collect: nothing",
+    "site collects: nothing",
     "nothing is collected from anyone",
 )
 
@@ -361,20 +361,21 @@ def test_id_build_copy_describes_ga4_and_keeps_the_app_at_data_not_collected(id_
         "the eea, the uk and switzerland",
         "google signals and ad personalization are turned off",
         "14 months",
-        "collect no data: no analytics, no advertising and no account",
-        "app store privacy label: data not collected",
+        "there is no account",
+        "covers this website.",
     ):
         assert phrase in privacy, phrase
+    # With the launch switch off there is no app, so the page has no app
+    # section (test_site_privacy_accuracy reads it with the switch on).
+    assert "app store privacy label" not in privacy
     assert "google analytics" in _text(id_pages["about/index.html"])
     assert "uses google analytics" in _text(id_pages["support/index.html"])
     description = re.search(
         r'<meta name="description" content="([^"]+)">', id_pages["privacy/index.html"]
     )
     assert description is not None
-    assert (
-        "website uses Google Analytics; the app collects nothing"
-        in description.group(1)
-    )
+    assert "it uses Google Analytics to count visits" in description.group(1)
+    assert "app" not in description.group(1)
 
 
 def test_id_build_makes_no_claim_that_analytics_made_false(id_pages, no_id_pages):

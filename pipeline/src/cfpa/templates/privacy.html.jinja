@@ -9,6 +9,7 @@
   {% if ads_enabled %}
   Some of its pages also show one Google ad; see <a href="#ads">Ads</a>.
   {% endif %}
+  {% if app_store_live %}
   {# correction 1 (apps coverage): lede begins #}
   The {{ site_name }} apps for iPhone (with widgets) and for
   Android collect no data: no analytics, no advertising and no
@@ -16,12 +17,20 @@
   The Android app is free, sells nothing and does include one library from
   Google, described under <a href="#app">The apps</a>.
   {# correction 1 (apps coverage): lede ends #}
+  {% else %}
+  There is no account.
+  {% endif %}
 </p>
 {% else %}
 <p class="lede">
+  {% if app_store_live %}
   Neither the {{ site_name }} website nor its apps for iPhone and Android collect
   personal data. There is no account, no analytics, no advertising and no
   third-party script on the website.
+  {% else %}
+  The {{ site_name }} website does not collect personal data. It has no
+  account, no analytics, no advertising and no third-party script.
+  {% endif %}
 </p>
 {% endif %}
 <p>
@@ -29,8 +38,10 @@
   plain links to Amazon.com that earn the owner a commission; they are plain links, not ads or scripts. See
   <a href="#affiliate">Gear links</a>.
 </p>
-{# correction 1 (apps coverage): scope line #}
-<p class="muted">Last updated {% if push %}2026-11-17{% else %}2026-11-08{% endif %}. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
+{# correction 1 (apps coverage): scope line. Every version of the page
+   changed on 2026-11-21, when the app sections came out while the launch
+   switch is off (there is no app), so one date covers them all. #}
+<p class="muted">Last updated 2026-11-21. Covers this website{% if app_store_live %} and the {{ site_name }} apps for iPhone and Android{% endif %}.</p>
 
 <h2 id="site">The website</h2>
 {% if ga4_measurement_id %}
@@ -239,7 +250,9 @@
   state&rsquo;s agency.
 </p>
 <ul>
+{% if app_store_live %}
   <li>The links are on the website, never in the iOS app.</li>
+{% endif %}
   <li>They are ordinary links. Nothing loads from Amazon when a page opens,
       and this site adds no script or pixel for them.</li>
   <li>Once you click, Amazon&rsquo;s own site and privacy notice apply, and
@@ -253,6 +266,7 @@
 {% include "_privacy_ads.html.jinja" %}
 {% endif %}
 
+{% if app_store_live %}
 <h2 id="app">The apps</h2>
 <ul>
   {# correction 1 (apps coverage): items begin #}
@@ -317,14 +331,22 @@
   {# correction 1 (apps coverage): notifications and purchases end #}
   <li><strong>App Store privacy label:</strong> Data Not Collected.</li>
 </ul>
+{% endif %}
 
 <h2 id="children">Children</h2>
 {% if ga4_measurement_id %}
+{% if app_store_live %}
 <p>
   The app collects nothing from anyone, including children. The website's
   analytics are the same for every visitor and never ask for a name, age or
   contact details.
 </p>
+{% else %}
+<p>
+  The website's analytics are the same for every visitor, children
+  included, and never ask for a name, age or contact details.
+</p>
+{% endif %}
 {% else %}
 <p>Nothing is collected from anyone, including children.</p>
 {% endif %}

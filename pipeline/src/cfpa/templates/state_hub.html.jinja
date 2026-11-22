@@ -128,8 +128,10 @@
 <p>{{ state.attribution.text }}</p>
 <p>{{ state.disclaimer }}</p>
 <p class="muted">{{ state.license.summary }}</p>
+{% if app_store_url %}
 <p>
   In the iOS app, browsing and history in {{ state.name }} are free. Alerts
   and the widget for {{ state.name }} waters are a one-time purchase.
 </p>
+{% endif %}
 {% endblock %}

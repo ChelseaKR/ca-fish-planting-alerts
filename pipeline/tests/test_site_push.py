@@ -267,7 +267,7 @@ def test_the_privacy_page_says_what_is_stored_where_and_how_to_stop(on: Path):
         "calendar-subscribe click of type &ldquo;push&rdquo;",
     ):
         assert phrase in text, phrase
-    assert "Last updated 2026-11-17" in text
+    assert "Last updated 2026-11-21" in text
     assert "which asks for neither" in text
     # The section this change adds never says "no tracking", and neither does
     # the rest of the page (test_site_analytics holds every build).
@@ -294,7 +294,8 @@ def test_the_privacy_page_without_push_is_as_before(off: Path):
     html = (off / "privacy" / "index.html").read_text("utf-8")
     text = _visible(html)
     assert 'id="push"' not in html
-    assert "Last updated 2026-11-08" in text
+    # One date for every version since the app sections came out (2026-11-21).
+    assert "Last updated 2026-11-21" in text
     assert "no sign-up, anywhere on this site." in text
     assert "no tracking" not in _website_section(html).lower()
 

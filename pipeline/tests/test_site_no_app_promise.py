@@ -322,7 +322,9 @@ ALLOWED = (
     "on iPhone, in the Calendar app's settings",
     "an iPhone or iPad",
 )
-_SCRIPT = re.compile(r"<script\b.*?</script\s*>", re.I | re.S)
+# Any <script> element, whatever its attributes, case or end-tag spelling
+# (the same pattern as test_site_analytics.py; CodeQL py/bad-tag-filter).
+_SCRIPT = re.compile(r"<script\b[^>]*>.*?</script\b[^>]*>", re.IGNORECASE | re.DOTALL)
 
 # The approved words (FOR-APPROVAL-app-leftovers.md, recommended column).
 ABOUT_PRIVACY_H2 = '<h2 id="privacy">Privacy: the website counts visits</h2>'

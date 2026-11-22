@@ -2,8 +2,8 @@
   "schema": "cfpa-state-history-v1",
   "state": "MI",
   "checks": {
-    "last_attempt_at": "2026-11-22T01:18:42Z",
-    "last_success_at": "2026-11-22T01:18:42Z",
+    "last_attempt_at": "2026-11-22T03:42:09Z",
+    "last_success_at": "2026-11-22T03:42:09Z",
     "last_attempt_ok": true,
     "last_error": null,
     "content_sha256": "554d709f8563181109f11566cd174d5b3bc5aa635ad1acd6def1834c0863b029",

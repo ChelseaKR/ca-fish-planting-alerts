@@ -470,6 +470,24 @@ This repository was republished with a new history on 2026-09-18
 
 ### Fixed
 
+- Site: no page names an app any more while the launch switch is off, the
+  leftovers of the fix below. The about page loses "The iOS app has no
+  analytics of any kind" and its privacy heading's "the app collects
+  nothing". The privacy page covers the website only ("Covers this
+  website."): its app sentences, its "The apps" section and its iOS gear
+  line are gone, never replaced by a "no tracking" claim, and every version
+  of it is dated 2026-11-21. The support page asks "What does this site
+  know about me?" instead of "What does the app know about me?". The terms
+  page loses "The apps" and names no App Store (dated 2026-11-21), and the
+  app lines on `/states/` and on every state hub are gone. The about,
+  privacy and support meta descriptions name the website only. No URL,
+  title, H1, canonical, sitemap lastmod, feed, llms.txt or snapshot changes.
+  With the switch on, every one of these pages keeps its app wording. A fix
+  to existing pages, which DECISIONS 0042 allows. Guarded by
+  `pipeline/tests/test_site_no_app_promise.py`, which now also reads a
+  build as production makes it today (analytics on) and one with analytics,
+  web push and ads on.
+
 - Site: no page promises an iPhone app any more. Apple's rejection was
   upheld on 2026-11-17 (DECISIONS 0073), so "An iOS app ... is on its way"
   is gone from the calendar box of every California and Tennessee water

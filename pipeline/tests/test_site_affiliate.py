@@ -343,7 +343,8 @@ def test_the_privacy_page_states_the_relationship_in_both_builds(
         assert "Gear links" in prose
         assert "affiliate links" in prose
         assert "nothing extra" in prose
-        assert "never in the iOS app" in prose
+        # The app line only while the switch is on: there is no app off.
+        assert ("never in the iOS app" in prose) == (out is built_live)
         assert DISCLOSURE in prose
         assert ENDORSEMENT in prose
 
@@ -356,7 +357,7 @@ def test_the_gear_and_privacy_copy_makes_no_superlative_or_price_claim(
     assert block
     copy = re.sub(r"<[^>]+>", " ", block.group(0))
     privacy = (built / "privacy" / "index.html").read_text(encoding="utf-8")
-    sec = re.search(r'<h2 id="affiliate">.*?<h2 id="app">', privacy, re.S)
+    sec = re.search(r'<h2 id="affiliate">.*?<h2 id="children">', privacy, re.S)
     assert sec
     for text in (copy, re.sub(r"<[^>]+>", " ", sec.group(0))):
         assert not FORBIDDEN_COPY.search(text), FORBIDDEN_COPY.search(text)

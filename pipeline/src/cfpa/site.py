@@ -3142,8 +3142,45 @@ def _share_card_kinds(
     return kinds
 
 
-def _privacy_description(*, ads_enabled: bool, analytics: bool) -> str:
-    """The privacy page's meta description, for the build's state."""
+def _about_description(*, analytics: bool, app_store_live: bool) -> str:
+    """The about page's meta description. With the launch switch off there is
+    no app, so only the website is named."""
+    if analytics and app_store_live:
+        collects = (
+            "what its website measures (Google Analytics) and its app collects "
+            "(nothing)"
+        )
+    elif analytics:
+        collects = "what its website measures (Google Analytics)"
+    else:
+        collects = "what it collects (nothing)"
+    return (
+        f"What {SITE_NAME} is, {collects}, and where its trout planting "
+        "and stocking data and license terms come from."
+    )
+
+
+def _privacy_description(
+    *, ads_enabled: bool, analytics: bool, app_store_live: bool = False
+) -> str:
+    """The privacy page's meta description, for the build's state. With the
+    launch switch off there is no app (Apple's rejection was upheld on
+    2026-11-17), so the description names the website only."""
+    if not app_store_live:
+        if ads_enabled:
+            return (
+                f"What the {SITE_NAME} trout planting site collects: it uses "
+                "Google Analytics and shows non-personalized Google ads. No account."
+            )
+        if analytics:
+            return (
+                f"What the {SITE_NAME} trout planting site collects: it uses "
+                "Google Analytics to count visits. No account, no ads."
+            )
+        return (
+            f"What the {SITE_NAME} trout planting site collects: nothing. "
+            "No account and no analytics."
+        )
     if ads_enabled:
         return (
             f"What the {SITE_NAME} trout planting site and iOS app collect: the "
@@ -3451,20 +3488,12 @@ def build_site(
     _write_page(out_dir, "", index_html, written)
 
     # ---- about (carries the Dataset: it is the page that describes the data)
-    if ga4_measurement_id:
-        about_collects = (
-            "what its website measures (Google Analytics) and its app collects "
-            "(nothing)"
-        )
-    else:
-        about_collects = "what it collects (nothing)"
     about_html = env.get_template("about.html.jinja").render(
         locations_placed=len(coords) if coords else None,
         locations_total=len(snapshot["waters"]),
         title=f"About, attribution & privacy | {SITE_NAME}, {SITE_TAGLINE}",
-        description=(
-            f"What {SITE_NAME} is, {about_collects}, and where its trout planting "
-            "and stocking data and license terms come from."
+        description=_about_description(
+            analytics=ga4_measurement_id is not None, app_store_live=app_store_live
         ),
         canonical_url=f"{base_url}/about/",
         root="../",
@@ -3504,7 +3533,9 @@ def build_site(
 
     # ---- privacy + support: the URLs App Store Connect asks for
     privacy_description = _privacy_description(
-        ads_enabled=ads.enabled, analytics=ga4_measurement_id is not None
+        ads_enabled=ads.enabled,
+        analytics=ga4_measurement_id is not None,
+        app_store_live=app_store_live,
     )
     for slug, template, title, description in (
         (
@@ -3517,8 +3548,13 @@ def build_site(
             "support",
             "support.html.jinja",
             f"Support & FAQ | {SITE_NAME}, {SITE_TAGLINE}",
-            "How the trout planting schedule, stocking calendar feeds and iOS app alerts work, "
-            "and why an alert may not arrive.",
+            (
+                "How the trout planting schedule, stocking calendar feeds and iOS app alerts work, "
+                "and why an alert may not arrive."
+                if app_store_live
+                else "How the trout planting schedule and stocking calendar feeds work, "
+                "and how to follow a water by calendar."
+            ),
         ),
         (
             "terms",

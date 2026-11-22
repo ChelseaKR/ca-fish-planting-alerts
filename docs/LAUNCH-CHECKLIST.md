@@ -26,6 +26,12 @@ turns on together:
 - the support page's "Can I get an alert when a water is scheduled?" (by
   calendar) becomes the two installed-app questions (alerts, restoring a
   purchase), in both the visible text and the FAQPage data
+- the support page's "What does this site know about me?" becomes "What
+  does the app know about me?", and the about, privacy and support meta
+  descriptions name the app again
+- the privacy page's app sentences and "The apps" section, the terms
+  page's "The apps", and the app lines on `/states/` and the state hubs
+  come back (check the privacy and terms dates before you turn it on)
 
 A test (`pipeline/tests/test_launch_switch.py`) builds the site both ways
 and fails if any one of these disagrees with the others.

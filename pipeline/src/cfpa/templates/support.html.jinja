@@ -66,6 +66,7 @@
 </p>
 {% endif %}
 
+{% if app_store_live %}
 <h2 id="privacy">What does the app know about me?</h2>
 <p>Nothing leaves your phone. See the <a href="{{ root }}privacy/">privacy policy</a>.</p>
 {% if ga4_measurement_id %}
@@ -75,5 +76,21 @@
   &ldquo;Opt out of analytics&rdquo; at the bottom of any page. The app has
   no analytics.
 </p>
+{% endif %}
+{% else %}
+<h2 id="privacy">What does this site know about me?</h2>
+{% if ga4_measurement_id %}
+<p>
+  It uses Google Analytics to count visits, unless your browser sends Global
+  Privacy Control or Do Not Track, or you press &ldquo;Opt out of
+  analytics&rdquo; at the bottom of any page. It has no account. See the
+  <a href="{{ root }}privacy/">privacy policy</a>.
+</p>
+{% else %}
+<p>
+  It has no account and no analytics. See the
+  <a href="{{ root }}privacy/">privacy policy</a>.
+</p>
+{% endif %}
 {% endif %}
 {% endblock %}

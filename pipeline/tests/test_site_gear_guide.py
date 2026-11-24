@@ -234,7 +234,13 @@ def _outside_problems(out: Path) -> list[str]:
             continue
         rel = path.relative_to(out).parts
         allowed = path.suffix == ".html" and (
-            rel in (("gear", "index.html"), ("index.html",), ("county", "index.html"))
+            rel
+            in (
+                ("gear", "index.html"),
+                ("gifts", "index.html"),
+                ("index.html",),
+                ("county", "index.html"),
+            )
             or (
                 len(rel) == 3
                 and rel[0] in ("water", "county")
@@ -596,7 +602,10 @@ def test_the_fixture_build_is_out_of_window(built: Path) -> None:
 def test_only_the_guide_differs_between_the_two_builds(
     in_window: Path, out_of_window: Path
 ) -> None:
-    """No new link spot anywhere else: every other file is byte-identical."""
+    """No new link spot anywhere else: every other file is byte-identical,
+    except that 12-01 is also inside the California water pages' window for
+    the line to /gifts/ (DECISIONS 0072), so those pages differ by that line
+    and nothing else."""
     inside = {
         p.relative_to(in_window).as_posix() for p in in_window.rglob("*") if p.is_file()
     }
@@ -606,12 +615,20 @@ def test_only_the_guide_differs_between_the_two_builds(
         if p.is_file()
     }
     assert inside == outside
+    line = re.compile(rb'\s*<p id="gift-guide-water-link">.*?</p>', re.S)
     differ = sorted(
         rel
         for rel in inside
         if (in_window / rel).read_bytes() != (out_of_window / rel).read_bytes()
     )
-    assert differ == ["gear/index.html"]
+    water = [rel for rel in differ if rel.startswith("water/")]
+    assert water
+    for rel in water:
+        assert (
+            line.sub(b"", (in_window / rel).read_bytes())
+            == (out_of_window / rel).read_bytes()
+        ), rel
+    assert [rel for rel in differ if rel not in water] == ["gear/index.html"]
 
 
 @pytest.mark.parametrize(

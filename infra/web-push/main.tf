@@ -20,11 +20,22 @@ locals {
 # "COUNTERS" row of totals. by_water is the send fan-out; the counters row
 # has no water_id and so is not in it. DynamoDB's TTL drops a subscription
 # nothing has been sent to for about 13 months (handler.mjs refreshes
-# expires_at on every successful send).
+# expires_at on every successful send), and the short-lived "CAP#..." rows
+# that count against the service's limits a day after they are written
+# (DECISIONS 0074).
 resource "aws_dynamodb_table" "subscriptions" {
   name         = local.name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "pk"
+
+  # A ceiling on what the table will do in any one second (DECISIONS 0074).
+  # Pay-per-request has none of its own; with this, the most the table can
+  # cost in a month is a known figure, whatever calls the function. Past the
+  # ceiling DynamoDB throttles and the function answers 500.
+  on_demand_throughput {
+    max_read_request_units  = var.table_max_read_units
+    max_write_request_units = var.table_max_write_units
+  }
 
   attribute {
     name = "pk"
@@ -43,6 +54,11 @@ resource "aws_dynamodb_table" "subscriptions" {
     key_schema {
       attribute_name = "water_id"
       key_type       = "HASH"
+    }
+
+    on_demand_throughput {
+      max_read_request_units  = var.table_max_read_units
+      max_write_request_units = var.table_max_write_units
     }
   }
 

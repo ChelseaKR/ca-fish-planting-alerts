@@ -5,13 +5,15 @@ wildlife agency publishes about trout stocking, at the agency's own precision
 (a week, a day, a report after the fact, or a plan in the agency's words), and
 keeps each water's history after the agency's own page moves on. In November
 2026 it carries California, Massachusetts, Michigan, New York and Tennessee.
-Tennessee's source has not been read successfully since 2026-10-15, so its
-pages show that date and nothing newer. The live list is whatever
+Tennessee is loaded by hand each week from the CSV that TWRA's own page
+offers (the download date is on `/tn/`), because the automated read of its
+source has been refused since 2026-10-15 (the agency's robots.txt fails) and
+is off-limits. The agency, TWRA, has not answered the request to allow it.
+The live list is whatever
 `snapshot/v2.json` carries; this paragraph is a dated description of it, not
 a promise of coverage.
 
-A free website, a free Android app, and an iOS app that is free to browse with
-an optional one-time purchase per state. There is no account for any of them.
+A free website with calendar and Atom feeds. There is no account.
 The website uses Google Analytics 4, which does not load when the browser
 sends Global Privacy Control or Do Not Track, or once the visitor presses
 "Opt out of analytics" in the site footer, and has its advertising features
@@ -94,7 +96,7 @@ tier are in `docs/ROADMAP.md`.
 | Release & Versioning | Applies — gap tracked in #3 (no release pipeline, tags or deployed-version stamp) |
 | Observability | Applies — gap tracked in #7 (Tier B site, Tier C pipeline and app; no field Core Web Vitals, no JSON log mode) |
 | Performance | Applies — Lighthouse CI budgets and a committed baseline over the built site (`perf/`); k6 N/A: static hosting, no server route of ours |
-| Accessibility | Applies — gap tracked in #5 (automated gates on every page; screen-reader walkthrough, statement and a VoiceOver pass on the app still open) |
+| Accessibility | Applies — website ACR against WCAG 2.2 A and AA in [`docs/a11y/ACR.md`](docs/a11y/ACR.md); gap tracked in #5 (automated gates on every page; screen-reader walkthrough, statement and a VoiceOver pass on the app still open) |
 | Internationalization | Applies — gap tracked in #6 (English-only; declared in `docs/I18N.md`) |
 | AI Evaluation | N/A — no model, prompt or retrieval surface in the pipeline, the site or the app |
 | Documentation | Applies — gap tracked in #2 (CITATION.cff and a security reporting address need owner decisions) |

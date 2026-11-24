@@ -46,9 +46,10 @@
   </tbody>
 </table>
 <p>
-  Browsing and every water's history are free on this site and in the app.
+  {% if app_store_url %}Browsing and every water's history are free on this site and in the app.
   In the iOS app, alerts and the widget are a one-time purchase for each
-  state. <a href="{{ root }}about/">About &amp; attribution</a>.
+  state.{% else %}Browsing and every water's history are free on this
+  site.{% endif %} <a href="{{ root }}about/">About &amp; attribution</a>.
 </p>
 
 {# The design system's StateCoverageList (cfpa.state_coverage): all 50

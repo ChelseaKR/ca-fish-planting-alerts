@@ -19,7 +19,57 @@ This repository was republished with a new history on 2026-09-18
   last, and the calendar subscribe action now sits right under it. Each
   same-county water link says where that water stands, with this week's
   waters first. URLs, titles and H1s are unchanged.
-
+- Docs: an Accessibility Conformance Report for the website against WCAG
+  2.2 Level A and AA (`docs/a11y/ACR.md`), based on the VPAT 2.5 Rev WCAG
+  edition, with the evidence for each criterion, a third-party content
+  note, and the screen-reader walkthrough still to do (#5). The apps are
+  out of its scope. README and `docs/RESPONSIBLE-TECH-AUDITS.md` link it.
+- Site: California water pages put their sitemap `lastmod` in their
+  structured data as `dateModified`, as every other dated page family
+  already does. The dates under "Last on the schedule" and after "as of" in
+  the status block are now in `<time datetime>` elements. The words a reader
+  sees are unchanged. Tennessee's pages are unchanged.
+- Tests: what a search or AI-answer crawler may do with every sitemap page
+  (`pipeline/tests/test_crawler_access.py`). ChatGPT sent 59 of the site's
+  122 engaged visits in the 28 days to 2026-11-17, and the only crawler a
+  test named was Bingbot, at the site root. Now robots.txt must let
+  Bingbot, OAI-SearchBot, ChatGPT-User, GPTBot, PerplexityBot and ClaudeBot
+  fetch every sitemap page (longest rule wins, as the engines read it); no
+  sitemap page may carry noarchive, nocache, nosnippet or max-snippet:0;
+  and every page with no robots noindex must be in the sitemap, the only
+  list IndexNow picks from. No page, robots.txt or sitemap changes.
+- Site and calendar feeds: a Ko-fi tip line (DECISIONS 0073). Every water
+  page ends with "Trout Truck is free and made by one person. You can leave
+  a tip on Ko-fi.", the second sentence a plain link, and every event in
+  California's and Tennessee's calendar feeds ends its description with
+  "Free calendar from Trout Truck, made by one person. Tips:" and the full
+  https address. No Ko-fi script, image or widget, no GA4 click label, and
+  nothing in the snapshots the apps read. The owner lifted the 2026-11-27
+  freeze (0042) on 2026-11-17 for this line only. California's feed now
+  escapes and folds its lines with `cfpa.ics`, so no line passes 75 octets
+  or cuts a multi-byte character.
+- Site: California water pages end their gear block with one line to the
+  gift guide (DECISIONS 0072), "Shopping for someone who fishes? Gift ideas
+  for a trout angler, a short list of practical items. That page's links are
+  affiliate links to Amazon.", shown only by builds dated 2026-11-27 through
+  2026-12-26 and only while /gifts/ is built. No other page changes.
+- Massachusetts (DECISIONS 0071): when ArcGIS Hub flags its copy of
+  MassWildlife's layer stale, the reader also reads Hub's metadata once
+  (after the Crawl-delay), and the failed check keeps the layer's last edit
+  and record count. The freshness job calls the state "waiting", a warning
+  and not a red job, while that edit is older than the allowance too. The
+  MA hub and water pages say why the read fails, in the approved words.
+- Site: a "Gifts for trout anglers" page at /gifts/ (DECISIONS 0047), built
+  only by daily publishes dated on or after 2026-11-27, when the 0042 freeze
+  ends. Eleven practical items with a sentence each on
+  why it helps at a lake or pond, Amazon search links under the /gear/ rules,
+  and, once on, a short disclosed link from the home page.
+- Site: each schedule or plan state's hub lists its own winter (DECISIONS
+  0070): every water the agency's data dates from November through February,
+  with each date at the agency's precision, after "Coming up". Tennessee's
+  shows 98 waters from TWRA's file. The hub's description and its llms.txt
+  line name the winter. A state whose data has no winter date gets no
+  section, and report states get none.
 - Site: county, region, species and state pages put their data date in
   their structured data as `dateModified`, the same date as the page's
   sitemap `lastmod` (the day its data last changed, never the build date).
@@ -185,8 +235,46 @@ This repository was republished with a new history on 2026-09-18
   failed or refused announcement logs a notice and never fails the deploy. No
   secret is involved; the key file served at the site root is public by design.
 
+### Security
+
+- Web push service (DECISIONS 0074): limits on the two routes that take no
+  token. One network gets 20 calls a day (counted under a keyed code of the
+  address that changes daily and expires, never the address); the service
+  takes 100 new subscriptions a day, 100 live on one water and 2,000 in
+  all; over a limit it answers 429 with `Retry-After`. A subscription must
+  hold only the fields a browser gives, with keys of the exact length and
+  encoding and a `p256dh` on the curve; a browser's call is at most 4 KB.
+  One address spelled two ways is one row. A subscription a push service
+  refuses three sends in a row is removed, unless every delivery to that
+  service was refused. A send call stops starting deliveries after 90
+  seconds and reports how many it skipped. The table has a ceiling on its
+  request units a second. The privacy page's push section says what the
+  per-network count keeps. Applying it is an owner step
+  (`infra/web-push/README.md`).
+
 ### Changed
 
+- CI: `publish-health` fails its run when the live site is unhealthy (ADR
+  0076). It still opens or updates its issue, and still closes it on
+  recovery; until now the run stayed green and the issue (#168) was the
+  only signal. A state is unhealthy when its last good read is older than
+  the freshness job's allowance (7 days, DECISIONS 0065), not after 3 days
+  of failed reads, so Tennessee's weekly hand-loaded file (0061) is not red
+  most days. Massachusetts, waiting on MassWildlife (0071), is listed
+  apart and does not fail the run. Ages are measured from the snapshot's
+  build, so a publish that did not deploy is one finding. The issue gets a
+  comment only when the failing findings change (a hidden marker line in its
+  body records them), and is found by listing open issues, not by search.
+  Tennessee's runner block (connection reset, only from the runner) and
+  Massachusetts' stale Hub copy are upstream; no reader changed.
+- Site: the Ko-fi tip link at the end of a water page opens in the same tab
+  (DECISIONS 0073, addendum 2026-11-17). It was the only link on the site
+  that opened a new tab, and it did not say so. `target="_blank"` and the
+  `rel="noopener"` that went with it are gone; the sentence is unchanged, and
+  so is the plain-text tip line in the calendar feeds.
+- Site: the `/states/` page title no longer says "all 50 states"; it lists
+  the states the site carries. README states how Tennessee is loaded
+  (hand import of the 2026-11-07 CSV, DECISIONS 0061).
 - Site: the privacy and about pages and the privacy page's search description
   no longer say "no tracking", alone or in a list, with analytics or web push
   on or off. A test holds this in every build. The wording matches PR #144. The privacy page's "Last updated" date is now 2026-11-08.
@@ -387,6 +475,86 @@ This repository was republished with a new history on 2026-09-18
   is still refused before any page is built.
 
 ### Fixed
+
+- Site: no page names an app any more while the launch switch is off, the
+  leftovers of the fix below. The about page loses "The iOS app has no
+  analytics of any kind" and its privacy heading's "the app collects
+  nothing". The privacy page covers the website only ("Covers this
+  website."): its app sentences, its "The apps" section and its iOS gear
+  line are gone, never replaced by a "no tracking" claim, and every version
+  of it is dated 2026-11-21. The support page asks "What does this site
+  know about me?" instead of "What does the app know about me?". The terms
+  page loses "The apps" and names no App Store (dated 2026-11-21), and the
+  app lines on `/states/` and on every state hub are gone. The about,
+  privacy and support meta descriptions name the website only. No URL,
+  title, H1, canonical, sitemap lastmod, feed, llms.txt or snapshot changes.
+  With the switch on, every one of these pages keeps its app wording. A fix
+  to existing pages, which DECISIONS 0042 allows. Guarded by
+  `pipeline/tests/test_site_no_app_promise.py`, which now also reads a
+  build as production makes it today (analytics on) and one with analytics,
+  web push and ads on.
+
+- Site: no page promises an iPhone app any more. Apple's rejection was
+  upheld on 2026-11-17 (DECISIONS 0073), so "An iOS app ... is on its way"
+  is gone from the calendar box of every California and Tennessee water
+  page, from every county page and from the home page. The about page's
+  app section is now "Is there an app?" ("No. Trout Truck is a website. To
+  follow a water, subscribe to its calendar on the water's page..."), and
+  the support page asks "Can I get an alert when a water is scheduled?"
+  and answers it with the calendar; its "restoring a purchase" question is
+  removed. The FAQPage structured data changes with it. `cfpa.launch_check`
+  no longer requires the "not in the App Store yet" sentence while the
+  switch is off and now flags it on any page; `APP_STORE_LIVE` itself is
+  unchanged and still turns the app wording back on. No URL, title, H1,
+  description, sitemap lastmod, feed or snapshot changes. A fix to existing
+  pages, which DECISIONS 0042 allows. Guarded by
+  `pipeline/tests/test_site_no_app_promise.py`, which reads every file the
+  build writes with the switch off and on.
+
+- Site: "Skip to main content" moves keyboard focus into the page (WCAG 2.2
+  SC 2.4.1). In Chrome, Enter on it scrolled to the page body but left focus
+  behind, so the next Tab went to the header's first link and the link
+  skipped nothing. `<main>` can now take focus from the link (it is not a
+  Tab stop) and draws no ring of its own. Every page type, one attribute in
+  the shared layout; no word or visible style changes. Found by the
+  2026-11-19 accessibility conformance audit.
+
+- Site, from the 2026-11-17 accessibility sweep (keyboard, zoom and forced
+  colors in Chromium and WebKit; none of these is something axe, pa11y or
+  Lighthouse measures). No sentence on any page changes.
+  - "Sort by closest to me" keeps keyboard focus after it is pressed. It
+    disabled itself while the browser asked about location, which dropped
+    focus to the top of the page, where it stayed. It now reports busy with
+    `aria-disabled` and ignores a second press while it waits.
+  - Each link in the footer's row keeps a 24px-tall target. On a phone the
+    row wraps to lines 21px apart, so links sat closer together than WCAG
+    2.2 SC 2.5.8 allows.
+  - The two calendar buttons, and the push button, keep an edge when the
+    browser forces colors (Windows High Contrast). Without a border they
+    became bold link text.
+  - "Alert me about this water" (off in the live build): focus follows the
+    press, to "Setting it up" while the browser works and then to the words
+    that say what happened, or back to the button when it can be pressed
+    again. Before, focus fell to the top of the page and a screen reader
+    heard nothing when the alert was set. The empty status line also stays
+    in the page, so what is written to it later is announced.
+
+- Site: a Tennessee water page's calendar box heading is an h2, not an h3
+  straight after the h1, so a screen reader's heading list no longer skips
+  a level; it looks as before, and California pages are unchanged. A test
+  checks every page of a multistate build for a skipped level, which axe's
+  WCAG rules do not.
+- Site: the 404 page, served at any missing address, names the other
+  states' `<state>/water/<name>/` addresses and links each state's page,
+  instead of saying only that a water CDFW never scheduled has no page.
+  A California-only build keeps the old wording.
+- Site: the about page no longer says every date on the site is a week:
+  that is California's, and other states' dates are at each agency's own
+  precision. It links the other states' pages too.
+- Site: the web push control no longer stays on "Setting it up..." for good
+  when the browser's notification worker fails to install, or when stopping
+  fails before it reaches the service. It shows the box again with what
+  went wrong. Tested under node with a stand-in browser.
 
 - Pipeline: Massachusetts no longer calls a stale file a good check
   (DECISIONS 0063). ArcGIS Hub marks its copy of MassWildlife's layer

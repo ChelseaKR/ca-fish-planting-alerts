@@ -455,9 +455,12 @@ def test_a_stale_state_hub_never_calls_an_empty_week_honest(tmp_path: Path):
     assert "in the file last read 2026-10-15 13:31 UTC" in text
     assert "The file last read 2026-10-15 13:31 UTC has nothing else" in text
     assert "The latest check failed" in text
-    assert not BANNED_WORDS.search(
-        text[text.find("This week:") : text.find("Every Tennessee water")]
-    )
+    # The sentences this test is about end where the winter section (0070)
+    # begins: its table carries TWRA's water names, one of them "Covington
+    # First Baptist Church Pond", and test_site_state_winter checks its prose.
+    end = text.find("Winter trout stocking on")
+    assert end != -1  # the 2026-27 winter is in this file
+    assert not BANNED_WORDS.search(text[text.find("This week:") : end])
 
 
 def test_a_healthy_state_hub_still_says_an_empty_week_is_the_agencys_data(

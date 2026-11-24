@@ -40,9 +40,20 @@
     return { view: "idle" };
   }
 
+  /* Where keyboard focus goes once a press has been answered. The pressed
+     button sits in a view that the press hides, so without this focus falls
+     to the top of the page and a screen reader hears nothing. "idle" can be
+     pressed again, so focus returns to its button and the status line says
+     what happened. Every other view is words that answer the press ("This
+     browser gets a notification...", "Notifications ... are blocked"), so
+     focus goes to those words and a screen reader reads them. */
+  function focusAfter(view) {
+    return view === "idle" ? "button" : "view";
+  }
+
   // node (the tests): export the policy and stop.
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { decide: decide, isIOS: isIOS };
+    module.exports = { decide: decide, isIOS: isIOS, focusAfter: focusAfter };
     return;
   }
   if (typeof document === "undefined") return;
@@ -111,10 +122,31 @@
     if (name) name.textContent = otherName || "";
     box.hidden = false;
   }
-  function render(message) {
+  // After a press only (never on load): put focus on what answers the press,
+  // unless the visitor has already moved it somewhere else on the page.
+  function moveFocus(view) {
+    var active = document.activeElement;
+    if (active && active !== document.body && active !== document.documentElement && !box.contains(active)) return;
+    var shown = box.querySelector('[data-push-view="' + view + '"]');
+    if (!shown) return;
+    var target = shown;
+    if (focusAfter(view) === "button") target = shown.querySelector("[data-push-action]") || shown;
+    // Focusable from script only: the words are not a Tab stop.
+    if (target === shown) shown.setAttribute("tabindex", "-1");
+    target.focus();
+  }
+  function render(message, pressed) {
     var d = decide(env());
     show(d.view, d.otherName);
     say(message);
+    if (pressed) moveFocus(d.view);
+  }
+  // A press hides the button that was pressed. Focus goes to the "Setting it
+  // up" words, so it is never left on nothing and a screen reader reads them.
+  function working() {
+    show("busy");
+    say("");
+    moveFocus("busy");
   }
 
   function toKey(base64url) {
@@ -129,11 +161,17 @@
     return navigator.serviceWorker.register(cfg.worker, { scope: cfg.scope }).then(function (reg) {
       if (reg.active) return reg;
       var worker = reg.installing || reg.waiting;
-      return new Promise(function (resolve) {
+      // A worker that fails to install turns "redundant" and never
+      // "activated"; without the reject the box would say "Setting it up"
+      // for good.
+      return new Promise(function (resolve, reject) {
         if (!worker) return resolve(reg);
-        worker.addEventListener("statechange", function () {
+        function settle() {
           if (worker.state === "activated") resolve(reg);
-        });
+          else if (worker.state === "redundant") reject(new Error("this browser did not finish setting up notifications"));
+        }
+        worker.addEventListener("statechange", settle);
+        settle();
       });
     });
   }
@@ -146,13 +184,16 @@
     });
   }
 
+  function reason(err) {
+    return err && err.message ? err.message : "unknown error";
+  }
+
   function subscribe() {
-    show("busy");
-    say("");
+    working();
     var created = null;
     return Notification.requestPermission().then(function (permission) {
       if (permission !== "granted") {
-        render(permission === "denied" ? "" : "No notification was set up. Press the button again when you want one.");
+        render(permission === "denied" ? "" : "No notification was set up. Press the button again when you want one.", true);
         return null;
       }
       return registration().then(function (reg) {
@@ -169,7 +210,7 @@
         }).then(function (res) {
           if (!res.ok) throw new Error("the sign-up was refused (" + res.status + ")");
           writeSaved({ water_id: cfg.water, water_name: cfg.waterName, endpoint: sub.endpoint });
-          render("");
+          render("", true);
         });
       });
     }).catch(function (err) {
@@ -177,14 +218,13 @@
       // so no browser is left subscribed to nothing.
       var undo = created ? created.unsubscribe().catch(function () {}) : Promise.resolve();
       return undo.then(function () {
-        render("That did not work: " + (err && err.message ? err.message : "unknown error") + ". The calendar options above still work.");
+        render("That did not work: " + reason(err) + ". The calendar options above still work.", true);
       });
     });
   }
 
   function unsubscribe() {
-    show("busy");
-    say("");
+    working();
     var saved = readSaved();
     return navigator.serviceWorker.getRegistration(cfg.scope).then(function (reg) {
       return reg ? reg.pushManager.getSubscription() : null;
@@ -197,9 +237,13 @@
           writeSaved(null);
           render(serverOk
             ? "Stopped. Nothing about this browser is kept."
-            : "Stopped in this browser. The server copy goes when its next delivery fails.");
+            : "Stopped in this browser. The server copy goes when its next delivery fails.", true);
         });
       });
+    }).catch(function (err) {
+      // Without this a failed lookup (a browser that refuses service
+      // workers here, say) left the box on "Setting it up" for good.
+      render("Stopping did not work: " + reason(err) + ". Try again, or turn off notifications for this site in your browser's settings.", true);
     });
   }
 

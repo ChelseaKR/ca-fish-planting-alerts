@@ -149,6 +149,10 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   left: 1rem;
   top: 1rem;
 }
+/* The skip link's target takes focus (tabindex="-1" in base.html.jinja) so the
+   next Tab starts inside it. It is a region, not a control: no ring around the
+   whole page body. Every link and button inside keeps its own focus ring. */
+#main:focus { outline: none; }
 
 .visually-hidden {
   position: absolute;
@@ -193,6 +197,15 @@ nav a { margin-right: var(--space-4); }
   margin-top: var(--space-12);
 }
 .site-footer p { color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+/* The footer's row of site links wraps to three or four lines on a phone,
+   21px apart, so a 19px-tall link sat right above another. Each link keeps
+   a 24px-tall box, as the header and breadcrumb links do (WCAG 2.2 SC
+   2.5.8). The long source address still breaks inside its own box. */
+.site-footer__links a {
+  display: inline-block;
+  min-height: var(--tap-min);
+  padding: var(--space-0-5) 0;
+}
 /* The footer's analytics opt-out is a button, because it changes a setting
    rather than going anywhere, drawn like the links next to it. The padding
    keeps it a 24px target (WCAG 2.2 SC 2.5.8). */
@@ -298,6 +311,8 @@ ul.water-index li { break-inside: avoid; }
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
 }
+/* Busy (closest.js): dimmed as a disabled button was, but still focusable. */
+.closest button[aria-disabled="true"] { opacity: 0.65; cursor: default; }
 .closest-list { padding-left: 1.5rem; overflow-wrap: anywhere; }
 .closest-list li { margin: 0.25rem 0; }
 
@@ -360,7 +375,10 @@ dd .tt-badge { margin-right: var(--space-2); }
   padding: var(--space-4);
   margin: var(--space-3) 0 var(--space-4);
 }
-.calendar-subscribe h3 { margin: 0 0 var(--space-2); }
+.calendar-subscribe h2, .calendar-subscribe h3 { margin: 0 0 var(--space-2); }
+/* On a state water page the box's heading is an h2 (it follows the h1), and
+   it looks like the h3 a California page has under its status h2. */
+.calendar-subscribe h2 { font-size: 1.05rem; border-top: 0; padding-top: 0; }
 .calendar-subscribe p { margin: 0 0 var(--space-3); }
 .calendar-subscribe p:last-child { margin-bottom: 0; }
 .calendar-subscribe__links { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: var(--space-2); }
@@ -374,6 +392,10 @@ dd .tt-badge { margin-right: var(--space-2); }
   color: var(--status-now-fg);
   font-weight: 700;
   text-decoration: none;
+  /* Forced colors (Windows High Contrast) drops the fill, and with no border
+     the button became bold link text. A transparent border is drawn in the
+     system's text color there, so the button keeps its edge. */
+  border: 1px solid transparent;
 }
 .calendar-subscribe__button:visited { color: var(--status-now-fg); }
 .calendar-subscribe__button:hover { text-decoration: underline; }
@@ -383,9 +405,12 @@ dd .tt-badge { margin-right: var(--space-2); }
    this browser rather than going anywhere. */
 .push-subscribe { border-top: 1px solid var(--border); padding-top: var(--space-3); margin-bottom: var(--space-3); }
 .push-subscribe p { margin: 0 0 var(--space-2); }
-.push-subscribe__button { width: 100%; border: none; font: inherit; text-align: left; cursor: pointer; }
+.push-subscribe__button { width: 100%; border: 1px solid transparent; font: inherit; text-align: left; cursor: pointer; }
 .push-subscribe__button:hover { text-decoration: underline; }
-.push-subscribe__status:empty { display: none; }
+/* Empty, the status line takes no room but stays in the page: a live region
+   that is display: none until it has words is one a screen reader may never
+   hear. */
+.push-subscribe__status:empty { margin: 0; }
 .gear-label {
   display: inline-block;
   margin: 0 0 var(--space-2);

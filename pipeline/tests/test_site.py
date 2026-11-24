@@ -269,7 +269,8 @@ def test_app_is_not_linked_until_it_has_an_app_store_url(tmp_path: Path):
         assert "apps.apple.com" not in html
         assert "Get the iOS app" not in html
     about = (out / "about" / "index.html").read_text(encoding="utf-8")
-    assert "not in the App Store yet" in about
+    assert '<h2 id="app">Is there an app?</h2>' in about
+    assert "not in the App Store yet" not in about
 
 
 def test_an_app_store_url_alone_does_not_link_the_app(tmp_path: Path):
@@ -298,7 +299,9 @@ def test_app_store_url_and_support_email_render_when_configured(tmp_path: Path):
 
 
 def test_privacy_page_covers_the_site_and_the_app(tmp_path: Path):
-    out = _build_site(tmp_path)
+    """With the launch switch on; off, the page covers the website only
+    (test_site_no_app_promise.py)."""
+    out = _build_site(tmp_path, app_store_live=True)
     html = (out / "privacy" / "index.html").read_text(encoding="utf-8")
     assert "Data Not Collected" in html
     assert "no push service" in html.lower()

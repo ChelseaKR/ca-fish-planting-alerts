@@ -91,7 +91,11 @@
     </nav>
   </div>
 </header>
-<main id="main" class="wrap">
+{# tabindex="-1" lets "Skip to main content" move keyboard focus here. Without
+   it, in Chrome the next Tab after the skip link went to the header's first
+   link, so the link skipped nothing for a keyboard user (2026-11-19 ACR,
+   WCAG 2.4.1). It is not a Tab stop. #}
+<main id="main" class="wrap" tabindex="-1">
 {% if breadcrumb %}
 {# Mirrors the BreadcrumbList in the structured data, name for name. #}
 <nav aria-label="Breadcrumb" class="breadcrumb">
@@ -121,7 +125,7 @@
     {% else %}
     <p>{{ attribution_text }} {{ site_name }} is independent and is not affiliated with or endorsed by CDFW.</p>
     {% endif %}
-    <p><a href="{{ attribution_url }}">{{ attribution_url }}</a> &middot; <a href="{{ root }}about/">about &amp; attribution</a> &middot; <a href="{{ root }}gear/">what to bring</a> &middot; {% if open_data %}<a href="{{ root }}data/">open data</a> &middot; {% endif %}<a href="{{ root }}privacy/">privacy</a> &middot; <a href="{{ root }}terms/">terms</a> &middot; <a href="{{ root }}support/">support</a> &middot; <a href="{{ root }}guide/">guides</a></p>
+    <p class="site-footer__links"><a href="{{ attribution_url }}">{{ attribution_url }}</a> &middot; <a href="{{ root }}about/">about &amp; attribution</a> &middot; <a href="{{ root }}gear/">what to bring</a> &middot; {% if open_data %}<a href="{{ root }}data/">open data</a> &middot; {% endif %}<a href="{{ root }}privacy/">privacy</a> &middot; <a href="{{ root }}terms/">terms</a> &middot; <a href="{{ root }}support/">support</a> &middot; <a href="{{ root }}guide/">guides</a></p>
     {% if ads_enabled %}
     <p><a href="{{ root }}privacy/#ads">Ad choices: turn off ads on this device</a></p>
     {% endif %}

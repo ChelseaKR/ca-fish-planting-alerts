@@ -60,16 +60,58 @@ To turn it off: unset the two variables (`gh variable delete ...`) and the
 next publish builds the site without any of it. The service can stay up at
 about $0 a month, or `terraform destroy` removes it.
 
+## Limits on the open routes (DECISIONS 0074)
+
+`/subscribe` and `/unsubscribe` take no token, so the function bounds them
+itself (`LIMITS` in `lambda/handler.mjs`):
+
+| Limit | Value |
+|---|---|
+| Calls to the two routes from one network, per UTC day | 20 |
+| New subscriptions from everyone, per UTC day | 100 |
+| Live subscriptions on one water | 100 |
+| Live subscriptions in all | 2,000 |
+| Body of a browser's call | 4 KB |
+| Refusals in a row (400, 401, 403) before a subscription is removed | 3 |
+| Time one `/send` call keeps starting deliveries | 90 s |
+
+Over a limit the answer is 429 with `Retry-After`. The per-network count is
+kept under a keyed code of the address and the day, never the address, in a
+row that expires a day later. The table also has a ceiling on its request
+units per second (`table_max_write_units`, `table_max_read_units`), so its
+monthly cost has a known maximum.
+
+### Applying a change to the function or the table
+
+After the pull request that carries the change is merged and a publish has
+run (so the privacy page describes the limits before the service applies
+them), as the `trouttruck` account, from an up-to-date `main`:
+
+    cd infra/web-push/lambda && npm ci --omit=dev && cd ..
+    terraform init
+    terraform plan -var aws_account_id=266294231534 -var site_origin=https://trouttruck.com
+
+The plan for the 0074 change should show two resources changed in place and
+nothing destroyed: the function (new code) and the table (the request-unit
+ceilings on it and on `by_water`). Pass the same `-var` values as the first
+apply (`budget_email` and `reserved_concurrency` too, if they were set), then
+`terraform apply` with them. `budget_email` is worth setting if it is not:
+it is the one warning when the account's spend passes $4 in a month.
+
+Check afterwards: `tools/web-push/counts.sh` still prints the totals, and
+"Alert me about this water" on a water page still turns on and off.
+
 ## Reading the test
 
 `tools/web-push/counts.sh` prints the live subscription count, how many of
 those are on the Apple push service (iPhone, iPad or a Mac), and the
 totals (subscribes, switches, renewals, unsubscribes, send runs, sends,
-failures, dead endpoints removed). The 60-day read and the kill rule are in
+failures, dead endpoints removed, deliveries skipped for time). The 60-day read and the kill rule are in
 `docs/DECISIONS.md` 0069.
 
 ## What is never here
 
 No email, no SES, no account, no IP address kept, no user agent kept. The
-function's logs hold a route, a status code and counts. The GitHub Actions
+per-network limit keeps a keyed code and a count for a day (above), not the
+address. The function's logs hold a route, a status code and counts. The GitHub Actions
 secret is the one copy of the sender token outside SSM.

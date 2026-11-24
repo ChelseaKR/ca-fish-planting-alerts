@@ -1516,6 +1516,46 @@ TWRA that Trout Truck won't get around tn.gov's security settings.
 - **Data lands by pull request.** The publish job is the only direct writer
   of `pipeline/data/`, so an imported `tn.json` goes to `main` in a PR.
 
+### Addendum 2026-11-10: the same file downloaded again is a re-confirmation, not a repeat
+
+- **Why.** The import refused "a repeated file" by its SHA-256. The
+  download-time check already refuses the same download run twice (same
+  modification time), so the SHA-256 refusal only ever met one case: TWRA's
+  file was byte-identical a week later. A quiet week at TWRA is not stale
+  data, but the refusal left `manual_file.downloaded_at` at the old date,
+  so the freshness watchdog (0065) would go red on day 8 and the site and
+  apps would say "paused" over data that had just been checked against
+  TWRA's own page. The weekly import has to work in every week.
+- **What.** The same bytes with a later download time go through the same
+  merge: every record, status and first sighting stays as it is, the rows
+  seen again get the new sighting time, and `manual_file.downloaded_at`,
+  `imported_at` and `last_success_at` move to the new download, which is
+  what 0065 reads and what the pages print. The output says "same data as
+  the <date> file; window renewed" instead of row counts. A file downloaded
+  at or before the data on file is refused as before, the same bytes or not.
+
+### Addendum 2026-11-10: the weekly data file pushes straight to main
+
+- **Why.** The twice-daily publish run rewrites two `checks` lines in
+  `tn.json`, so a pull request carrying an imported `tn.json` conflicts with
+  main after the next run (checked with `git merge-tree`): the import had to
+  be opened and merged inside one 12-hour window or redone. `main` has no
+  ruleset and no required check, and the publish job already writes its
+  data commits straight to `main`, so the PR added a wait and a conflict
+  window and no gate.
+- **What.** The weekly Tennessee import lands as one data-only commit pushed
+  straight to `main`: `make import-tn-csv CSV=...`, then `make lint test`
+  (the importer's own tests are part of it), `git add
+  pipeline/data/states/tn.json`, commit, `git push origin HEAD:main`. The
+  import is the gate for the file (header, row shape, floor, time order and
+  the reader's own parse); `make lint test` checks before the push that the
+  code on `main` still passes (no test reads the live `tn.json`, on
+  purpose); and CI's `verify` job still runs on the push to `main`. A push
+  that is not a fast-forward is refused by git: pull and run the import
+  again.
+- **When a PR is still the path.** Any change to code, tests, workflows or
+  docs, including this one. Only the data file goes straight to `main`.
+
 
 ## 0062 — The calendar box moves up to the status badge and adds Google Calendar (2026-11-07)
 
@@ -1886,3 +1926,409 @@ later decision, gated on the read below.
   (`cfpa/push.py`, `_push_subscribe.html.jinja`, `push.js`,
   `push-worker.js.jinja`, `manifest.webmanifest.jinja`, `infra/web-push`,
   `tools/web-push`) overlap nothing.
+
+## 0047 — A gift guide at /gifts/, on by build date from 2026-11-27 (2026-11-05, revised 2026-11-13)
+
+Same Amazon Associates account (`trouttruck-20`) and deadline as 0029: 3
+qualifying sales by about 2027-04-17, and holiday gifting is the likeliest
+window for one. 0042 allows no new page family until 2026-11-27, so the page
+is built only from that day.
+
+- **What.** `/gifts/`, "Gifts for trout anglers": eleven practical,
+  inexpensive items for fishing planted trout at a lake or pond
+  (`GIFT_GUIDE_ITEMS` in `site.py`), each with one sentence in our own words
+  on why it helps on the bank, a CDFW license reminder (no legal advice), and
+  links to `/gear/` and the schedule.
+- **Links.** The 0030 rules exactly: Amazon search links for a category,
+  built by `amazon_search_url()`, `rel="sponsored nofollow noopener"`, the
+  `gear_click` labels with placement `gift_guide`; Amazon's sentence "As an
+  Amazon Associate I earn from qualifying purchases." before the first link
+  and after the last, the "costs you nothing extra" sentence and the CDFW
+  non-endorsement sentence. No product page, image, brand, price or rating;
+  the page says to check the current price before buying.
+- **Switch.** The build date, as for the /gear/ holiday section (0043):
+  a build dated on or after `GIFT_GUIDE_FROM` (2026-11-27) writes the page;
+  an earlier one writes nothing and no page mentions it, and a test fails if
+  any trace appears. No end date: the list is not seasonal. (The 2026-11-05
+  draft used a constant flipped by a second pull request; the date replaces
+  it so nobody has to be at the keyboard on 11-27.) On, four files change: the new page,
+  the home page, the privacy page (which lists where gear links are) and the
+  sitemap.
+- **Home page link.** Once the page is built, the home page's gear block is
+  followed by one sentence: "Gift ideas for a trout angler, a short list of
+  practical items. That page's links are affiliate links to Amazon." It is an
+  internal link; county pages are unchanged. Drop that paragraph in
+  `index.html.jinja` if the home page should stay as it is.
+- **Overlap.** 0043's holiday section on `/gear/` (11-15 to 12-26, five
+  searches) still runs and is unchanged. The two lists share the rod holder,
+  tackle box and fingerless gloves searches.
+- **Tracking.** No new script or event. The click labels go through the
+  existing GA4 tag (0011, 0030), under the same Global Privacy Control, Do
+  Not Track and opt-out guard, and the event records the link's host, not
+  the tag or search terms.
+- **Still the website alone.** No link in the iOS or Android sources, feeds,
+  snapshot or structured data.
+- **Guards.** `tests/test_site_gift_guide.py`, with negative controls, and the
+  allow lists in `tests/test_site_affiliate.py` and
+  `tests/test_site_gear_guide.py` now name `/gifts/`.
+
+## 0070 — A state hub lists its own winter schedule (2026-11-14)
+
+Proposed from the winter-visitors lane
+(`_agent-tools/growth/tt-winter-visitors-2026-11-14.md`, outside this repo).
+Chelsea approved the copy as written and chose to merge now, on 2026-11-14.
+
+- **Why.** Search Console, `sc-domain:trouttruck.com`, 2026-08-01 to
+  2026-11-12: Tennessee pages had 209 impressions and 17 clicks (8% of
+  impressions to a click), against 894 and 17 on California water pages
+  (2%). `/tn/` itself is the site's second page by impressions (82, position
+  11.5). Winter is Tennessee's season: TWRA's file has dates in every month
+  from November 2026 through March 2027, many at city and park ponds, and
+  local news covered its 2025-26 winter trout stocking program.
+  TWRA's own file, as downloaded 2026-11-07, lists 98 Tennessee waters with
+  205 dates from November 2026 through February 2027. The hub showed 60 days
+  of them and no word "winter".
+- **What.** A schedule or plan state's hub (`/<xx>/`) gets a section,
+  `id="winter"`, after "Coming up" and before the water index: "Winter
+  <species> stocking on <agency>'s <schedule|plan>: November YYYY to February
+  YYYY", one sentence with the counts and the data's age in the page's own
+  freshness words, the caveat the hub already uses ("scheduled dates, not
+  confirmed stockings" or "planned periods in <agency>'s own words"), a link
+  to the agency's page as the official source, and one table: each water with
+  every date it has in those months, at the agency's precision. "Winter" is
+  the calendar months November through February, said on the page, not an
+  agency term (the same months 0040 uses for California).
+- **Which winter.** The one that includes today; from March 1 the next one
+  (`site_states.winter_window`). A page never shows a winter that has ended.
+  The hub's lastmod counts that March 1, so the page does not change while
+  its lastmod says it did not.
+- **No absence read as a value.** With no water in the data for that winter,
+  there is no section, no winter words in the description and no llms.txt
+  line. A report state (Massachusetts, Michigan) gets none: a report holds
+  stockings already made. New York's plan has no winter dates, so it gets
+  none today. California has no hub (0049); its winter is on the home and
+  county pages (0040) and, from 11-30, the water pages (0048).
+- **Description.** With a winter section, the hub's description names it
+  ("this week, winter dates at 98 waters through February 2027, and the
+  stocking history of all 144 waters") when that fits 160 characters with
+  the agency's full name or else its short name; otherwise the old line.
+- **llms.txt.** The state's line adds where the winter section is and its
+  counts, in the hub's words. ChatGPT sends the site more engaged visits than
+  Google (GA4, 28 days to 2026-11-14: 53 against 30).
+- **Fits 0042.** No new page, URL or page family, and no title change. It is
+  a section on an existing page; Chelsea chose to merge it on 2026-11-14,
+  before the 0042 freeze ends, because winter stocking starts this month.
+
+
+## 0071 — Massachusetts: say why the read fails, and wait while MassWildlife is idle (2026-11-14)
+
+From the 2026-11-14 Massachusetts read check
+(`_agent-tools/growth/tt-ma-read-2026-11-14.md`, outside this repo).
+Chelsea chose "Mark it 'waiting'" on 2026-11-14 and approved the page
+sentence below as written.
+
+- **What we found.** Live, 2026-11-14 17:30 UTC: Hub still answers
+  `cacheStatus` "stale" for the file it built 2026-10-13 02:35 UTC (150
+  rows). Its metadata for the layer (`/api/v3/datasets/<id>_0`) says 155
+  records, last edited 2026-10-13 17:06 UTC (`modifiedProvenance`
+  "layer.editingInfo.lastEditDate"). It refreshed that metadata at 03:32 UTC
+  the same day but not the file. MassWildlife has not edited the layer in 32
+  days, and the route and the answer's shape are unchanged, so there is
+  nothing for the reader to follow. Since 11-14 the freshness job (0065) has
+  been red on every run, and nothing upstream will change before spring. A red
+  that never clears teaches people to ignore red, so a second stuck state
+  would go unnoticed behind it. Chelsea also tried to get the file rebuilt
+  herself: signed in to a free ArcGIS account, gis.data.mass.gov still
+  said "Can't access this dataset".
+- **The measurement.** Only when Hub answers stale, the reader waits the
+  Crawl-delay (61 s) and reads Hub's metadata once, on the same host,
+  allowed by its robots.txt. The failed check keeps
+  `checks.stale_copy`: that attempt's time, the layer's last edit (only
+  when Hub says the date is the layer's own edit date, to the second), its
+  record count, and how many records the last good read saw. If any of
+  these cannot be read, it is null; nothing is guessed. Any other outcome
+  of a later attempt clears the object. The v2 snapshot carries the facts
+  as optional `checks.stale_copy`.
+- **The freshness rule.** A state whose last good read is older than its
+  allowance is stuck, as before, with one exception: it is **waiting** when
+  its latest attempt failed on Hub's stale flag and the layer's last edit,
+  read on that same attempt, is also older than the allowance. A waiting
+  state gets a line, a `::warning` annotation and a summary row, and does
+  not fail the job. The first run after MassWildlife edits again is red. So
+  is a stale flag whose edit date could not be read, or facts left by an
+  earlier attempt. Today's line: `MA (Massachusetts): waiting: last good
+  read 2026-11-07 13:22Z (automated), 7.2 days ago, allowed 7 days; Hub's
+  file is stale, and MassWildlife has not edited its layer since 2026-10-13
+  17:06Z (32.0 days ago); red again as soon as it does`.
+- **The pages.** While the latest failure is Hub's stale flag, both measured
+  numbers are known, and the copy has fewer entries than the layer, the
+  bold failed-check sentence on the hub and water pages becomes, in
+  Chelsea's approved words: "MassWildlife last changed its stocking report
+  on Tue, 13 Oct 2026. The copy Trout Truck can read is older than that
+  change and has 150 of the report's 155 entries, so some stockings may be
+  missing here. ArcGIS Hub, the service it is read through, has not rebuilt
+  that copy since." In that state the hub drops "; MassWildlife last changed
+  the file {date}", which was Hub's file time, not MassWildlife's. Otherwise
+  the plain failed-check line stays.
+- **Not changed.** The route stays Hub only (0034). services1.arcgis.com
+  and mass.gov are never read, and nothing asks Hub to rebuild through its
+  API. There is no dated or seasonal waiver: the exception rests on a
+  measurement made on every run. Other states, the allowance and llms.txt
+  are unchanged.
+- **What to expect.** After this merges, the first run records the facts,
+  and Massachusetts reads "waiting" until MassWildlife edits the layer
+  again, likely in March. If Hub still has not rebuilt the file then, the
+  job goes red, and that red is real.
+
+## 0072 — A line to /gifts/ on California water pages, 2026-11-27 to 2026-12-26 (2026-11-15)
+
+Proposed in the Trout Truck money brief of 2026-11-15 (action 3, outside
+this repo); Chelsea approved the wording and the window on 2026-11-15. Same
+Amazon Associates account (`trouttruck-20`) and deadline as 0029.
+
+- **Why.** 0047 links `/gifts/` from the home page alone, but most engaged
+  visitors land on a water page (GA4, 28 days to 2026-11-14: 42 of the 55
+  engaged ChatGPT sessions began on one, 34 of them in California).
+  December is when an Amazon purchase is likeliest, and a purchase within
+  24 hours of a click counts.
+- **What.** Each California water page that carries the gear block (not a
+  thin page, 0041) ends that block with one line, in the approved words:
+  "Shopping for someone who fishes? Gift ideas for a trout angler, a short
+  list of practical items. That page's links are affiliate links to
+  Amazon." "Gift ideas for a trout angler" links to `/gifts/`. It is an
+  internal link, like the home page's (0047): no tag, no sponsored rel and
+  no `gear_click` label, which belong to the Amazon links on `/gifts/`
+  itself, and the sentence says where it leads before anyone follows it.
+  The block's label, disclosure, endorsement sentence, links and position
+  are unchanged (0045's move stays as it is).
+- **When.** The build's date decides, both days included:
+  `WATER_GIFT_LINK_FIRST_DAY` (2026-11-27) to `WATER_GIFT_LINK_LAST_DAY`
+  (2026-12-26), the same switch as 0043 and 0047, so the daily publish adds
+  the line and takes it away with no edit. The dates carry the year: it does
+  not come back in 2027 without a new decision. It never shows in a build
+  without `/gifts/`, so it never points at a missing page.
+- **Where not.** County pages, the home page, `/county/`, `/gear/` and
+  other states' water pages are unchanged; they share the block's template,
+  but only the California water page passes the switch, and the template
+  also checks the `water` placement.
+- **Lastmod.** Like the region links, the line is navigation, not the
+  water's data, so it is left out of the sitemap lastmod and
+  `dateModified`. On 2026-11-27 and 2026-12-27 about 310 pages change
+  without their lastmod moving: a known under-report, chosen over moving
+  every water page's date twice.
+- **Fits 0042.** A line in an existing block, no new page or link surface
+  for Amazon. It merges before 2026-11-27 so the first dated build has it.
+- **Guards.** `tests/test_site_water_gift_link.py` builds the site with
+  Tennessee, Massachusetts and Michigan on, dated the first day, the last
+  day, the day before, the day after and 2027-11-27, and without `/gifts/`;
+  it checks the exact line inside the gear block of every California water
+  page that has one and on no other page, with negative controls (the line
+  on a county page and a Tennessee water page, missing, reworded, and read
+  as outside the window). `tests/test_site_gift_guide.py` (its 2026-11-27
+  build) and `tests/test_site_gear_guide.py` (its 2026-12-01 build against
+  2026-12-27) now expect the water pages to change by that line alone.
+
+## 0073 — A Ko-fi tip line on water pages and in calendar events, judged 2027-05-31 (owner, 2026-11-16; wording approved 2026-11-17)
+
+Chelsea decided on 2026-11-16 (`_agent-tools/growth/app-money-ideas-2026-11-16.md`,
+decision 1(a), outside this repo) to add a tip line on the water pages and
+in each event of the subscribed calendar feeds, pointing at a personal Ko-fi
+page. The money plan placed it after the 2026-11-27 freeze (0042); on
+2026-11-17 she lifted that for this line (see "0042, lifted for this line
+only" below). **She approved the wording below on 2026-11-17 and sent the
+page's address, `https://ko-fi.com/chelseakr`, the same day.**
+
+- **Why.** Calendar subscribers are the warmest visitors (7 of the 12 key
+  events in the 28 days to 2026-11-16), and a subscribed feed keeps showing
+  in their calendar for months. The money report's range is $0 to about
+  $6.50 a month now, $0 being likely.
+- **Water pages.** Every water page, California's and every other state's
+  (thin pages included: it is not an affiliate link, so 0041 does not
+  apply), ends its main content with one sentence: "Trout Truck is free and
+  made by one person. You can leave a tip on Ko-fi." The second sentence is
+  the link. It sits after "About this water" and the related-water lists,
+  far from the status badge and the calendar box, so it never reads as part
+  of the data. No other page has it.
+- **Calendar events.** Every event in California's feeds
+  (`site.build_water_ics`) and Tennessee's (`ics.build_schedule_ics`) ends
+  its DESCRIPTION with a new line: "Free calendar from Trout Truck, made by
+  one person. Tips: https://ko-fi.com/chelseakr". The full https address (her
+  choice, 2026-11-17) so every calendar app can make it a link. Not the
+  calendar's name or
+  description, not a summary, and never an event of its own. The value is
+  escaped once as RFC 5545 TEXT (the newline as `\n`, the comma as `\,`) and
+  folded at 75 octets. California's feed now uses `cfpa.ics`'s `escape` and
+  `fold`: its own fold let a continuation line run to 76 octets and could cut
+  a multi-byte character, which the longer descriptions would have hit on
+  every event. Unfolded, every other line of California's feed is unchanged;
+  UIDs, DTSTAMPs and the PRODID are untouched, so no calendar duplicates an
+  event.
+- **0042, lifted for this line only (owner, 2026-11-17).** The money plan
+  held every new link until 2026-11-27, the day 0042's freeze ends. On
+  2026-11-17 Chelsea chose "Ko-fi tip link live today". That lifts the hold
+  for the tip line and for nothing else. 0042 stands as written for
+  everything else: no new page family and no large template change before
+  2026-11-27, `/gifts/` (0047) and the water pages' gift line (0072) still
+  start by build date on 2026-11-27, and the open pull requests keep their
+  merge dates. The line adds no page, URL or title: it is one sentence at
+  the end of two existing templates and one line in the existing feeds. A
+  water page's sitemap lastmod and `dateModified` are computed from its
+  data, so they do not move.
+- **One constant.** `cfpa.tip.KOFI_URL` holds the address, and a change of
+  page is a one-line change there. `""` turns the line off on every page and in
+  every feed (the removal, should 2027-05-31 call for it).
+- **The water-page switch, and the appeal.** The app's "Full history on the
+  site" link opens a water page in Safari, so on 2026-11-17 Chelsea chose to
+  hold the water-page sentence while the App Review Board appeal over the
+  $9.99 unlock was open, and to add it once Apple answered. The Board upheld
+  the 4.3(a) rejection the same day (appeal APL642567 closed; the app is not
+  on the App Store), so `cfpa.tip.TIP_ON_WATER_PAGES` is True. The switch
+  stays: False takes the sentence off every water page and leaves the
+  calendar line as it is. Both states are tested.
+- **No new request or tracking.** A plain `<a href>` (with
+  `target="_blank" rel="noopener"` until the addendum below): no Ko-fi script, button image, widget or
+  iframe, nothing loaded from Ko-fi until a person presses it, and no
+  `data-ga-event`, so the GA4 click listener does not report it. (Whether
+  GA4's property-level "outbound clicks" enhanced measurement is on was not
+  checked; if it is, it already records any outbound click, this one
+  included.)
+- **Never in the apps.** The iOS app reads `snapshot/v2.json` only, has no
+  web view (0011) and no calendar feed or EventKit code; its one site link,
+  "Full history on the site" on a water's screen, opens the water page in
+  the system browser, outside the app. Nothing here touches the snapshots,
+  and a test fails if "ko-fi" appears in either snapshot or anywhere under
+  `ios/` or `android/`. The calendar feeds appear in Apple Calendar or
+  Google Calendar, never in Trout Truck's app. The app and its metadata are
+  unchanged by this.
+- **Words.** No safety, catching or outcome claim, nothing that ties a tip
+  to what the schedule did for someone (no "saves you a trip"), and never
+  "no tracking". The test holds the wording to a banned-word list.
+- **Judged 2027-05-31.** Under $20 in tips by then, the line comes out
+  (`KOFI_URL = ""`). Not the money plan's 90-day rule, which would end in
+  late February, the low season.
+- **Guards.** `tests/test_site_tip_line.py`: the switch is on; with it on,
+  the exact line once and last in `<main>` on every water page of a build
+  with Tennessee, Massachusetts and Michigan on, and on no other page; with
+  it off, on no page at all while every feed keeps its line; every feed event's description ending
+  with the line, read with a strict RFC 5545 reader (octet length, CRLF,
+  continuation lines, TEXT escaping, a multi-byte name, a comma and
+  semicolon in the address); nothing in the snapshots or the app sources;
+  everything off with `KOFI_URL = ""`; negative controls for each check.
+
+### Addendum 2026-11-17: the link opens in the same tab
+
+- **What was wrong.** The water-page link opened a new tab and did not say
+  so. It was the only link on the site that did; the map link says "(opens
+  OpenStreetMap)" and opens in the same tab. The 2026-11-17 accessibility
+  sweep recorded it: a screen reader or magnifier user lands on a page
+  whose Back button does nothing, with no word of why.
+- **The choice.** Two fixes were put to the owner: add "(opens in a new
+  tab)" inside the link, or open it in the same tab with no word changed.
+  The same tab was chosen. The approved sentence stands exactly as it was.
+- **What changed.** `target="_blank"` is gone, and so is `rel="noopener"`,
+  which was there only because of the new tab: a same-tab link gives the
+  page it opens no handle on this one. The link is now a bare
+  `<a href>`, and `cfpa.tip` no longer has `LINK_TARGET` or `LINK_REL`.
+- **What did not.** The calendar line is plain text with the full address
+  and was never a link, so every feed is byte for byte what it was. No
+  script, image or `data-ga-event` was added. The switch, the constant and
+  the 2027-05-31 judgment are as written above.
+- **Guards.** `tests/test_site_tip_line.py`: no Ko-fi link on any built
+  page carries `target` or `rel`, with a control that a new-tab link is
+  caught; the exact line is still the last line of `<main>` on every water
+  page and on no other page.
+
+## 0074 — Limits on the web push service's open routes (2026-11-17)
+
+From the security review of 2026-11-17 (outside this repo). 0069 listed it
+as a known limit: the function URL's `/subscribe` and `/unsubscribe` take no
+token and had no limit of their own. This adds the limits. Numbered after
+0073, which the unmerged tip-line branch holds. Nothing here is applied by
+an agent; the owner's steps are in `infra/web-push/README.md`.
+
+- **Per network, per day.** 20 calls to the two open routes from one
+  network in one UTC day; the next is 429 with `Retry-After` until the day
+  turns. A network is a whole IPv4 address or the /64 of an IPv6 address.
+  A person turning one water on, changing it and turning it off uses three.
+  A call that fails validation is refused before it is counted.
+- **What the count is kept under.** Not the address. The function makes a
+  code with HMAC-SHA-256 from the network and the day, keyed by a value
+  derived from the service's own sender token, and keeps a row named by
+  that code holding the count and an expiry one day out (DynamoDB's TTL
+  removes it within a few days). The code differs each day and cannot be
+  made or checked without the key. 0069's "no IP address kept" stays true,
+  and the privacy page gains a "Limits" item that says exactly this: a
+  count per connection per day, under a scrambled code, deleted within a
+  few days. Its date moves to 2026-11-17 when the push section is on.
+- **Because the code needs the key**, the two open routes now read the
+  service's parameters as the token routes do, and answer 503 when they are
+  missing. Before, an unconfigured service still stored subscriptions it
+  could never send to.
+- **In total.** 100 new subscriptions a day from everyone; 100 live
+  subscriptions on one water; 2,000 live in all. The arithmetic: 0069's
+  test passes at 25 live subscriptions after 60 days, under one new
+  subscription every two days, so the daily figure is about 240 times the
+  passing rate and the total is 80 times the passing count. 100 on a water
+  bounds one message's fan-out: ten at a time with a five-second cap each
+  is at most 50 seconds for a water, inside the 120-second function. A
+  browser changing its water needs room on the new water but is not a new
+  subscription; a renewal (0069) swaps one row for another and needs no
+  room, and when two renewals of one row arrive at once only one of them
+  adds a row. Stopping is never refused by the totals, only by the per-network
+  count.
+- **What a subscription must be.** As 0069, and stricter: only the fields a
+  browser's `toJSON()` gives (`endpoint`, `expirationTime`, `keys` with
+  `p256dh` and `auth`), and only `water_id`, `subscription` and `replaces`
+  in the body; the endpoint at most 1,024 characters, https on a listed
+  push host, default port, no credentials, no fragment, with a path; each
+  key exactly its length in unpadded base64url, in the one spelling an
+  encoder writes; `p256dh` a point on the P-256 curve, since a message
+  cannot be encrypted to anything else. A browser's call is at most 4 KB
+  (was 16 KB), checked before the body is decoded.
+- **One browser, one row, however the address is spelled.** The endpoint is
+  stored and hashed in the URL standard's spelling, so a host in capitals
+  or an explicit `:443` is the same row, and either spelling stops it. An
+  address a browser issued is already in that spelling, so existing rows
+  keep their keys. The same subscription for the same water sent again the
+  same day writes nothing.
+- **Dead subscriptions.** 404 and 410 still delete at once. A 400, 401 or
+  403 now counts as a refusal on the row; three in a row delete it, and a
+  delivery sets the count back to zero. A refusal counts only when the same
+  push service accepted another delivery in the same call: if every
+  delivery to a service is refused, the likelier cause is this service's
+  own keys, and nothing is counted, so a bad key can never empty the table.
+  A 500 or a timeout is never a refusal. The row's count of refusals is
+  one more thing stored per browser, and the privacy page's "What is
+  stored" item now names it.
+- **A send call has a time budget.** `/send` stops starting deliveries 90
+  seconds in and answers with `skipped`, the number of subscriptions it did
+  not reach, instead of running into the function's 120-second timeout and
+  answering nothing. Those subscriptions get no message from that run (0069:
+  a message is sent once); `skipped` is added to the totals `counts.sh`
+  prints.
+- **A ceiling on the table.** `on_demand_throughput` on the table and on
+  `by_water`: 25 write and 100 read request units a second by default
+  (`table_max_write_units`, `table_max_read_units`). Pay-per-request has no
+  ceiling of its own; with one, the table's largest possible month is 25 x
+  86,400 x 31 = about 67 million writes, a fixed and small figure, where
+  before it was whatever arrived. Past the ceiling DynamoDB throttles and
+  the function answers 500. A send to 100 subscribers is about 100 writes
+  over several seconds, under the ceiling.
+- **Not in this change.** No check that a water id exists (0069: the
+  service does not know the waters). No Lambda reserved concurrency (the
+  account's quota cannot reserve any yet; `reserved_concurrency` is still
+  there for when it can). No firewall in front of the function URL, which
+  would cost more a month than the test. `budget_email` stays optional; the
+  README now says to set it. The page's script is unchanged: over a limit
+  it shows its existing "That did not work: the sign-up was refused"
+  line, and the calendar buttons still work.
+- **Guards.** `make pushlambda`: 16 new handler tests and 3 new validation
+  tests, each of which fails on the code before this change (the per-network
+  limit across both routes and its reset at the day's turn; the /64; that no
+  stored row holds the address and that the code changes daily; the daily
+  and live totals; the per-water limit by sign-up and by switch; unknown
+  fields; a key off the curve; two spellings of one address; the repeat that
+  writes nothing; two renewals of one row at once; three refusals; refusals
+  with no delivery to vouch for them; a delivery resetting the count; the time budget). `make pushinfra`
+  validates the Terraform. `test_site_push.py` holds the privacy page's new
+  sentences.

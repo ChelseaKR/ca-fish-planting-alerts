@@ -69,3 +69,25 @@ variable "budget_email" {
   type        = string
   default     = ""
 }
+
+variable "table_max_write_units" {
+  description = "The most write request units the table, and its index, will take in one second (DECISIONS 0074). The function's own limits keep real use to a few writes a minute; a send to 100 subscribers is the busiest it gets. Past this DynamoDB throttles instead of billing."
+  type        = number
+  default     = 25
+
+  validation {
+    condition     = var.table_max_write_units >= 1 && var.table_max_write_units <= 1000
+    error_message = "table_max_write_units must be between 1 and 1000."
+  }
+}
+
+variable "table_max_read_units" {
+  description = "The most read request units the table, and its index, will take in one second (DECISIONS 0074)."
+  type        = number
+  default     = 100
+
+  validation {
+    condition     = var.table_max_read_units >= 1 && var.table_max_read_units <= 1000
+    error_message = "table_max_read_units must be between 1 and 1000."
+  }
+}

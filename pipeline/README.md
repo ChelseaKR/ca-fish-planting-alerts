@@ -114,16 +114,32 @@ The download time defaults to the file's modification time; pass
 `DOWNLOADED_AT=2026-11-07` (noon Central) or
 `DOWNLOADED_AT=2026-11-07T11:23-08:00` to set it. The import refuses, and
 writes nothing, when the header is not TWRA's eight columns exactly, a row
-is short or long, the file parses to fewer than 100 records, the file is
-not newer than the data on file, or the same file is already loaded. It
+is short or long, the file parses to fewer than 100 records, or the file is
+not newer than the data on file. The same file downloaded again later is a
+re-confirmation (a quiet week at TWRA is not stale data): the records stay
+as they are, the download date moves, and the output says "same data as
+the <date> file; window renewed" instead of counts. It
 writes `data/states/tn.json` with the file's provenance in
 `checks.manual_file`, and the pages then say the data is "from TWRA's
 published schedule file, downloaded <date>". The daily run keeps trying
 tn.gov; a failed run changes only its own attempt fields, and a good one
-clears the manual label. `data/` is committed by the publish job, so the
-changed `tn.json` goes to `main` through a pull request; merge it before the
-next scheduled run rewrites `tn.json`, or re-run the import on a fresh
-branch.
+clears the manual label. The imported `tn.json` goes straight to `main` as
+one data-only commit (0061 addendum 2026-11-10), because the twice-daily
+publish run rewrites `tn.json` and a pull request would conflict with the
+next run. From the repository root, on an up-to-date `main`:
+
+    make import-tn-csv CSV="$HOME/Downloads/Trout Fishing and Stockings in Tennessee.csv"
+    make lint test
+    git add pipeline/data/states/tn.json
+    git commit -m "data(tn): TWRA's schedule file, downloaded YYYY-MM-DD (0061)"
+    git push origin HEAD:main
+
+The import is the gate for the file; `make lint test` (the importer's own
+tests included) checks that the code still passes before the push, and CI's
+`verify` job runs on the push to `main`. A push that is not a fast-forward
+is refused: pull and run the import again. Any change to code, tests,
+workflows or docs still goes through a pull request; only the data file
+goes straight to `main`.
 
 ## Coverage report
 

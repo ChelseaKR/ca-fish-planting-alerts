@@ -6,9 +6,10 @@ structured data; when the two carry a date it must be the same date: the day
 the page's data last changed, never the build date. A page with no data date
 (about, gear, privacy) carries no dateModified at all.
 
-California water pages carry it too (wired after the water-convert branch,
-DECISIONS 0054, merged). The check below covers every page that has both a
-sitemap lastmod and a dateModified.
+California water pages carry it too (since 2026-11-19, ahead of the
+water-convert branch, DECISIONS 0054; tests/test_site_ca_water_dates.py pins
+them). The check below covers every page that has both a sitemap lastmod and
+a dateModified.
 
 Built from the pinned fixtures (California plus Tennessee).
 """

@@ -9,6 +9,7 @@
   {% if ads_enabled %}
   Some of its pages also show one Google ad; see <a href="#ads">Ads</a>.
   {% endif %}
+  {% if app_store_live %}
   {# correction 1 (apps coverage): lede begins #}
   The {{ site_name }} apps for iPhone (with widgets) and for
   Android collect no data: no analytics, no advertising and no
@@ -16,12 +17,20 @@
   The Android app is free, sells nothing and does include one library from
   Google, described under <a href="#app">The apps</a>.
   {# correction 1 (apps coverage): lede ends #}
+  {% else %}
+  There is no account.
+  {% endif %}
 </p>
 {% else %}
 <p class="lede">
+  {% if app_store_live %}
   Neither the {{ site_name }} website nor its apps for iPhone and Android collect
   personal data. There is no account, no analytics, no advertising and no
   third-party script on the website.
+  {% else %}
+  The {{ site_name }} website does not collect personal data. It has no
+  account, no analytics, no advertising and no third-party script.
+  {% endif %}
 </p>
 {% endif %}
 <p>
@@ -29,8 +38,10 @@
   plain links to Amazon.com that earn the owner a commission; they are plain links, not ads or scripts. See
   <a href="#affiliate">Gear links</a>.
 </p>
-{# correction 1 (apps coverage): scope line #}
-<p class="muted">Last updated {% if push %}2026-11-08{% else %}2026-11-08{% endif %}. Covers this website and the {{ site_name }} apps for iPhone and Android.</p>
+{# correction 1 (apps coverage): scope line. Every version of the page
+   changed on 2026-11-21, when the app sections came out while the launch
+   switch is off (there is no app), so one date covers them all. #}
+<p class="muted">Last updated 2026-11-21. Covers this website{% if app_store_live %} and the {{ site_name }} apps for iPhone and Android{% endif %}.</p>
 
 <h2 id="site">The website</h2>
 {% if ga4_measurement_id %}
@@ -109,7 +120,8 @@
 {# BEGIN seo/click-events paragraph: keep this block self-contained #}
 <p id="link-clicks">
   <strong>Link click events.</strong> When you click a gear link on a
-  water page or on the &ldquo;What to bring&rdquo; page (or on a county
+  water page or on the &ldquo;What to bring&rdquo; page{% if gift_guide %} or the
+  &ldquo;Gifts for trout anglers&rdquo; page{% endif %} (or on a county
   page, the county list or the home page), or one of the calendar links
   on a water page (Apple Calendar, Google Calendar or the .ics file), Google Analytics records that the click
   happened, which kind of page it was on (such as a water page, a county
@@ -169,12 +181,18 @@
       subscription&rsquo;s address (a URL your browser&rsquo;s push service
       issues: Apple&rsquo;s, Google&rsquo;s or Mozilla&rsquo;s), its two
       encryption keys, the water you chose, when you subscribed and when the
-      last notification was sent to it. Nothing else: no account, no name, no
+      last notification was sent to it, and how many deliveries in a row your
+      push service has refused. Nothing else: no account, no name, no
       email address.</li>
   <li><strong>The request.</strong> Pressing the button sends that
       subscription to <code>{{ push.api_url }}</code>. Like any web request
       it carries your IP address; the service does not keep it, and its logs
       hold counts and status codes, never addresses.</li>
+  <li><strong>Limits.</strong> The service takes a set number of requests a
+      day from one connection, so that no one can fill it up. To count them
+      it turns the address into a scrambled code with a secret key and keeps
+      only that code and the day&rsquo;s count. The code is not the address,
+      it is different every day, and it is deleted within a few days.</li>
   <li><strong>What a notification is.</strong> After each schedule check, if
       the agency added, moved or dropped a date for your water, one message
       goes to your browser through your push service, encrypted so that only
@@ -190,11 +208,12 @@
       notifications for this site off in your browser, or removing the Home
       Screen web app on an iPhone or iPad, makes the address stop working, and
       the stored copy is deleted the next time a message to it fails. A
-      subscription that has had nothing sent to it for about 13 months is
-      deleted on its own.</li>
-  <li><strong>Counting.</strong> The service keeps totals, nothing per
-      person: how many subscriptions were made and stopped, and how many
-      messages were sent and failed.{% if ga4_measurement_id %} The button press itself is counted by
+      subscription your push service keeps refusing is deleted after three
+      refusals in a row. A subscription that has had nothing sent to it for
+      about 13 months is deleted on its own.</li>
+  <li><strong>Counting.</strong> Apart from that day&rsquo;s count, the
+      service keeps totals, nothing per person: how many subscriptions were
+      made and stopped, and how many messages were sent and failed.{% if ga4_measurement_id %} The button press itself is counted by
       Google Analytics as a calendar-subscribe click of type &ldquo;push&rdquo;,
       under the opt-outs described above.{% endif %}</li>
 </ul>
@@ -221,7 +240,8 @@
   Water pages with at least two dated stockings on record, California county
   pages, the county list and the home page have a short &ldquo;Gear&rdquo;
   list of links that search Amazon.com, and the &ldquo;What to bring&rdquo;
-  page has a longer list of the same kind. They are affiliate links: this site is
+  page has a longer list of the same kind{% if gift_guide %}, as does the
+  &ldquo;Gifts for trout anglers&rdquo; page{% endif %}. They are affiliate links: this site is
   a participant in the Amazon Services LLC Associates Program, so if you buy
   something after following one, the site&rsquo;s owner earns a commission,
   and it costs you nothing extra. {{ amazon_disclosure }}
@@ -230,7 +250,9 @@
   state&rsquo;s agency.
 </p>
 <ul>
+{% if app_store_live %}
   <li>The links are on the website, never in the iOS app.</li>
+{% endif %}
   <li>They are ordinary links. Nothing loads from Amazon when a page opens,
       and this site adds no script or pixel for them.</li>
   <li>Once you click, Amazon&rsquo;s own site and privacy notice apply, and
@@ -244,6 +266,7 @@
 {% include "_privacy_ads.html.jinja" %}
 {% endif %}
 
+{% if app_store_live %}
 <h2 id="app">The apps</h2>
 <ul>
   {# correction 1 (apps coverage): items begin #}
@@ -308,14 +331,22 @@
   {# correction 1 (apps coverage): notifications and purchases end #}
   <li><strong>App Store privacy label:</strong> Data Not Collected.</li>
 </ul>
+{% endif %}
 
 <h2 id="children">Children</h2>
 {% if ga4_measurement_id %}
+{% if app_store_live %}
 <p>
   The app collects nothing from anyone, including children. The website's
   analytics are the same for every visitor and never ask for a name, age or
   contact details.
 </p>
+{% else %}
+<p>
+  The website's analytics are the same for every visitor, children
+  included, and never ask for a name, age or contact details.
+</p>
+{% endif %}
 {% else %}
 <p>Nothing is collected from anyone, including children.</p>
 {% endif %}

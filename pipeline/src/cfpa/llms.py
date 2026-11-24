@@ -126,6 +126,15 @@ def _hub_line(h: dict[str, Any]) -> str:
                 f" The check on {h['attempt_label']} failed, so the pages show "
                 "the data from the last good read."
             )
+    winter = h.get("winter")
+    if winter:
+        # DECISIONS 0070: the hub's winter section, in the hub's own words.
+        kind = "plan" if h["semantics"] == "plan" else "schedule"
+        text += (
+            f" Winter ({h['url']}#winter): the {winter['water_count']} waters on "
+            f"{h['agency_short']}'s {kind} from {winter['first_label']} through "
+            f"{winter['end_label']}, each date as {h['agency_short']} gives it."
+        )
     return text
 
 

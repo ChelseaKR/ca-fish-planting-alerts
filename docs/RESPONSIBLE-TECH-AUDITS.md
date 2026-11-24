@@ -104,9 +104,11 @@ Last regenerated: 2026-09-17
 ## E. Accessibility
 
 See `docs/standards/ACCESSIBILITY-STANDARD.md`. AUTO: axe, pa11y-ci and
-Lighthouse on every built page (`site-checks.yml`). REVIEW: the site and app
-walkthroughs, the statement, and the third-party (GA4) audit are open in
-#5.
+Lighthouse on every built page (`site-checks.yml`). The website's
+Accessibility Conformance Report against WCAG 2.2 A and AA, with its
+third-party content note and the human walkthrough steps still to do, is
+`docs/a11y/ACR.md` (2026-11-19). REVIEW: the site and app walkthroughs and
+the statement are open in #5.
 
 ## F. Security
 

@@ -526,6 +526,8 @@ def test_ma_refuses_a_file_hub_marks_stale_and_never_reads_it():
     csv_route = respx.get(url__startswith=MA_RESULT.split("?")[0]).respond(
         200, text=_text("ma.csv")
     )
+    # DECISIONS 0071: the stale answer is followed by Hub's layer metadata.
+    respx.get(ma.METADATA_URL).respond(404)
     with httpx.Client() as client, pytest.raises(StateFetchError, match="stale"):
         ma.fetch(client, UA, no_sleep)
     assert not csv_route.called
@@ -543,9 +545,11 @@ def test_ma_control_a_file_hub_marks_ready_is_read():
     csv_route = respx.get(url__startswith=MA_RESULT.split("?")[0]).respond(
         200, text=_text("ma.csv")
     )
+    metadata = respx.get(ma.METADATA_URL).respond(200, json={})
     with httpx.Client() as client:
         bodies = ma.fetch(client, UA, no_sleep)
     assert csv_route.called
+    assert not metadata.called  # only a stale answer asks Hub's metadata
     assert len(ma.parse(bodies).records) == 150
 
 

@@ -8,10 +8,10 @@ stand behind, and what each page says now.
 2. /about/'s Water locations paragraph is true of the pages. (Written to say
    the pages show no map; now that the coordinates work is in the stack it
    states the map links and the tests check them.)
-3. The support FAQ's two app answers are true before launch (the app is not
-   on the App Store yet) and are the old words once the launch switch is on.
-   The visible text and the FAQPage JSON-LD stay word for word identical in
-   both states.
+3. The support FAQ's app answers are true with the launch switch off (there
+   is no app: one question, answered by the calendar) and are the old two
+   once the switch is on. The visible text and the FAQPage JSON-LD stay word
+   for word identical in both states.
 
 Pages are read with html.parser, never with a regex over tags. Each negative
 control asserts that its sabotage changed the input before it asserts that
@@ -35,7 +35,13 @@ FRESH = FIXTURES / "schedule-fresh-2026-09-13.html"
 SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "snapshot.v1.json"
 BASE_URL = "https://example.invalid/ca-fish-planting-alerts"
 CDFW_TERMS = "https://wildlife.ca.gov/Conditions-of-Use"
-NOT_YET = "The iPhone app is not in the App Store yet"
+NOT_YET = "not in the App Store yet"
+NO_APP_Q = "Can I get an alert when a water is scheduled?"
+NO_APP_A = (
+    "Yes, by calendar. On a California or Tennessee water's page, press Apple "
+    "Calendar or Google Calendar. Each new week or date the agency schedules "
+    "then shows up in your calendar. There is no Trout Truck app."
+)
 
 
 class _Page(HTMLParser):
@@ -245,19 +251,23 @@ def test_before_launch_every_faq_answer_is_true_today(before_launch):
     text = _visible(html)
     heads = [_flat(h) for h in _read(html).h2]
     answers = {q["name"]: q["acceptedAnswer"]["text"] for q in _faq(html)}
-    assert len(answers) == 5
+    assert len(answers) == 4
     for name, answer in answers.items():
         assert name in heads
         assert answer in text  # word for word
-    app_answers = [a for a in answers.values() if "app" in a.lower()]
-    assert len(app_answers) >= 2
-    alert = answers["How will the app's alerts work?"]
-    restore = answers["How will restoring a purchase on a new phone work?"]
-    assert alert.startswith(NOT_YET) and restore.startswith(NOT_YET)
-    # the live-state questions assume an installed app
-    assert "Why didn't the app alert me?" not in answers
-    assert "How do I restore my purchase on a new phone?" not in answers
-    assert "Why didn't the app alert me?" not in text
+    assert answers[NO_APP_Q] == NO_APP_A
+    assert NOT_YET not in text
+    # no question assumes an app that can be installed, or a purchase
+    for gone in (
+        "How will the app's alerts work?",
+        "How will restoring a purchase on a new phone work?",
+        "Why didn't the app alert me?",
+        "How do I restore my purchase on a new phone?",
+    ):
+        assert gone not in answers
+        assert gone not in heads
+    assert 'id="restore"' not in html
+    assert "purchase" not in " ".join(answers.values())
 
 
 def test_after_launch_the_faq_is_the_original_words(after_launch):
@@ -289,25 +299,25 @@ def test_the_flip_changes_only_the_flag_constants_not_the_faq_code():
     from the same ``app_store_live`` the banner and badge read."""
     assert isinstance(site.APP_STORE_LIVE_DEFAULT, bool)
     assert site._support_faq("x", app_store_live=True)[3] == site._APP_ALERTS_FAQ_LIVE
-    assert (
-        site._support_faq("x", app_store_live=False)[3] == site._APP_ALERTS_FAQ_NOT_YET
-    )
+    assert site._support_faq("x", app_store_live=False)[3:] == [site._NO_APP_ALERTS_FAQ]
+    assert site._NO_APP_ALERTS_FAQ == (NO_APP_Q, NO_APP_A)
 
 
 def test_negative_control_catches_an_answer_that_drifts_from_the_page(before_launch):
     html = _page(before_launch, "support")
-    sabotaged = html.replace("sends no alerts today", "sends alerts today", 1)
+    sabotaged = html.replace("There is no Trout Truck app.", "Get the app.", 1)
     assert sabotaged != html  # the sabotage landed
     text = _visible(sabotaged)
     answers = [q["acceptedAnswer"]["text"] for q in _faq(sabotaged)]
     assert any(a not in text for a in answers)
 
 
-def test_negative_control_catches_an_answer_that_claims_the_app_is_installed(
-    before_launch,
-):
+def test_negative_control_catches_an_answer_that_promises_the_app(before_launch):
     html = _page(before_launch, "support")
-    sabotaged = html.replace(NOT_YET, "The app is installed", 1)
-    assert sabotaged != html
-    answers = [q["acceptedAnswer"]["text"] for q in _faq(sabotaged)]
-    assert not all(a.startswith(NOT_YET) for a in answers if "alert" in a[:60])
+    sabotaged = html.replace(
+        "There is no Trout Truck app.", "The app is not in the App Store yet.", 2
+    )
+    assert sabotaged.count(NOT_YET) == 2  # the page and its JSON-LD
+    answers = {q["name"]: q["acceptedAnswer"]["text"] for q in _faq(sabotaged)}
+    assert answers[NO_APP_Q] != NO_APP_A
+    assert NOT_YET in _visible(sabotaged)

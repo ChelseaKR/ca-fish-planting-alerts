@@ -16,9 +16,12 @@ loads, with the same values, so its rows go through the reader's own
 ``tn.parse_rows``: the same TBD months, week-of Sundays, month letters,
 skipped non-Sunday weeks and TWRA's own spellings ("Caroll"). The header is
 checked exactly and any drift is refused, as is a file older than the data
-already on file. The history is written with the file's provenance
-(``Checks.manual_file``); the daily automated read keeps running and failing
-honestly, and a failed run changes only its own attempt fields.
+already on file. The same file downloaded again later is a re-confirmation
+(0061 addendum 2026-11-10): a quiet week at TWRA is not stale data, so the
+records stay as they are, the download time moves, and the freshness
+window (DECISIONS 0065) is renewed. The history is written with the file's
+provenance (``Checks.manual_file``); the daily automated read keeps running
+and failing honestly, and a failed run changes only its own attempt fields.
 """
 
 from __future__ import annotations
@@ -115,6 +118,8 @@ class ImportResult:
     history: StateHistory
     path: Path
     message: str
+    # The file's bytes were already on file and only the download time moved.
+    reconfirmed: bool
 
 
 def import_csv(
@@ -158,8 +163,17 @@ def import_csv(
             f"the data on file ({prior.last_success_at:%Y-%m-%d %H:%M}Z); an older "
             "file would mark newer dates as removed"
         )
-    if prior.manual_file is not None and prior.manual_file.sha256 == sha:
-        raise ImportRefused("this exact file is already loaded")
+    # The same bytes downloaded again later (the time check above has passed)
+    # are a quiet week at TWRA, not stale data (0061 addendum 2026-11-10).
+    # The rows go through the same merge, which keeps every record and its
+    # first sighting, and the download time moves, which is what the
+    # freshness watchdog reads (0065). The same download run twice has the
+    # same modification time and is refused above.
+    same_file = (
+        prior.manual_file
+        if prior.manual_file is not None and prior.manual_file.sha256 == sha
+        else None
+    )
     as_of = civil_date(downloaded_at, source.time_zone)
     try:
         merged = merge(history, feed, source, as_of=as_of)
@@ -186,6 +200,15 @@ def import_csv(
             imported_at=now,
         ),
     )
+    if same_file is not None:
+        earlier = civil_date(same_file.downloaded_at, source.time_zone)
+        message = (
+            f"same data as the {earlier.isoformat()} file; window renewed; "
+            f"downloaded {as_of.isoformat()}"
+        )
+        return ImportResult(
+            history=merged, path=hpath, message=message, reconfirmed=True
+        )
     before = {r.key() for r in history.records if r.status == "listed"}
     removed = sum(
         1 for r in merged.records if r.status == "removed" and r.key() in before
@@ -201,7 +224,7 @@ def import_csv(
         + f"; downloaded {as_of.isoformat()}"
         + "".join(f"; {note}" for note in feed.skipped_notes)
     )
-    return ImportResult(history=merged, path=hpath, message=message)
+    return ImportResult(history=merged, path=hpath, message=message, reconfirmed=False)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -230,7 +253,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (ImportRefused, StateHistoryError, OSError) as exc:
         print(f"import-tn-csv: refused, nothing written: {exc}", file=sys.stderr)
         return 1
-    print(f"import-tn-csv: TN updated: {result.message}")
+    verb = "re-confirmed" if result.reconfirmed else "updated"
+    print(f"import-tn-csv: TN {verb}: {result.message}")
     print(f"import-tn-csv: wrote {result.path}")
     return 0
 

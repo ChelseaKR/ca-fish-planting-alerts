@@ -153,7 +153,9 @@ def test_water_page_badge_matches_its_status_block(built: Path) -> None:
         state = BADGE_RE.search(block)
         assert state is not None, name
         this_week, next_week = re.findall(
-            r"<dd>(On|Not on) CDFW&#39;s schedule[ .][^<]*</dd>", block
+            # .*? and not [^<]*: the "as of" time is in a <time> element.
+            r"<dd>(On|Not on) CDFW&#39;s schedule[ .].*?</dd>",
+            block,
         )
         want = site.schedule_status(
             this_week=this_week == "On", next_week=next_week == "On"
@@ -316,7 +318,9 @@ def test_states_page_title_description_and_sitemap(built: Path) -> None:
     pages = _pages(built)
     text = pages["states/index.html"]
     title = _search(r"<title>(.*?)</title>", text).group(1)
-    assert title == "Trout stocking schedule for all 50 states | Trout Truck"
+    assert title == "Trout stocking schedules: CA and TN | Trout Truck"
+    assert "50 states" not in title
+    assert "50 states" not in text.split("</title>")[0]
     others = [
         n
         for n, t in pages.items()

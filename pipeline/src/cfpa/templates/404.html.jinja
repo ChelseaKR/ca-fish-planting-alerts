@@ -1,10 +1,28 @@
 {% extends "base.html.jinja" %}
 {% block content %}
 <h1>Page not found</h1>
+{% if other_states %}
+{#- GitHub Pages serves this page at any missing address, a mistyped
+    /tn/water/... one too, so with other states on the site it names their
+    address shape and links each state's hub, not California's alone. -#}
+<p class="lede">
+  There is no page at this address. California water pages live at
+  <code>water/&lt;name&gt;/</code>, and other states' at
+  <code>&lt;state&gt;/water/&lt;name&gt;/</code>, such as
+  <code>tn/water/&lt;name&gt;/</code>. A water its state's agency has never
+  listed has no page here.
+</p>
+<p><a href="{{ root }}">California: this week's planting schedule and every water, A&ndash;Z</a>.</p>
+<p>
+  Also on {{ site_name }}:
+  {% for s in other_states %}<a href="{{ root }}{{ s.seg }}/">{{ s.name }} trout stocking schedule</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+</p>
+{% else %}
 <p class="lede">
   There is no page at this address. Water pages live at
   <code>water/&lt;name&gt;/</code>; a water that CDFW has never scheduled has
   no page here.
 </p>
 <p><a href="{{ root }}">This week's planting schedule and every water, A&ndash;Z</a>.</p>
+{% endif %}
 {% endblock %}

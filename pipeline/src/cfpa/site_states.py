@@ -42,6 +42,8 @@ from .water_kind import WaterKind, water_kind
 
 UPCOMING_DAYS = 60
 RECENT_DAYS = 45
+# What a results page shows of a description (site.WATER_DESCRIPTION_MAX).
+HUB_DESCRIPTION_MAX = 160
 # The example of an agency's own words shown on a plan state's pages.
 APPROXIMATE_EXAMPLE = "April - third week"
 
@@ -332,6 +334,104 @@ def _hub_sections(
     return this_week, other
 
 
+def winter_window(today: dt.date) -> tuple[dt.date, dt.date, dt.date]:
+    """(first day, last day, shown from) of the winter a hub shows (DECISIONS
+    0070): November through February on the calendar. From March 1 the next
+    winter is the one shown, so a page never shows a winter that has ended,
+    and ``shown from`` (that March 1) is when the section last changed
+    without the data changing."""
+    year = today.year if today.month >= 3 else today.year - 1
+    return (
+        dt.date(year, 11, 1),
+        dt.date(year + 1, 3, 1) - dt.timedelta(days=1),
+        dt.date(year, 3, 1),
+    )
+
+
+def winter_schedule(
+    state: dict[str, Any], waters: list[dict[str, Any]], today: dt.date
+) -> dict[str, Any] | None:
+    """Every water a schedule or plan state's data lists for the winter
+    ``winter_window`` gives, with each of its dates in the agency's own
+    precision (DECISIONS 0070). None for a report state, whose data holds no
+    future, and None when the data lists no water that winter: the hub then
+    has no winter section at all, so an empty file is never read as "no
+    winter stocking"."""
+    if state["semantics"] not in ("schedule", "plan"):
+        return None
+    first, last, shown_from = winter_window(today)
+    rows = []
+    dates = 0
+    for w in waters:
+        plants = sorted(
+            (
+                p
+                for p in w["plants"]
+                if p["status"] != "removed"
+                and first <= dt.date.fromisoformat(p["period"]["start"]) <= last
+            ),
+            key=lambda p: (p["period"]["start"], p["period"]["end"]),
+        )
+        if not plants:
+            continue
+        dates += len(plants)
+        rows.append(
+            {
+                "slug": w["slug"],
+                "name": w["name"],
+                "place": _place(w, state),
+                "start": plants[0]["period"]["start"],
+                "whens": [when_label(p["period"]) for p in plants],
+            }
+        )
+    if not rows:
+        return None
+    rows.sort(key=lambda r: (r["start"], r["name"], r["slug"]))
+    return {
+        "label": f"{first:%B %Y} to {last:%B %Y}",
+        "first_label": f"{first:%B %Y}",
+        "end_label": f"{last:%B %Y}",
+        "waters": rows,
+        "water_count": len(rows),
+        "date_count": dates,
+        "shown_from": shown_from.isoformat(),
+    }
+
+
+def _hub_description(
+    state: dict[str, Any],
+    species: str,
+    schedule: bool,
+    winter: dict[str, Any] | None,
+) -> str:
+    """A hub's meta description. With a winter section it names the winter
+    (DECISIONS 0070), as long as the whole line fits ``HUB_DESCRIPTION_MAX``
+    with the agency's full name or else its short name; otherwise it is the
+    line every hub had before."""
+    wd = words(state)
+    doing = (
+        f"has {wd['verb']} {species} stocking" if schedule else f"has stocked {species}"
+    )
+    where = f" in {state['name']}: this week, "
+    plain = (
+        f"Where {state['agency']['name']} {doing}{where}"
+        + ("what is coming up" if schedule else "recent stockings")
+        + f", and the stocking history of all {state['waters_count']} waters."
+    )
+    if winter is None:
+        return plain
+    tail = (
+        f"winter dates at {winter['water_count']} waters through "
+        f"{winter['end_label']}, and the stocking history of all "
+        f"{state['waters_count']} waters."
+    )
+    for agency in (state["agency"]["name"], state["agency"]["short_name"]):
+        line = f"Where {agency} {doing}{where}{tail}"
+        if len(line) <= HUB_DESCRIPTION_MAX:
+            return line
+    return plain
+
+
 def _state_common(
     ctx: StatesContext, state: dict[str, Any], root: str
 ) -> dict[str, Any]:
@@ -418,14 +518,20 @@ def render_states(
             )
             if not thin:
                 entries.append((url, lastmod))
-        hub_lastmods[state["code"]] = max(lastmods.values())
+        today = _build_date(state, snap_v2["generated_at"])
+        winter = winter_schedule(state, waters, today)
+        # The winter section changes by itself on March 1 (DECISIONS 0070).
+        hub_lastmods[state["code"]] = max(
+            [*lastmods.values(), *([winter["shown_from"]] if winter else [])]
+        )
         entries.append(
             _render_hub(
                 ctx,
                 state,
                 waters,
                 hub_lastmods[state["code"]],
-                _build_date(state, snap_v2["generated_at"]),
+                today,
+                winter,
             )
         )
     entries.append(_render_index(ctx, snap_v2["states"], max(hub_lastmods.values())))
@@ -479,7 +585,9 @@ def _render_index(
         }
         for s in states
     ]
-    title = f"Trout stocking schedule for all 50 states | {ctx.site_name}"
+    codes = [s["code"] for s in states]
+    listed = f"{', '.join(codes[:-1])} and {codes[-1]}" if len(codes) > 1 else codes[0]
+    title = f"Trout stocking schedules: {listed} | {ctx.site_name}"
     live = {s["code"]: row["href"] for s, row in zip(states, rows, strict=True)}
     entries = state_coverage.coverage(live)
     live_names = [e["name"] for e in entries if e["status"] == "live"]
@@ -511,6 +619,40 @@ def _render_index(
     return page_url, lastmod
 
 
+def _civil_day_label(iso_z: str, state: dict[str, Any]) -> str:
+    """ "Tue, 13 Oct 2026": the civil date in the state's time zone."""
+    d = (
+        dt.datetime.fromisoformat(iso_z.replace("Z", "+00:00"))
+        .astimezone(ZoneInfo(SOURCES[state["code"]].time_zone))
+        .date()
+    )
+    return f"{d:%a}, {d.day} {d:%b} {d.year}"
+
+
+def stale_copy_sentence(state: dict[str, Any]) -> str:
+    """Why the latest check failed, when it failed on ArcGIS Hub's own stale
+    flag (Massachusetts, DECISIONS 0063), in the words Chelsea approved on
+    2026-11-14 (DECISIONS 0071). Empty unless every number in it was
+    measured on that attempt and the copy has fewer entries than the
+    agency's layer; otherwise the page keeps the plain failed-check line."""
+    stale = state["checks"].get("stale_copy")
+    if not stale or state["checks"]["last_attempt_ok"]:
+        return ""
+    edited = stale.get("source_last_edit_at")
+    total = stale.get("source_record_count")
+    have = stale.get("copy_record_count")
+    if not edited or total is None or have is None or have >= total:
+        return ""
+    short = state["agency"]["short_name"]
+    return (
+        f"{short} last changed its stocking report on "
+        f"{_civil_day_label(edited, state)}. The copy Trout Truck can read is "
+        f"older than that change and has {have} of the report's {total} "
+        "entries, so some stockings may be missing here. ArcGIS Hub, the "
+        "service it is read through, has not rebuilt that copy since."
+    )
+
+
 def _freshness(state: dict[str, Any]) -> dict[str, Any]:
     """How a state page words its data's age.
 
@@ -537,6 +679,9 @@ def _freshness(state: dict[str, Any]) -> dict[str, Any]:
             )
     return {
         "manual_sentence": sentence,
+        "stale_copy_sentence": stale_copy_sentence(state)
+        if failed and not manual
+        else "",
         "manual": manual,
         "automatic_failing": manual and failed,
         "attempt_failed": failed and not manual,
@@ -555,6 +700,7 @@ def _render_hub(
     waters: list[dict[str, Any]],
     lastmod: str,
     today: dt.date,
+    winter: dict[str, Any] | None = None,
 ) -> tuple[str, str | None]:
     seg = state["code"].lower()
     page_url = f"{ctx.base_url}/{seg}/"
@@ -582,17 +728,7 @@ def _render_hub(
     trail = [*_trail_root(ctx), (state["name"], page_url)]
     html = ctx.env.get_template("state_hub.html.jinja").render(
         title=title,
-        description=(
-            f"Where {state['agency']['name']} "
-            + (
-                f"has {wd['verb']} {species} stocking"
-                if schedule
-                else f"has stocked {species}"
-            )
-            + f" in {state['name']}: this week, "
-            + ("what is coming up" if schedule else "recent stockings")
-            + f", and the stocking history of all {state['waters_count']} waters."
-        ),
+        description=_hub_description(state, species, schedule, winter),
         canonical_url=page_url,
         root="../",
         **_state_common(ctx, state, "../"),
@@ -619,6 +755,7 @@ def _render_hub(
         other=other,
         upcoming_days=UPCOMING_DAYS,
         recent_days=RECENT_DAYS,
+        winter=winter,
         water_groups=water_groups,
         **_freshness(state),
         range_label=_date_range_label(waters),

@@ -33,9 +33,21 @@ from typing import Any
 from urllib.parse import urlencode, urlsplit
 
 import jinja2
+from markupsafe import Markup, escape
 
 from . import ads as ads_mod
-from . import feeds, guides, indexnow, llms, opendata, share_cards, site_states, weeks
+from . import (
+    feeds,
+    guides,
+    ics,
+    indexnow,
+    llms,
+    opendata,
+    share_cards,
+    site_states,
+    tip,
+    weeks,
+)
 from . import push as push_mod
 from .snapshot import week_of
 from .thin import is_thin
@@ -492,6 +504,122 @@ def gear_guide_links(day: dt.date | None = None) -> dict[str, list[dict[str, str
     }
 
 
+# The gift guide at /gifts/ (DECISIONS 0047): ideas for someone who fishes
+# for planted trout, each with a sentence of why it helps at a lake or pond.
+# 0042 allows no new page family until 2026-11-27, so the page is built only
+# when the build date (the day of the daily publish, as for the /gear/
+# holiday section, 0043) is on or after GIFT_GUIDE_FROM. Before that, no
+# page, sitemap entry or link to it exists, and the build is byte for byte
+# what it was without it. build_site's ``gift_guide`` overrides it for tests.
+GIFT_GUIDE_FROM = dt.date(2026, 11, 27)
+GIFT_GUIDE_TITLE = "Gifts for trout anglers"
+GIFT_GUIDE_DESCRIPTION = (
+    "Practical gift ideas for someone who fishes the lakes and ponds on "
+    "California's trout planting schedule, with a short note on why each one "
+    "helps on the bank."
+)
+# Label, Amazon search terms, then our own words for why it helps on a lake or
+# pond on the planting schedule. Category searches, never a product: no
+# brand, price, rating or image, the same rules as /gear/ (0030).
+GIFT_GUIDE_ITEMS: tuple[tuple[str, str, str], ...] = (
+    (
+        "A small tackle box",
+        "small fishing tackle box",
+        "Hooks, split shot and bobbers get lost in a pocket. A small box with "
+        "dividers keeps a morning's tackle sorted and easy to carry to the bank.",
+    ),
+    (
+        "Fishing pliers with a line cutter",
+        "fishing pliers line cutter",
+        "A trout can take a bait hook deep. Pliers make removing it quicker and "
+        "kinder, and the cutter trims line without anyone using their teeth.",
+    ),
+    (
+        "Polarized sunglasses",
+        "polarized fishing sunglasses",
+        "They cut the glare off the water, so a bobber, the bottom and fish near "
+        "shore are easier to see.",
+    ),
+    (
+        "A rod holder for the bank",
+        "bank fishing rod holder",
+        "Bait fishing at a lake is mostly waiting. A holder pushed into the bank "
+        "keeps the rod out of the dirt and the line ready while hands are free.",
+    ),
+    (
+        "A rubber-mesh landing net",
+        "rubber mesh landing net",
+        "A landing net helps bring a fish in without losing it.",
+    ),
+    (
+        "A headlamp",
+        "headlamp",
+        "Many anglers arrive before sunrise, when trout are often active. A "
+        "headlamp leaves both hands free to tie knots and bait a hook in the dark.",
+    ),
+    (
+        "A folding camp chair",
+        "folding camp chair",
+        "Many planting waters are fished from shore. A light chair makes a long "
+        "morning on the bank easier, and it folds into the car.",
+    ),
+    (
+        "A soft cooler bag",
+        "soft cooler bag",
+        "Fish keep better cold. A soft cooler with ice packs is easy to carry "
+        "from the parking lot, and it holds lunch and drinks as well.",
+    ),
+    (
+        "Fingerless fishing gloves",
+        "fingerless fishing gloves",
+        "Winter and spring mornings at a planting water can be cold. Open "
+        "fingertips leave room to tie knots and handle bait.",
+    ),
+    (
+        "Trout dough bait",
+        "trout dough bait",
+        "A jar fits in a stocking. Many anglers fish dough bait under a bobber "
+        "for planted trout where bait is allowed; check the water's rules.",
+    ),
+    (
+        "Trout fishing line, four to six pound",
+        "trout fishing line 4 lb 6 lb monofilament",
+        "Line wears and frays with use. A fresh spool in the light weight common "
+        "for trout is a small gift that gets used.",
+    ),
+)
+
+
+def gift_guide_live_or_default(value: bool | None, build_date: dt.date) -> bool:
+    """``value`` when given, else whether ``build_date`` is on or after
+    ``GIFT_GUIDE_FROM`` (read at call time)."""
+    return build_date >= GIFT_GUIDE_FROM if value is None else value
+
+
+# The California water pages' holiday line to /gifts/ (DECISIONS 0072): one
+# internal link under the gear block, for the 2026 holiday window alone. The
+# build date switches it on and off, both days included, so the daily
+# publish adds it on 2026-11-27 and takes it away on 2026-12-27 with no edit.
+# It never shows unless /gifts/ is built in the same build, so it never
+# points at a missing page. A year is part of each date: it does not come
+# back in 2027 without a new decision.
+WATER_GIFT_LINK_FIRST_DAY = dt.date(2026, 11, 27)
+WATER_GIFT_LINK_LAST_DAY = dt.date(2026, 12, 26)
+
+
+def water_gift_link_shown(day: dt.date, *, gift_guide: bool) -> bool:
+    """Whether a build dated ``day`` shows the water pages' line to /gifts/."""
+    return gift_guide and WATER_GIFT_LINK_FIRST_DAY <= day <= WATER_GIFT_LINK_LAST_DAY
+
+
+def gift_guide_items() -> list[dict[str, str]]:
+    """The gift guide's entries: label, tagged Amazon search URL and why."""
+    return [
+        {"label": label, "url": amazon_search_url(terms), "why": why}
+        for label, terms, why in GIFT_GUIDE_ITEMS
+    ]
+
+
 # The license the compiled schedule history is offered under, as a URL, for
 # the Dataset structured data on /about/ (docs/adr/0013). Unset on purpose:
 # the CC-BY license in docs/LICENSES-AND-ATTRIBUTION.md belongs to a
@@ -544,9 +672,37 @@ def _env() -> jinja2.Environment:
     )
     # A global, not page context, so the imported badge macro can read it.
     env.globals["status_words"] = STATUS_BADGE_WORDS
+    # The Ko-fi line on water pages (DECISIONS 0073), None when it is off.
+    # Read at build time, so a test can switch it with tip.KOFI_URL.
+    env.globals["tip"] = tip.page_context()
     # "{{ county|a_an }} County water": "an Inyo", "a Modoc".
     env.filters["a_an"] = lambda word: f"{indefinite_article(word)} {word}"
+    env.filters["time_dates"] = _time_dates
     return env
+
+
+_ISO_DAY = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+
+
+def _time_dates(text: str) -> Markup:
+    """``text``, escaped, with each ISO date in it wrapped in ``<time
+    datetime>`` so a machine can read the date a person reads. The words a
+    reader sees do not change: the element's text is the same date."""
+    out = Markup("")
+    at = 0
+    for m in _ISO_DAY.finditer(text):
+        out += escape(text[at : m.start()])
+        out += _time_tag(m.group(0), m.group(0))
+        at = m.end()
+    return out + escape(text[at:])
+
+
+def _time_tag(datetime_attr: str, label: str) -> Markup:
+    """``label`` in a ``<time datetime>``, or just ``label`` (escaped) when
+    there is no machine value to give."""
+    if not datetime_attr:
+        return escape(label)
+    return Markup('<time datetime="{}">{}</time>').format(datetime_attr, label)
 
 
 def _fmt_dt(iso_z: str) -> str:
@@ -554,33 +710,23 @@ def _fmt_dt(iso_z: str) -> str:
     return d.strftime("%Y-%m-%d %H:%M UTC")
 
 
+def _fmt_dt_attr(iso_z: str) -> str:
+    """The ``<time datetime>`` value for the minute ``_fmt_dt`` prints:
+    "2026-11-19T13:23Z" for "2026-11-19 13:23 UTC"."""
+    d = dt.datetime.fromisoformat(iso_z.replace("Z", "+00:00"))
+    return d.astimezone(dt.UTC).strftime("%Y-%m-%dT%H:%MZ")
+
+
 def _fmt_date_human(iso_date: str) -> str:
     d = dt.date.fromisoformat(iso_date)
     return d.strftime("%B %-d, %Y") if hasattr(d, "strftime") else iso_date
 
 
-def _ics_escape(text: str) -> str:
-    return (
-        text.replace("\\", "\\\\")
-        .replace(",", "\\,")
-        .replace(";", "\\;")
-        .replace("\n", "\\n")
-    )
-
-
-def _ics_fold(line: str) -> str:
-    # RFC 5545 §3.1: fold lines longer than 75 octets, continuation starts
-    # with a single space. Our lines are short in practice; folding is
-    # defensive.
-    b = line.encode("utf-8")
-    if len(b) <= 75:
-        return line
-    out = []
-    while len(b) > 75:
-        out.append(b[:75].decode("utf-8", errors="ignore"))
-        b = b[75:]
-    out.append(b.decode("utf-8", errors="ignore"))
-    return "\r\n ".join(out)
+# RFC 5545 TEXT escaping and line folding are cfpa.ics's (DECISIONS 0073).
+# The local fold this replaced let a continuation line run to 76 octets and
+# could cut a multi-byte character, which the Ko-fi line's longer
+# descriptions would have hit on every event.
+_ics_escape = ics.escape
 
 
 # How often a subscribed calendar should poll a water's feed. The publish
@@ -622,11 +768,14 @@ def build_water_ics(*, water: dict[str, Any], base_url: str, species: str) -> st
             f"DTSTART;VALUE=DATE:{start.strftime('%Y%m%d')}",
             f"DTEND;VALUE=DATE:{end_exclusive.strftime('%Y%m%d')}",
             f"SUMMARY:{_ics_escape(summary)}",
-            f"DESCRIPTION:{_ics_escape('CDFW plants are subject to change. ' + base_url)}",
+            "DESCRIPTION:"
+            + _ics_escape(
+                ics.with_tip("CDFW plants are subject to change. " + base_url)
+            ),
             "END:VEVENT",
         ]
     lines.append("END:VCALENDAR")
-    return "\r\n".join(_ics_fold(line) for line in lines) + "\r\n"
+    return "\r\n".join(ics.fold(line) for line in lines) + "\r\n"
 
 
 def county_slug(county: str) -> str:
@@ -1449,9 +1598,11 @@ def _ld_faq(page_url: str, items: list[tuple[str, str]]) -> dict[str, Any]:
     }
 
 
-# The two app questions on the support page. The first of each pair is the
-# live wording (the app is on the App Store); the second is what is true
-# before launch, when the app is not on the App Store yet.
+# The app questions on the support page. The two live ones are the words for
+# when the app is on the App Store (the launch switch is on). Until then there
+# is no app to install (Apple's rejection was upheld on 2026-11-17, DECISIONS
+# 0073), so the page asks one question instead and answers it with the
+# calendar.
 _APP_ALERTS_FAQ_LIVE = (
     "Why didn't the app alert me?",
     "Alerts are part of the one-time in-app purchase; favoriting and "
@@ -1463,31 +1614,17 @@ _APP_ALERTS_FAQ_LIVE = (
     "updates weekly, so an alert arrives within the week a water is "
     "added, not the minute it is.",
 )
-_APP_ALERTS_FAQ_NOT_YET = (
-    "How will the app's alerts work?",
-    "The iPhone app is not in the App Store yet, so it sends no alerts "
-    "today. Once it is available: alerts are part of the one-time in-app "
-    "purchase; favoriting and browsing are free. Notifications must be "
-    "allowed for the app (Settings \u2192 Notifications). The app checks for "
-    "a new schedule in the background, and iOS decides when that happens. "
-    "Background App Refresh must be on for the app, Low Power Mode pauses "
-    "it, and swiping the app away can stop it until you open it again. "
-    "CDFW updates weekly, so an alert arrives within the week a water is "
-    "added, not the minute it is.",
-)
 _APP_RESTORE_FAQ_LIVE = (
     "How do I restore my purchase on a new phone?",
     "In the app, open About \u2192 Unlock full access \u2192 Restore "
     "purchases. Use the same Apple Account you bought it with. There "
     "is no account with this app to sign in to.",
 )
-_APP_RESTORE_FAQ_NOT_YET = (
-    "How will restoring a purchase on a new phone work?",
-    "The iPhone app is not in the App Store yet, so there is nothing to "
-    "restore today. Once it is available, open About \u2192 Unlock full "
-    "access \u2192 Restore purchases in the app and use the same Apple "
-    "Account you bought it with. There is no account with this app to "
-    "sign in to.",
+_NO_APP_ALERTS_FAQ = (
+    "Can I get an alert when a water is scheduled?",
+    "Yes, by calendar. On a California or Tennessee water's page, press "
+    "Apple Calendar or Google Calendar. Each new week or date the agency "
+    "schedules then shows up in your calendar. There is no Trout Truck app.",
 )
 
 
@@ -1495,9 +1632,10 @@ def _support_faq(
     source_fetched_label: str, *, app_store_live: bool = False
 ) -> list[tuple[str, str]]:
     """The support page's questions and answers as plain text. Each answer is
-    the visible answer with its links reduced to their text. The last two
-    are about the iPhone app, so they follow the launch switch: until the app
-    is on the App Store they say so (support.html.jinja holds the same words)."""
+    the visible answer with its links reduced to their text. The last ones
+    follow the launch switch: with it on, the two iPhone app questions; with
+    it off, one question answered by the calendar, since there is no app
+    (support.html.jinja holds the same words)."""
     return [
         (
             "Where does the schedule come from?",
@@ -1521,8 +1659,11 @@ def _support_faq(
             "Calendar; in Google Calendar, under Other calendars \u2192 From URL. "
             "Each event spans the whole week CDFW scheduled.",
         ),
-        _APP_ALERTS_FAQ_LIVE if app_store_live else _APP_ALERTS_FAQ_NOT_YET,
-        _APP_RESTORE_FAQ_LIVE if app_store_live else _APP_RESTORE_FAQ_NOT_YET,
+        *(
+            (_APP_ALERTS_FAQ_LIVE, _APP_RESTORE_FAQ_LIVE)
+            if app_store_live
+            else (_NO_APP_ALERTS_FAQ,)
+        ),
     ]
 
 
@@ -1861,9 +2002,13 @@ class _PageContext:
     source_week_label: str
     source_fetched_label: str
     source_checked_on: str = ""
+    # The same moment as source_fetched_label, for <time datetime>.
+    source_fetched_datetime: str = ""
     waters_by_region: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     coords: dict[str, list[Any]] = field(default_factory=dict)
     recorded_since: str = ""
+    # The California water pages' holiday line to /gifts/ (DECISIONS 0072).
+    water_gift_link: bool = False
 
     @property
     def home_crumb(self) -> tuple[str, str]:
@@ -2004,6 +2149,10 @@ def _render_water_page(
         water_map=_water_map(point),
         gear_links=[] if thin else gear_links(kind=water_kind(w["name"])),
         affiliate_rel=AFFILIATE_LINK_REL,
+        # The holiday line to /gifts/ under the gear block (DECISIONS 0072).
+        # Like the region links, it is not this water's data, so it is left
+        # out of the lastmod.
+        water_gift_link=ctx.water_gift_link,
         scheduled_elsewhere=scheduled_elsewhere,
         other_waters_by_county=other_waters_by_county,
         region_related=[{"slug": r["slug"], "name": r["name"]} for r in region_related],
@@ -2012,6 +2161,9 @@ def _render_water_page(
         water_months=_water_months(w, recorded_since=recorded_since),
         source_week_label=ctx.source_week_label,
         source_fetched_label=ctx.source_fetched_label,
+        source_fetched_time=_time_tag(
+            ctx.source_fetched_datetime, ctx.source_fetched_label
+        ),
         recorded_since_label=f"week of {recorded_since}" if recorded_since else "",
         # Facts for _water_status.html.jinja. water_status["meta_phrase"] is a
         # truthful sentence a description may use; nothing here sets one.
@@ -2354,6 +2506,35 @@ def _render_gear_page(ctx: _PageContext, build_date: dt.date) -> str:
         cdfw_license_url=CDFW_LICENSE_URL,
     )
     _write_page(ctx.out_dir, "gear", html, ctx.written)
+    return page_url
+
+
+def _render_gift_page(ctx: _PageContext) -> str:
+    """Write /gifts/, the gift guide (DECISIONS 0047). Returns its URL."""
+    page_url = f"{ctx.base_url}/gifts/"
+    trail = [ctx.home_crumb, ("Gifts for trout anglers", page_url)]
+    html = ctx.env.get_template("gifts.html.jinja").render(
+        title=f"{GIFT_GUIDE_TITLE} | {SITE_NAME}, {SITE_TAGLINE}",
+        description=GIFT_GUIDE_DESCRIPTION,
+        canonical_url=page_url,
+        root="../",
+        **ctx.common,
+        structured_data=_ld_graph(
+            _ld_page(
+                "WebPage",
+                page_url=page_url,
+                name=GIFT_GUIDE_TITLE,
+                base_url=ctx.base_url,
+                about={"@type": "State", "name": "California"},
+            ),
+            _ld_breadcrumb(page_url, trail),
+        ),
+        breadcrumb=_relative_trail(trail, base_url=ctx.base_url, root="../"),
+        gifts=gift_guide_items(),
+        affiliate_rel=AFFILIATE_LINK_REL,
+        cdfw_license_url=CDFW_LICENSE_URL,
+    )
+    _write_page(ctx.out_dir, "gifts", html, ctx.written)
     return page_url
 
 
@@ -3003,8 +3184,45 @@ def _share_card_kinds(
     return kinds
 
 
-def _privacy_description(*, ads_enabled: bool, analytics: bool) -> str:
-    """The privacy page's meta description, for the build's state."""
+def _about_description(*, analytics: bool, app_store_live: bool) -> str:
+    """The about page's meta description. With the launch switch off there is
+    no app, so only the website is named."""
+    if analytics and app_store_live:
+        collects = (
+            "what its website measures (Google Analytics) and its app collects "
+            "(nothing)"
+        )
+    elif analytics:
+        collects = "what its website measures (Google Analytics)"
+    else:
+        collects = "what it collects (nothing)"
+    return (
+        f"What {SITE_NAME} is, {collects}, and where its trout planting "
+        "and stocking data and license terms come from."
+    )
+
+
+def _privacy_description(
+    *, ads_enabled: bool, analytics: bool, app_store_live: bool = False
+) -> str:
+    """The privacy page's meta description, for the build's state. With the
+    launch switch off there is no app (Apple's rejection was upheld on
+    2026-11-17), so the description names the website only."""
+    if not app_store_live:
+        if ads_enabled:
+            return (
+                f"What the {SITE_NAME} trout planting site collects: it uses "
+                "Google Analytics and shows non-personalized Google ads. No account."
+            )
+        if analytics:
+            return (
+                f"What the {SITE_NAME} trout planting site collects: it uses "
+                "Google Analytics to count visits. No account, no ads."
+            )
+        return (
+            f"What the {SITE_NAME} trout planting site collects: nothing. "
+            "No account and no analytics."
+        )
     if ads_enabled:
         return (
             f"What the {SITE_NAME} trout planting site and iOS app collect: the "
@@ -3040,6 +3258,7 @@ def build_site(
     usgs_lake_names: dict[int, str] | None = None,
     build_date: dt.date | None = None,
     push: push_mod.PushConfig | None = None,
+    gift_guide: bool | None = None,
 ) -> list[Path]:
     """Render the full static site into ``out_dir``. Returns written paths.
 
@@ -3050,8 +3269,15 @@ def build_site(
     privacy page's section on it. None, the default, builds exactly what it
     built before.
 
+    ``gift_guide`` builds /gifts/ (DECISIONS 0047), its sitemap entry and the
+    home page's link to it, and lets the California water pages' holiday
+    line link to it (0072). None builds it when ``build_date`` is on or
+    after ``GIFT_GUIDE_FROM`` (2026-11-27); off, the build is exactly what it
+    was without it.
+
     ``build_date`` decides the date-gated parts of a page, today the /gear/
-    holiday section (DECISIONS 0043). None means the UTC date of the
+    holiday section (DECISIONS 0043) and the water pages' line to /gifts/
+    (0072, 2026-11-27 to 2026-12-26). None means the UTC date of the
     snapshot's ``generated_at``, which is the day of the daily publish.
 
     ``cname`` (``custom_domain(base_url)``, passed by ``cli.run``) writes a
@@ -3163,6 +3389,11 @@ def build_site(
         {"name": f"California {sp['word']} stocking schedule", "slug": sp["slug"]}
         for sp in species_pages
     ]
+
+    # The gift guide (DECISIONS 0047): the home page and the privacy page
+    # mention it only when it is built.
+    gift_guide = gift_guide_live_or_default(gift_guide, build_date)
+    common["gift_guide"] = gift_guide
 
     # The past-week pages (DECISIONS 0038); the home page and the county index
     # link to /week/ only when it exists.
@@ -3299,20 +3530,12 @@ def build_site(
     _write_page(out_dir, "", index_html, written)
 
     # ---- about (carries the Dataset: it is the page that describes the data)
-    if ga4_measurement_id:
-        about_collects = (
-            "what its website measures (Google Analytics) and its app collects "
-            "(nothing)"
-        )
-    else:
-        about_collects = "what it collects (nothing)"
     about_html = env.get_template("about.html.jinja").render(
         locations_placed=len(coords) if coords else None,
         locations_total=len(snapshot["waters"]),
         title=f"About, attribution & privacy | {SITE_NAME}, {SITE_TAGLINE}",
-        description=(
-            f"What {SITE_NAME} is, {about_collects}, and where its trout planting "
-            "and stocking data and license terms come from."
+        description=_about_description(
+            analytics=ga4_measurement_id is not None, app_store_live=app_store_live
         ),
         canonical_url=f"{base_url}/about/",
         root="../",
@@ -3352,7 +3575,9 @@ def build_site(
 
     # ---- privacy + support: the URLs App Store Connect asks for
     privacy_description = _privacy_description(
-        ads_enabled=ads.enabled, analytics=ga4_measurement_id is not None
+        ads_enabled=ads.enabled,
+        analytics=ga4_measurement_id is not None,
+        app_store_live=app_store_live,
     )
     for slug, template, title, description in (
         (
@@ -3365,8 +3590,13 @@ def build_site(
             "support",
             "support.html.jinja",
             f"Support & FAQ | {SITE_NAME}, {SITE_TAGLINE}",
-            "How the trout planting schedule, stocking calendar feeds and iOS app alerts work, "
-            "and why an alert may not arrive.",
+            (
+                "How the trout planting schedule, stocking calendar feeds and iOS app alerts work, "
+                "and why an alert may not arrive."
+                if app_store_live
+                else "How the trout planting schedule and stocking calendar feeds work, "
+                "and how to follow a water by calendar."
+            ),
         ),
         (
             "terms",
@@ -3433,9 +3663,11 @@ def build_site(
         source_week_label=source_week_label,
         source_fetched_label=source_fetched_label,
         source_checked_on=snapshot["source"]["fetched_at"][:10],
+        source_fetched_datetime=_fmt_dt_attr(snapshot["source"]["fetched_at"]),
         waters_by_region=waters_by_region,
         coords=coords,
         recorded_since=recorded_since,
+        water_gift_link=water_gift_link_shown(build_date, gift_guide=gift_guide),
     )
 
     # ---- per-water pages + ics
@@ -3516,6 +3748,7 @@ def build_site(
         lastmod=counties_index_lastmod,
     )
     gear_url = _render_gear_page(ctx, build_date)
+    gift_url = _render_gift_page(ctx) if gift_guide else None
 
     # ---- region pages: one per CDFW region with a county page. The
     # lastmod is the newest of its waters' own data dates, which already
@@ -3599,12 +3832,14 @@ def build_site(
 
     # ---- sitemap.xml -- lastmod is when a page's substance last changed
     # (see _water_data_lastmod), not the daily build date. The about,
-    # privacy, support, terms and gear pages carry no per-page data date, so no lastmod.
+    # privacy, support, terms, gear and gift pages carry no per-page data date,
+    # so no lastmod.
     sitemap_entries: list[tuple[str, str | None]] = [
         (f"{base_url}/", home_lastmod),
         (counties_index_url, counties_index_lastmod),
         (f"{base_url}/about/", None),
         (gear_url, None),
+        *([(gift_url, None)] if gift_url else []),
         *([(f"{base_url}/data/", data_updated)] if data_updated else []),
         (f"{base_url}/privacy/", None),
         (f"{base_url}/support/", None),
@@ -3670,6 +3905,14 @@ def build_site(
             "semantics": st["semantics"],
             "water_count": sum(1 for w in v2_waters if w["state"] == st["code"]),
             **site_states._freshness(st),
+            # The hub's winter section (DECISIONS 0070), or None.
+            "winter": site_states.winter_schedule(
+                st,
+                [w for w in v2_waters if w["state"] == st["code"]],
+                site_states._build_date(st, snapshot_v2["generated_at"]),
+            )
+            if snapshot_v2 is not None
+            else None,
         }
         for st in v2_states
         if st["code"] != "CA"

@@ -1,0 +1,11 @@
+{#
+  The Ko-fi tip line, DECISIONS 0073: the last line of a water page's main
+  content, far from the status badge and the calendar box. A plain link that
+  opens in the same tab (no target, so no rel), no Ko-fi script or image,
+  nothing loaded until it is pressed, and no data-ga-event, so the GA4 click
+  listener does not report it. `tip` is a
+  global from site._env (cfpa.tip.page_context); None turns the line off.
+#}
+{% if tip %}
+<p class="tip-line muted">{{ tip.lead }} <a href="{{ tip.url }}">{{ tip.link_text }}</a></p>
+{% endif %}

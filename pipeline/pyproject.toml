@@ -63,6 +63,10 @@ ignore = ["E501"]            # line length owned by the formatter
 # Both spellings: `make lint` runs from pipeline/, the pre-commit hook from the root.
 "../scripts/check_greenlight.py" = ["S603"]
 "scripts/check_greenlight.py" = ["S603"]
+[tool.ruff.lint.isort]
+# `make lint` runs from pipeline/, where cfpa is first-party on its own; the
+# pre-commit hook runs from the root, where it is not. Say it once.
+known-first-party = ["cfpa"]
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 [tool.ruff.format]

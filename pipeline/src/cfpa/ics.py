@@ -1,11 +1,11 @@
 """iCalendar (RFC 5545) helpers, and the calendar feed of a schedule state's
 water (DECISIONS 0064).
 
-California's feed is ``site.build_water_ics``. It has the same escaping,
-folding, PRODID and refresh interval as this module; they are kept equal by
-test (``test_site_tn_calendar_feeds``) rather than by import for now, so the
-open California water-page pull requests merge clean, and ``site.py`` can
-switch to these helpers after they land. This module adds the same kind of
+California's feed is ``site.build_water_ics``. It has the same PRODID and
+refresh interval as this module, kept equal by test
+(``test_site_tn_calendar_feeds``), and since DECISIONS 0073 it escapes and
+folds with this module's ``escape`` and ``fold`` and ends each event's
+description with the same Ko-fi line (``with_tip``). This module adds the same kind of
 feed for a state whose agency publishes a forward schedule (Tennessee),
 honest about the three shapes TWRA gives a date:
 
@@ -31,6 +31,8 @@ from __future__ import annotations
 
 import datetime as dt
 from typing import Any
+
+from . import tip
 
 # How often a subscribed calendar should poll a feed. The publish workflow
 # runs twice a day (.github/workflows/publish.yml, 13:17 and 01:17 UTC), so a
@@ -73,9 +75,10 @@ def escape(text: str) -> str:
 def fold(line: str) -> str:
     """RFC 5545 §3.1: fold a content line longer than 75 octets; each
     continuation line starts with one space, which counts toward its 75, and
-    a multi-byte character is never split (``site._ics_fold`` lets a
-    continuation run to 76 octets and splits on bytes; the strict reader in
-    the tests holds this one to the RFC)."""
+    a multi-byte character is never split. California's feed used its own
+    fold until DECISIONS 0073, which let a continuation run to 76 octets and
+    split on bytes; the strict reader in the tests holds this one to the
+    RFC."""
     if len(line.encode("utf-8")) <= 75:
         return line
     out: list[str] = []
@@ -104,6 +107,15 @@ def header(*, name: str, description: str) -> list[str]:
         f"X-WR-CALNAME:{escape(name)}",
         f"X-WR-CALDESC:{escape(description)}",
     ]
+
+
+def with_tip(description: str) -> str:
+    """An event's description with the Ko-fi line (DECISIONS 0073) as its
+    last line, or unchanged when the line is off. Unescaped in, unescaped
+    out: the caller escapes the whole description once, so the newline
+    becomes ``\\n`` and the comma ``\\,``."""
+    line = tip.calendar_line()
+    return f"{description}\n{line}" if line else description
 
 
 def render(lines: list[str]) -> str:
@@ -284,7 +296,7 @@ def build_schedule_ics(
             f"DTSTART;VALUE=DATE:{start.strftime('%Y%m%d')}",
             f"DTEND;VALUE=DATE:{end_exclusive.strftime('%Y%m%d')}",
             f"SUMMARY:{escape(summary)}",
-            f"DESCRIPTION:{escape(description)}",
+            f"DESCRIPTION:{escape(with_tip(description))}",
             f"URL:{page_url}",
             "END:VEVENT",
         ]
@@ -309,4 +321,5 @@ __all__ = [
     "has_feed",
     "header",
     "render",
+    "with_tip",
 ]

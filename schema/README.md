@@ -117,6 +117,11 @@ builds that read it. v2 is built by the same run.
   A water may have no plants and only this note.
 - **`checks`:** a failed fetch keeps the last good data;
   `last_attempt_ok: false` means show that the newest check failed.
+  Optional `checks.stale_copy` (Massachusetts, docs/DECISIONS.md 0071): the
+  check failed because ArcGIS Hub flagged its own copy of the agency's data
+  stale; `source_last_edit_at` and `source_record_count` are what Hub's
+  metadata said about the agency's layer (null when unread), and
+  `copy_record_count` is how many records the data shown has.
 - **`source.read_method`:** `automated` (the pipeline's fetch) or `manual`
   (the agency's published file, downloaded in a browser and loaded by hand,
   docs/DECISIONS.md 0061; Tennessee while tn.gov refuses the pipeline).

@@ -13,6 +13,10 @@ caught it (a sabotage that silently no-ops would otherwise read as a pass):
    pages only; CDFW and other sites have their own policies.
 3. The schedule request is not said to "carry no identifier": it sends a
    fixed User-Agent and an ETag, both the same for every user.
+
+The app sections are shown only with the launch switch on (there is no app
+while it is off, 2026-11-21; test_site_no_app_promise.py holds the off
+page), so these builds turn it on.
 """
 
 from __future__ import annotations
@@ -46,6 +50,7 @@ def _privacy(root: Path, ga4_measurement_id: str | None) -> str:
         fixture_fetched_at=dt.datetime(2026, 9, 13, 12, 0, tzinfo=dt.UTC),
         run_today=dt.date(2026, 9, 13),
         ga4_measurement_id=ga4_measurement_id,
+        app_store_live=True,
     )
     return (out / "privacy" / "index.html").read_text(encoding="utf-8")
 

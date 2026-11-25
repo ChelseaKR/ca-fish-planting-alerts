@@ -2,7 +2,7 @@
   "schema": "cfpa-state-history-v1",
   "state": "TN",
   "checks": {
-    "last_attempt_at": "2026-11-24T13:21:38Z",
+    "last_attempt_at": "2026-11-25T01:19:42Z",
     "last_success_at": "2026-11-20T03:55:24Z",
     "last_attempt_ok": false,
     "last_error": "robots.txt at https://www.tn.gov/robots.txt answered HTTP 403; an unreadable robots.txt puts the host off-limits",

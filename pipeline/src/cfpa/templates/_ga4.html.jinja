@@ -12,6 +12,14 @@
   github.io project site of this account shares one origin, and so one
   localStorage.
 
+  Two more returns, after those and after the footer control is set up, so
+  the page looks and behaves the same: nothing loads unless the page is on
+  the live host (site.py GA4_HOST; www redirects to it), so a local or
+  preview build never counts, and nothing loads when navigator.webdriver is
+  true (Playwright, Puppeteer, Selenium, headless Chrome), so automated
+  checks against the live site never count either. The click events below
+  sit under these returns too.
+
   Consent Mode v2 defaults: the three ad signals are denied everywhere;
   analytics_storage is denied in the EEA, the UK and Switzerland (the
   region-specific default wins there) and granted elsewhere. Google signals
@@ -61,6 +69,8 @@
   if (n.globalPrivacyControl === true) return;
   if (dnt === "1" || dnt === "yes") return;
   if (optedOut) return;
+  if (w.location.hostname !== {{ ga4_host|tojson }}) return;
+  if (n.webdriver === true) return;
   w.dataLayer = w.dataLayer || [];
   function gtag() { w.dataLayer.push(arguments); }
   gtag("consent", "default", {

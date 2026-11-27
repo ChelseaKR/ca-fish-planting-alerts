@@ -413,7 +413,8 @@ const document = {
   createElement: () => ({}),
   head: { appendChild: () => {} },
 };
-const window = Object.assign({ localStorage: { getItem: () => null } }, c.window);
+// The live site's host (the tag loads nowhere else).
+const window = Object.assign({ localStorage: { getItem: () => null }, location: { hostname: "trouttruck.com" } }, c.window);
 const navigator = Object.assign({}, c.navigator);
 vm.runInContext(code, vm.createContext({ window, navigator, document, Date }));
 if (c.disableAfterLoad) window[c.disableAfterLoad] = true;

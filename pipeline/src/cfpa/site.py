@@ -156,6 +156,11 @@ def custom_domain(base_url: str) -> str | None:
 # Google on any page, and the privacy copy says nothing is collected.
 GA4_MEASUREMENT_ID = "G-ZYL3RMXCZF"
 
+# The one host the tag loads on (_ga4.html.jinja): the live site. A build
+# opened anywhere else (a local server, a preview) loads nothing, so it is
+# never counted as a visit. www.trouttruck.com redirects here.
+GA4_HOST = "trouttruck.com"
+
 _GA4_MEASUREMENT_ID_RE = re.compile(r"G-[A-Z0-9]+")
 
 # Consent Mode v2: analytics_storage defaults to denied in these regions (the
@@ -3326,6 +3331,7 @@ def build_site(
         # describe a state the build is not in.
         "ga4_measurement_id": ga4_measurement_id,
         "ga4_denied_regions": list(GA4_ANALYTICS_DENIED_REGIONS),
+        "ga4_host": GA4_HOST,
         # Web push (DECISIONS 0069): the box's third option on a water page,
         # the manifest link in every head, and the privacy section. None
         # renders none of them.

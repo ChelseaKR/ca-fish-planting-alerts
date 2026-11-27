@@ -159,7 +159,8 @@ const document = {
   addEventListener: (type, f) => { if (type === "DOMContentLoaded") ready.push(f); },
 };
 const navigator = Object.assign({}, c.navigator);
-const window = Object.assign({ localStorage }, c.window);
+// The live site's host unless a case says otherwise.
+const window = Object.assign({ localStorage, location: { hostname: "trouttruck.com" } }, c.window);
 vm.runInContext(code, vm.createContext({ navigator, window, document, Date, encodeURIComponent }));
 ready.forEach((f) => f());
 const snap = () => ({
@@ -187,6 +188,7 @@ def _run(
     storage: dict[str, str] | None = None,
     storage_blocked: bool = False,
     navigator: dict[str, object] | None = None,
+    window: dict[str, object] | None = None,
     clicks: int = 0,
 ) -> dict[str, Any]:
     node = shutil.which("node")
@@ -201,7 +203,7 @@ def _run(
         "storage": storage or {},
         "storageBlocked": storage_blocked,
         "navigator": navigator or {},
-        "window": {},
+        "window": window or {},
         "clicks": clicks,
     }
     (tmp_path / "case.json").write_text(json.dumps(case), encoding="utf-8")
@@ -308,3 +310,24 @@ def test_under_gpc_or_dnt_the_footer_says_so_and_offers_no_button(
         True,
         SIGNAL,
     )
+
+
+@pytest.mark.parametrize(
+    ("navigator", "window"),
+    [
+        ({}, {"location": {"hostname": "localhost"}}),
+        ({}, {"location": {"hostname": "127.0.0.1"}}),
+        ({"webdriver": True}, {}),
+    ],
+)
+def test_off_the_live_host_or_under_webdriver_nothing_loads_and_the_footer_is_unchanged(
+    tmp_path, tag_js, navigator, window
+):
+    """The host and webdriver returns come after the footer control is set
+    up, so the page looks and behaves as it does for a visitor: the same
+    button, the same words, and a click still saves the choice."""
+    ran = _run(tmp_path, tag_js, navigator=navigator, window=window, clicks=1)
+    live = _run(tmp_path, tag_js, clicks=1)
+    assert ran["loaded"] is False and ran["appended"] == 0
+    assert live["loaded"] is True
+    assert ran["states"] == live["states"]

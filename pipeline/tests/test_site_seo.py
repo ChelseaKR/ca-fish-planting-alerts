@@ -407,7 +407,14 @@ def test_the_scheduled_in_county_section_only_says_what_the_data_says(built):
     for w in snap["waters"]:
         if _is_current(w, week):
             continue
-        html = _html(out, f"water/{w['slug']}")
+        # Only the "on CDFW's schedule now" sections: the same-county list
+        # further down also says where each water stands (DECISIONS 0054),
+        # in its own words, checked in test_site_water_convert.py.
+        page = _html(out, f"water/{w['slug']}")
+        html = "".join(
+            part.split("</section>", 1)[0]
+            for part in page.split('<section aria-labelledby="now-')[1:]
+        )
         for s in snap["waters"]:
             if s["id"] == w["id"] or not set(s["counties"]) & set(w["counties"]):
                 continue
@@ -703,14 +710,12 @@ def test_sitemap_lastmod_follows_the_data_not_the_build(built, fresh):
             p["status"] == "listed" and p["week"]["start"] >= rollover_from
             for p in w["plants"]
         )
-        # A water with nothing current also lists the scheduled waters in its
-        # counties, so those waters' own changes and rollovers move its page.
+        # Every water page shows each same-county water's schedule answer
+        # (DECISIONS 0054), so those waters' own changes and rollovers move
+        # its page.
         siblings = [s for c in w["counties"] for s in counties[c] if s["id"] != w["id"]]
-        nothing_current = not any(
-            p["status"] == "listed" and p["week"]["start"] >= week for p in w["plants"]
-        )
-        sibling_changed = nothing_current and any(s["id"] in changed for s in siblings)
-        sibling_near = nothing_current and any(
+        sibling_changed = any(s["id"] in changed for s in siblings)
+        sibling_near = any(
             p["status"] == "listed" and p["week"]["start"] >= rollover_from
             for s in siblings
             for p in s["plants"]

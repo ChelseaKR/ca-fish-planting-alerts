@@ -13,6 +13,12 @@ This repository was republished with a new history on 2026-09-18
 
 ### Added
 
+- Site: California water pages answer the visit in the first screen
+  (DECISIONS 0054). The status block opens with one sentence saying whether
+  the water is on CDFW's schedule this week, when it is next, or when it was
+  last, and the calendar subscribe action now sits right under it. Each
+  same-county water link says where that water stands, with this week's
+  waters first. URLs, titles and H1s are unchanged.
 - Docs: an Accessibility Conformance Report for the website against WCAG
   2.2 Level A and AA (`docs/a11y/ACR.md`), based on the VPAT 2.5 Rev WCAG
   edition, with the evidence for each criterion, a third-party content
